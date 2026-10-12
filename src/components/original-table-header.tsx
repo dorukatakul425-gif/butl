@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { OriginalMiscMenu } from "@/components/original-misc-menu";
 import { DecorSelection } from "@/components/decor/decor-selection";
 import { BottleSelection } from "@/components/table/bottle-selection";
+import { BankDialog } from "@/components/bank/bank-dialog";
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
 // All artwork is extracted unchanged from the live game's preloader bundle.
@@ -43,6 +44,8 @@ export function OriginalTableHeader() {
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const [decorOpen, setDecorOpen] = useState(false);
   const [bottleOpen, setBottleOpen] = useState(false);
+  const [bankOpen, setBankOpen] = useState(false);
+  const closeBank = useCallback(() => setBankOpen(false), []);
   const closeBottle = useCallback(() => setBottleOpen(false), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const closeDecor = useCallback(() => setDecorOpen(false), []);
@@ -53,11 +56,10 @@ export function OriginalTableHeader() {
   }, []);
   return (
     <div className="original-table-header" aria-label="Orijinal üst masa ikonları">
-      <Button asChild variant="ghost" className="original-header-button original-heart-button">
-        <a href={heartUp.url} target="_blank" rel="noreferrer" aria-label="Kalp orijinal görseli" title="Kalp">
-          <img src={heartUp.url} alt="Kalp" className="original-heart-image original-button-up" />
-          <img src={heartDown.url} alt="" className="original-heart-image original-button-down" />
-        </a>
+      <Button type="button" variant="ghost" className="original-header-button original-heart-button"
+        aria-label="Kalp al" title="Kalp al" aria-haspopup="dialog" onClick={() => setBankOpen(true)}>
+        <img src={heartUp.url} alt="" className="original-heart-image original-button-up" />
+        <img src={heartDown.url} alt="" className="original-heart-image original-button-down" />
       </Button>
       <div className="original-header-middle">
         {middleIcons.map((icon) => icon.kind === "menu" ? (
@@ -75,6 +77,7 @@ export function OriginalTableHeader() {
       <OriginalMiscMenu open={menuOpen} triggerRef={menuTriggerRef} onClose={closeMenu} onSelect={onMenuSelect} />
       <DecorSelection open={decorOpen} onClose={closeDecor} />
       <BottleSelection open={bottleOpen} onClose={closeBottle} />
+      <BankDialog open={bankOpen} onClose={closeBank} isVip />
     </div>
   );
 }
