@@ -1,5 +1,10 @@
 # Tasks
-- [ ] Transfer all startup, bottle-icon and viewer-turn sound corrections to butl/main and verify remote file hashes.
+- [x] Match original kiss/refuse labels and decision countdown placement.
+- [x] Fix startup logo visibility using original artwork; verified with forced hosted-image failures.
+- [x] Remove decision arrows when players return to their seats; verified during return phase on phone and desktop.
+- [x] Restore crown star effects from original gift configurations; real gift flight produced 13–14 visible stars despite forced CDN failures.
+- [x] Verify all five corrections and transfer them to butl/main; phone/desktop flows and 44 rule tests passed, including visible crown stars under forced CDN failures.
+- [x] Transfer all startup, bottle-icon and viewer-turn sound corrections to butl/main; ce83310907d816c1c3ce5079d007641d9d157a7d verified with all 216 tracked files matching.
 - [x] Verify bottle icons and add original SVG fallbacks; forced image failures still display kiss/refuse buttons and arrows.
 - [x] Restore original viewer-turn ding; browser verified audio source starts when bot rounds return the turn to viewer.
 - [x] Restore original green startup pattern, loading bar and Spin the Bottle artwork from source assets; progress tracks actual readiness.

@@ -9,7 +9,7 @@ import { PHOTO_SIZE as PHOTO, PHOTO_SHADOW_SIZE as SHADOW_SIZE, GIFT_SCALE, OVER
 import { GiftEffects } from "@/components/table/gift-effects";
 import { matchingTableEffects } from "@/lib/table-gift-effects";
 import { originalBottle } from "./original-bottle";
-import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS } from "@/lib/bottle-game";
+import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
 
 // TableView seats (virtual 375px table space, origin at table centre).
 const SEATS: Array<[number, number]> = [
@@ -449,7 +449,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     const [flyView, stickView] = await Promise.all([
       createGiftView(assets, gift.flyImage, gift.spine, false, tableSize()),
       !gift.spine && gift.stickImage !== gift.flyImage ? createGiftView(assets, gift.stickImage, undefined, true, tableSize()) : undefined,
-      gift.vfx ? effects.preload(gift.vfx).catch(e => console.warn(e)) : undefined,
+      gift.vfx ? effects.preload(gift.vfx) : undefined,
       options.prepareSfx?.(gift.startSound)?.catch(() => {}),
       options.prepareSfx?.(gift.finishSound)?.catch(() => {}),
     ]);
@@ -457,7 +457,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     // Upload both flying and landing textures before starting the clock.
     await app.renderer.plugins["prepare"].upload(flyView);
     if (stickView) await app.renderer.plugins["prepare"].upload(stickView);
-    if (gift.vfx) await Promise.resolve(effects.prepare(app.renderer, gift.vfx)).catch(() => {});
+    if (gift.vfx) await effects.prepare(app.renderer, gift.vfx);
     if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
     activate(flyView);
     const src = { x: sender.view.x, y: sender.view.y, scale: GIFT_SCALE, rotation: 0 };
@@ -503,13 +503,15 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     const moving = [left,right].map((index,i) => ({
       view: seats[index]?.view,
       from: { x: seats[index]?.view.x ?? 0, y: seats[index]?.view.y ?? 0 },
+      fromScale: seats[index]?.view.scale.x ?? 1,
       to: center ? [i===0 ? -46 : 46,-5] : SEATS[index] ?? [0,0],
     }));
-    await tween(CENTER_SECONDS,p => moving.forEach(m => {
+    await tween(center ? CENTER_SECONDS : RETURN_SECONDS,p => moving.forEach(m => {
       if (!m.view) return;
       const ease = 1-Math.pow(1-p,3);
       m.view.x=m.from.x+((m.to[0] ?? 0)-m.from.x)*ease;
       m.view.y=m.from.y+((m.to[1] ?? 0)-m.from.y)*ease;
+      m.view.scale.set(m.fromScale+((center ? CENTER_PLAYER_SCALE : 1)-m.fromScale)*ease);
     }));
   };
   let preloadQueue = Promise.resolve();
@@ -550,12 +552,11 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       const initial=bottleLayer.rotation;
       await tween(SPIN_SECONDS-0.1,p => { bottleLayer.rotation=initial+(end-initial)*(1-Math.pow(1-p,3)); });
       bottleLayer.rotation=end%(2*Math.PI);
-      void tween(0.4,p=>{bottleLayer.alpha=1-p;});
+      void tween(1,p=>{bottleLayer.alpha=1-p;});
       await movePlayers(from,to,true);
     },
     async returnPlayers(from: number,to: number) {
-      await movePlayers(from,to,false);
-      await tween(0.4,p=>{bottleLayer.alpha=p;});
+      await Promise.all([movePlayers(from,to,false),tween(1,p=>{bottleLayer.alpha=p;})]);
     },
     setPlayers(next: SeatPlayer[]) {
       players = next.slice(0, seats.length);

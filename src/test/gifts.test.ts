@@ -28,6 +28,14 @@ describe("gifts from the game server", () => {
   it("uses the spine finish time from assets", () => {
     expect(createSentGift(assets, rose, 0).spineFinishSec).toBe(4.2);
   });
+  it("preserves the original magic trail and head attachment for every crown", () => {
+    for (const type of ["crown1", "crown2", "crown3", "crown4", "icecrown", "vipcrown"]) {
+      const crown: CilizGift = { ...airKiss, type, stickPoint: "hat", vfx: "magic" };
+      const sent = createSentGift(assets, crown, 0);
+      expect(sent.vfx).toBe("magic");
+      expect(sent.stickPoint).toBe("hat");
+    }
+  });
   it("matches the game's seeded random sequence", () => {
     expect(seededRandom(0)()).toBeCloseTo(49297 / 233280);
   });

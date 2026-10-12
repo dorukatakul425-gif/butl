@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { leftRight, pickTarget, useBottle, turnOfferSound, DECISION_SECONDS, type Decision } from "@/lib/bottle-game";
+import { leftRight, pickTarget, useBottle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, DECISION_SECONDS, type Decision } from "@/lib/bottle-game";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { playSfx, preloadSfx, unlockSfx } from "@/lib/sfx";
 import { BottleIcon, preloadBottleIcon } from "./bottle-icon";
@@ -15,7 +15,7 @@ import rollBig from "@/assets/ui_game_roll_big_arrow.svg.asset.json";
 import rollSmall from "@/assets/ui_game_roll_small_arrow.svg.asset.json";
 
 type Table = Awaited<ReturnType<typeof import("./pixi-table").createPixiTable>>;
-type Round = {phase: "offer"|"spin"|"choose"|"result"; spinner: number; target: number; decisions: Record<number,Decision>};
+type Round = {phase: "offer"|"spin"|"choose"|"result"|"return"; spinner: number; target: number; decisions: Record<number,Decision>};
 const VIEWER = 5;
 // RollSmallData from the source: arrow x/y/rotation and text x/y.
 const offers = [[35,-94,-45,13,-82],[74,-83,0,30,-74],[83,-43,45,27,-48],[83,38,45,27,32],[74,78,90,30,54],[35,91,135,13,67],[-47,91,135,-69,67],[-89,78,180,-90,54],[-99,38,-135,-86,32],[-99,-43,-135,-86,-48],[-89,-83,-90,-90,-74],[-47,-94,-45,-69,-82]];
@@ -83,13 +83,18 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
   },[round,remaining]);
   useEffect(() => {
     if(round.phase!=="result")return;
-    let alive=true;
     const timer=window.setTimeout(()=>{
+      setRound(prev=>({...prev,phase:"return",decisions:{}}));
+    },2000);
+    return ()=>window.clearTimeout(timer);
+  },[round.phase]);
+  useEffect(() => {
+    if(round.phase!=="return")return;
+    let alive=true;
       void table.returnPlayers(round.spinner,round.target).then(()=>{
         if(alive)setRound({phase:"offer",spinner:round.target,target:0,decisions:{}});
       });
-    },2000);
-    return ()=>{alive=false;window.clearTimeout(timer);};
+    return ()=>{alive=false;};
   },[round.phase,round.spinner,round.target,table]);
   const participating = round.spinner===VIEWER || round.target===VIEWER;
   const [left,right] = leftRight(round.spinner,round.target);
@@ -108,10 +113,10 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
       <BottleIcon className="bottle-roll-small" src={rollSmall.url} alt="" style={{left:offer[0],top:offer[1],transform:`translate(-50%,-50%) rotate(${offer[2]}deg)`}} />
       <span className="bottle-small-text" style={{left:offer[3],top:offer[4]}}>{translate(assets,"game:spins")}</span>
     </>}
-    {(round.phase==="choose"||round.phase==="result") && <>
+    {decisionArrowsVisible(round.phase) && <>
       {round.decisions[left] && <BottleIcon className="bottle-decision-arrow bottle-arrow-up" src={round.decisions[left]==="kiss" ? kissUp.url:refuseUp.url} alt={round.decisions[left]==="kiss" ? "Öptü":"Vazgeçti"} />}
       {round.decisions[right] && <BottleIcon className="bottle-decision-arrow bottle-arrow-down" src={round.decisions[right]==="kiss" ? kissDown.url:refuseDown.url} alt={round.decisions[right]==="kiss" ? "Öptü":"Vazgeçti"} />}
-      {round.phase==="choose" && <span className="bottle-countdown">{remaining}</span>}
+      {decisionTimerVisible(round.phase,participating,Boolean(round.decisions[VIEWER])) && <span className="bottle-countdown" role="timer" aria-label="Karar süresi">{remaining}</span>}
       {round.phase==="choose" && participating && !round.decisions[VIEWER] && <>
         <Button variant="ghost" className="bottle-decision-button bottle-refuse-button" onClick={()=>decide("refuse")}><BottleIcon src={refuseButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss_cancel")}</span></Button>
         <Button variant="ghost" className="bottle-decision-button bottle-kiss-button" onClick={()=>decide("kiss")}><BottleIcon src={kissButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss")}</span></Button>

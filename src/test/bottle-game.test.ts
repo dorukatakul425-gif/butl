@@ -1,7 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { CENTER_SECONDS, SPIN_SECONDS, TABLE_SEATS, eligibleTargets, leftRight, pickTarget, spinAngle, turnOfferSound } from "@/lib/bottle-game";
+import { CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE, SPIN_SECONDS, TABLE_SEATS, eligibleTargets, leftRight, pickTarget, spinAngle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible } from "@/lib/bottle-game";
 
 describe("source-derived bottle game geometry", () => {
+  it("removes decision arrows as soon as the players start returning", () => {
+    expect(decisionArrowsVisible("choose")).toBe(true);
+    expect(decisionArrowsVisible("result")).toBe(true);
+    expect(decisionArrowsVisible("return")).toBe(false);
+    expect(decisionArrowsVisible("offer")).toBe(false);
+  });
+  it("hides the viewer countdown after their decision while observers retain it", () => {
+    expect(decisionTimerVisible("choose",true,false)).toBe(true);
+    expect(decisionTimerVisible("choose",true,true)).toBe(false);
+    expect(decisionTimerVisible("choose",false,true)).toBe(true);
+    expect(decisionTimerVisible("return",false,false)).toBe(false);
+  });
+  it("uses the original half-second return and 69-pixel centered photo scale", () => {
+    expect(RETURN_SECONDS).toBe(0.5);
+    expect(CENTER_PLAYER_SCALE*64).toBe(69);
+  });
   it("plays the original ding only when the loaded bottle offers the viewer a turn", () => {
     expect(turnOfferSound("offer", 5, 5, true)).toBe("ding");
     expect(turnOfferSound("offer", 4, 5, true)).toBeNull();

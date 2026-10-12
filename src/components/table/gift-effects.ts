@@ -1,6 +1,7 @@
 // Browser-only source-derived VfxPresenter configs; SVG artwork is the original bundled artwork.
 import { Emitter, type EmitterConfigV3 } from "@pixi/particle-emitter";
 import { Container, Texture, type IRenderer } from "pixi.js";
+import { giftEffectFallbacks } from "@/lib/gift-effect-fallbacks";
 import v_balloon1_1 from "@/assets/vfx/v_balloon1_1.svg.asset.json";
 import v_balloon1_2 from "@/assets/vfx/v_balloon1_2.svg.asset.json";
 import v_balloon1_3 from "@/assets/vfx/v_balloon1_3.svg.asset.json";
@@ -97,8 +98,13 @@ export class GiftEffects {
       ready = Promise.all((urls[name] ?? []).map(url => new Promise<Texture>((resolve, reject) => {
         const image = new Image(); image.crossOrigin = "anonymous";
         image.onload = () => resolve(Texture.from(image));
-        let retried = false;
-        image.onerror = () => { if (retried) return reject(new Error(`Effect image unavailable: ${url}`)); retried = true; image.src = `${url}?r=${Date.now()}`; };
+        let attempt = 0;
+        image.onerror = () => {
+          const fallback = giftEffectFallbacks[url.split("/").at(-1)?.split("?")[0] ?? ""];
+          if (attempt++ === 0) image.src = `${url}${url.includes("?") ? "&" : "?"}r=${Date.now()}`;
+          else if (fallback && image.src !== fallback) image.src = fallback;
+          else reject(new Error(`Effect image unavailable: ${url}`));
+        };
         image.src = url;
       }))).then(textures => {
         if (this.disposed) { textures.forEach(texture => texture.destroy(true)); return; }

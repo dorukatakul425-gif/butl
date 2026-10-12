@@ -373,7 +373,7 @@
 
 .original-loading-screen { position: fixed; inset: 0; z-index: 200; overflow: hidden; background: var(--loading-background); }
 .original-loading-pattern { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-.original-loading-logo { position: absolute; left: 50%; top: 50%; width: 75%; transform: translate(-50%,calc(-100% - 30px)); }
+.original-loading-logo { position: absolute; left: 50%; top: 50%; width: 75%; height: auto; aspect-ratio: 1034.01 / 543.06; object-fit: contain; transform: translate(-50%,calc(-100% - 30px)); }
 .splash__bg { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 50%; max-width: 400px; padding: 4px; border-radius: 20px; background: var(--loading-track); box-shadow: var(--loading-bar-shadow); }
 .splash__bar { height: 12px; border-radius: 20px; background-color: var(--loading-fill); background-image: var(--loading-bar-highlight); transition: width 400ms linear; }
 .original-loading-retry { position: absolute; left: 50%; top: calc(50% + 40px); transform: translateX(-50%); }

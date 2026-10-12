@@ -8,7 +8,13 @@ export const TABLE_SEATS: Array<[number, number]> = [
 ];
 export const SPIN_SECONDS = 5;
 export const CENTER_SECONDS = 1;
+export const RETURN_SECONDS = 0.5;
+export const CENTER_PLAYER_SCALE = 69 / 64;
 export const DECISION_SECONDS = 9;
+export function decisionArrowsVisible(phase: string) { return phase === "choose" || phase === "result"; }
+export function decisionTimerVisible(phase: string, participating: boolean, decided: boolean) {
+  return phase === "choose" && (!participating || !decided);
+}
 export type Decision = "kiss" | "refuse";
 export function turnOfferSound(phase: string, spinner: number, viewer: number, ready: boolean) {
   return phase === "offer" && spinner === viewer && ready ? "ding" : null;

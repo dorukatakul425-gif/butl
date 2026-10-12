@@ -10,6 +10,9 @@ describe("actual game loading readiness", () => {
     expect(result.current.ready).toBe(false);
     expect(result.current.progress).toBe(75);
     act(() => completeLoadingStage("icons"));
+    expect(result.current.ready).toBe(false);
+    expect(result.current.progress).toBe(95);
+    act(() => completeLoadingStage("artwork"));
     expect(result.current.ready).toBe(true);
     expect(result.current.progress).toBe(100);
     act(() => completeLoadingStage("icons"));
