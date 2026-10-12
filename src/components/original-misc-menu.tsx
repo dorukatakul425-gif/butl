@@ -20,9 +20,10 @@ interface OriginalMiscMenuProps {
   open: boolean;
   triggerRef: RefObject<HTMLButtonElement | null>;
   onClose: () => void;
+  onSelect?: (id: (typeof items)[number]["id"]) => void;
 }
 
-export function OriginalMiscMenu({ open, triggerRef, onClose }: OriginalMiscMenuProps) {
+export function OriginalMiscMenu({ open, triggerRef, onClose, onSelect }: OriginalMiscMenuProps) {
   const [mounted, setMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -103,7 +104,7 @@ export function OriginalMiscMenu({ open, triggerRef, onClose }: OriginalMiscMenu
       className={`original-misc-menu original-misc-menu--${open ? "show" : "hide"}`}
     >
       {items.map((item) => (
-        <Button key={item.id} type="button" variant="ghost" className="original-misc-menu-item" onClick={onClose}>
+        <Button key={item.id} type="button" variant="ghost" className="original-misc-menu-item" onClick={() => { onClose(); onSelect?.(item.id); }}>
           <span className="original-misc-menu-icon"><img src={item.icon} alt="" className={`original-misc-menu-image--${item.id}`} /></span>
           {item.title}
         </Button>

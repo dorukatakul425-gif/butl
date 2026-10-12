@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import woodTable from "@/assets/original-wood-table.png.asset.json";
 import { OriginalTableHeader } from "@/components/original-table-header";
 import { OriginalChatPanel } from "@/components/original-chat-panel";
+import { TableSeats } from "@/components/table/table-seats";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,6 +25,7 @@ function Index() {
       <div className="original-game">
         <div className="original-table">
           <img className="original-table-wood" src={woodTable.url} alt="Oyunun sunucusundan alınan orijinal ahşap masa" />
+          <TableSeats />
           <OriginalTableHeader />
         </div>
         <OriginalChatPanel />

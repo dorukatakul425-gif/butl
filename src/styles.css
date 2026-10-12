@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./styles/ciliz-decor.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -380,4 +381,9 @@
   .original-icon-fullscreen .original-button-icon { width: 14px; height: 14px; }
   .original-heart-button { width: 32px; }
   .original-heart-image { width: 32px; height: 28px; }
+}
+
+.original-table-seats {
+  position: absolute;
+  inset: 0;
 }
