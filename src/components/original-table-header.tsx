@@ -15,6 +15,7 @@ import { OriginalMiscMenu } from "@/components/original-misc-menu";
 import { DecorSelection } from "@/components/decor/decor-selection";
 import { BottleSelection } from "@/components/table/bottle-selection";
 import { BankDialog } from "@/components/bank/bank-dialog";
+import { SettingsDialog } from "@/components/settings/settings-dialog";
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
 // All artwork is extracted unchanged from the live game's preloader bundle.
@@ -23,7 +24,7 @@ const middleIcons = [
   { asset: roulette, label: "Rulet", kind: "default" },
   { asset: league, label: "Lig", kind: "default" },
   { asset: menu, label: "Menü", kind: "menu" },
-  { asset: settings, label: "Ayarlar", kind: "default" },
+  { asset: settings, label: "Ayarlar", kind: "settings" },
   { asset: fullscreen, label: "Tam ekran", kind: "fullscreen" },
 ];
 
@@ -45,6 +46,8 @@ export function OriginalTableHeader() {
   const [decorOpen, setDecorOpen] = useState(false);
   const [bottleOpen, setBottleOpen] = useState(false);
   const [bankOpen, setBankOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const closeBank = useCallback(() => setBankOpen(false), []);
   const closeBottle = useCallback(() => setBottleOpen(false), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -71,12 +74,20 @@ export function OriginalTableHeader() {
             <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
             <img src={menu.url} alt="" className="original-button-icon" />
           </Button>
+        ) : icon.kind === "settings" ? (
+          <Button key={icon.label} type="button" variant="ghost" className="original-header-button original-icon-default"
+            aria-label={icon.label} title={icon.label} aria-haspopup="dialog" onClick={() => setSettingsOpen(true)}>
+            <img src={backgroundUp.url} alt="" className="original-button-background original-button-up" />
+            <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
+            <img src={settings.url} alt="" className="original-button-icon" />
+          </Button>
         ) : <OriginalIcon key={icon.label} {...icon} />)}
       </div>
       <OriginalIcon asset={changeTable} label="Masa değiştir" kind="default" />
       <OriginalMiscMenu open={menuOpen} triggerRef={menuTriggerRef} onClose={closeMenu} onSelect={onMenuSelect} />
       <DecorSelection open={decorOpen} onClose={closeDecor} />
       <BottleSelection open={bottleOpen} onClose={closeBottle} />
+      <SettingsDialog open={settingsOpen} onClose={closeSettings} />
       <BankDialog open={bankOpen} onClose={closeBank} isVip />
     </div>
   );
