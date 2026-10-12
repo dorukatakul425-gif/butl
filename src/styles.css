@@ -7,6 +7,7 @@
 @import "./styles/ciliz-bank.css";
 @import "./styles/ciliz-bottle.css";
 @import "./styles/ciliz-settings.css";
+@import "./styles/ciliz-gestures.css";
 
 @custom-variant dark (&:is(.dark *));
 

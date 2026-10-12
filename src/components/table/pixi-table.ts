@@ -8,6 +8,7 @@ import { type SentGift } from "@/lib/gifts";
 import { PHOTO_SIZE as PHOTO, PHOTO_SHADOW_SIZE as SHADOW_SIZE, GIFT_SCALE, OVER_SCALE, FLY_SEC, giftImageFrame, calcGiftPosition } from "@/lib/gift-geometry";
 import { GiftEffects } from "@/components/table/gift-effects";
 import { matchingTableEffects } from "@/lib/table-gift-effects";
+import type { CilizGesture } from "@/lib/gestures";
 import { originalBottle } from "./original-bottle";
 import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
 
@@ -176,6 +177,8 @@ class SeatView {
     this.nameContainer.addChild(this.nameText, this.stoneLeft, this.stoneRight);
     this.view.addChild(this.photo, this.frameContainer, this.nameContainer, this.gifts);
   }
+
+  setGestureShade(shade: number) { this.photo.alpha = 1 - shade; }
 
   async set(player: SeatPlayer, assets: CilizAssets, res: number, tableSize: number) {
     if (this.disposed) return;
@@ -496,6 +499,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   layout();
 
   const preloadJobs = new Map<string, Promise<void>>();
+  const gestureViews = new Map<number, DisplayObject>();
   let bottleVersion = 0;
   const tween = (duration: number, step: (p: number) => void) => new Promise<void>(resolve => run(duration, step, resolve));
   const movePlayers = async (a: number, b: number, center: boolean) => {
@@ -535,6 +539,31 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   };
 
   return {
+    async playGesture(index: number, gesture: CilizGesture) {
+      const seat = seats[index];
+      if (!seat || destroyed) throw new Error("Seat unavailable");
+      const name = Array.isArray(gesture.spine) ? gesture.spine[0] : gesture.spine;
+      if (!name) throw new Error("Gesture skeleton missing");
+      const data = await loadSkeleton(assets, name, tableSize());
+      if (!data || destroyed) throw new Error("Gesture skeleton unavailable");
+      const view = spineFromSkeleton(data, false);
+      await app.renderer.plugins["prepare"].upload(view);
+      if (destroyed) { destroyView(view); return; }
+      const previous = gestureViews.get(index);
+      if (previous) destroyView(previous);
+      view.zIndex = 100; seat.gifts.addChild(view); activate(view); gestureViews.set(index, view);
+      const [enter, full, leave, end] = gesture.shade;
+      const duration = Math.max(end, data.animations[0]?.duration ?? end);
+      run(duration, p => {
+        if (gestureViews.get(index) !== view) return;
+        const time = p * duration;
+        const shade = time < enter ? 0 : time < full ? (time-enter)/Math.max(0.001,full-enter) : time < leave ? 1 : Math.max(0,1-(time-leave)/Math.max(0.001,end-leave));
+        seat.setGestureShade(shade);
+      }, () => {
+        if (gestureViews.get(index) !== view) return;
+        seat.setGestureShade(0); destroyView(view); gestureViews.delete(index);
+      });
+    },
     async setBottle(type: string) {
       const version = ++bottleVersion;
       const view = await originalBottle(assets,type,tableSize(),loadImage,bottleLayer);

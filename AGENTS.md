@@ -18,3 +18,5 @@
 - Keep bottle catalogues and selected state browser-safe, render live Bottle3d maps with the original lighting shader only in the lazy Pixi renderer, and run local bot rounds separately from remote game services so simulated play is not represented as live multiplayer.
 - Gate startup on actual manifest, renderer, bottle, icon and splash-artwork readiness with a browser-safe loading store; retain original inline SVG fallbacks for controls, splash and particles so CDN failures never silently remove original artwork or effects.
 - Settings ports SettingsDialog/SettingsPresenter: CSS and icons are copied unchanged from the bundle into ciliz-settings.css, labels come from live server translations, and sound/music sliders drive the shared sfx and music stores.
+
+- Load gesture ordering, imagery and Spine shade timing from the public asset manifest; require a verified game-session adapter for account-specific availability and real sends, so preview never fabricates VIP access or spends currency.

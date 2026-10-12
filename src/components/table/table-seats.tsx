@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCilizAssets } from "@/components/decor/decor-selection";
 import { SendGiftDialog } from "@/components/gifts/send-gift-dialog";
+import { GestureDialog } from "@/components/gestures/gesture-dialog";
 import { useDecorState } from "@/lib/decor-store";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/lib/gifts";
@@ -29,6 +30,7 @@ export function TableSeats() {
   const tableRef = useRef<PixiTable | null>(null);
   const playersRef = useRef<SeatPlayer[]>([]);
   const [giftSeat, setGiftSeat] = useState<number | null>(null);
+  const [gesturesOpen, setGesturesOpen] = useState(false);
   const [activeTable, setActiveTable] = useState<PixiTable | null>(null);
 
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: 0, vip: true }) : []), [assets]);
@@ -41,7 +43,8 @@ export function TableSeats() {
       const table = await createPixiTable(host, assets, {
         onSeatClick: (index) => {
           unlockSfx();
-          setGiftSeat(index);
+          if (index === VIEWER_SEAT) { setGiftSeat(null); setGesturesOpen(true); }
+          else { setGesturesOpen(false); setGiftSeat(index); }
         },
         playSfx: (id) => void playSfx(assets.sfxUrl, id),
         prepareSfx: (id) => prepareSfx(assets.sfxUrl, id),
@@ -98,6 +101,13 @@ export function TableSeats() {
       <div ref={hostRef} className="original-table-seats" aria-label="Masadaki oyuncular">
         {activeTable && assets && <BottlePlay table={activeTable} assets={assets} />}
       </div>
+      {assets && (
+        <GestureDialog open={gesturesOpen} assets={assets} onClose={() => setGesturesOpen(false)} onPreview={async item => {
+          const table = tableRef.current;
+          if (!table) throw new Error("Table unavailable");
+          await table.playGesture(VIEWER_SEAT, item.gesture);
+        }} />
+      )}
       {assets && (
         <SendGiftDialog
           open={giftSeat !== null}
