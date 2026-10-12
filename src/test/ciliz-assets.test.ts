@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { bundleUrl, dialogImage, type CilizAssets } from "@/lib/ciliz-assets";
 
 const assets: CilizAssets = {
-  frames: {}, stones: {}, decor: [], translation: {},
+  frames: {}, stones: {}, decor: [], translation: {}, gifts: {}, giftStore: [], spines: {}, sfxUrl: "",
   images: { fp_nitrodecor_v2: { size: [0, 0, 42, 42] } },
   bundles: [{ size: 450, url: "https://example.com/table120/${name}" }],
   dialogBundles: [

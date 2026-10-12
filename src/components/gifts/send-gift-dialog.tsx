@@ -1,0 +1,135 @@
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
+import type { GiftStoreItem } from "@/lib/gifts";
+
+// Markup and class names ported from SendGiftDialog.tsx (giftType 'gift', html5 layout) and Dialog.Header.
+const bem = (block: string) => (element?: string, mods: Array<string | false | undefined> = []) => {
+  const base = element ? `${block}__${element}` : block;
+  return [base, ...mods.filter(Boolean).map((mod) => `${base}--${mod}`)].join(" ");
+};
+const cls = bem("send-gift");
+const ITEM_WIDTH = 72;
+
+export interface SendGiftDialogProps {
+  open: boolean;
+  assets: CilizAssets;
+  items: GiftStoreItem[];
+  receiverName: string;
+  onSend: (item: GiftStoreItem) => void;
+  onClose: () => void;
+}
+
+function GiftItem({ assets, item, onSend }: { assets: CilizAssets; item: GiftStoreItem; onSend: (item: GiftStoreItem) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const timer = useRef<number | undefined>(undefined);
+  const img = dialogImage(assets, item.image, 60, 60);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const activate = () => {
+    onSend(item);
+    const el = ref.current;
+    if (!el) return;
+    window.clearTimeout(timer.current);
+    el.classList.add(cls("item", ["active"]).split(" ")[1] ?? "");
+    timer.current = window.setTimeout(() => el.classList.remove("send-gift__item--active"), 500);
+  };
+  return (
+    <div ref={ref} className={cls("item")} title={item.name} onClick={activate} role="button" aria-label={item.name}>
+      <div className={cls("image-block")}>
+        <img className={cls("image")} src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" loading="lazy" decoding="async" />
+      </div>
+      <div className={cls("subitem", [!item.price && "invisible"])}>
+        <div className={cls("icon", ["heart"])} />
+        <div className={cls("price")}>{item.price}</div>
+      </div>
+    </div>
+  );
+}
+
+export function SendGiftDialog({ open, assets, items, receiverName, onSend, onClose }: SendGiftDialogProps) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
+
+  // DrawerTransition: the drawer covers the chat area.
+  useLayoutEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const chat = document.querySelector(".original-chat")?.getBoundingClientRect();
+      const top = chat && chat.height > 120 ? chat.top : Math.round(window.innerHeight * 0.5);
+      const left = chat ? chat.left : 0;
+      const width = chat ? chat.width : window.innerWidth;
+      setBox({ top, left, width });
+    };
+    place();
+    window.addEventListener("resize", place);
+    const id = window.setTimeout(() => setShowProfile(true), 0);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.clearTimeout(id);
+      setShowProfile(false);
+    };
+  }, [open]);
+
+  // alignGiftsImpl(): evenly spaced columns.
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!open || !list) return;
+    const align = () => {
+      const width = list.clientWidth;
+      const cols = Math.max(1, Math.floor(width / ITEM_WIDTH));
+      const spacing = Math.floor((width - cols * ITEM_WIDTH) / (cols + 1));
+      list.style.padding = `${spacing}px 0 ${spacing}px ${spacing}px`;
+      for (const child of Array.from(list.children) as HTMLElement[]) child.style.margin = `0 ${spacing}px ${spacing}px 0`;
+    };
+    align();
+    const ro = new ResizeObserver(align);
+    ro.observe(list);
+    return () => ro.disconnect();
+  }, [open, box, items.length]);
+
+  useEffect(() => {
+    if (!open) return;
+    const key = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", key);
+    return () => document.removeEventListener("keydown", key);
+  }, [open, onClose]);
+
+  if (!open || !box) return null;
+  const title = translate(assets, "dlg:gift:title", "").replace("%", "").trim();
+
+  return createPortal(
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif" }} onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${title} ${receiverName}`}
+        className="popup popup--absolute"
+        style={{ top: box.top, left: box.left, width: box.width, bottom: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="popup__close-drawer-bg" style={{ zIndex: 1 }} onClick={onClose} role="button" aria-label="Kapat">
+          <div className="popup__close popup__close--drawer">
+            <div className="popup__close-icon" />
+          </div>
+        </div>
+        <div className={`popup__header ${cls("x_header")}`}>
+          <div className={`popup__title popup__title--left ${cls("x_popup__title")}`}>
+            <div>
+              <div className={cls("gift-title")}>{title.charAt(0).toLocaleUpperCase("tr") + title.slice(1)}</div>
+              <div className={`${cls("name")} ${showProfile ? "send-gift__show-name" : ""}`}>{receiverName}</div>
+            </div>
+          </div>
+        </div>
+        <div className={`popup__content popup__content--no-padding ${cls("x_popup__content")}`} style={{ flex: 1 }}>
+          <div ref={listRef} className={cls("", ["gift"])}>
+            {items.map((item) => (
+              <GiftItem key={item.type} assets={assets} item={item} onSend={onSend} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}

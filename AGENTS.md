@@ -12,3 +12,4 @@
 - Keep downloaded game media in CDN asset pointers and compose the table in the index route with a dedicated original header component using source-derived order and dimensions, so original artwork stays separate from presentation.
 - Load live decor dialog images from the source's DPR-selected dialog bundles and table animations from its size-selected table bundles; store thumbnails are not available in table bundles.
 - Keep the decor presenter, source-derived dialog, and browser-only Pixi/Spine table renderer separate so server rendering never imports browser graphics code.
+- Gift sending ports GiftAnimations/Gift/SendGiftDialog from the source: gift data, images, spines and sounds load live from the game servers, and gift views are fully loaded before the flight starts so animations never hitch.

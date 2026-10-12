@@ -1,0 +1,470 @@
+/* Ported from preloader.css: SendGiftDialog + drawer close button. */
+.send-gift__icon--heart {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2022.0.1%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2072%2056%22%20style%3D%22enable-background%3Anew%200%200%2072%2056%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3Aurl(%23SVGID_1_)%3B%7D%0A%3C%2Fstyle%3E%0A%3ClinearGradient%20id%3D%22SVGID_1_%22%20gradientUnits%3D%22userSpaceOnUse%22%20x1%3D%2236%22%20y1%3D%221.6667%22%20x2%3D%2236%22%20y2%3D%2246.3676%22%3E%0A%09%3Cstop%20%20offset%3D%220%22%20style%3D%22stop-color%3A%23F6711C%22%2F%3E%0A%09%3Cstop%20%20offset%3D%221%22%20style%3D%22stop-color%3A%23DC3600%22%2F%3E%0A%3C%2FlinearGradient%3E%0A%3Cpath%20class%3D%22st0%22%20d%3D%22M51.2%2C1.1c-7.9%2C0-13%2C4.6-14.6%2C6.4c-0.3%2C0.3-0.8%2C0.3-1.2%2C0c-1.6-1.8-6.7-6.4-14.6-6.4c-9.7%2C0-19.7%2C8.1-19.7%2C19.3%0A%09s8%2C16.5%2C15.9%2C22c6.4%2C4.5%2C13.4%2C9.3%2C16.8%2C11.7c1.3%2C0.9%2C3.1%2C0.9%2C4.4%2C0C41.6%2C51.8%2C48.6%2C47%2C55%2C42.5c7.8-5.5%2C15.9-10.9%2C15.9-22%0A%09S60.9%2C1.1%2C51.2%2C1.1z%22%2F%3E%0A%3C%2Fsvg%3E%0A");
+}
+.send-gift__tokens-plus-icon {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20width%3D%228px%22%20height%3D%228px%22%20viewBox%3D%220%200%208%208%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%0A%20%20%20%20%3Ctitle%3Eicn_plus%3C%2Ftitle%3E%0A%20%20%20%20%3Cdefs%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M0%2C0%20L8%2C0%20L8%2C8%20L0%2C8%20L0%2C0%20Z%22%20id%3D%22path-1%22%3E%3C%2Fpath%3E%0A%20%20%20%20%3C%2Fdefs%3E%0A%20%20%20%20%3Cg%20id%3D%22Mockup%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cg%20id%3D%22icn_plus%22%20xlink%3Ahref%3D%22%23path-1%22%20fill%3D%22%23FFFFFF%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpolygon%20id%3D%22Path%22%20points%3D%225%200%205%203%208%203%208%205%205%205%205%208%203%208%203%205%200%205%200%203%203%203%203%200%22%3E%3C%2Fpolygon%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E");
+}
+.send-gift__icon--lock {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20viewBox%3D%220%200%20178.58%20209.84%22%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill%3Anone%3Bstroke%3A%239a9d99%3Bstroke-miterlimit%3A10%3Bstroke-width%3A20px%7D.cls-2%7Bfill%3Aurl(%23g90)%7D.cls-3%7Bfill%3A%23464844%7D%3C%2Fstyle%3E%3ClinearGradient%20id%3D%22g90%22%20x1%3D%2289.29%22%20y1%3D%2270.94%22%20x2%3D%2289.29%22%20y2%3D%22210.44%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%22.03%22%20stop-color%3D%22%23c2c2c2%22%2F%3E%3Cstop%20offset%3D%22.73%22%20stop-color%3D%22%239c9f9b%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Ctitle%3Eui_store_lock%3C%2Ftitle%3E%3Cg%20id%3D%22%D0%A1%D0%BB%D0%BE%D0%B9_2%22%20data-name%3D%22%D0%A1%D0%BB%D0%BE%D0%B9%202%22%3E%3Cg%20id%3D%221-2%22%20data-name%3D%22%D0%A1%D0%BB%D0%BE%D0%B9%201%22%3E%3Cpath%20class%3D%22cls-1%22%20d%3D%22M89.29%2C10h0A49.61%2C49.61%2C0%2C0%2C0%2C39.69%2C59.61V89.22a.15.15%2C0%2C0%2C0%2C.15.15h98.91a.15.15%2C0%2C0%2C0%2C.15-.15v-31C138.9%2C30.79%2C116.69%2C10%2C89.29%2C10Z%22%2F%3E%3Cpath%20class%3D%22cls-2%22%20d%3D%22M25.51%2C70.94H153.07a25.51%2C25.51%2C0%2C0%2C1%2C25.51%2C25.51v24.09a89.29%2C89.29%2C0%2C0%2C1-89.29%2C89.29h0A89.29%2C89.29%2C0%2C0%2C1%2C0%2C120.55V96.46A25.51%2C25.51%2C0%2C0%2C1%2C25.51%2C70.94Z%22%2F%3E%3Ccircle%20class%3D%22cls-3%22%20cx%3D%2289.29%22%20cy%3D%22120.55%22%20r%3D%2219.84%22%2F%3E%3Ccircle%20class%3D%22cls-3%22%20cx%3D%2289.29%22%20cy%3D%22163.07%22%20r%3D%229.92%22%2F%3E%3Crect%20class%3D%22cls-3%22%20x%3D%2279.37%22%20y%3D%22123.39%22%20width%3D%2219.84%22%20height%3D%2239.69%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+.send-gift__icon--viplock {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2022.0.0%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%20150%2072%22%20style%3D%22enable-background%3Anew%200%200%20150%2072%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3A%23A8CF37%3B%7D%0A%09.st1%7Bfill%3Aurl(%23SVGID_1_)%3B%7D%0A%09.st2%7Bfill%3A%23FFFFFF%3B%7D%0A%09.st3%7Bopacity%3A0.15%3B%7D%0A%09.st4%7Bfill%3A%239A9D99%3B%7D%0A%09.st5%7Bfill%3Aurl(%23SVGID_2_)%3B%7D%0A%09.st6%7Bfill%3A%23464844%3B%7D%0A%3C%2Fstyle%3E%0A%3Cg%3E%0A%09%3Cg%3E%0A%09%09%3Cpath%20class%3D%22st0%22%20d%3D%22M119.3%2C25H2.7c-1.4%2C0-2.4%2C1.4-1.9%2C2.8l7.8%2C19.5c0.2%2C0.5%2C0.2%2C1%2C0%2C1.5L0.9%2C68.2C0.4%2C69.6%2C1.3%2C71%2C2.7%2C71h116.5%0A%09%09%09V25z%22%2F%3E%0A%09%09%3ClinearGradient%20id%3D%22SVGID_1_%22%20gradientUnits%3D%22userSpaceOnUse%22%20x1%3D%22-9.8879%22%20y1%3D%2248%22%20x2%3D%2288.7639%22%20y2%3D%2248%22%3E%0A%09%09%09%3Cstop%20%20offset%3D%220.2525%22%20style%3D%22stop-color%3A%2373AE23%3Bstop-opacity%3A0%22%2F%3E%0A%09%09%09%3Cstop%20%20offset%3D%220.6055%22%20style%3D%22stop-color%3A%2373AE23%22%2F%3E%0A%09%09%09%3Cstop%20%20offset%3D%220.9754%22%20style%3D%22stop-color%3A%2373AE23%3Bstop-opacity%3A0.4%22%2F%3E%0A%09%09%3C%2FlinearGradient%3E%0A%09%09%3Cpath%20class%3D%22st1%22%20d%3D%22M119.3%2C25H2.7c-1.4%2C0-2.4%2C1.4-1.9%2C2.8l7.8%2C19.5c0.2%2C0.5%2C0.2%2C1%2C0%2C1.5L0.9%2C68.2C0.4%2C69.6%2C1.3%2C71%2C2.7%2C71h116.5%0A%09%09%09V25z%22%2F%3E%0A%09%09%3Cg%3E%0A%09%09%09%3Cpath%20class%3D%22st2%22%20d%3D%22M28.1%2C62l-9.3-28H25l6.2%2C20.7L37.4%2C34h6.2l-9.3%2C28H28.1z%22%2F%3E%0A%09%09%09%3Cpath%20class%3D%22st2%22%20d%3D%22M47%2C62V34h6v28H47z%22%2F%3E%0A%09%09%09%3Cpath%20class%3D%22st2%22%20d%3D%22M77.6%2C37.1c-1.1-1.4-2.4-2.3-4.1-2.7c-1.1-0.3-3.3-0.3-6.8-0.3L63%2C34v0h-6v28h6V51.6l4%2C0%0A%09%09%09%09c2.6%2C0%2C4.5-0.2%2C5.9-0.5c1-0.2%2C2-0.7%2C3-1.4c1-0.7%2C1.8-1.7%2C2.4-2.9c0.6-1.2%2C0.9-2.6%2C0.9-4.4C79.2%2C40.3%2C78.7%2C38.5%2C77.6%2C37.1z%0A%09%09%09%09%20M72.7%2C44.8c-0.4%2C0.6-1%2C1-1.8%2C1.3c-0.8%2C0.3-2.3%2C0.3-4.5%2C0.3l-3.4%2C0v-7.3l3.1%2C0c2.1%2C0%2C3.2%2C0%2C3.9%2C0c1%2C0%2C1.9%2C0.4%2C2.5%2C1%0A%09%09%09%09c0.6%2C0.7%2C0.9%2C1.4%2C0.9%2C2.4C73.4%2C43.5%2C73.2%2C44.2%2C72.7%2C44.8z%22%2F%3E%0A%09%09%3C%2Fg%3E%0A%09%3C%2Fg%3E%0A%09%3Cpath%20class%3D%22st3%22%20d%3D%22M119.3%2C25H89.5c-2.1%2C2-3.5%2C4.8-3.5%2C8v8c0%2C13.3%2C7.9%2C24.8%2C19.3%2C30h14V25z%22%2F%3E%0A%09%3Cg%3E%0A%09%09%3Cg%3E%0A%09%09%09%3Cpath%20class%3D%22st4%22%20d%3D%22M139%2C40.5H99v-19c0-11%2C9-20%2C20-20s20%2C9%2C20%2C20V40.5z%20M106%2C33.5h26v-12c0-7.2-5.8-13-13-13s-13%2C5.8-13%2C13V33.5%0A%09%09%09%09z%22%2F%3E%0A%09%09%3C%2Fg%3E%0A%09%09%3ClinearGradient%20id%3D%22SVGID_2_%22%20gradientUnits%3D%22userSpaceOnUse%22%20x1%3D%22119%22%20y1%3D%2225.5%22%20x2%3D%22119%22%20y2%3D%2270.6744%22%3E%0A%09%09%09%3Cstop%20%20offset%3D%220%22%20style%3D%22stop-color%3A%23C2C2C2%22%2F%3E%0A%09%09%09%3Cstop%20%20offset%3D%221%22%20style%3D%22stop-color%3A%239C9F9B%22%2F%3E%0A%09%09%3C%2FlinearGradient%3E%0A%09%09%3Cpath%20class%3D%22st5%22%20d%3D%22M119%2C71L119%2C71c-16.6%2C0-30-13.4-30-30v-8c0-4.4%2C3.6-8%2C8-8h44c4.4%2C0%2C8%2C3.6%2C8%2C8v8C149%2C57.6%2C135.6%2C71%2C119%2C71z%22%2F%3E%0A%09%09%3Cg%3E%0A%09%09%09%3Ccircle%20class%3D%22st6%22%20cx%3D%22119%22%20cy%3D%2241%22%20r%3D%227%22%2F%3E%0A%09%09%09%3Ccircle%20class%3D%22st6%22%20cx%3D%22119%22%20cy%3D%2256%22%20r%3D%223%22%2F%3E%0A%09%09%09%3Crect%20x%3D%22116%22%20y%3D%2246.2%22%20class%3D%22st6%22%20width%3D%226%22%20height%3D%229.8%22%2F%3E%0A%09%09%3C%2Fg%3E%0A%09%3C%2Fg%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.send-gift__icon--token,
+.send-gift__tokens {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2219%22%20height%3D%2219%22%20viewBox%3D%220%200%2019%2019%22%3E%0A%20%20%20%20%3Cdefs%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%223hb8unvv1b%22%20cx%3D%2244.229%25%22%20cy%3D%2278.319%25%22%20r%3D%2298.398%25%22%20fx%3D%2244.229%25%22%20fy%3D%2278.319%25%22%20gradientTransform%3D%22matrix(.75%200%200%201%20.11%200)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23F2821E%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%2286.067%25%22%20stop-color%3D%22%23E9671B%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%2221840ct5uc%22%20cx%3D%2255.754%25%22%20cy%3D%2278.319%25%22%20r%3D%2298.398%25%22%20fx%3D%2255.754%25%22%20fy%3D%2278.319%25%22%20gradientTransform%3D%22matrix(-.75%200%200%20-1%20.976%201.566)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23F2821E%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%2286.067%25%22%20stop-color%3D%22%23E9671B%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%2218tyr8ge5d%22%20cx%3D%2251.188%25%22%20cy%3D%22136.437%25%22%20r%3D%22180.498%25%22%20fx%3D%2251.188%25%22%20fy%3D%22136.437%25%22%20gradientTransform%3D%22matrix(.46154%200%200%201%20.276%200)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23F2821E%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%2286.067%25%22%20stop-color%3D%22%23E9671B%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3ClinearGradient%20id%3D%22sckj6feo6a%22%20x1%3D%2250%25%22%20x2%3D%2250%25%22%20y1%3D%225.714%25%22%20y2%3D%2299.222%25%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FFD22A%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FF9A23%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3C%2Fdefs%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cg%20fill-rule%3D%22nonzero%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cg%20transform%3D%22translate(-21%20-373)%20translate(21%20373)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%229.5%22%20cy%3D%229.5%22%20r%3D%229.5%22%20fill%3D%22url(%23sckj6feo6a)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%233hb8unvv1b)%22%20d%3D%22M6.092%204.892c.598%200%201.105.304%201.423.785.217.327.427.264.468-.155v-.008C8.126%204.029%207.334%203%206.238%203%205.14%203%204.153%204.03%204.012%205.514l-.009.104c-.03.448.162.51.445.146.414-.53%201.01-.872%201.644-.872z%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%2321840ct5uc)%22%20d%3D%22M12.908%204.892c-.598%200-1.105.304-1.423.785-.217.327-.427.264-.468-.155v-.008C10.874%204.029%2011.666%203%2012.762%203c1.097%200%202.084%201.03%202.225%202.514l.009.104c.03.448-.162.51-.445.146-.414-.53-1.01-.872-1.644-.872z%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%2318tyr8ge5d)%22%20d%3D%22M9.5%2011.15c-1.988%200-3.821-.397-5.294-1.065-.535-.243-1.197.064-1.205.563l-.001.07C3%2013.635%205.91%2016%209.5%2016s6.5-2.365%206.5-5.282v-.07c-.009-.499-.67-.806-1.206-.563-1.473.668-3.306%201.064-5.294%201.064z%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.send-gift__arrow-small {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%2220%22%20height%3D%2226%22%20viewBox%3D%220%200%2020%2026%22%3E%0A%20%20%20%20%3Cdefs%3E%0A%20%20%20%20%20%20%20%20%3Cfilter%20id%3D%22prefix__a%22%20width%3D%22137.5%25%22%20height%3D%22127.3%25%22%20x%3D%22-18.8%25%22%20y%3D%22-13.6%25%22%20filterUnits%3D%22objectBoundingBox%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3CfeOffset%20in%3D%22SourceAlpha%22%20result%3D%22shadowOffsetOuter1%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3CfeGaussianBlur%20in%3D%22shadowOffsetOuter1%22%20result%3D%22shadowBlurOuter1%22%20stdDeviation%3D%221%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3CfeColorMatrix%20in%3D%22shadowBlurOuter1%22%20values%3D%220%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200.65%200%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2Ffilter%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20id%3D%22prefix__b%22%20d%3D%22M34.541%2031.417c-.133%200-.266%200-.4.147-.133-.147-.133%200-.266.146h-.134v.147c-.133.733-.4%201.32-1.066%201.613-1.067.734-2%201.76-2.267%203.08-.133.88-.667%201.76-1.333%202.347-.934%201.027-1.467%201.613-1.334%201.907v.146c-.133%200-.266.147-.533.587v.587c0%20.146.133.293.267.44.133.146.4.146.533.146s.4-.146.533-.293c.4-.587.667-1.173.667-1.76.133%200%20.4-.147.8-.587.8-.88%201.467-1.906%201.733-3.08.267-1.026.8-1.76%201.6-2.2.4-.146.8-.586%201.067-.88%200%20.147%200%20.294-.133.587-.267%201.173-.267%202.2.133%203.373.267%201.027.267%202.054.133%203.227-.133%201.027%200%201.907.4%202.933.267.734.4%201.614.267%202.494%200%201.026-.133%202.053-.267%203.08-.133%201.026-.133%202.2%200%203.226%200%20.147.134.294.267.44.133.147.267.147.533.147.134%200%20.267-.147.4-.293.134-.147.134-.294.134-.587-.134-.88-.134-1.76%200-2.64%200-1.173.133-2.2.266-3.227.134-1.026%200-2.2-.4-3.226-.266-.587-.4-1.32-.133-2.054.133-1.32.133-2.493-.133-3.813-.4-.88-.4-1.76-.267-2.64.133-.147.133-.44.133-.733.134.293.4.586.534.88.666%201.026%201.466%201.906%202.4%202.346.533.44%201.2%201.027%201.6%201.614.533.733%201.2%201.32%201.866%201.906.134.147.267.147.534.147.266%200%20.4-.147.533-.293v-.587c0-.147-.133-.293-.267-.44-.666-.587-1.2-1.027-1.733-1.76-.533-.733-1.2-1.467-2.133-1.907-.667-.44-1.334-1.173-1.867-1.906-.533-.88-1.2-1.614-1.867-2.054h-.266c.133-.146.133-.293%200-.44-.134%200-.134-.146-.267-.293h-.267z%22%2F%3E%0A%20%20%20%20%3C%2Fdefs%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20transform%3D%22rotate(179%2022.839%2027.308)%22%3E%0A%20%20%20%20%20%20%20%20%3Cuse%20fill%3D%22%23000%22%20filter%3D%22url(%23prefix__a)%22%20xlink%3Ahref%3D%22%23prefix__b%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cuse%20fill%3D%22%23FFF%22%20xlink%3Ahref%3D%22%23prefix__b%22%2F%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.popup--absolute {
+  position: absolute;
+}
+.popup__close-drawer-bg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  border-radius: 23px;
+  width: 46px;
+  height: 46px;
+  bottom: 8px;
+  right: 8px;
+}
+.popup__close--drawer {
+  background-color: #91ce35;
+}
+.popup__close--drawer .popup__close-icon {
+  -webkit-filter: brightness(0) invert(1);
+          filter: brightness(0) invert(1);
+}
+.popup__close-drawer-bg .popup__close {
+  position: static;
+}
+.send-gift__tutorial {
+  position: absolute;
+}
+.portrait .send-gift__tutorial {
+  left: 16px;
+  top: -70px;
+}
+.landscape .send-gift__tutorial {
+  left: -100px;
+  top: 66px;
+}
+.send-gift__arrow-small {
+  background-size: 20px 26px;
+  height: 26px;
+  width: 20px;
+  position: absolute;
+}
+.portrait .send-gift__arrow-small {
+  left: 50%;
+  bottom: -36px;
+  -webkit-animation: drag_arrow_portrait 0.25s infinite;
+          animation: drag_arrow_portrait 0.25s infinite;
+}
+.landscape .send-gift__arrow-small {
+  right: -36px;
+  top: -50%;
+  -webkit-animation: drag_arrow_landscape 0.25s infinite;
+          animation: drag_arrow_landscape 0.25s infinite;
+}
+.send-gift__tutorial-hint {
+  font-size: 14px;
+  line-height: 0.79;
+  text-align: center;
+  color: #ffffff;
+  white-space: pre-wrap;
+}
+.portrait .send-gift__tutorial-hint {
+  -webkit-animation: drag_hint_portrait 0.25s infinite;
+          animation: drag_hint_portrait 0.25s infinite;
+}
+.landscape .send-gift__tutorial-hint {
+  -webkit-animation: drag_hint_landscape 0.25s infinite;
+          animation: drag_hint_landscape 0.25s infinite;
+}
+.send-gift__x_header {
+  background-color: #ffffff;
+}
+.send-gift__x_popup__title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  white-space: normal;
+  font-weight: normal;
+}
+.send-gift__x_popup__content {
+  background-color: #ffffff;
+}
+.send-gift--bottle .send-gift__item {
+  justify-content: unset;
+}
+.portrait .send-gift--bottle .send-gift__item {
+  width: 90px;
+}
+.landscape .send-gift--bottle .send-gift__item {
+  width: 77px;
+}
+.send-gift--bottle .send-gift__image {
+  -webkit-transform: rotate(45deg);
+          transform: rotate(45deg);
+}
+.send-gift--bottle .send-gift__image-block,
+.send-gift--gesture .send-gift__image-block {
+  height: 70px;
+}
+.send-gift--bottle .send-gift__subitem {
+  margin-bottom: 0;
+}
+.send-gift--bottle .send-gift__icon--lock {
+  margin-bottom: 0;
+}
+.send-gift--bottle .send-gift__icon--viplock {
+  margin-bottom: 0;
+}
+.send-gift__btn {
+  background-position: center;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  transition: -webkit-filter 500ms linear;
+  transition: filter 500ms linear;
+  transition: filter 500ms linear, -webkit-filter 500ms linear;
+}
+.send-gift__btn:active {
+  -webkit-filter: brightness(70%);
+          filter: brightness(70%);
+}
+.send-gift__btn--profile {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 5px;
+  flex-shrink: 0;
+  opacity: 0;
+  -webkit-transform: scale(0);
+          transform: scale(0);
+}
+.send-gift__btn--add {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.send-gift__btn--cancel {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.send-gift__btn--men {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.send-gift__btn--women {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.send-gift__multigift-btn-list {
+  display: flex;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.send-gift__multigift-gender-list {
+  display: flex;
+  justify-content: space-between;
+  flex-shrink: 0;
+  width: 104px;
+}
+.send-gift__multi-title {
+  max-width: 90px;
+  white-space: pre-line;
+}
+.send-gift__item {
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  float: left;
+  width: 72px;
+  height: 95px;
+  pointer-events: auto;
+  position: relative;
+  transition: background-color 500ms linear;
+  text-align: center;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+.send-gift__item--active,
+.send-gift__item:active {
+  background-color: #d1d1d1;
+}
+.send-gift--gesture .send-gift__item {
+  justify-content: space-between;
+}
+.send-gift__subitem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.awv .send-gift__subitem {
+  margin-bottom: 9px;
+}
+.send-gift__subitem--invisible {
+  visibility: hidden;
+}
+.send-gift__icon {
+  flex-shrink: 0;
+}
+.send-gift__icon--heart {
+  background-size: 16px 13px;
+  height: 13px;
+  width: 16px;
+}
+.awv .send-gift__icon--heart {
+  background-size: 15px 12px;
+  height: 12px;
+  width: 15px;
+}
+.send-gift__icon--lock {
+  background-size: 15px 18px;
+  height: 18px;
+  width: 15px;
+  margin-bottom: 10px;
+}
+.send-gift__icon--viplock {
+  background-size: 39px 18px;
+  height: 18px;
+  width: 39px;
+  margin-bottom: 10px;
+}
+.send-gift__icon--token {
+  background-size: 14px 14px;
+  height: 14px;
+  width: 14px;
+}
+.send-gift__image--locked {
+  -webkit-filter: grayscale(1);
+  filter: grayscale(1);
+}
+.send-gift__image-block {
+  position: relative;
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+.send-gift__price {
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 3px;
+}
+.awv .send-gift__price {
+  font-size: 12px;
+}
+.send-gift__counter {
+  position: absolute;
+  border-radius: 8px;
+  background-color: #9bcc34;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  padding: 0 5px;
+  top: 0;
+  left: 100%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+}
+.send-gift__gift-title {
+  font-size: 13px;
+}
+.send-gift__name {
+  font-weight: bold;
+  line-height: 16px;
+  opacity: 0;
+  -webkit-transform: translateX(50px);
+          transform: translateX(50px);
+}
+.send-gift__show-profile {
+  -webkit-animation: show-profile 0.14s linear;
+          animation: show-profile 0.14s linear;
+  opacity: 1;
+  -webkit-transform: scale(1);
+          transform: scale(1);
+}
+@-webkit-keyframes show-profile {
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(0);
+            transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+@keyframes show-profile {
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(0);
+            transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+.send-gift__show-name {
+  -webkit-animation: show-name 0.14s linear;
+          animation: show-name 0.14s linear;
+  opacity: 1;
+  -webkit-transform: translateX(0px);
+          transform: translateX(0px);
+}
+@-webkit-keyframes show-name {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateX(50px);
+            transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateX(0px);
+            transform: translateX(0px);
+  }
+}
+@keyframes show-name {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateX(50px);
+            transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translateX(0px);
+            transform: translateX(0px);
+  }
+}
+.send-gift__tokens {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 24px;
+  background-size: 18px 18px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-position: 3px;
+  color: black;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 0 10px 0 23px;
+  border-radius: 13px;
+  border: solid 1px #9dc93b;
+  cursor: pointer;
+  transition: background-color 500ms linear;
+}
+.send-gift__tokens:active {
+  background-color: #d1d1d1;
+}
+.send-gift__tokens-plus {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background-color: #9dc93b;
+  border-radius: 50%;
+  outline: solid 1px #ffffff;
+  right: -6px;
+}
+.send-gift__tokens-plus-icon {
+  background-size: 8px 8px;
+  height: 8px;
+  width: 8px;
+}
+@media screen and (min-width: 500px) {
+.portrait .send-gift--multi .portrait .send-gift__btn {
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
+  }
+.portrait .send-gift--multi .portrait .send-gift__btn:last-child {
+    margin-right: 0;
+  }
+.portrait .send-gift--multi .portrait .send-gift__btn--profile {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 5px;
+  }
+.portrait .send-gift--multi .portrait .send-gift__btn--add {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+.portrait .send-gift--multi .portrait .send-gift__btn--cancel {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+.portrait .send-gift--multi .portrait .send-gift__btn--men {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+.portrait .send-gift--multi .portrait .send-gift__btn--women {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+.portrait .send-gift--multi .portrait .send-gift__multigift-gender-list {
+    width: 170px;
+  }
+}
+@media screen and (min-height: 414px) {
+.landscape .send-gift--multi .landscape .send-gift__btn {
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
+  }
+.landscape .send-gift--multi .landscape .send-gift__btn:last-child {
+    margin-right: 0;
+  }
+.landscape .send-gift--multi .landscape .send-gift__btn--profile {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 5px;
+  }
+.landscape .send-gift--multi .landscape .send-gift__btn--add {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+.landscape .send-gift--multi .landscape .send-gift__btn--cancel {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+.landscape .send-gift--multi .landscape .send-gift__btn--men {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+.landscape .send-gift--multi .landscape .send-gift__btn--women {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+.landscape .send-gift--multi .landscape .send-gift__multigift-gender-list {
+    width: 170px;
+  }
+}

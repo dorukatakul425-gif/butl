@@ -36,7 +36,33 @@ interface DialogBundle {
   dpr: number;
   url: string;
 }
+export type GiftStickPoint = "ava" | "hat" | "drink";
+export interface CilizGift {
+  category: string;
+  chatIcon: string;
+  finishSounds: string[];
+  flyImages: string[];
+  spine?: string[];
+  spine_v2?: string[];
+  startSounds: string[];
+  stickImages: string[];
+  stickPoint: GiftStickPoint;
+  storeImage: string;
+  storePrice: number;
+  type: string;
+  vfx?: string;
+  kiss?: number;
+}
+export interface CilizGiftStoreEntry {
+  id: string;
+  social?: string[];
+  birthday?: boolean;
+}
 export interface CilizAssets {
+  gifts: Record<string, CilizGift>;
+  giftStore: CilizGiftStoreEntry[];
+  spines: Record<string, { finishSec?: number }>;
+  sfxUrl: string;
   frames: Record<string, CilizFrame>;
   stones: Record<string, CilizStone>;
   decor: CilizDecor[];
@@ -54,6 +80,10 @@ export function loadCilizAssets(): Promise<CilizAssets> {
       const server = await (await fetch(SERVER_JSON_URL)).json();
       const json = await (await fetch(server.assets.url)).json();
       return {
+        gifts: json.gifts,
+        giftStore: json.gifts.__store,
+        spines: json.spines,
+        sfxUrl: server.assets.sfx_url_v2,
         frames: json.frames,
         stones: json.stones,
         decor: json.decor.__store,

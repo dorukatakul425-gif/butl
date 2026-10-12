@@ -2,6 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 @import "./styles/ciliz-decor.css";
+@import "./styles/ciliz-gift.css";
 
 @custom-variant dark (&:is(.dark *));
 
