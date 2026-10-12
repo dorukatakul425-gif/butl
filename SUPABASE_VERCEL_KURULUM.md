@@ -61,9 +61,8 @@ Supabase → **Database → Publications → supabase_realtime**: oyun tablolar�
 | `SUPABASE_URL` | Project URL | Sunucu |
 | `SUPABASE_PUBLISHABLE_KEY` | anon/publishable key | Sunucu |
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role key | Sunucu (hediye/bakiye/kullanıcı adı girişi) |
-| `NITRO_PRESET` | `vercel` | Derleme hedefi |
 
-> `NITRO_PRESET=vercel` önemli: proje varsayılan olarak Cloudflare için derleniyor; bu değişken Vercel çıktısı üretir. Hâlâ hata alırsan `vite.config.ts` içine `nitro: { preset: "vercel" }` ekle.
+> Vercel derlemesi otomatik algılanır (`vite.config.ts`); `NITRO_PRESET` girmene gerek yok. Girdiysen sil.
 
 4. **Deploy**.
 
@@ -86,7 +85,7 @@ npm run dev
 - **"Invalid API key" / "Expected 3 parts in JWT"**: anahtar yanlış kopyalanmış veya sunucu/tarayıcı değişkenleri karışmış.
 - **Hediye/bakiye çalışmıyor**: `SUPABASE_SERVICE_ROLE_KEY` eksik.
 - **Kayıtta "email not confirmed"**: 4. adımda Confirm email kapatılmamış.
-- **Vercel'de 404 / boş sayfa**: `NITRO_PRESET=vercel` eklenmemiş.
+- **"Nitro entry is missing! Is \"vercel\n\" preset correct?"**: `NITRO_PRESET` değerinde fazladan satır sonu var; Vercel'den bu değişkeni sil (artık gerekmiyor).
 - **Fonksiyon bulunamadı (rpc)**: migration'lardan biri çalışmamış; 2. adımı sırayla tekrar kontrol et.
 
 ## Not
