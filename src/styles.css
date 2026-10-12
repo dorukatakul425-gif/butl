@@ -62,6 +62,12 @@
 }
 
 :root {
+  --game-menu-surface: #ffffff;
+  --game-menu-text: #000000;
+  --game-menu-hover: rgba(0, 0, 0, 0.04);
+  --game-menu-pressed: rgba(0, 0, 0, 0.07);
+  --game-menu-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.4);
+
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
@@ -309,6 +315,60 @@
 .original-icon-fullscreen .original-button-icon { width: 23px; height: 23px; }
 .original-heart-button { width: 57px; }
 .original-heart-image { position: absolute; width: 57px; height: 50px; }
+
+/* MiscMenuDialog: original intrinsic width, 40px rows and opacity-only animation. */
+.original-misc-menu {
+  position: fixed;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  max-width: 100vw;
+  border-radius: 8px;
+  box-shadow: var(--game-menu-shadow);
+  background: var(--game-menu-surface);
+  color: var(--game-menu-text);
+  font-family: Arial, Helvetica, sans-serif;
+  opacity: 1;
+  will-change: opacity;
+  overflow: hidden;
+}
+.original-misc-menu--show { animation: original-menu-show 0.2s ease-out; }
+.original-misc-menu--hide { animation: original-menu-hide 0.1s ease-in forwards; pointer-events: none; }
+@keyframes original-menu-show { from { opacity: 0; } }
+@keyframes original-menu-hide { to { opacity: 0; } }
+.original-misc-menu-item {
+  flex: 0 0 40px;
+  height: 40px;
+  width: 100%;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 0 40px 0 0;
+  border: 0;
+  border-radius: 0;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: normal;
+  white-space: nowrap;
+  color: var(--game-menu-text);
+  background: transparent;
+  transition: background-color 0.4s ease-in-out;
+}
+.original-misc-menu-item:hover { background: var(--game-menu-hover); color: var(--game-menu-text); }
+.original-misc-menu-item:active { background: var(--game-menu-pressed); }
+.original-misc-menu-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; }
+.original-misc-menu-image--achievements { width: 21px; height: 21px; }
+.original-misc-menu-image--tops { width: 24px; height: 15px; }
+.original-misc-menu-image--bottle { width: 23px; height: 23px; }
+.original-misc-menu-image--decor { width: 20px; height: 20px; }
+.original-misc-menu-image--boosters { width: 24px; height: 24px; }
+@media (prefers-reduced-motion: reduce) {
+  .original-misc-menu--show, .original-misc-menu--hide { animation-duration: 0.001s; }
+  .original-misc-menu-item { transition: none; }
+}
+
 
 @media (max-width: 500px), (max-height: 500px) {
   .original-table-header { height: 48px; padding: 8px 10px 10px; }

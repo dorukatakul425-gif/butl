@@ -1,3 +1,4 @@
+import { useCallback, useRef, useState } from "react";
 import backgroundUp from "@/assets/ui_btn_bg_up.svg.asset.json";
 import backgroundDown from "@/assets/ui_btn_bg_down.svg.asset.json";
 import heartUp from "@/assets/ui_btn_gold_add_heart_up.svg.asset.json";
@@ -10,6 +11,7 @@ import settings from "@/assets/ui_btn_settings.svg.asset.json";
 import fullscreen from "@/assets/ui_btn_fullscreen_on.svg.asset.json";
 import changeTable from "@/assets/ui_btn_change_table.svg.asset.json";
 import { Button } from "@/components/ui/button";
+import { OriginalMiscMenu } from "@/components/original-misc-menu";
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
 // All artwork is extracted unchanged from the live game's preloader bundle.
@@ -35,6 +37,9 @@ function OriginalIcon({ asset, label, kind }: (typeof middleIcons)[number]) {
 }
 
 export function OriginalTableHeader() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
   return (
     <div className="original-table-header" aria-label="Orijinal üst masa ikonları">
       <Button asChild variant="ghost" className="original-header-button original-heart-button">
@@ -44,9 +49,19 @@ export function OriginalTableHeader() {
         </a>
       </Button>
       <div className="original-header-middle">
-        {middleIcons.map((icon) => <OriginalIcon key={icon.label} {...icon} />)}
+        {middleIcons.map((icon) => icon.kind === "menu" ? (
+          <Button key={icon.label} ref={menuTriggerRef} type="button" variant="ghost"
+            className="original-header-button original-icon-menu" aria-label="Menü" title="Menü"
+            aria-expanded={menuOpen} aria-controls="original-misc-menu" aria-haspopup="dialog"
+            onClick={() => setMenuOpen((value) => !value)}>
+            <img src={backgroundUp.url} alt="" className="original-button-background original-button-up" />
+            <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
+            <img src={menu.url} alt="" className="original-button-icon" />
+          </Button>
+        ) : <OriginalIcon key={icon.label} {...icon} />)}
       </div>
       <OriginalIcon asset={changeTable} label="Masa değiştir" kind="default" />
+      <OriginalMiscMenu open={menuOpen} triggerRef={menuTriggerRef} onClose={closeMenu} />
     </div>
   );
 }
