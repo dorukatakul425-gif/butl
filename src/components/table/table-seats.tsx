@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useCilizAssets } from "@/components/decor/decor-selection";
+import { DecorSelection, useCilizAssets } from "@/components/decor/decor-selection";
+import { ProfileDialog } from "@/components/profile/profile-dialog";
 import { SendGiftDialog } from "@/components/gifts/send-gift-dialog";
 import { GestureDialog } from "@/components/gestures/gesture-dialog";
 import { useDecorState } from "@/lib/decor-store";
@@ -31,6 +32,8 @@ export function TableSeats() {
   const playersRef = useRef<SeatPlayer[]>([]);
   const [giftSeat, setGiftSeat] = useState<number | null>(null);
   const [gesturesOpen, setGesturesOpen] = useState(false);
+  const [profileSeat, setProfileSeat] = useState<number | null>(null);
+  const [decorOpen, setDecorOpen] = useState(false);
   const [activeTable, setActiveTable] = useState<PixiTable | null>(null);
 
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: 0, vip: true }) : []), [assets]);
@@ -102,7 +105,7 @@ export function TableSeats() {
         {activeTable && assets && <BottlePlay table={activeTable} assets={assets} />}
       </div>
       {assets && (
-        <GestureDialog open={gesturesOpen} assets={assets} onClose={() => setGesturesOpen(false)} onPreview={async item => {
+        <GestureDialog open={gesturesOpen} assets={assets} onProfile={() => setProfileSeat(VIEWER_SEAT)} onClose={() => setGesturesOpen(false)} onPreview={async item => {
           const table = tableRef.current;
           if (!table) throw new Error("Table unavailable");
           await table.playGesture(VIEWER_SEAT, item.gesture);
@@ -117,8 +120,11 @@ export function TableSeats() {
           onSend={send}
           onPreload={preload}
           onClose={close}
+          onProfile={() => { if (giftSeat !== null) setProfileSeat(giftSeat); }}
         />
       )}
+      {assets && profileSeat !== null && playersRef.current[profileSeat] && <ProfileDialog player={playersRef.current[profileSeat]} self={profileSeat === VIEWER_SEAT} assets={assets} onClose={() => setProfileSeat(null)} onGift={() => { setGiftSeat(profileSeat); setProfileSeat(null); setGesturesOpen(false); }} onDecor={() => { setProfileSeat(null); setGesturesOpen(false); setGiftSeat(null); setDecorOpen(true); }} onMusic={() => { setProfileSeat(null); setGesturesOpen(false); setGiftSeat(null); document.querySelector<HTMLElement>('[aria-label="Müzik"]')?.click(); }} />}
+      <DecorSelection open={decorOpen} onClose={() => setDecorOpen(false)} />
     </>
   );
 }

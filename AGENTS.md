@@ -20,3 +20,5 @@
 - Settings ports SettingsDialog/SettingsPresenter: CSS and icons are copied unchanged from the bundle into ciliz-settings.css, labels come from live server translations, and sound/music sliders drive the shared sfx and music stores.
 
 - Load gesture ordering, imagery and Spine shade timing from the public asset manifest; require a verified game-session adapter for account-specific availability and real sends, so preview never fabricates VIP access or spends currency.
+
+- Keep source-derived profile presentation separate from account actions; unknown statistics and setup-needed states remain until verified account data exists.

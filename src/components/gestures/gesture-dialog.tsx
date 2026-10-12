@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { buildGestureItems, gestureEligibility, type GestureAccount, type GestureItem } from "@/lib/gestures";
 
-export function GestureDialog({ open, assets, account = null, onClose, onPreview, onSend }: {
+export function GestureDialog({ open, assets, account = null, onClose, onPreview, onSend, onProfile }: {
   open: boolean; assets: CilizAssets; account?: GestureAccount | null; onClose: () => void;
   onPreview: (item: GestureItem) => Promise<void>; onSend?: (item: GestureItem) => Promise<void>;
+  onProfile: () => void;
 }) {
   const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(null);
   const [selected, setSelected] = useState<GestureItem | null>(null);
@@ -51,7 +52,7 @@ export function GestureDialog({ open, assets, account = null, onClose, onPreview
   const image = selected ? dialogImage(assets, selected.gesture.storeImage || selected.gesture.image, 100, 100) : null;
   return createPortal(<>
     <section role="dialog" aria-label={t("dlg:gesture:send")} className="gesture-drawer" style={{ top: box.top, left: box.left, width: box.width }}>
-      <header className="gesture-header"><span className="send-gift__btn send-gift__btn--profile gesture-profile" aria-hidden="true" /><span className="gesture-title">{t("dlg:gesture:send")}</span><Button variant="ghost" className="send-gift__tokens gesture-balance" title="Jetonlar" aria-label="Jeton bakiyesi" onClick={() => setStatus("Oyuncu hesabı bağlı değil; jeton bakiyesi doğrulanamıyor.")}>{account?.tokens ?? "—"}</Button></header>
+      <header className="gesture-header"><Button variant="ghost" className="send-gift__btn send-gift__btn--profile gesture-profile" title="Profilim" aria-label="Profilim" onClick={onProfile} /><span className="gesture-title">{t("dlg:gesture:send")}</span><Button variant="ghost" className="send-gift__tokens gesture-balance" title="Jetonlar" aria-label="Jeton bakiyesi" onClick={() => setStatus("Oyuncu hesabı bağlı değil; jeton bakiyesi doğrulanamıyor.")}>{account?.tokens ?? "—"}</Button></header>
       {status && !selected && <p role="status" className="gesture-status">{status}</p>}
       <div ref={listRef} className="gesture-scroll" onScroll={e => { savedScroll.current = e.currentTarget.scrollTop; }}><div className="send-gift--gesture gesture-grid">
         {items.map(item => {
