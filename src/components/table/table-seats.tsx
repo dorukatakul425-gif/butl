@@ -31,7 +31,7 @@ export function TableSeats() {
   const [giftSeat, setGiftSeat] = useState<number | null>(null);
   const [activeTable, setActiveTable] = useState<PixiTable | null>(null);
 
-  const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social) : []), [assets]);
+  const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: 0, vip: true }) : []), [assets]);
 
   useEffect(() => {
     if (!assets || !hostRef.current) return;
