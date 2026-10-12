@@ -1,7 +1,7 @@
 # Tasks
 - [x] Remove table connection notice and match the supplied waiting label and mobile table/lowest-seat spacing (desktop/phone-size browser screenshots verified).
 - [x] Verify independent rapid gift delivery without a local cooldown, preserving server spending checks (20 clicks in one second produced 20 confirmed events, no errors).
-- [ ] Transfer these verified changes to the requested GitHub repository.
+- [x] Transfer these verified changes to the requested GitHub repository (main readback verified).
 - [x] Match iOS bottom safe-area to chat background (phone-size browser check; physical iPhone check remains below).
 - [x] Set all current heart balances and new-account initial hearts to 10,000 (database and new-account readback verified).
 - [x] Fix inactive menu/header controls and reduce unnecessary room/action delays; authenticated signup, menu, music navigation, chat readback, change-table and exit verified; 17 regression tests passed. Unavailable features remain explicitly unavailable.
