@@ -22,8 +22,6 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Şişe Çevirmece ortak oyun masası ve canlı oyuncu sohbeti." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:image", content: woodTable.url },
-      { name: "twitter:image", content: woodTable.url },
     ],
   }),
   component: Index,
@@ -54,7 +52,6 @@ function LiveGame() {
         <OriginalChatPanel />
       </div>
       {error && <p className="cloud-room-notice" role="alert">{error}</p>}
-      {!room && !error && <p className="cloud-room-notice" role="status">Masaya bağlanılıyor…</p>}
       <Button variant="ghost" size="icon" className="game-exit" aria-label="Ana sayfaya dön" title="Ana sayfaya dön" onClick={async () => { await leaveRoom(); await navigate({ to: '/home' }); }}><LogOut size={18} /></Button>
     </main>
   );

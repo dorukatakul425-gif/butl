@@ -76,7 +76,15 @@ export function useCloudRoom() {
         blockUser: async blockedId => { const { error } = await supabase.from('user_blocks').upsert({ user_id: user.id, blocked_id: blockedId }); if (error) throw new Error(error.message); await refresh(); },
       });
       channel = supabase.channel(`room-${id}-${user.id}`);
-      for (const table of ['room_members', 'game_messages', 'game_events'] as const) channel.on('postgres_changes', { event: '*', schema: 'public', table, filter: `room_id=eq.${id}` }, () => void refresh());
+      for (const table of ['room_members', 'game_messages'] as const) channel.on('postgres_changes', { event: '*', schema: 'public', table, filter: `room_id=eq.${id}` }, () => void refresh());
+      // Deliver each confirmed gift immediately, without waiting for six readbacks.
+      channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_events', filter: `room_id=eq.${id}` }, payload => {
+        const event = payload.new as RoomEvent;
+        if (!alive || event.room_id !== id) return;
+        setRoom(current => current?.id === id && !current.events.some(existing => existing.id === event.id)
+          ? { ...current, events: [...current.events, event].slice(-400) }
+          : current);
+      });
       channel.on('postgres_changes', { event: '*', schema: 'public', table: 'game_rooms', filter: `id=eq.${id}` }, payload => {
         const next = payload.new as { round?: SharedRound };
         const round = next.round;

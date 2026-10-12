@@ -12,6 +12,7 @@ import { createGiftPreparation } from "@/lib/gift-preparation";
 import type { CilizGesture } from "@/lib/gestures";
 import { originalBottle } from "./original-bottle";
 import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
+import { tableLayout } from "@/lib/table-layout";
 
 // TableView seats (virtual 375px table space, origin at table centre).
 const SEATS: Array<[number, number]> = [
@@ -358,11 +359,12 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     if (!width || !height) return;
     app.renderer.resize(width, height);
     const header = (host.parentElement?.querySelector(".original-table-header") as HTMLElement | null)?.offsetHeight ?? 0;
-    const available = height - header;
-    scale = Math.min(width / VIRTUAL_SIZE, available / VIRTUAL_SIZE);
+    const bounds = tableLayout(width, height, header);
+    const available = bounds.available;
+    scale = bounds.scale;
     stage.scale.set(scale);
-    stage.x = width / 2;
-    stage.y = header + available / 2;
+    stage.x = bounds.x;
+    stage.y = bounds.y;
     effects.setLayout(width / scale, available / scale);
     players.forEach((player, index) => void seats[index]?.set(player, assets, res(), tableSize()));
   };

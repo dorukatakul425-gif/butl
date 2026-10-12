@@ -1,11 +1,14 @@
 # Tasks
+- [x] Remove table connection notice and match the supplied waiting label and mobile table/lowest-seat spacing (desktop/phone-size browser screenshots verified).
+- [x] Verify independent rapid gift delivery without a local cooldown, preserving server spending checks (20 clicks in one second produced 20 confirmed events, no errors).
+- [ ] Transfer these verified changes to the requested GitHub repository.
 - [x] Match iOS bottom safe-area to chat background (phone-size browser check; physical iPhone check remains below).
 - [x] Set all current heart balances and new-account initial hearts to 10,000 (database and new-account readback verified).
 - [x] Fix inactive menu/header controls and reduce unnecessary room/action delays; authenticated signup, menu, music navigation, chat readback, change-table and exit verified; 17 regression tests passed. Unavailable features remain explicitly unavailable.
 - [x] Add first-entry source-based gender selection plus requested age selection and server-enforced mixed-gender round eligibility.
 - [x] Add username/player-ID login and email-free signup without email confirmation, with premium mobile-friendly graphics.
 - [x] Verify first entry, saved selection, upright waiting bottle, username login and two-account turn visibility/synchronized spin (15 regression tests passed).
-- [ ] Verify exact original waiting text and dimensions — current supplied-source inspection did not establish the waiting label.
+- [x] Match supplied reference waiting text and source virtual sizing; three-line waiting label verified in browser.
 - [x] Transfer onboarding/account changes to GitHub (main verified after upload).
 - [x] Add Cloud accounts, profiles, polished auth/home screens and private profile photo uploads.
 - [x] Replace demo seats with authenticated shared rooms and synchronized chat, rounds and gift/gesture events.

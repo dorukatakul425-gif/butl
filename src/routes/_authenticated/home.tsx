@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import wood from '@/assets/original-wood-table.png.asset.json';
 import { uploadProfilePhoto } from '@/lib/profile-photo';
 import accountLogo from '@/assets/account-game-logo.svg';
-export const Route = createFileRoute('/_authenticated/home')({ head: () => ({ meta: [{ title: 'Ana Sayfa | Şişe Çevirmece' }, { name: 'description', content: 'Oyuncu hesabın ve ortak oyun masasına katılma ekranı.' }, { property: 'og:title', content: 'Ana Sayfa | Şişe Çevirmece' }, { property: 'og:description', content: 'Sohbet ve şişe oyunu için masadaki yerini al.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }, { property: 'og:image', content: wood.url }, { name: 'twitter:image', content: wood.url }] }), component: Home });
+export const Route = createFileRoute('/_authenticated/home')({ head: () => ({ meta: [{ title: 'Ana Sayfa | Şişe Çevirmece' }, { name: 'description', content: 'Oyuncu hesabın ve ortak oyun masasına katılma ekranı.' }, { property: 'og:title', content: 'Ana Sayfa | Şişe Çevirmece' }, { property: 'og:description', content: 'Sohbet ve şişe oyunu için masadaki yerini al.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }), component: Home });
 function Home() {
   const { user, profile, wallet, refresh } = useCloudAccount();
   const photoInput = useRef<HTMLInputElement>(null);

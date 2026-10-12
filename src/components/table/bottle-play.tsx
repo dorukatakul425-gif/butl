@@ -7,6 +7,7 @@ import { BottleIcon, preloadBottleIcon } from "./bottle-icon";
 import { performRound, type CloudRoom } from "@/lib/cloud-room";
 import { toast } from "sonner";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
+import { tableLayout } from "@/lib/table-layout";
 import kissUp from "@/assets/ui_arrow_kiss_up.svg.asset.json";
 import kissDown from "@/assets/ui_arrow_kiss_down.svg.asset.json";
 import refuseUp from "@/assets/ui_arrow_refuse_up.svg.asset.json";
@@ -60,8 +61,8 @@ export function BottlePlay({table, assets, room, viewerId}: {table: Table; asset
     if (!el || !host) return;
     const layout = () => {
       const header = host.parentElement?.querySelector(".original-table-header")?.getBoundingClientRect().height ?? 0;
-      const scale = Math.min(host.clientWidth/375,(host.clientHeight-header)/375);
-      el.style.transform = `translate(${host.clientWidth/2}px,${header+(host.clientHeight-header)/2}px) scale(${scale})`;
+      const bounds = tableLayout(host.clientWidth, host.clientHeight, header);
+      el.style.transform = `translate(${bounds.x}px,${bounds.y}px) scale(${bounds.scale})`;
     };
     layout(); const ro = new ResizeObserver(layout); ro.observe(host); return ()=>ro.disconnect();
   },[]);
@@ -94,7 +95,7 @@ export function BottlePlay({table, assets, room, viewerId}: {table: Table; asset
   const offer = offers[round.spinner] ?? offers[0];
   const decide = (decision: Decision) => { void act('decide', decision); };
   return <div ref={overlay} className="bottle-play-overlay" aria-label="Şişe oyunu" data-phase={round.phase} data-spinner={round.spinner} data-target={round.target}>
-    <span role="status" className="bottle-turn-status">{waiting ? 'Oyuncular bekleniyor…' : round.phase==="offer" ? (round.spinner===VIEWER ? "Sıra sende" : `Oyuncu ${round.spinner+1} • Sırası`) : round.phase==="spin" ? `${round.spinner===VIEWER ? "Sen" : `Oyuncu ${round.spinner+1}`} • Şişeyi çeviriyor` : round.phase==="choose" ? (participating ? translate(assets,"game:choose:title") : translate(assets,"game:willtheykiss")) : ""}</span>
+    <span role="status" className={`bottle-turn-status${waiting ? ' bottle-turn-status--waiting' : ''}`}>{waiting ? 'Sonraki\nsırayı\nbekliyoruz' : round.phase==="offer" ? (round.spinner===VIEWER ? "Sıra sende" : `Oyuncu ${round.spinner+1} • Sırası`) : round.phase==="spin" ? `${round.spinner===VIEWER ? "Sen" : `Oyuncu ${round.spinner+1}`} • Şişeyi çeviriyor` : round.phase==="choose" ? (participating ? translate(assets,"game:choose:title") : translate(assets,"game:willtheykiss")) : ""}</span>
     {round.phase==="offer" && round.spinner===VIEWER && <>
       <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={pending || !ready || !room || !eligible} onClick={spin} />
       <BottleIcon className="bottle-roll-big" src={rollBig.url} alt="" /><span className="bottle-roll-text">{translate(assets,"game:spin")}</span>
