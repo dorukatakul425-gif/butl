@@ -58,6 +58,10 @@ export interface CilizGiftStoreEntry {
   id: string;
   social?: string[];
   birthday?: boolean;
+  kisses_s?: number;
+  vip_s?: boolean;
+  user_s?: string[];
+  platform?: string[];
 }
 export interface CilizAssets {
   bottles?: Record<string, CilizBottle>;

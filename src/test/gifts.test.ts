@@ -39,6 +39,11 @@ describe("gifts from the game server", () => {
   it("matches the game's seeded random sequence", () => {
     expect(seededRandom(0)()).toBeCloseTo(49297 / 233280);
   });
+  it("locks vip and kiss-gated gifts until the viewer qualifies", () => {
+    const a = { ...assets, giftStore: [{ id: "rose", vip_s: true }, { id: "air_kiss", kisses_s: 20 }] } as unknown as CilizAssets;
+    expect(buildGiftItems(a, "ok").map((i) => i.lock)).toEqual([{ kind: "vip" }, { kind: "kisses", need: 20 }]);
+    expect(buildGiftItems(a, "ok", { kisses: 20, vip: true }).map((i) => i.lock)).toEqual([undefined, undefined]);
+  });
   it("hides scheduled, other-network and birthday entries", () => {
     expect(buildGiftItems(assets, "ok").map((i) => i.type)).toEqual(["rose", "air_kiss"]);
   });

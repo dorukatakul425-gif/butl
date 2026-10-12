@@ -50,15 +50,21 @@ export interface GiftStoreItem {
   image: string;
   price: number;
   gift: CilizGift;
+  /** gifts.__store unlock conditions: vip_s needs VIP, kisses_s needs that many kisses. */
+  lock?: { kind: "vip" } | { kind: "kisses"; need: number } | undefined;
 }
 
+export interface GiftViewer { kisses: number; vip: boolean; id?: string; platform?: string }
+
 /** Store list (gifts.__store) filtered the same way the game hides unavailable entries. */
-export function buildGiftItems(assets: CilizAssets, social: string): GiftStoreItem[] {
+export function buildGiftItems(assets: CilizAssets, social: string, viewer: GiftViewer = { kisses: 0, vip: false }): GiftStoreItem[] {
   const seen = new Set<string>();
   const items: GiftStoreItem[] = [];
   for (const entry of assets.giftStore) {
     if (entry.id.startsWith("__") || entry.birthday || seen.has(entry.id)) continue;
     if (entry.social && !entry.social.includes(social)) continue;
+    if (entry.user_s && !(viewer.id && entry.user_s.includes(viewer.id))) continue;
+    if (entry.platform && !entry.platform.includes(viewer.platform ?? "web")) continue;
     const gift = assets.gifts[entry.id];
     if (!gift || !gift.storeImage || !assets.images[gift.storeImage]) continue;
     seen.add(entry.id);
@@ -68,6 +74,7 @@ export function buildGiftItems(assets: CilizAssets, social: string): GiftStoreIt
       image: gift.storeImage,
       price: gift.storePrice,
       gift,
+      lock: entry.vip_s && !viewer.vip ? { kind: "vip" } : entry.kisses_s && viewer.kisses < entry.kisses_s ? { kind: "kisses", need: entry.kisses_s } : undefined,
     });
   }
   return items;

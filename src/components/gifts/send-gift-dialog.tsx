@@ -40,6 +40,7 @@ function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; it
     return () => { observer.disconnect(); window.clearTimeout(timer); };
   }, [item, onPreload]);
   const activate = () => {
+    if (item.lock) return;
     onSend(item);
     const el = ref.current;
     if (!el) return;
@@ -50,12 +51,19 @@ function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; it
   return (
     <div ref={ref} className={cls("item")} title={item.name} onClick={activate} onPointerEnter={() => onPreload(item)} onPointerDown={() => onPreload(item)} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
       <div className={cls("image-block")}>
-        <img className={cls("image")} src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" loading="lazy" decoding="async" />
+        <img className={cls("image", [item.lock && "locked"])} draggable={false} src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" loading="lazy" decoding="async" />
       </div>
-      <div className={cls("subitem", [!item.price && "invisible"])}>
-        <div className={cls("icon", ["heart"])} />
-        <div className={cls("price")}>{item.price}</div>
-      </div>
+      {item.lock ? (
+        <div className={cls("subitem")}>
+          <div className={cls("icon", [item.lock.kind === "vip" ? "viplock" : "lock"])} />
+          {item.lock.kind === "kisses" && <div className={cls("price")}>{item.lock.need}</div>}
+        </div>
+      ) : (
+        <div className={cls("subitem", [!item.price && "invisible"])}>
+          <div className={cls("icon", ["heart"])} />
+          <div className={cls("price")}>{item.price}</div>
+        </div>
+      )}
     </div>
   );
 }

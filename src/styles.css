@@ -378,3 +378,22 @@
 .splash__bar { height: 12px; border-radius: 20px; background-color: var(--loading-fill); background-image: var(--loading-bar-highlight); transition: width 400ms linear; }
 .original-loading-retry { position: absolute; left: 50%; top: calc(50% + 40px); transform: translateX(-50%); }
 @media (orientation: landscape) { .original-loading-logo { width: 45%; max-height: 40%; object-fit: contain; } }
+
+/* Game shell: no pinch/double-tap zoom, no sideways panning, no text/image selection or copying. */
+html, body {
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-y;
+  max-width: 100%;
+}
+html, body, body * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+img, svg, canvas { -webkit-user-drag: none; user-drag: none; }
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
