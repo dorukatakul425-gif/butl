@@ -1,0 +1,19 @@
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useRef, useState } from 'react';
+import { ArrowRight, Camera, Heart, LogOut, UsersRound, UserRound } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useCloudAccount, leaveRoom } from '@/lib/cloud-account';
+import { supabase } from '@/integrations/supabase/client';
+import wood from '@/assets/original-wood-table.png.asset.json';
+import { uploadProfilePhoto } from '@/lib/profile-photo';
+import accountLogo from '@/assets/account-game-logo.svg';
+export const Route = createFileRoute('/_authenticated/home')({ head: () => ({ meta: [{ title: 'Ana Sayfa | Şişe Çevirmece' }, { name: 'description', content: 'Oyuncu hesabın ve ortak oyun masasına katılma ekranı.' }, { property: 'og:title', content: 'Ana Sayfa | Şişe Çevirmece' }, { property: 'og:description', content: 'Sohbet ve şişe oyunu için masadaki yerini al.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }, { property: 'og:image', content: wood.url }, { name: 'twitter:image', content: wood.url }] }), component: Home });
+function Home() {
+  const { user, profile, wallet, refresh } = useCloudAccount();
+  const photoInput = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const { queryClient } = Route.useRouteContext();
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  return <main className="account-page home-page"><img src={wood.url} className="account-backdrop" alt="" /><div className="account-shade" /><header className="home-header"><div className="account-brand"><img src={accountLogo} alt="Şişe Çevirmece" /><span>ŞİŞE ÇEVİRMECE</span></div><Button variant="ghost" className="home-signout" aria-label="Çıkış yap" title="Çıkış yap" onClick={async () => { await queryClient.cancelQueries(); queryClient.clear(); await leaveRoom(); await supabase.auth.signOut(); await navigate({ to: '/auth', replace: true }); }}><LogOut size={20} /></Button></header><section className="home-content"><input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" aria-label="Profil fotoğrafı" hidden onChange={async e => { const file = e.target.files?.[0]; if (!user || !file) return; setBusy(true); try { await uploadProfilePhoto(user.id, file); await refresh(); } catch (err) { setError(err instanceof Error ? err.message : "Fotoğraf yüklenemedi."); } finally { setBusy(false); e.target.value = ""; } }} /><Button variant="ghost" className="home-avatar" aria-label="Profil fotoğrafını değiştir" disabled={busy} onClick={() => photoInput.current?.click()}>{profile?.avatar_url ? <img src={profile.avatar_url} alt={profile.display_name} /> : <UserRound size={38} />}<Camera className="home-camera" size={18} /></Button><p className="home-welcome">MERHABA, {profile?.display_name?.toLocaleUpperCase('tr') ?? 'OYUNCU'}</p><h1>Şişe Çevirmece</h1><p className="home-tagline">Yeni insanlar. Gerçek sohbetler.<br />Sıradaki hikâye seninle başlasın.</p><div className="home-balance"><Heart size={18} fill="currentColor" /><strong>{wallet?.hearts ?? '—'}</strong><span>kalp</span><span className="home-balance-divider" /><strong>{wallet?.tokens ?? '—'}</strong><span>jeton</span></div><Button className="account-primary home-play" disabled={busy} onClick={async () => { setBusy(true); try { const { error } = await supabase.rpc('join_game'); if (error) throw error; await navigate({ to: '/' }); } catch (e) { setError(e instanceof Error ? e.message : 'Masaya girilemedi.'); } finally { setBusy(false); } }}> {busy ? 'Masaya bağlanılıyor…' : 'Masaya katıl'}<ArrowRight size={21} /></Button>{error && <p role="alert">{error}</p>}<p className="home-live"><UsersRound size={16} />Gerçek oyuncularla ortak masa</p></section></main>;
+}

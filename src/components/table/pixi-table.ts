@@ -8,6 +8,7 @@ import { type SentGift } from "@/lib/gifts";
 import { PHOTO_SIZE as PHOTO, PHOTO_SHADOW_SIZE as SHADOW_SIZE, GIFT_SCALE, OVER_SCALE, FLY_SEC, giftImageFrame, calcGiftPosition } from "@/lib/gift-geometry";
 import { GiftEffects } from "@/components/table/gift-effects";
 import { matchingTableEffects } from "@/lib/table-gift-effects";
+import { createGiftPreparation } from "@/lib/gift-preparation";
 import type { CilizGesture } from "@/lib/gestures";
 import { originalBottle } from "./original-bottle";
 import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
@@ -182,6 +183,8 @@ class SeatView {
 
   async set(player: SeatPlayer, assets: CilizAssets, res: number, tableSize: number) {
     if (this.disposed) return;
+    this.view.visible = Boolean(player.name);
+    if (!player.name) { ++this.updateId; this.current = ''; return; }
     const key = `${player.name}|${player.photoUrl}|${player.frame}|${player.stone}|${Math.ceil(res * 2) / 2}`;
     if (key === this.current) return;
     this.current = key;
@@ -333,6 +336,9 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   tableVfxLayer.eventMode = "none";
   giftVfxLayer.eventMode = "none";
   const effects = new GiftEffects(giftVfxLayer, tableVfxLayer);
+  const prepareGift = createGiftPreparation();
+  const prepareGiftView = (view: DisplayObject, image: string, spine?: string) =>
+    prepareGift(`${spine ?? image}@${tableSize()}`, () => app.renderer.plugins["prepare"].upload(view));
   const seats = SEATS.map(([x, y], index) => {
     const seat = new SeatView(() => options.onSeatClick?.(index));
     seat.view.x = x;
@@ -453,14 +459,15 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       createGiftView(assets, gift.flyImage, gift.spine, false, tableSize()),
       !gift.spine && gift.stickImage !== gift.flyImage ? createGiftView(assets, gift.stickImage, undefined, true, tableSize()) : undefined,
       gift.vfx ? effects.preload(gift.vfx) : undefined,
-      options.prepareSfx?.(gift.startSound)?.catch(() => {}),
-      options.prepareSfx?.(gift.finishSound)?.catch(() => {}),
     ]);
+    // Audio readiness must never hold rapid visual playback in batches.
+    void options.prepareSfx?.(gift.startSound)?.catch(() => {});
+    void options.prepareSfx?.(gift.finishSound)?.catch(() => {});
     if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
-    // Upload both flying and landing textures before starting the clock.
-    await app.renderer.plugins["prepare"].upload(flyView);
-    if (stickView) await app.renderer.plugins["prepare"].upload(stickView);
-    if (gift.vfx) await effects.prepare(app.renderer, gift.vfx);
+    // Warm textures independently; GPU uploads must not gate rapid clicks.
+    void prepareGiftView(flyView, gift.flyImage, gift.spine).catch(error => console.warn("Gift texture preparation", error));
+    if (stickView) void prepareGiftView(stickView, gift.stickImage).catch(error => console.warn("Gift landing preparation", error));
+    if (gift.vfx) void effects.prepare(app.renderer, gift.vfx);
     if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
     activate(flyView);
     const src = { x: sender.view.x, y: sender.view.y, scale: GIFT_SCALE, rotation: 0 };
@@ -525,14 +532,14 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     for (const name of spines) {
       if (destroyed) return;
       const view = await createGiftView(assets, gift.flyImages[0] ?? "", name, false, tableSize());
-      if (!destroyed) await app.renderer.plugins["prepare"].upload(view);
+      if (!destroyed) await prepareGiftView(view, gift.flyImages[0] ?? "", name);
       destroyView(view);
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
     }
     if (!spines.length) for (const name of new Set([...gift.flyImages, ...gift.stickImages])) {
       if (destroyed) return;
       const view = await createGiftView(assets, name, undefined, false, tableSize());
-      if (!destroyed) await app.renderer.plugins["prepare"].upload(view);
+      if (!destroyed) await prepareGiftView(view, name);
       destroyView(view);
     }
     if (gift.vfx && !destroyed) { await effects.preload(gift.vfx); if (!destroyed) await effects.prepare(app.renderer, gift.vfx); }
@@ -572,11 +579,11 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       bottleLayer.addChild(view);
       await app.renderer.plugins["prepare"].upload(view);
     },
-    async spinBottle(from: number, to: number) {
+    async spinBottle(from: number, to: number, startedAt = Date.now(), turns = 10) {
       if (destroyed) return;
       bottleLayer.alpha=1;
       const start=bottleLayer.rotation%(2*Math.PI);
-      const end=spinAngle(to)*Math.PI/180;
+      const end=spinAngle(to, (turns - 5) / 10)*Math.PI/180;
       // GameAnimations.toCenter(): spinner photo tweens to -10deg in 0.1s, then back to 0 in 0.1s (EASE_OUT).
       const spinnerView=seats[from]?.view;
       if (spinnerView) {
@@ -585,10 +592,18 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
           .then(()=>tween(0.1,p=>{spinnerView.rotation=-10*DEG*(1-easeOut(p));}))
           .then(()=>{spinnerView.rotation=0;});
       }
-      // Bottle kicks back 10deg before the 4.9s spin.
-      await tween(0.1,p => { bottleLayer.rotation=start-(Math.PI/18)*(1-Math.pow(1-p,3)); });
-      const initial=bottleLayer.rotation;
-      await tween(SPIN_SECONDS-0.1,p => { bottleLayer.rotation=initial+(end-initial)*(1-Math.pow(1-p,3)); });
+      // All participants sample one server-issued timeline, including late joins.
+      const initial=start-Math.PI/18;
+      await new Promise<void>(resolve => {
+        const update = () => {
+          const elapsed = Math.max(0, (Date.now()-startedAt)/1000);
+          if (elapsed < 0.1) bottleLayer.rotation=start-(Math.PI/18)*(1-Math.pow(1-elapsed/0.1,3));
+          else { const p=Math.min(1,(elapsed-0.1)/(SPIN_SECONDS-0.1)); bottleLayer.rotation=initial+(end-initial)*(1-Math.pow(1-p,3)); }
+          if (elapsed >= SPIN_SECONDS || destroyed) { resolve(); return false; }
+          return true;
+        };
+        if (update()) ticks.add(update);
+      });
       bottleLayer.rotation=end%(2*Math.PI);
       void tween(1,p=>{bottleLayer.alpha=1-p;});
       await movePlayers(from,to,true);

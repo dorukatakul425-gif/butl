@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { CloudAccountProvider } from '@/lib/cloud-account';
+import { Toaster } from '@/components/ui/sonner';
 
 function NotFoundComponent() {
   return (
@@ -77,12 +79,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" },
-      { title: "Orijinal Oyun Masası" },
-      { name: "description", content: "Orijinal ahşap oyun masası ve sunucu görselleri." },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" },
+      { title: "Şişe Çevirmece" },
+      { name: "description", content: "Şişe Çevirmece oyun masası ve jestleri." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Orijinal Oyun Masası" },
-      { property: "og:description", content: "Orijinal ahşap oyun masası ve sunucu görselleri." },
+      { property: "og:title", content: "Şişe Çevirmece" },
+      { property: "og:description", content: "Şişe Çevirmece oyun masası ve jestleri." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -117,25 +119,10 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => {
-    const editable = (t: EventTarget | null) => t instanceof HTMLElement && !!t.closest("input, textarea, [contenteditable='true']");
-    const block = (e: Event) => { if (!editable(e.target)) e.preventDefault(); };
-    const pinch = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault(); };
-    let lastTap = 0;
-    const dblTap = (e: TouchEvent) => { const now = Date.now(); if (now - lastTap < 300 && !editable(e.target)) e.preventDefault(); lastTap = now; };
-    const wheel = (e: WheelEvent) => { if (e.ctrlKey) e.preventDefault(); };
-    const keys = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && ["+", "-", "=", "0"].includes(e.key)) e.preventDefault(); };
-    const opts = { passive: false } as const;
-    const ev: Array<[string, EventListener]> = [["copy", block], ["cut", block], ["contextmenu", block], ["selectstart", block], ["dragstart", block], ["gesturestart", block], ["gesturechange", block], ["touchmove", pinch as EventListener], ["touchend", dblTap as EventListener], ["wheel", wheel as EventListener], ["keydown", keys as EventListener]];
-    ev.forEach(([n, f]) => document.addEventListener(n, f, opts));
-    return () => ev.forEach(([n, f]) => document.removeEventListener(n, f));
-  }, []);
-
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <CloudAccountProvider><Outlet /><Toaster /></CloudAccountProvider>
     </QueryClientProvider>
   );
 }

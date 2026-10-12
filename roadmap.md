@@ -1,29 +1,22 @@
 # Tasks
-- [x] Match original kiss/refuse labels and decision countdown placement.
-- [x] Fix startup logo visibility using original artwork; verified with forced hosted-image failures.
-- [x] Remove decision arrows when players return to their seats; verified during return phase on phone and desktop.
-- [x] Restore crown star effects from original gift configurations; real gift flight produced 13–14 visible stars despite forced CDN failures.
-- [x] Verify all five corrections and transfer them to butl/main; phone/desktop flows and 44 rule tests passed, including visible crown stars under forced CDN failures.
-- [x] Transfer all startup, bottle-icon and viewer-turn sound corrections to butl/main; ce83310907d816c1c3ce5079d007641d9d157a7d verified with all 216 tracked files matching.
-- [x] Verify bottle icons and add original SVG fallbacks; forced image failures still display kiss/refuse buttons and arrows.
-- [x] Restore original viewer-turn ding; browser verified audio source starts when bot rounds return the turn to viewer.
-- [x] Restore original green startup pattern, loading bar and Spin the Bottle artwork from source assets; progress tracks actual readiness.
-- [x] Verify startup, kiss/refuse and subsequent bot rounds at phone and desktop sizes; rule tests passed, build OK.
-- [x] Correct decor dialog frame thumbnails and preview using the original source dimensions.
-- [x] Verify selecting and applying frames in the live game.
-- [x] Transfer all game/decor changes to dorukatakul425-gif/butl and verify the remote commit.
-- [x] Find and download the original wooden table image from the game's public asset server as PNG.
-- [x] Identify and download the original upper-table icons and their source-defined order and dimensions.
-- [x] Display the original table with eight original upper icons and verify image loading and layout.- [x] Tap a player to open the original gift drawer with server gifts; flight, stick and sounds as in the game.
-- [x] Push the gift feature to dorukatakul425-gif/butl.
-- [x] Match player and gift sizes and attachment positions to the original source.
-- [x] Add all source gift particle and table-combo effects; preload landing images, GPU textures and decoded sounds.
-- [x] Verify gift sending, attachment and all 15 particle configurations; 28 rules tests passed. Headless stress timing does not establish a universal no-stutter guarantee.
-- [x] Sync verified corrections and original effect asset pointers to butl.
-- [x] Chat music and video: live catalogues, original list/confirm popups, player view and chat line.
-- [x] Push music/video feature to butl (user approved; previous transfer completed).
-- [x] Port original bottle selection and live bottle artwork.
-- [x] Add source-derived spin, turn indication, bot turns and kiss/refuse arrows.
-- [x] Verify complete bottle flow: select a live bottle, spin, kiss/refuse, arrows and subsequent bot rounds; 38 tests passed.
-- [x] Correct music autoplay recovery and add stop control; live audio time advanced, video view and two chat lines verified.
-- [x] Transfer verified bottle and music corrections to butl/main: 23a4b5359a38b8db55421824cbe1e659084a2d54; GitHub branch update returned success.
+- [x] Add Cloud accounts, profiles, polished auth/home screens and private profile photo uploads.
+- [x] Replace demo seats with authenticated shared rooms and synchronized chat, rounds and gift/gesture events.
+- [x] Persist balances and validate gifts/gestures without granting invented VIP or currency.
+- [x] Verify two-account sign-in, photo upload, shared chat/translation, decisions, earned hearts, gift debit/event and leave/rejoin.
+- [x] Transfer source to GitHub.
+- [ ] Shared paid music, achievements, leagues, harem and VIP/payment workflows — require original business rules and authorized service configuration; existing local music preview remains local.
+- [x] Remove visual batching from rapid gift clicks and verify overlapping playback (30 click browser burst).
+- [x] Restore source-based chat rows, profile/message actions and Cloud-backed translations.
+- [x] Apply visual-viewport and safe-area positioning; browser phone-size checks pass.
+- [ ] Verify keyboard and home-indicator positioning on physical iOS Safari — requires access to an actual iPhone.
+- [x] Add source-styled heart balance beside the header icon without inventing a balance.
+- [x] Verify current changes (57 tests; browser rapid clicks, chat fixture, profile and phone-size checks).
+- [x] Transfer current changes to GitHub.
+- [x] Add source-based own/other profile windows and connect bottom icon navigation.
+- [x] Verify repeated gift clicks without a local click limit and real delivery through Cloud accounts.
+- [x] Verify profile interactions and transfer changes to GitHub.
+- [x] Connect real kisses/gesture statistics, messaging, reports and gift delivery through Cloud accounts.
+- [x] Inspect original gesture assets, ordering and server eligibility.
+- [x] Add and verify the own-player gesture picker, original animation previews and kiss/VIP lock windows.
+- [x] Transfer verified changes to the GitHub game.
+- [x] Enable real gesture sending and account-specific availability; scheduled source-only entitlements remain unavailable until authorized rules exist.

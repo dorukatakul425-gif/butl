@@ -1,0 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router';
+import { AuthScreen } from '@/components/account/auth-screen';
+import wood from '@/assets/original-wood-table.png.asset.json';
+export const Route = createFileRoute('/auth')({ head: () => ({ meta: [{ title: 'Giriş & Kayıt | Şişe Çevirmece' }, { name: 'description', content: 'Şişe Çevirmece hesabına giriş yap veya kendi oyuncu profilini oluştur.' }, { property: 'og:title', content: 'Giriş & Kayıt | Şişe Çevirmece' }, { property: 'og:description', content: 'Hesabını oluştur, gerçek oyuncularla masaya katıl.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }, { property: 'og:image', content: wood.url }, { name: 'twitter:image', content: wood.url }] }), component: AuthScreen });

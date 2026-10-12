@@ -9,16 +9,13 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Keep downloaded game media in CDN asset pointers and compose the table in the index route with a dedicated original header component using source-derived order and dimensions, so original artwork stays separate from presentation.
-- Load live decor dialog images from the source's DPR-selected dialog bundles and table animations from its size-selected table bundles; store thumbnails are not available in table bundles.
-- Keep the decor presenter, source-derived dialog, and browser-only Pixi/Spine table renderer separate so server rendering never imports browser graphics code.
-- Gift sending ports GiftAnimations/Gift/SendGiftDialog from the source: gift data, images, spines and sounds load live from the game servers, and gift views are fully loaded before the flight starts so animations never hitch.
-- Preserve intrinsic gift image sizing inside an outer animation container; geometry and combo thresholds live in browser-safe modules, while original particle configs stay in the browser-only effect renderer. This prevents flight scaling from overriding server image dimensions and keeps rendering out of SSR.
-- Chat music/video ports MusicListDialog, MusicPreviewDialog, MusicViewPreact and the Ciliz music/YouTube services; catalogues and playback load live from the game servers, and the shared playing-song state lives in a browser-safe store so the chat line, media panel and player stay in sync.
-- Keep bottle catalogues and selected state browser-safe, render live Bottle3d maps with the original lighting shader only in the lazy Pixi renderer, and run local bot rounds separately from remote game services so simulated play is not represented as live multiplayer.
-- Gate startup on actual manifest, renderer, bottle, icon and splash-artwork readiness with a browser-safe loading store; retain original inline SVG fallbacks for controls, splash and particles so CDN failures never silently remove original artwork or effects.
-- Settings ports SettingsDialog/SettingsPresenter: CSS and icons are copied unchanged from the bundle into ciliz-settings.css, labels come from live server translations, and sound/music sliders drive the shared sfx and music stores.
-
-- Load gesture ordering, imagery and Spine shade timing from the public asset manifest; require a verified game-session adapter for account-specific availability and real sends, so preview never fabricates VIP access or spends currency.
-
-- Keep source-derived profile presentation separate from account actions; unknown statistics and setup-needed states remain until verified account data exists.
+- Keep the GitHub game on the index route and isolate Pixi/Spine imports behind dynamic browser loading, so the table remains SSR-safe.
+- Load gesture order, images, prices and skeleton timing through the existing public asset manifest; scheduled entries and spending require an authenticated game-session adapter, so previews never grant VIP or spend fictitious currency.
+- Keep source-derived profile presentation separate from account actions; show unknown statistics and a setup-needed state until verified profile/session data exists, while local music, decor and gift navigation remain available.
+- Route chat reads, sends, translations, moderation and balances through the authenticated game-session adapter; presentation must not invent server results.
+- Share gift texture preparation promises but never wait for GPU warm-up to start each click's independent animation, so repeated clicks do not batch.
+- Derive the game shell from the visual viewport and safe-area insets, so mobile keyboard/browser controls do not cover the composer.
+- Cloud Auth owns accounts; keep one root identity subscriber, profile presentation in a provider, and named protected home under the managed client-only gate while the public index remains the game with inline sign-in.
+- Shared room membership and rounds are transactional database RPCs; subscribe and reconcile stored room/chat/event state, never simulate other players or decisions.
+- Item purchases require authenticated server validation against the public source manifest and a service-only atomic wallet/event transaction; clients cannot mint currency, VIP, prices or eligibility.
+- Profile photos use private storage with owner-scoped writes and signed reads; room animation samples server start times and turn counts to synchronize late joins.

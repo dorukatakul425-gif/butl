@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
+import { supabase } from '@/integrations/supabase/client';
+import { blockChatUser, useGameSession } from '@/lib/game-session';
 
 export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, onMusic }: {
   player: SeatPlayer; self: boolean; assets: CilizAssets; onClose: () => void;
@@ -11,14 +13,21 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   const [expanded, setExpanded] = useState(false);
   const [notice, setNotice] = useState("");
   const [claims, setClaims] = useState(false);
+  const session = useGameSession();
+  const [stats, setStats] = useState<{ kisses?: number; gestures?: number; hearts?: number } | null>(null);
+  useEffect(() => {
+    setStats(null);
+    if (!player.id || !session.viewer) return;
+    void supabase.rpc('player_stats', { player: player.id }).then(({ data }) => { if (data && typeof data === 'object' && !Array.isArray(data)) setStats(data as { kisses?: number; gestures?: number; hearts?: number }); });
+  }, [player.id, session.viewer?.id]);
   const t = (key: string) => translate(assets, key);
   useEffect(() => {
     const key = (e: KeyboardEvent) => { if (e.key === "Escape") claims ? setClaims(false) : onClose(); };
     document.addEventListener("keydown", key);
     return () => document.removeEventListener("keydown", key);
   }, [onClose, claims]);
-  const needsAccount = () => setNotice("Oyuncu hesabı bağlı değil; bu işlem sunucuda gerçekleştirilemiyor.");
-  const counter = (kind: string) => <div className="user-profile__stats-item" key={kind}><span className={`user-profile__stats-icon user-profile__stats-icon--${kind}`} /><span className={`user-profile__stats-item-title user-profile__stats-item-title--${kind}`}>—</span></div>;
+  const needsAccount = () => setNotice(session.viewer ? 'Bu özellik henüz kullanıma açılmadı.' : "Oyuncu hesabı bağlı değil; bu işlem sunucuda gerçekleştirilemiyor.");
+  const counter = (kind: string) => <div className="user-profile__stats-item" key={kind}><span className={`user-profile__stats-icon user-profile__stats-icon--${kind}`} /><span className={`user-profile__stats-item-title user-profile__stats-item-title--${kind}`}>{(kind === 'kiss' ? stats?.kisses : kind === 'gesture' ? stats?.gestures : undefined) ?? '—'}</span></div>;
   const action = (kind: string, title: string, callback: () => void) => <Button variant="ghost" className={`user-profile__action user-profile__action--${kind}`} title={title} aria-label={title} onClick={callback} />;
   return createPortal(<div className="profile-layer portrait">
     <div className="popup-shade" onClick={onClose} />
@@ -41,11 +50,11 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
           <div className="user-profile__actions">
             {self ? action("music", "Müzik seç", onMusic) : action("gift", "Hediye gönder", onGift)}
             {action("achievements", "Başarılar", needsAccount)}
-            {action("message", "Mesaj gönder", () => self ? setNotice(t("warning:self_chat:desc")) : needsAccount())}
+            {action("message", "Mesaj gönder", () => { if (self) { setNotice(t("warning:self_chat:desc")); return; } if (!player.id || !session.viewer) { needsAccount(); return; } window.dispatchEvent(new CustomEvent('game-reply-to', { detail: { id: player.id, name: player.name, photoUrl: player.photoUrl } })); onClose(); })}
           </div>
         </div>
       </div>
     </section>
-    {claims && <section role="dialog" aria-modal="true" aria-label="Şikayet ve engelleme" className="popup popup--center popup--show"><div className="profile-menu">{["dlg:block:title", "hint:report_photo", "dlg:report_user:title"].map(key => <Button key={key} variant="secondary" onClick={needsAccount}>{t(key)}</Button>)}<Button variant="ghost" onClick={() => setClaims(false)}>Vazgeç</Button>{notice && <p role="status">{notice}</p>}</div></section>}
+    {claims && <section role="dialog" aria-modal="true" aria-label="Şikayet ve engelleme" className="popup popup--center popup--show"><div className="profile-menu">{["dlg:block:title", "hint:report_photo", "dlg:report_user:title"].map(key => <Button key={key} variant="secondary" onClick={async () => { if (!player.id || !session.viewer) { needsAccount(); return; } try { if (key === 'dlg:block:title') await blockChatUser(player.id); else { const { error } = await supabase.from('user_reports').insert({ reporter_id: session.viewer.id, reported_id: player.id, reason: key }); if (error) throw error; } setNotice(key === 'dlg:block:title' ? 'Oyuncu engellendi.' : 'Şikayetiniz kaydedildi.'); } catch (e) { setNotice(e instanceof Error ? e.message : 'İşlem tamamlanamadı.'); } }}>{t(key)}</Button>)}<Button variant="ghost" onClick={() => setClaims(false)}>Vazgeç</Button>{notice && <p role="status">{notice}</p>}</div></section>}
   </div>, document.body);
 }

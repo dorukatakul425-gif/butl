@@ -4,6 +4,7 @@ import { loadCilizAssets, translate, type CilizAssets } from "@/lib/ciliz-assets
 import { setSfxVolume, useSfxVolume } from "@/lib/sfx";
 import { setMusicVolume, useMusicSession } from "@/lib/music-session";
 import { VIEWER_STORE } from "@/lib/viewer";
+import { useCloudAccount } from '@/lib/cloud-account';
 
 // Markup and class names ported from SettingsDialog.tsx + SettingsPresenter.ts
 // (Dialog.Header / Dialog.Content, popup--center + popup--show/--hide animation).
@@ -63,6 +64,7 @@ function Simple({ icon, name, border, onClick }: { icon: string; name: string; b
 }
 
 export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { profile } = useCloudAccount();
   const [assets, setAssets] = useState<CilizAssets | null>(null);
   const { mounted, phase } = usePopupPhase(open);
   const sfxVolume = useSfxVolume();
@@ -81,7 +83,7 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
   if (!mounted || !assets) return null;
   const t = (key: string) => translate(assets, key);
   const platform: string = VIEWER_STORE.social;
-  const viewerId = "";
+  const viewerId = profile?.username ?? '';
   const icons = platform === "android" ? ["android", "html5"] : [platform];
 
   const copyId = async () => {

@@ -16,6 +16,7 @@ import { DecorSelection } from "@/components/decor/decor-selection";
 import { BottleSelection } from "@/components/table/bottle-selection";
 import { BankDialog } from "@/components/bank/bank-dialog";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
+import { useGameSession } from "@/lib/game-session";
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
 // All artwork is extracted unchanged from the live game's preloader bundle.
@@ -41,6 +42,7 @@ function OriginalIcon({ asset, label, kind }: (typeof middleIcons)[number]) {
 }
 
 export function OriginalTableHeader() {
+  const account = useGameSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const [decorOpen, setDecorOpen] = useState(false);
@@ -59,11 +61,14 @@ export function OriginalTableHeader() {
   }, []);
   return (
     <div className="original-table-header" aria-label="Orijinal üst masa ikonları">
+      <div className="original-heart-balance">
       <Button type="button" variant="ghost" className="original-header-button original-heart-button"
         aria-label="Kalp al" title="Kalp al" aria-haspopup="dialog" onClick={() => setBankOpen(true)}>
         <img src={heartUp.url} alt="" className="original-heart-image original-button-up" />
         <img src={heartDown.url} alt="" className="original-heart-image original-button-down" />
       </Button>
+      <span className="original-heart-count" aria-label="Kalp bakiyesi" title={account.hearts === null ? "Oyuncu hesabı bağlı değil" : "Kalp bakiyesi"}>{account.hearts ?? "—"}</span>
+      </div>
       <div className="original-header-middle">
         {middleIcons.map((icon) => icon.kind === "menu" ? (
           <Button key={icon.label} ref={menuTriggerRef} type="button" variant="ghost"
@@ -88,7 +93,7 @@ export function OriginalTableHeader() {
       <DecorSelection open={decorOpen} onClose={closeDecor} />
       <BottleSelection open={bottleOpen} onClose={closeBottle} />
       <SettingsDialog open={settingsOpen} onClose={closeSettings} />
-      <BankDialog open={bankOpen} onClose={closeBank} isVip />
+      <BankDialog open={bankOpen} onClose={closeBank} isVip={false} />
     </div>
   );
 }
