@@ -8,6 +8,8 @@ import { type SentGift } from "@/lib/gifts";
 import { PHOTO_SIZE as PHOTO, PHOTO_SHADOW_SIZE as SHADOW_SIZE, GIFT_SCALE, OVER_SCALE, FLY_SEC, giftImageFrame, calcGiftPosition } from "@/lib/gift-geometry";
 import { GiftEffects } from "@/components/table/gift-effects";
 import { matchingTableEffects } from "@/lib/table-gift-effects";
+import { originalBottle } from "./original-bottle";
+import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS } from "@/lib/bottle-game";
 
 // TableView seats (virtual 375px table space, origin at table centre).
 const SEATS: Array<[number, number]> = [
@@ -320,6 +322,9 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   app.stage.addChild(stage);
   const animationLayer = new Container();
   animationLayer.eventMode = "none";
+  const bottleLayer = new Container();
+  bottleLayer.eventMode = "none";
+  stage.addChild(bottleLayer);
   const tableVfxLayer = new Container();
   const giftVfxLayer = new Container();
   tableVfxLayer.eventMode = "none";
@@ -491,6 +496,22 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   layout();
 
   const preloadJobs = new Map<string, Promise<void>>();
+  let bottleVersion = 0;
+  const tween = (duration: number, step: (p: number) => void) => new Promise<void>(resolve => run(duration, step, resolve));
+  const movePlayers = async (a: number, b: number, center: boolean) => {
+    const [left, right] = leftRight(a,b);
+    const moving = [left,right].map((index,i) => ({
+      view: seats[index]?.view,
+      from: { x: seats[index]?.view.x ?? 0, y: seats[index]?.view.y ?? 0 },
+      to: center ? [i===0 ? -46 : 46,-5] : SEATS[index] ?? [0,0],
+    }));
+    await tween(CENTER_SECONDS,p => moving.forEach(m => {
+      if (!m.view) return;
+      const ease = 1-Math.pow(1-p,3);
+      m.view.x=m.from.x+((m.to[0] ?? 0)-m.from.x)*ease;
+      m.view.y=m.from.y+((m.to[1] ?? 0)-m.from.y)*ease;
+    }));
+  };
   let preloadQueue = Promise.resolve();
   const warmGift = async (gift: CilizGift) => {
     // A single warm-up queue prevents many skeleton parsers from blocking one frame.
@@ -512,6 +533,30 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   };
 
   return {
+    async setBottle(type: string) {
+      const version = ++bottleVersion;
+      const view = await originalBottle(assets,type,tableSize(),loadImage,bottleLayer);
+      if (destroyed || version!==bottleVersion) { destroyView(view); return; }
+      bottleLayer.removeChildren().forEach(destroyView);
+      bottleLayer.addChild(view);
+      await app.renderer.plugins["prepare"].upload(view);
+    },
+    async spinBottle(from: number, to: number) {
+      if (destroyed) return;
+      bottleLayer.alpha=1;
+      const start=bottleLayer.rotation;
+      const end=spinAngle(to)*Math.PI/180;
+      await tween(0.1,p => { bottleLayer.rotation=start+(Math.PI/18)*p; });
+      const initial=bottleLayer.rotation;
+      await tween(SPIN_SECONDS-0.1,p => { bottleLayer.rotation=initial+(end-initial)*(1-Math.pow(1-p,3)); });
+      bottleLayer.rotation=end%(2*Math.PI);
+      void tween(0.4,p=>{bottleLayer.alpha=1-p;});
+      await movePlayers(from,to,true);
+    },
+    async returnPlayers(from: number,to: number) {
+      await movePlayers(from,to,false);
+      await tween(0.4,p=>{bottleLayer.alpha=p;});
+    },
     setPlayers(next: SeatPlayer[]) {
       players = next.slice(0, seats.length);
       layout();

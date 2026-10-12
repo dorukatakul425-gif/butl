@@ -11,4 +11,9 @@
 - [x] Verify gift sending, attachment and all 15 particle configurations; 28 rules tests passed. Headless stress timing does not establish a universal no-stutter guarantee.
 - [x] Sync verified corrections and original effect asset pointers to butl.
 - [x] Chat music and video: live catalogues, original list/confirm popups, player view and chat line.
-- [ ] Push music/video feature to butl (waiting for user confirmation).
+- [x] Push music/video feature to butl (user approved; previous transfer completed).
+- [x] Port original bottle selection and live bottle artwork.
+- [x] Add source-derived spin, turn indication, bot turns and kiss/refuse arrows.
+- [x] Verify complete bottle flow: select a live bottle, spin, kiss/refuse, arrows and subsequent bot rounds; 38 tests passed.
+- [x] Correct music autoplay recovery and add stop control; live audio time advanced, video view and two chat lines verified.
+- [ ] Transfer verified bottle and music corrections to butl and verify the remote commit.

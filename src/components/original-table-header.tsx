@@ -13,6 +13,7 @@ import changeTable from "@/assets/ui_btn_change_table.svg.asset.json";
 import { Button } from "@/components/ui/button";
 import { OriginalMiscMenu } from "@/components/original-misc-menu";
 import { DecorSelection } from "@/components/decor/decor-selection";
+import { BottleSelection } from "@/components/table/bottle-selection";
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
 // All artwork is extracted unchanged from the live game's preloader bundle.
@@ -41,11 +42,14 @@ export function OriginalTableHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const [decorOpen, setDecorOpen] = useState(false);
+  const [bottleOpen, setBottleOpen] = useState(false);
+  const closeBottle = useCallback(() => setBottleOpen(false), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const closeDecor = useCallback(() => setDecorOpen(false), []);
   // MiscMenuPresenter: "Stil" -> DecorSelectionPresenter.show()
   const onMenuSelect = useCallback((id: string) => {
     if (id === "decor") setDecorOpen(true);
+    if (id === "bottle") setBottleOpen(true);
   }, []);
   return (
     <div className="original-table-header" aria-label="Orijinal üst masa ikonları">
@@ -70,6 +74,7 @@ export function OriginalTableHeader() {
       <OriginalIcon asset={changeTable} label="Masa değiştir" kind="default" />
       <OriginalMiscMenu open={menuOpen} triggerRef={menuTriggerRef} onClose={closeMenu} onSelect={onMenuSelect} />
       <DecorSelection open={decorOpen} onClose={closeDecor} />
+      <BottleSelection open={bottleOpen} onClose={closeBottle} />
     </div>
   );
 }

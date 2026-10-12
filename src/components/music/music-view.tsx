@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { YouTubeFrame } from "@/components/music/youtube-player";
 import { finishMusic, setMusicMuted, setMusicVolume, type PlayingSong } from "@/lib/music-session";
+import { Button } from "@/components/ui/button";
+import { Play, Pause, X } from "lucide-react";
 
 // Markup ported from MusicViewPreact.tsx, UniversalPlayer.tsx and PlayerControls.tsx (portrait layout).
 const bem = (block: string) => (element = "", mods: Array<string | false | undefined> = []) => {
@@ -19,6 +21,8 @@ function backgroundImageSector(deg: number, bg: string, fg: string) {
 /** HTMLAudioPlayer: plays the catalogue url from the shared start time. */
 function HtmlAudio({ url, startPosition, muted, volume, onReady, onProgress, onComplete }: { url: string; startPosition: number; muted: boolean; volume: number; onReady: () => void; onProgress: (s: number) => void; onComplete: () => void }) {
   const ref = useRef<HTMLAudioElement>(null);
+  const [playing,setPlaying] = useState(false);
+  const [failed,setFailed] = useState(false);
   useEffect(() => {
     const a = ref.current;
     if (!a) return;
@@ -27,12 +31,18 @@ function HtmlAudio({ url, startPosition, muted, volume, onReady, onProgress, onC
     a.addEventListener("loadedmetadata", ready, { once: true });
     a.addEventListener("timeupdate", time);
     a.addEventListener("ended", onComplete);
-    a.play().catch(() => { /* waits for the next tap */ });
+    a.play().catch(() => setPlaying(false));
     return () => { a.pause(); a.removeEventListener("timeupdate", time); a.removeEventListener("ended", onComplete); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
   useEffect(() => { if (ref.current) { ref.current.muted = muted; ref.current.volume = volume; } }, [muted, volume]);
-  return <audio ref={ref} src={url} className="music__html-audio--hidden" preload="auto" />;
+  return <>
+    <audio ref={ref} src={url} className="music__html-audio--hidden" preload="auto" onPlay={()=>{setPlaying(true);setFailed(false);}} onPause={()=>setPlaying(false)} onError={()=>setFailed(true)} />
+    <Button variant="ghost" className="music-play-toggle" aria-label={playing ? "Müziği duraklat" : failed ? "Müziği yeniden dene" : "Müziği oynat"} title={playing ? "Duraklat" : "Oynat"} onClick={()=>{
+      const audio=ref.current; if(!audio)return;
+      if(playing)audio.pause();else {if(failed){audio.load();setFailed(false);}void audio.play().catch(()=>setPlaying(false));}
+    }}>{playing ? <Pause size={18}/> : <Play size={18}/>}</Button>
+  </>;
 }
 
 export function MusicView({ song, muted, volume }: { song: PlayingSong; muted: boolean; volume: number }) {
@@ -60,6 +70,7 @@ export function MusicView({ song, muted, volume }: { song: PlayingSong; muted: b
 
   return (
     <div className={cls("", [position, media, size])} style={{ right: 0, top: 6 }}>
+      <Button variant="ghost" className="music-stop-button" aria-label="Müziği kapat" title="Kapat" onClick={done}><X size={14}/></Button>
       <div className={cls("top", [size, media, position, volumeClass])}>
         <div className={cls("progress", [ready ? undefined : "loading", size, position, media])}
           style={{ backgroundImage: ready ? backgroundImageSector(deg, "#F4F2EF", "#B6B6B6") : "none" }}>

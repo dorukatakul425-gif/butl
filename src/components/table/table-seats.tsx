@@ -6,6 +6,7 @@ import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/lib/gifts";
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
 import type { CilizAssets } from "@/lib/ciliz-assets";
+import { BottlePlay } from "./bottle-play";
 
 export interface SeatPlayer {
   name: string;
@@ -27,6 +28,7 @@ export function TableSeats() {
   const tableRef = useRef<PixiTable | null>(null);
   const playersRef = useRef<SeatPlayer[]>([]);
   const [giftSeat, setGiftSeat] = useState<number | null>(null);
+  const [activeTable, setActiveTable] = useState<PixiTable | null>(null);
 
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social) : []), [assets]);
 
@@ -50,11 +52,13 @@ export function TableSeats() {
       tableRef.current = table;
       playersRef.current = buildPlayers(assets, decor.frame, decor.stone);
       table.setPlayers(playersRef.current);
+      setActiveTable(table);
     });
     return () => {
       disposed = true;
       tableRef.current?.destroy();
       tableRef.current = null;
+      setActiveTable(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assets]);
@@ -89,7 +93,9 @@ export function TableSeats() {
 
   return (
     <>
-      <div ref={hostRef} className="original-table-seats" aria-label="Masadaki oyuncular" />
+      <div ref={hostRef} className="original-table-seats" aria-label="Masadaki oyuncular">
+        {activeTable && assets && <BottlePlay table={activeTable} assets={assets} />}
+      </div>
       {assets && (
         <SendGiftDialog
           open={giftSeat !== null}

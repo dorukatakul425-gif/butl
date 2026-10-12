@@ -59,6 +59,9 @@ export interface CilizGiftStoreEntry {
   birthday?: boolean;
 }
 export interface CilizAssets {
+  bottles?: Record<string, CilizBottle>;
+  bottleStore?: Array<{ id: string; social?: string[]; vip_s?: boolean }>;
+  bottle3d?: Record<string, CilizBottle3d>;
   gifts: Record<string, CilizGift>;
   giftStore: CilizGiftStoreEntry[];
   spines: Record<string, { finishSec?: number }>;
@@ -80,6 +83,9 @@ export function loadCilizAssets(): Promise<CilizAssets> {
       const server = await (await fetch(SERVER_JSON_URL)).json();
       const json = await (await fetch(server.assets.url)).json();
       return {
+        bottles: Object.fromEntries(Object.entries(json.bottles as Record<string, CilizBottle>).filter(([key]) => !key.startsWith('__'))),
+        bottleStore: json.bottles.__store.flat(),
+        bottle3d: json.bottle3d,
         gifts: json.gifts,
         giftStore: json.gifts.__store,
         spines: json.spines,
@@ -98,6 +104,13 @@ export function loadCilizAssets(): Promise<CilizAssets> {
     });
   }
   return assetsPromise;
+}
+
+export interface CilizBottle { type: string; image: string; bottle3d?: string; storePrice: number }
+export interface CilizBottle3d {
+  size: number[]; shadowSize: number[]; anchorX: number; anchorY: number;
+  lightX: number; lightY: number; lightZ: number; viewerX: number; viewerY: number; viewerZ: number;
+  shadowH: number; kd: number; ks: number; shininess: number;
 }
 
 export function translate(assets: CilizAssets, key: string, ...args: string[]) {
