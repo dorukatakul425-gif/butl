@@ -31,13 +31,16 @@ const imageCache = new Map<string, Promise<HTMLImageElement>>();
 function loadImage(url: string) {
   let promise = imageCache.get(url);
   if (!promise) {
-    promise = new Promise((resolve, reject) => {
+    // The game CDN sometimes serves a cached copy without CORS headers; retry with a fresh URL.
+    const attempt = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => resolve(img);
       img.onerror = () => reject(new Error(`Failed to load ${url}`));
-      img.src = url;
+      img.src = src;
     });
+    const fresh = (n: number) => `${url}${url.includes("?") ? "&" : "?"}r=${Date.now().toString(36)}${n}`;
+    promise = attempt(url).catch(() => attempt(fresh(1))).catch(() => attempt(fresh(2)));
     promise.catch(() => imageCache.delete(url));
     imageCache.set(url, promise);
   }
@@ -441,15 +444,15 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     const [flyView, stickView] = await Promise.all([
       createGiftView(assets, gift.flyImage, gift.spine, false, tableSize()),
       !gift.spine && gift.stickImage !== gift.flyImage ? createGiftView(assets, gift.stickImage, undefined, true, tableSize()) : undefined,
-      gift.vfx ? effects.preload(gift.vfx) : undefined,
-      options.prepareSfx?.(gift.startSound),
-      options.prepareSfx?.(gift.finishSound),
+      gift.vfx ? effects.preload(gift.vfx).catch(e => console.warn(e)) : undefined,
+      options.prepareSfx?.(gift.startSound)?.catch(() => {}),
+      options.prepareSfx?.(gift.finishSound)?.catch(() => {}),
     ]);
     if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
     // Upload both flying and landing textures before starting the clock.
     await app.renderer.plugins["prepare"].upload(flyView);
     if (stickView) await app.renderer.plugins["prepare"].upload(stickView);
-    if (gift.vfx) await effects.prepare(app.renderer, gift.vfx);
+    if (gift.vfx) await Promise.resolve(effects.prepare(app.renderer, gift.vfx)).catch(() => {});
     if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
     activate(flyView);
     const src = { x: sender.view.x, y: sender.view.y, scale: GIFT_SCALE, rotation: 0 };

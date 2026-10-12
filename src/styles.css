@@ -3,6 +3,7 @@
 @import "tw-animate-css";
 @import "./styles/ciliz-decor.css";
 @import "./styles/ciliz-gift.css";
+@import "./styles/ciliz-music.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -192,31 +193,6 @@
   background-color: #f5f5f5;
 }
 .original-chat-scroll { position: absolute; top: 0; bottom: 40px; width: 100%; overflow-y: auto; }
-.original-media-panel {
-  position: absolute;
-  right: 0;
-  top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.original-media-button {
-  width: 42px;
-  height: 40px;
-  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.3);
-  background-color: #fff;
-  border-radius: 20px 0 0 20px;
-  display: flex;
-  align-items: center;
-}
-.original-media-icon {
-  width: 28px;
-  height: 32px;
-  margin-left: 12px;
-  background: center / 28px 32px no-repeat;
-  border: 0;
-  cursor: pointer;
-}
 .original-chat-input {
   position: absolute;
   bottom: 0;

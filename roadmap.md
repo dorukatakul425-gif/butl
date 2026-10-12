@@ -10,3 +10,5 @@
 - [x] Add all source gift particle and table-combo effects; preload landing images, GPU textures and decoded sounds.
 - [x] Verify gift sending, attachment and all 15 particle configurations; 28 rules tests passed. Headless stress timing does not establish a universal no-stutter guarantee.
 - [x] Sync verified corrections and original effect asset pointers to butl.
+- [x] Chat music and video: live catalogues, original list/confirm popups, player view and chat line.
+- [ ] Push music/video feature to butl (waiting for user confirmation).

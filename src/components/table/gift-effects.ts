@@ -97,7 +97,8 @@ export class GiftEffects {
       ready = Promise.all((urls[name] ?? []).map(url => new Promise<Texture>((resolve, reject) => {
         const image = new Image(); image.crossOrigin = "anonymous";
         image.onload = () => resolve(Texture.from(image));
-        image.onerror = () => reject(new Error(`Effect image unavailable: ${url}`));
+        let retried = false;
+        image.onerror = () => { if (retried) return reject(new Error(`Effect image unavailable: ${url}`)); retried = true; image.src = `${url}?r=${Date.now()}`; };
         image.src = url;
       }))).then(textures => {
         if (this.disposed) { textures.forEach(texture => texture.destroy(true)); return; }
