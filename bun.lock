@@ -8,6 +8,7 @@
         "@hookform/resolvers": "^5.2.2",
         "@pixi-spine/base": "4.0.3",
         "@pixi-spine/runtime-3.8": "4.0.3",
+        "@pixi/particle-emitter": "5.0.8",
         "@radix-ui/react-accordion": "^1.2.12",
         "@radix-ui/react-alert-dialog": "^1.1.15",
         "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -297,6 +298,8 @@
     "@pixi/mixin-get-global-position": ["@pixi/mixin-get-global-position@7.4.2", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@pixi/mixin-get-global-position/-/mixin-get-global-position-7.4.2.tgz", { "peerDependencies": { "@pixi/core": "7.4.2", "@pixi/display": "7.4.2" } }, "sha512-LcsahbVdX4DFS2IcGfNp4KaXuu7SjAwUp/flZSGIfstyKOKb5FWFgihtqcc9ZT4coyri3gs2JbILZub/zPZj1w=="],
 
     "@pixi/particle-container": ["@pixi/particle-container@7.4.2", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@pixi/particle-container/-/particle-container-7.4.2.tgz", { "peerDependencies": { "@pixi/core": "7.4.2", "@pixi/display": "7.4.2", "@pixi/sprite": "7.4.2" } }, "sha512-B78Qq86kt0lEa5WtB2YFIm3+PjhKfw9La9R++GBSgABl+g13s2UaZ6BIPxvY3JxWMdxPm4iPrQPFX1QWRN68mw=="],
+
+    "@pixi/particle-emitter": ["@pixi/particle-emitter@5.0.8", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@pixi/particle-emitter/-/particle-emitter-5.0.8.tgz", { "peerDependencies": { "@pixi/constants": ">=6.0.4 <8.0.0", "@pixi/core": ">=6.0.4 <8.0.0", "@pixi/display": ">=6.0.4 <8.0.0", "@pixi/math": ">=6.0.4 <8.0.0", "@pixi/sprite": ">=6.0.4 <8.0.0", "@pixi/ticker": ">=6.0.4 <8.0.0" } }, "sha512-OzuZ4+esQo+zJ0u3htuNHHMAE8Ixmr3nz3tEfrTGZHje1vnGyie3ANQj9F0V4OM47oi9jd70njVCmeb7bTkS9A=="],
 
     "@pixi/prepare": ["@pixi/prepare@7.4.2", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@pixi/prepare/-/prepare-7.4.2.tgz", { "peerDependencies": { "@pixi/core": "7.4.2", "@pixi/display": "7.4.2", "@pixi/graphics": "7.4.2", "@pixi/text": "7.4.2" } }, "sha512-PugyMzReCHXUzc3so9PPJj2OdHwibpUNWyqG4mWY2UUkb6c8NAGK1AnAPiscOvLilJcv/XQSFoNhX+N1jrvJEg=="],
 

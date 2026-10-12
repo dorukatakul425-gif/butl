@@ -2,17 +2,18 @@
 import { Application, BaseTexture, Container, MIPMAP_MODES, Rectangle, Sprite, Text, TextStyle, Texture, type DisplayObject } from "pixi.js";
 import { TextureAtlas, TextureFilter } from "@pixi-spine/base";
 import { AtlasAttachmentLoader, SkeletonJson, Spine, type SkeletonData } from "@pixi-spine/runtime-3.8";
-import { ASSETS_TO_VIRTUAL as ASSETS_TO_VIRTUAL_K, bundleUrl, SPINE_DESIGN_TO_TABLE, tableFrameSize, VIRTUAL_SIZE, type CilizAssets } from "@/lib/ciliz-assets";
+import { bundleUrl, SPINE_DESIGN_TO_TABLE, tableFrameSize, VIRTUAL_SIZE, type CilizAssets, type CilizGift } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
-import { seededRandom, type SentGift } from "@/lib/gifts";
+import { type SentGift } from "@/lib/gifts";
+import { PHOTO_SIZE as PHOTO, PHOTO_SHADOW_SIZE as SHADOW_SIZE, GIFT_SCALE, OVER_SCALE, FLY_SEC, giftImageFrame, calcGiftPosition } from "@/lib/gift-geometry";
+import { GiftEffects } from "@/components/table/gift-effects";
+import { matchingTableEffects } from "@/lib/table-gift-effects";
 
 // TableView seats (virtual 375px table space, origin at table centre).
 const SEATS: Array<[number, number]> = [
   [41.5, -140.5], [123.5, -120.5], [138.5, -38.5], [138.5, 42.5], [123.5, 124.5], [41.5, 143.5],
   [-40.5, 143.5], [-122.5, 124.5], [-137.5, 42.5], [-137.5, -38.5], [-122.5, -120.5], [-40.5, -140.5],
 ];
-const PHOTO = 64;
-const SHADOW_SIZE = 8;
 const NAME_HEIGHT = 14;
 const NAME_TEXT_STYLE = new TextStyle({
   align: "center",
@@ -51,7 +52,10 @@ function loadSkeleton(assets: CilizAssets, name: string, tableSize: number) {
     promise = (async () => {
       const [img, raw] = await Promise.all([
         loadImage(bundleUrl(assets, name, "png", tableSize)),
-        fetch(bundleUrl(assets, name, "json", tableSize)).then((res) => res.json()),
+        fetch(bundleUrl(assets, name, "json", tableSize)).then((res) => {
+          if (!res.ok) throw new Error(`Skeleton ${name}: ${res.status}`);
+          return res.json();
+        }),
       ]);
       const baseTexture = BaseTexture.from(img, { mipmap: MIPMAP_MODES.ON });
       const atlas = new TextureAtlas(raw.__atlas, (_line, cb) => cb(baseTexture));
@@ -148,10 +152,13 @@ class SeatView {
   readonly sticks: Array<{ gift: SentGift; view: DisplayObject }> = [];
   private updateId = 0;
   private current = "";
+  private photoKey = "";
+  private disposed = false;
 
   constructor(onClick: () => void) {
     this.gifts.eventMode = "none";
     this.gifts.sortableChildren = true;
+    this.frameContainer.eventMode = "none";
     this.photo.eventMode = "static";
     this.photo.cursor = "pointer";
     this.photo.on("pointertap", onClick);
@@ -166,6 +173,7 @@ class SeatView {
   }
 
   async set(player: SeatPlayer, assets: CilizAssets, res: number, tableSize: number) {
+    if (this.disposed) return;
     const key = `${player.name}|${player.photoUrl}|${player.frame}|${player.stone}|${Math.ceil(res * 2) / 2}`;
     if (key === this.current) return;
     this.current = key;
@@ -176,9 +184,13 @@ class SeatView {
     this.stoneLeft.x = -textWidth / 2 - 1;
     this.stoneRight.x = textWidth / 2 + 1;
 
-    loadImage(player.photoUrl).then((img) => {
-      if (id !== this.updateId) return;
+    const photoKey = `${player.photoUrl}|${Math.ceil(res * 2) / 2}`;
+    if (photoKey !== this.photoKey) loadImage(player.photoUrl).then((img) => {
+      if (id !== this.updateId || this.disposed) return;
+      this.photoKey = photoKey;
+      const oldTexture = this.photo.texture;
       this.photo.texture = Texture.from(drawPhoto(img, res));
+      if (oldTexture !== Texture.EMPTY) oldTexture.destroy(true);
       this.photo.width = PHOTO + SHADOW_SIZE * 2;
       this.photo.height = PHOTO + SHADOW_SIZE;
       const sx = this.photo.texture.width / (PHOTO + SHADOW_SIZE * 2);
@@ -190,7 +202,7 @@ class SeatView {
     if (frame) {
       try {
         const skeleton = frame.spine ? await loadSkeleton(assets, frame.spine, tableSize) : undefined;
-        if (id !== this.updateId) return;
+        if (id !== this.updateId || this.disposed) return;
         if (skeleton) {
           this.frameContainer.addChild(spineFromSkeleton(skeleton, Boolean(frame.stick)));
         } else {
@@ -210,13 +222,19 @@ class SeatView {
           this.sprite(assets, stone.image, tableSize, 1, 0.5),
           this.sprite(assets, stone.image, tableSize, 0, 0.5),
         ]);
-        if (id !== this.updateId) return;
+        if (id !== this.updateId || this.disposed) { left.destroy(); right.destroy(); return; }
         this.stoneLeft.addChild(left);
         this.stoneRight.addChild(right);
       } catch (error) {
         console.error(`Stone ${player.stone} could not be loaded`, error);
       }
     }
+  }
+
+  dispose() {
+    this.disposed = true;
+    this.updateId++;
+    if (this.photo.texture !== Texture.EMPTY) this.photo.texture.destroy(true);
   }
 
   private async sprite(assets: CilizAssets, name: string, tableSize: number, ax: number, ay: number) {
@@ -230,12 +248,7 @@ class SeatView {
   }
 }
 
-// GiftAnimations constants and timings from preloader.js.
-const GIFT_SCALE = 0.75;
-const OVER_SCALE = 1.3 * GIFT_SCALE;
-const FLY_SEC = 5;
 const STICK_SORT = { ava: 0, drink: 1, hat: 2 } as const;
-const PHOTO_FRAME = { x: -PHOTO / 2, y: -PHOTO / 2, width: PHOTO, height: PHOTO };
 const easeOut = (p: number) => p * (2 - p);
 const DEG = Math.PI / 180;
 
@@ -249,9 +262,7 @@ async function giftSprite(assets: CilizAssets, name: string, tableSize: number) 
   }
   const sprite = new Sprite(new Texture(base));
   // ImageLoader.pixiApplyFrame()
-  const meta = assets.images[name];
-  const sz = meta ? meta.size_v2 || meta.size : [0, 0, 0, 0];
-  const frame = { x: -(sz[0] ?? 0) * ASSETS_TO_VIRTUAL_K, y: -(sz[1] ?? 0) * ASSETS_TO_VIRTUAL_K, width: (sz[2] ?? 0) * ASSETS_TO_VIRTUAL_K, height: (sz[3] ?? 0) * ASSETS_TO_VIRTUAL_K };
+  const frame = giftImageFrame(assets, name);
   sprite.width = frame.width;
   sprite.height = frame.height;
   if (frame.width && frame.height) sprite.anchor.set(frame.x / frame.width, frame.y / frame.height);
@@ -260,20 +271,31 @@ async function giftSprite(assets: CilizAssets, name: string, tableSize: number) 
 
 /** TableView.createGift(): spine when available, else the image. Fully loaded before use so the flight never hitches. */
 async function createGiftView(assets: CilizAssets, image: string, spine: string | undefined, stick: boolean, tableSize: number): Promise<DisplayObject> {
+  // ImageLoader.pixiWrap: animate an outer container, never overwrite the image's intrinsic scale.
+  const wrapper = new Container();
+  wrapper.eventMode = "none";
   if (spine) {
     try {
       const skeleton = await loadSkeleton(assets, spine, tableSize);
-      if (skeleton) return spineFromSkeleton(skeleton, stick);
+      if (skeleton) {
+        const view = spineFromSkeleton(skeleton, stick);
+        view.autoUpdate = false;
+        view.update(0);
+        wrapper.addChild(view);
+        return wrapper;
+      }
     } catch (error) {
       console.warn(`Gift spine ${spine} unavailable, using image`, error);
     }
   }
-  return giftSprite(assets, image, tableSize);
+  wrapper.addChild(await giftSprite(assets, image, tableSize));
+  return wrapper;
 }
 
 export interface PixiTableOptions {
   onSeatClick?: (index: number) => void;
   playSfx?: (id: string) => void;
+  prepareSfx?: (id: string) => Promise<unknown>;
 }
 
 export async function createPixiTable(host: HTMLElement, assets: CilizAssets, options: PixiTableOptions = {}) {
@@ -295,6 +317,11 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   app.stage.addChild(stage);
   const animationLayer = new Container();
   animationLayer.eventMode = "none";
+  const tableVfxLayer = new Container();
+  const giftVfxLayer = new Container();
+  tableVfxLayer.eventMode = "none";
+  giftVfxLayer.eventMode = "none";
+  const effects = new GiftEffects(giftVfxLayer, tableVfxLayer);
   const seats = SEATS.map(([x, y], index) => {
     const seat = new SeatView(() => options.onSeatClick?.(index));
     seat.view.x = x;
@@ -319,10 +346,11 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     stage.scale.set(scale);
     stage.x = width / 2;
     stage.y = header + available / 2;
+    effects.setLayout(width / scale, available / scale);
     players.forEach((player, index) => void seats[index]?.set(player, assets, res(), tableSize()));
   };
 
-  stage.addChild(animationLayer);
+  stage.addChild(animationLayer, tableVfxLayer, giftVfxLayer);
 
   // Small timeline runner on Pixi's own ticker (AnimationManager equivalent).
   type Tick = (elapsed: number) => boolean;
@@ -331,6 +359,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   app.ticker.add(() => {
     const dt = Math.min(app.ticker.deltaMS / 1000, 0.1);
     for (const tick of ticks) if (!tick(dt)) ticks.delete(tick);
+    effects.update(dt);
   });
   const run = (duration: number, step: (p: number) => void, done?: () => void) => {
     let t = 0;
@@ -359,53 +388,49 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       seat.sticks.splice(i, 1);
       const view = stick.view;
       after(delay, () => {
+        if (view.destroyed) return;
         const from = view.alpha;
         run(duration, (p) => { if (!view.destroyed) view.alpha = from * (1 - p); }, () => { if (!view.destroyed) destroyView(view); });
       });
     }
   };
 
-  const calcGiftPosition = (gift: SentGift) => {
-    switch (gift.stickPoint) {
-      case "ava": {
-        const r = seededRandom(gift.random);
-        const r1 = r(), r2 = r(), r3 = r();
-        return { x: PHOTO_FRAME.x + r1 * PHOTO_FRAME.width, y: PHOTO_FRAME.y + r2 * PHOTO_FRAME.height, scale: GIFT_SCALE, rotation: 360 * r3 };
-      }
-      case "drink":
-        return { x: PHOTO_FRAME.x + PHOTO_FRAME.width, y: PHOTO_FRAME.y + PHOTO_FRAME.height, scale: GIFT_SCALE, rotation: 0 };
-      case "hat":
-        return { x: PHOTO_FRAME.x, y: PHOTO_FRAME.y, scale: GIFT_SCALE, rotation: -45 };
+  const activate = (view: DisplayObject) => {
+    if (view instanceof Container) for (const child of view.children) if (child instanceof Spine) child.autoUpdate = true;
+  };
+
+  const activeTableEffects = new Set<string>();
+  const startTableEffects = () => {
+    for (const name of matchingTableEffects(seats.slice(0, players.length).map(seat => seat.sticks.map(stick => stick.gift.type)))) {
+      if (activeTableEffects.has(name)) continue;
+      activeTableEffects.add(name);
+      void effects.preload(name).then(async () => {
+        if (destroyed) return;
+        await effects.prepare(app.renderer, name);
+        if (destroyed) return;
+        effects.create(name, true);
+        options.playSfx?.(`vfx_${name}`);
+        after(24, () => activeTableEffects.delete(name));
+      }).catch(error => { activeTableEffects.delete(name); console.error(error); });
     }
   };
 
   const stickGift = async (receiver: SeatView, gift: SentGift, flyView: DisplayObject | undefined) => {
     const pt = calcGiftPosition(gift);
     let view = flyView;
-    if (view && !gift.spine && gift.stickImage !== gift.flyImage) {
-      destroyView(view);
-      view = undefined;
-    }
     if (!view) view = await createGiftView(assets, gift.stickImage, gift.spine, true, tableSize());
-    if (destroyed) return;
+    if (destroyed) { destroyView(view); return; }
     view.parent?.removeChild(view);
     view.position.set(pt.x, pt.y);
     view.scale.set(pt.scale);
     view.rotation = pt.rotation * DEG;
     view.zIndex = STICK_SORT[gift.stickPoint];
     receiver.gifts.addChild(view);
+    activate(view);
     // GiftAnimations.onStick()
     hideGifts(receiver, gift.stickPoint, gift.stickPoint === "ava" ? 8 : 0, 2);
     receiver.sticks.push({ gift, view });
-    // Keep the table light: never hold more than a handful of avatar gifts per seat.
-    const ava = receiver.sticks.filter((s) => s.gift.stickPoint === "ava");
-    if (ava.length > 12) {
-      const old = ava[0];
-      if (old) {
-        receiver.sticks.splice(receiver.sticks.indexOf(old), 1);
-        destroyView(old.view);
-      }
-    }
+    startTableEffects();
   };
 
   /** GiftAnimations.flyGift() */
@@ -413,12 +438,27 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     const sender = seats[from];
     const receiver = seats[to];
     if (!sender || !receiver) return;
-    const flyView = await createGiftView(assets, gift.flyImage, gift.spine, false, tableSize());
-    if (destroyed) return;
+    const [flyView, stickView] = await Promise.all([
+      createGiftView(assets, gift.flyImage, gift.spine, false, tableSize()),
+      !gift.spine && gift.stickImage !== gift.flyImage ? createGiftView(assets, gift.stickImage, undefined, true, tableSize()) : undefined,
+      gift.vfx ? effects.preload(gift.vfx) : undefined,
+      options.prepareSfx?.(gift.startSound),
+      options.prepareSfx?.(gift.finishSound),
+    ]);
+    if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
+    // Upload both flying and landing textures before starting the clock.
+    await app.renderer.plugins["prepare"].upload(flyView);
+    if (stickView) await app.renderer.plugins["prepare"].upload(stickView);
+    if (gift.vfx) await effects.prepare(app.renderer, gift.vfx);
+    if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
+    activate(flyView);
     const src = { x: sender.view.x, y: sender.view.y, scale: GIFT_SCALE, rotation: 0 };
     flyView.position.set(src.x, src.y);
     flyView.scale.set(src.scale);
     animationLayer.addChild(flyView);
+    const emitter = gift.vfx ? effects.create(gift.vfx) : undefined;
+    emitter?.updateSpawnPos(src.x, src.y);
+    emitter?.resetPositionTracking();
     // onFly(): drinks and hats replace the previous one.
     if (gift.stickPoint !== "ava") hideGifts(receiver, gift.stickPoint, 0, 2);
     options.playSfx?.(gift.startSound);
@@ -429,19 +469,44 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       const dst = { x: receiver.view.x + stickPt.x, y: receiver.view.y + stickPt.y, rotation: stickPt.rotation };
       flyView.x = (1 - p) * src.x + p * dst.x;
       flyView.y = (1 - p) * src.y + p * dst.y;
+      emitter?.updateSpawnPos(flyView.x, flyView.y);
       flyView.rotation = ((1 - p) * src.rotation + p * dst.rotation) * DEG;
       let scale = OVER_SCALE;
       if (p <= 0.1) scale = (1 - p / 0.1) * src.scale + (p / 0.1) * OVER_SCALE;
       else if (p >= 0.9) scale = (1 - (p - 0.9) / 0.1) * OVER_SCALE + ((p - 0.9) / 0.1) * stickPt.scale;
       flyView.scale.set(scale);
-    }, () => void stickGift(receiver, gift, flyView));
+    }, () => {
+      if (stickView) destroyView(flyView);
+      void stickGift(receiver, gift, stickView ?? flyView);
+    });
     const finishSec = gift.spine ? gift.spineFinishSec || FLY_SEC : FLY_SEC;
-    after(Math.min(finishSec, FLY_SEC), () => options.playSfx?.(gift.finishSound));
+    after(finishSec, () => options.playSfx?.(gift.finishSound));
   };
 
   const observer = new ResizeObserver(layout);
   observer.observe(host);
   layout();
+
+  const preloadJobs = new Map<string, Promise<void>>();
+  let preloadQueue = Promise.resolve();
+  const warmGift = async (gift: CilizGift) => {
+    // A single warm-up queue prevents many skeleton parsers from blocking one frame.
+    const spines = gift.spine_v2 || gift.spine || [];
+    for (const name of spines) {
+      if (destroyed) return;
+      const view = await createGiftView(assets, gift.flyImages[0] ?? "", name, false, tableSize());
+      if (!destroyed) await app.renderer.plugins["prepare"].upload(view);
+      destroyView(view);
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    }
+    if (!spines.length) for (const name of new Set([...gift.flyImages, ...gift.stickImages])) {
+      if (destroyed) return;
+      const view = await createGiftView(assets, name, undefined, false, tableSize());
+      if (!destroyed) await app.renderer.plugins["prepare"].upload(view);
+      destroyView(view);
+    }
+    if (gift.vfx && !destroyed) { await effects.preload(gift.vfx); if (!destroyed) await effects.prepare(app.renderer, gift.vfx); }
+  };
 
   return {
     setPlayers(next: SeatPlayer[]) {
@@ -456,13 +521,22 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     sendGift(from: number, to: number, gift: SentGift) {
       return flyGift(from, to, gift).catch((error) => console.error(`Gift ${gift.type} could not be shown`, error));
     },
-    preloadGift(gift: SentGift) {
-      void createGiftView(assets, gift.flyImage, gift.spine, false, tableSize()).then((v) => v.destroy({ children: true }), () => {});
+    preloadGift(gift: CilizGift) {
+      const key = `${gift.type}@${tableSize()}`;
+      const existing = preloadJobs.get(key);
+      if (existing) return existing;
+      const job = preloadQueue.then(() => warmGift(gift));
+      preloadQueue = job.catch(() => {});
+      preloadJobs.set(key, job);
+      job.catch(() => preloadJobs.delete(key));
+      return job;
     },
     destroy() {
       destroyed = true;
       ticks.clear();
       observer.disconnect();
+      effects.destroy();
+      seats.forEach(seat => seat.dispose());
       app.destroy(true, { children: true });
     },
   };

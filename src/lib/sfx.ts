@@ -30,7 +30,12 @@ function fetchRaw(url: string) {
 
 export function preloadSfx(template: string, id: string) {
   if (!id) return;
-  void fetchRaw(sfxUrl(template, id));
+  void prepareSfx(template, id);
+}
+
+export async function prepareSfx(template: string, id: string) {
+  if (!id) return null;
+  return decoded(sfxUrl(template, id));
 }
 
 function decoded(url: string) {
@@ -64,5 +69,6 @@ export async function playSfx(template: string, id: string) {
   const source = ac.createBufferSource();
   source.buffer = buffer;
   source.connect(ac.destination);
+  source.onended = () => source.disconnect();
   source.start();
 }

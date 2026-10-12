@@ -6,3 +6,7 @@
 - [x] Identify and download the original upper-table icons and their source-defined order and dimensions.
 - [x] Display the original table with eight original upper icons and verify image loading and layout.- [x] Tap a player to open the original gift drawer with server gifts; flight, stick and sounds as in the game.
 - [x] Push the gift feature to dorukatakul425-gif/butl.
+- [x] Match player and gift sizes and attachment positions to the original source.
+- [x] Add all source gift particle and table-combo effects; preload landing images, GPU textures and decoded sounds.
+- [x] Verify gift sending, attachment and all 15 particle configurations; 28 rules tests passed. Headless stress timing does not establish a universal no-stutter guarantee.
+- [x] Sync verified corrections and original effect asset pointers to butl.

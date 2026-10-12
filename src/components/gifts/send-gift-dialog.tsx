@@ -17,14 +17,28 @@ export interface SendGiftDialogProps {
   items: GiftStoreItem[];
   receiverName: string;
   onSend: (item: GiftStoreItem) => void;
+  onPreload: (item: GiftStoreItem) => void;
   onClose: () => void;
 }
 
-function GiftItem({ assets, item, onSend }: { assets: CilizAssets; item: GiftStoreItem; onSend: (item: GiftStoreItem) => void }) {
+function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; item: GiftStoreItem; onSend: (item: GiftStoreItem) => void; onPreload: (item: GiftStoreItem) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
   const img = dialogImage(assets, item.image, 60, 60);
   useEffect(() => () => window.clearTimeout(timer.current), []);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    let timer: number | undefined;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        timer = window.setTimeout(() => onPreload(item), 120);
+        observer.disconnect();
+      }
+    }, { root: element.closest(".popup__content"), rootMargin: "80px" });
+    observer.observe(element);
+    return () => { observer.disconnect(); window.clearTimeout(timer); };
+  }, [item, onPreload]);
   const activate = () => {
     onSend(item);
     const el = ref.current;
@@ -34,7 +48,7 @@ function GiftItem({ assets, item, onSend }: { assets: CilizAssets; item: GiftSto
     timer.current = window.setTimeout(() => el.classList.remove("send-gift__item--active"), 500);
   };
   return (
-    <div ref={ref} className={cls("item")} title={item.name} onClick={activate} role="button" aria-label={item.name}>
+    <div ref={ref} className={cls("item")} title={item.name} onClick={activate} onPointerEnter={() => onPreload(item)} onPointerDown={() => onPreload(item)} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
       <div className={cls("image-block")}>
         <img className={cls("image")} src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" loading="lazy" decoding="async" />
       </div>
@@ -46,7 +60,7 @@ function GiftItem({ assets, item, onSend }: { assets: CilizAssets; item: GiftSto
   );
 }
 
-export function SendGiftDialog({ open, assets, items, receiverName, onSend, onClose }: SendGiftDialogProps) {
+export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose }: SendGiftDialogProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -124,7 +138,7 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onCl
         <div className={`popup__content popup__content--no-padding ${cls("x_popup__content")}`} style={{ flex: 1 }}>
           <div ref={listRef} className={cls("", ["gift"])}>
             {items.map((item) => (
-              <GiftItem key={item.type} assets={assets} item={item} onSend={onSend} />
+              <GiftItem key={item.type} assets={assets} item={item} onSend={onSend} onPreload={onPreload} />
             ))}
           </div>
         </div>

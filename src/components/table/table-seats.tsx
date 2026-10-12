@@ -4,7 +4,7 @@ import { SendGiftDialog } from "@/components/gifts/send-gift-dialog";
 import { useDecorState } from "@/lib/decor-store";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/lib/gifts";
-import { playSfx, preloadSfx, unlockSfx } from "@/lib/sfx";
+import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
 import type { CilizAssets } from "@/lib/ciliz-assets";
 
 export interface SeatPlayer {
@@ -41,6 +41,7 @@ export function TableSeats() {
           setGiftSeat(index);
         },
         playSfx: (id) => void playSfx(assets.sfxUrl, id),
+        prepareSfx: (id) => prepareSfx(assets.sfxUrl, id),
       });
       if (disposed) {
         table.destroy();
@@ -81,6 +82,9 @@ export function TableSeats() {
     },
     [assets, giftSeat],
   );
+  const preload = useCallback((item: GiftStoreItem) => {
+    void tableRef.current?.preloadGift(item.gift).catch(error => console.warn(`Gift preload ${item.type}`, error));
+  }, []);
   const close = useCallback(() => setGiftSeat(null), []);
 
   return (
@@ -93,6 +97,7 @@ export function TableSeats() {
           items={giftItems}
           receiverName={giftSeat !== null ? (playersRef.current[giftSeat]?.name ?? "") : ""}
           onSend={send}
+          onPreload={preload}
           onClose={close}
         />
       )}
