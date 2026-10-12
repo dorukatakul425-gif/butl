@@ -546,9 +546,18 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     async spinBottle(from: number, to: number) {
       if (destroyed) return;
       bottleLayer.alpha=1;
-      const start=bottleLayer.rotation;
+      const start=bottleLayer.rotation%(2*Math.PI);
       const end=spinAngle(to)*Math.PI/180;
-      await tween(0.1,p => { bottleLayer.rotation=start+(Math.PI/18)*p; });
+      // GameAnimations.toCenter(): spinner photo tweens to -10deg in 0.1s, then back to 0 in 0.1s (EASE_OUT).
+      const spinnerView=seats[from]?.view;
+      if (spinnerView) {
+        const easeOut=(p:number)=>1-Math.pow(1-p,3);
+        void tween(0.1,p=>{spinnerView.rotation=-10*DEG*easeOut(p);})
+          .then(()=>tween(0.1,p=>{spinnerView.rotation=-10*DEG*(1-easeOut(p));}))
+          .then(()=>{spinnerView.rotation=0;});
+      }
+      // Bottle kicks back 10deg before the 4.9s spin.
+      await tween(0.1,p => { bottleLayer.rotation=start-(Math.PI/18)*(1-Math.pow(1-p,3)); });
       const initial=bottleLayer.rotation;
       await tween(SPIN_SECONDS-0.1,p => { bottleLayer.rotation=initial+(end-initial)*(1-Math.pow(1-p,3)); });
       bottleLayer.rotation=end%(2*Math.PI);
