@@ -608,6 +608,10 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       void tween(1,p=>{bottleLayer.alpha=1-p;});
       await movePlayers(from,to,true);
     },
+    resetWaitingBottle() {
+      bottleLayer.rotation = 0;
+      bottleLayer.alpha = 1;
+    },
     async returnPlayers(from: number,to: number) {
       await Promise.all([movePlayers(from,to,false),tween(1,p=>{bottleLayer.alpha=p;})]);
     },

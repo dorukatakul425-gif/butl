@@ -11,14 +11,15 @@ import { AuthScreen } from '@/components/account/auth-screen';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from '@tanstack/react-router';
 import { LogOut } from 'lucide-react';
+import { PlayerOnboarding } from '@/components/account/player-onboarding';
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Orijinal Oyun Masası" },
-      { name: "description", content: "Oyunun sunucusundan alınan orijinal ahşap masa ve masa ikonları." },
-      { property: "og:title", content: "Orijinal Oyun Masası" },
-      { property: "og:description", content: "Orijinal ahşap oyun masası ve sunucu görselleri." },
+      { title: "Oyun Masası | Şişe Çevirmece" },
+      { name: "description", content: "Gerçek oyuncularla ortak masada sohbet et ve sıran geldiğinde şişeyi çevir." },
+      { property: "og:title", content: "Oyun Masası | Şişe Çevirmece" },
+      { property: "og:description", content: "Şişe Çevirmece ortak oyun masası ve canlı oyuncu sohbeti." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:image", content: woodTable.url },
@@ -29,9 +30,11 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { user, loading } = useCloudAccount();
+  const { user, profile, loading } = useCloudAccount();
   if (loading) return <main className="account-page"><p role="status">Hesabın yükleniyor…</p></main>;
   if (!user) return <AuthScreen />;
+  if (!profile) return <main className="account-page"><p role="status">Profilin yükleniyor…</p></main>;
+  if (!profile.onboarding_completed_at) return <PlayerOnboarding />;
   return <LiveGame />;
 }
 function LiveGame() {

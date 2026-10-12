@@ -164,32 +164,44 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
           avatar_path: string
           avatar_url: string
           created_at: string
           display_name: string
           frame: string
+          gender: string | null
           id: string
+          onboarding_completed_at: string | null
+          player_id: number
           stone: string
           username: string
         }
         Insert: {
+          age?: number | null
           avatar_path?: string
           avatar_url?: string
           created_at?: string
           display_name: string
           frame?: string
+          gender?: string | null
           id: string
+          onboarding_completed_at?: string | null
+          player_id?: number
           stone?: string
           username: string
         }
         Update: {
+          age?: number | null
           avatar_path?: string
           avatar_url?: string
           created_at?: string
           display_name?: string
           frame?: string
+          gender?: string | null
           id?: string
+          onboarding_completed_at?: string | null
+          player_id?: number
           stone?: string
           username?: string
         }
@@ -350,6 +362,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_player_onboarding: {
+        Args: { selected_age: number; selected_gender: string }
+        Returns: undefined
+      }
       heartbeat_game: { Args: never; Returns: undefined }
       in_room: { Args: { r: string }; Returns: boolean }
       join_game: { Args: never; Returns: string }

@@ -36,6 +36,13 @@
       "when": 1791833444410,
       "tag": "0004_synchronize_round_timing_and_blocked_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791835545540,
+      "tag": "0005_player_onboarding_and_mixed_gender_rounds",
+      "breakpoints": true
     }
   ]
 }

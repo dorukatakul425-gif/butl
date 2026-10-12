@@ -8,8 +8,8 @@ import { useServerFn } from '@tanstack/react-start';
 import { translateRoomMessage } from '@/lib/chat-translation.functions';
 import { resolveProfilePhoto } from '@/lib/profile-photo';
 
-export interface SharedRound { phase: 'offer' | 'choose' | 'result'; spinner: string | null; target: string | null; decisions: Record<string, 'kiss' | 'refuse'>; deadline?: string; started_at?: string; turns?: number }
-export interface RoomPlayer extends ChatPlayer { seat: number; username: string }
+export interface SharedRound { phase: 'waiting' | 'offer' | 'choose' | 'result'; spinner: string | null; target: string | null; decisions: Record<string, 'kiss' | 'refuse'>; deadline?: string; started_at?: string; turns?: number }
+export interface RoomPlayer extends ChatPlayer { seat: number; username: string; gender: string | null; onboarded: boolean }
 export type RoomEvent = Database['public']['Tables']['game_events']['Row'];
 export interface CloudRoom { id: string; players: RoomPlayer[]; events: RoomEvent[]; round: SharedRound }
 const toPlayer = (p: PlayerProfile): ChatPlayer => ({ id: p.id, name: p.display_name, photoUrl: p.avatar_url || DEFAULT_PHOTO, frame: p.frame, stone: p.stone });
@@ -31,6 +31,7 @@ export function useCloudRoom() {
       if (joined.error || !joined.data) throw new Error(joined.error?.message ?? 'Masaya katılınamadı.');
       const id = joined.data;
       if (!alive) return;
+      await supabase.rpc('play_round', { action: 'refresh' });
       const refresh = async () => {
         if (!alive) return;
         if (refreshing) { again = true; return; }
@@ -46,7 +47,7 @@ export function useCloudRoom() {
           ]);
           for (const result of [members, state, messages, events, wallet, blocked]) if (result.error) throw new Error(result.error.message);
           if (!alive) return;
-          const players = (await Promise.all((members.data ?? []).map(async m => m.profiles ? { ...toPlayer(await resolveProfilePhoto(m.profiles)), username: m.profiles.username, seat: m.seat } : null))).filter((p): p is RoomPlayer => p !== null);
+          const players = (await Promise.all((members.data ?? []).map(async m => m.profiles ? { ...toPlayer(await resolveProfilePhoto(m.profiles)), username: m.profiles.username, gender: m.profiles.gender, onboarded: Boolean(m.profiles.onboarding_completed_at), seat: m.seat } : null))).filter((p): p is RoomPlayer => p !== null);
           const hidden = new Set(blocked.data?.map(b => b.blocked_id));
           snapshot = { viewer: players.find(p => p.id === user.id) ?? null, hearts: wallet.data?.hearts ?? null, messages: (messages.data ?? []).reverse().flatMap(m => m.sender && !hidden.has(m.sender_id) ? [{ id: m.id, text: m.text, sender: toPlayer(m.sender), ...(m.receiver ? { receiver: toPlayer(m.receiver) } : {}), canTranslate: true }] : []) };
           listeners.forEach(fn => fn());

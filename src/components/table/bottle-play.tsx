@@ -28,9 +28,11 @@ export function BottlePlay({table, assets, room, viewerId}: {table: Table; asset
   const spinner = room?.players.find(p => p.id === shared?.spinner)?.seat ?? VIEWER;
   const target = room?.players.find(p => p.id === shared?.target)?.seat ?? 0;
   const [spinning, setSpinning] = useState(false);
+  const eligible = Boolean(room?.players.some(p => p.onboarded && p.gender === 'male') && room?.players.some(p => p.onboarded && p.gender === 'female'));
+  const waiting = !eligible || shared?.phase === 'waiting';
   const animated = useRef('');
   const previousPair = useRef<[number, number] | null>(null);
-  const round = { phase: spinning ? 'spin' : shared?.phase ?? 'offer', spinner, target, decisions: Object.fromEntries((room?.players ?? []).flatMap(p => shared?.decisions[p.id] ? [[p.seat, shared.decisions[p.id]]] : [])) as Record<number, Decision> };
+  const round = { phase: waiting ? 'waiting' : spinning ? 'spin' : shared?.phase ?? 'waiting', spinner, target, decisions: Object.fromEntries((room?.players ?? []).flatMap(p => shared?.decisions[p.id] ? [[p.seat, shared.decisions[p.id]]] : [])) as Record<number, Decision> };
   const [remaining,setRemaining] = useState(DECISION_SECONDS);
   const [bottleError,setBottleError] = useState(false);
   const [ready,setReady] = useState(false);
@@ -55,19 +57,20 @@ export function BottlePlay({table, assets, room, viewerId}: {table: Table; asset
     layout(); const ro = new ResizeObserver(layout); ro.observe(host); return ()=>ro.disconnect();
   },[]);
   const spin = () => { unlockSfx(); void performRound('spin').catch(e => toast.error(e.message)); };
+  useEffect(() => { if (waiting && ready) { setSpinning(false); table.resetWaitingBottle(); } }, [waiting, ready, table]);
   useEffect(() => {
-    if (!shared || !ready || !shared.started_at || shared.phase === 'offer' || animated.current === shared.started_at) return;
+    if (waiting || !shared || !ready || !shared.started_at || shared.phase === 'offer' || animated.current === shared.started_at) return;
     animated.current = shared.started_at;
     previousPair.current = [spinner, target];
     setSpinning(true);
     void table.spinBottle(spinner, target, Date.parse(shared.started_at), shared.turns ?? 10).then(() => setSpinning(false));
-  }, [shared?.started_at, ready, spinner, target, table]);
+  }, [shared?.started_at, waiting, ready, spinner, target, table]);
   useEffect(() => {
-    if (shared?.phase !== 'offer' || !previousPair.current) return;
+    if (shared?.phase !== 'offer' && shared?.phase !== 'waiting' || !previousPair.current) return;
     const [from, to] = previousPair.current;
     previousPair.current = null;
-    void table.returnPlayers(from, to);
-  }, [shared?.phase, table]);
+    void table.returnPlayers(from, to).then(() => { if (waiting) table.resetWaitingBottle(); });
+  }, [shared?.phase, waiting, table]);
   useEffect(() => {
     if (!shared?.deadline) return;
     const tick = () => {
@@ -82,9 +85,9 @@ export function BottlePlay({table, assets, room, viewerId}: {table: Table; asset
   const offer = offers[round.spinner] ?? offers[0];
   const decide = (decision: Decision) => { void performRound('decide', decision).catch(e => toast.error(e.message)); };
   return <div ref={overlay} className="bottle-play-overlay" aria-label="Şişe oyunu" data-phase={round.phase} data-spinner={round.spinner} data-target={round.target}>
-    <span role="status" className="bottle-turn-status">{round.phase==="offer" ? (round.spinner===VIEWER ? (room && room.players.length < 2 ? "Başka bir oyuncu bekleniyor" : "Sıra sende") : `Oyuncu ${round.spinner+1} • Sırası`) : round.phase==="spin" ? `${round.spinner===VIEWER ? "Sen" : `Oyuncu ${round.spinner+1}`} • Şişeyi çeviriyor` : round.phase==="choose" ? (participating ? translate(assets,"game:choose:title") : translate(assets,"game:willtheykiss")) : ""}</span>
+    <span role="status" className="bottle-turn-status">{waiting ? 'Oyuncular bekleniyor…' : round.phase==="offer" ? (round.spinner===VIEWER ? "Sıra sende" : `Oyuncu ${round.spinner+1} • Sırası`) : round.phase==="spin" ? `${round.spinner===VIEWER ? "Sen" : `Oyuncu ${round.spinner+1}`} • Şişeyi çeviriyor` : round.phase==="choose" ? (participating ? translate(assets,"game:choose:title") : translate(assets,"game:willtheykiss")) : ""}</span>
     {round.phase==="offer" && round.spinner===VIEWER && <>
-      <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={!ready || !room || room.players.length < 2} onClick={spin} />
+      <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={!ready || !room || !eligible} onClick={spin} />
       <BottleIcon className="bottle-roll-big" src={rollBig.url} alt="" /><span className="bottle-roll-text">{translate(assets,"game:spin")}</span>
     </>}
     {round.phase==="offer" && round.spinner!==VIEWER && offer && <>
