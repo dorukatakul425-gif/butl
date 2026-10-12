@@ -362,6 +362,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      change_game_room: { Args: never; Returns: string }
       complete_player_onboarding: {
         Args: { selected_age: number; selected_gender: string }
         Returns: undefined

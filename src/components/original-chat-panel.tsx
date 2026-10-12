@@ -23,6 +23,8 @@ export function OriginalChatPanel() {
   const account = useGameSession();
   const [text, setText] = useState("");
   const [notice, setNotice] = useState("");
+  const [sending, setSending] = useState(false);
+  const sendingRef = useRef(false);
   const [emojisOpen, setEmojisOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [profile, setProfile] = useState<ChatPlayer | null>(null);
@@ -63,8 +65,12 @@ export function OriginalChatPanel() {
     const addressed = receiver && text.startsWith(prefix);
     const body = addressed ? text.slice(prefix.length) : text;
     if (!body.trim()) return;
-    try { await sendChatMessage(body, addressed ? receiver.id : undefined); setText(""); setReceiver(null); setNotice(""); }
-    catch (error) { setNotice(error instanceof Error ? error.message : "Mesaj gönderilemedi."); }
+    if (sendingRef.current) return;
+    const original = text;
+    sendingRef.current = true; setSending(true); setText(''); setNotice('');
+    try { await sendChatMessage(body, addressed ? receiver.id : undefined); setReceiver(null); }
+    catch (error) { setText(current => current || original); setNotice(error instanceof Error ? error.message : "Mesaj gönderilemedi."); }
+    finally { sendingRef.current = false; setSending(false); }
   };
   const selectedMessage = account.messages.find(message => message.id === selected);
 
@@ -101,7 +107,7 @@ export function OriginalChatPanel() {
       <form className="original-chat-input" onSubmit={(e) => { e.preventDefault(); void send(); }}>
         <input ref={inputRef} value={text} onChange={e => setText(e.target.value)} maxLength={140} className="original-chat-input-field" type="text" placeholder={assets ? translate(assets, "chat:input_hint") : ""} aria-label="Mesaj yaz" autoComplete="off" enterKeyHint="send" />
         <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji" aria-label="Emoji" aria-expanded={emojisOpen} onClick={() => setEmojisOpen(!emojisOpen)}><img src={emojiIcon.url} alt="" /></Button>
-        <Button variant="ghost" type="submit" className="original-chat-round original-chat-send" aria-label="Gönder"><img src={sendIcon.url} alt="" /></Button>
+        <Button variant="ghost" type="submit" disabled={sending} className="original-chat-round original-chat-send" aria-label="Gönder"><img src={sendIcon.url} alt="" /></Button>
       </form>
       {assets && profile && <ProfileDialog player={{ id: profile.id, name: profile.name, photoUrl: profile.photoUrl, frame: profile.frame ?? "", stone: profile.stone ?? "" }} self={profile.id === account.viewer?.id || profile.id === "viewer"} assets={assets} onClose={() => setProfile(null)} onGift={() => { window.dispatchEvent(new CustomEvent('game-gift-to', { detail: profile.id })); setProfile(null); }} onDecor={() => setNotice("Süsleme için masadaki profilinizi seçin.")} onMusic={() => { setProfile(null); setListType("audio"); }} />}
       {assets && selectedMessage && <div className="chat-actions-layer" onClick={() => { setSelected(null); setReportConfirm(false); }}><section role="dialog" aria-modal="true" aria-label={reportConfirm ? "Mesajı şikayet et" : "Mesaj işlemleri"} className="chat-message-actions message-actions__x_popup" onClick={e => e.stopPropagation()}>
@@ -121,7 +127,7 @@ export function OriginalChatPanel() {
           onConfirm={(music) => {
             setPreview(null);
             setListType(null);
-            sendMusic(music, preview.service, VIEWER_SENDER);
+            sendMusic(music, preview.service, account.viewer ? { ...account.viewer, musicLevel: 0 } : VIEWER_SENDER);
           }} />
       )}
     </section>

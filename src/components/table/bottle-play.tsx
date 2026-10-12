@@ -36,6 +36,15 @@ export function BottlePlay({table, assets, room, viewerId}: {table: Table; asset
   const [remaining,setRemaining] = useState(DECISION_SECONDS);
   const [bottleError,setBottleError] = useState(false);
   const [ready,setReady] = useState(false);
+  const [pending, setPending] = useState(false);
+  const actionPending = useRef(false);
+  const act = async (action: 'spin' | 'decide', decision?: Decision) => {
+    if (actionPending.current || !room) return;
+    actionPending.current = true; setPending(true);
+    try { await performRound(action, decision, room.id); }
+    catch (e) { toast.error(e instanceof Error ? e.message : 'İşlem tamamlanamadı.'); }
+    finally { actionPending.current = false; setPending(false); }
+  };
   useEffect(() => {
     void Promise.all([kissUp,kissDown,refuseUp,refuseDown,kissButton,refuseButton,rollBig,rollSmall].map(asset => preloadBottleIcon(asset.url)))
       .then(() => completeLoadingStage("icons"), failGameLoading);
@@ -56,7 +65,7 @@ export function BottlePlay({table, assets, room, viewerId}: {table: Table; asset
     };
     layout(); const ro = new ResizeObserver(layout); ro.observe(host); return ()=>ro.disconnect();
   },[]);
-  const spin = () => { unlockSfx(); void performRound('spin').catch(e => toast.error(e.message)); };
+  const spin = () => { unlockSfx(); void act('spin'); };
   useEffect(() => { if (waiting && ready) { setSpinning(false); table.resetWaitingBottle(); } }, [waiting, ready, table]);
   useEffect(() => {
     if (waiting || !shared || !ready || !shared.started_at || shared.phase === 'offer' || animated.current === shared.started_at) return;
@@ -76,18 +85,18 @@ export function BottlePlay({table, assets, room, viewerId}: {table: Table; asset
     const tick = () => {
       const left = Math.max(0, Math.ceil((Date.parse(shared.deadline ?? '') - Date.now()) / 1000));
       setRemaining(left);
-      if (left === 0) void performRound('refresh').catch(() => {});
+      if (left === 0) void performRound('refresh', undefined, room?.id).catch(() => {});
     };
     tick(); const timer = window.setInterval(tick, 1000); return () => clearInterval(timer);
   }, [shared?.deadline, shared?.phase, viewerId]);
   const participating = round.spinner===VIEWER || round.target===VIEWER;
   const [left,right] = leftRight(round.spinner,round.target);
   const offer = offers[round.spinner] ?? offers[0];
-  const decide = (decision: Decision) => { void performRound('decide', decision).catch(e => toast.error(e.message)); };
+  const decide = (decision: Decision) => { void act('decide', decision); };
   return <div ref={overlay} className="bottle-play-overlay" aria-label="Şişe oyunu" data-phase={round.phase} data-spinner={round.spinner} data-target={round.target}>
     <span role="status" className="bottle-turn-status">{waiting ? 'Oyuncular bekleniyor…' : round.phase==="offer" ? (round.spinner===VIEWER ? "Sıra sende" : `Oyuncu ${round.spinner+1} • Sırası`) : round.phase==="spin" ? `${round.spinner===VIEWER ? "Sen" : `Oyuncu ${round.spinner+1}`} • Şişeyi çeviriyor` : round.phase==="choose" ? (participating ? translate(assets,"game:choose:title") : translate(assets,"game:willtheykiss")) : ""}</span>
     {round.phase==="offer" && round.spinner===VIEWER && <>
-      <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={!ready || !room || !eligible} onClick={spin} />
+      <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={pending || !ready || !room || !eligible} onClick={spin} />
       <BottleIcon className="bottle-roll-big" src={rollBig.url} alt="" /><span className="bottle-roll-text">{translate(assets,"game:spin")}</span>
     </>}
     {round.phase==="offer" && round.spinner!==VIEWER && offer && <>
@@ -99,8 +108,8 @@ export function BottlePlay({table, assets, room, viewerId}: {table: Table; asset
       {round.decisions[right] && <BottleIcon className="bottle-decision-arrow bottle-arrow-down" src={round.decisions[right]==="kiss" ? kissDown.url:refuseDown.url} alt={round.decisions[right]==="kiss" ? "Öptü":"Vazgeçti"} />}
       {decisionTimerVisible(round.phase,participating,Boolean(round.decisions[VIEWER])) && <span className="bottle-countdown" role="timer" aria-label="Karar süresi">{remaining}</span>}
       {round.phase==="choose" && participating && !round.decisions[VIEWER] && <>
-        <Button variant="ghost" className="bottle-decision-button bottle-refuse-button" onClick={()=>decide("refuse")}><BottleIcon src={refuseButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss_cancel")}</span></Button>
-        <Button variant="ghost" className="bottle-decision-button bottle-kiss-button" onClick={()=>decide("kiss")}><BottleIcon src={kissButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss")}</span></Button>
+        <Button variant="ghost" disabled={pending} className="bottle-decision-button bottle-refuse-button" onClick={()=>decide("refuse")}><BottleIcon src={refuseButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss_cancel")}</span></Button>
+        <Button variant="ghost" disabled={pending} className="bottle-decision-button bottle-kiss-button" onClick={()=>decide("kiss")}><BottleIcon src={kissButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss")}</span></Button>
       </>}
     </>}
     {bottleError && <Button variant="ghost" className="bottle-retry" onClick={()=>{setBottleError(false);void table.setBottle(selected).then(()=>setReady(true),()=>setBottleError(true));}}>Şişeyi yeniden yükle</Button>}

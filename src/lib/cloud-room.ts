@@ -18,11 +18,22 @@ export function useCloudRoom() {
   const { user } = useCloudAccount();
   const [room, setRoom] = useState<CloudRoom | null>(null);
   const [error, setError] = useState('');
+  const [generation, setGeneration] = useState(0);
+  useEffect(() => {
+    const restart = () => { setRoom(null); setError(''); setGeneration(value => value + 1); };
+    window.addEventListener('game-room-rejoin', restart);
+    return () => window.removeEventListener('game-room-rejoin', restart);
+  }, []);
   useEffect(() => {
     if (!user) return;
     let alive = true;
     let channel: ReturnType<typeof supabase.channel> | undefined;
     let heartbeat: ReturnType<typeof setInterval> | undefined;
+    const reconcileRound = (event: Event) => {
+      const result = (event as CustomEvent<{ roomId: string; round: SharedRound }>).detail;
+      setRoom(current => current?.id === result.roomId ? { ...current, round: result.round } : current);
+    };
+    window.addEventListener('game-round-confirmed', reconcileRound);
     const listeners = new Set<() => void>();
     let snapshot: GameSessionSnapshot = { viewer: null, hearts: null, messages: [] };
     let refreshing = false, again = false;
@@ -66,7 +77,11 @@ export function useCloudRoom() {
       });
       channel = supabase.channel(`room-${id}-${user.id}`);
       for (const table of ['room_members', 'game_messages', 'game_events'] as const) channel.on('postgres_changes', { event: '*', schema: 'public', table, filter: `room_id=eq.${id}` }, () => void refresh());
-      channel.on('postgres_changes', { event: '*', schema: 'public', table: 'game_rooms', filter: `id=eq.${id}` }, () => void refresh());
+      channel.on('postgres_changes', { event: '*', schema: 'public', table: 'game_rooms', filter: `id=eq.${id}` }, payload => {
+        const next = payload.new as { round?: SharedRound };
+        const round = next.round;
+        if (round) setRoom(current => current?.id === id ? { ...current, round } : current);
+      });
       channel.on('postgres_changes', { event: '*', schema: 'public', table: 'wallets', filter: `user_id=eq.${user.id}` }, () => void refresh());
       channel.on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => void refresh());
       channel.subscribe(status => { if (status === 'SUBSCRIBED') void refresh(); });
@@ -74,11 +89,12 @@ export function useCloudRoom() {
       await refresh();
     };
     void start().catch(e => { if (alive) setError(e instanceof Error ? e.message : 'Masaya katılınamadı.'); });
-    return () => { alive = false; if (heartbeat) clearInterval(heartbeat); if (channel) void supabase.removeChannel(channel); attachGameSession(null); };
-  }, [user?.id]);
+    return () => { alive = false; window.removeEventListener('game-round-confirmed', reconcileRound); if (heartbeat) clearInterval(heartbeat); if (channel) void supabase.removeChannel(channel); attachGameSession(null); };
+  }, [user?.id, generation]);
   return { room, error };
 }
-export async function performRound(action: 'spin' | 'decide' | 'refresh', decision?: 'kiss' | 'refuse') {
-  const { error } = await supabase.rpc('play_round', { action, ...(decision ? { decision } : {}) });
+export async function performRound(action: 'spin' | 'decide' | 'refresh', decision?: 'kiss' | 'refuse', roomId?: string) {
+  const { data, error } = await supabase.rpc('play_round', { action, ...(decision ? { decision } : {}) });
   if (error) throw new Error(error.message);
+  if (roomId && data) window.dispatchEvent(new CustomEvent('game-round-confirmed', { detail: { roomId, round: data } }));
 }

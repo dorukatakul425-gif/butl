@@ -180,7 +180,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--background);
+  background: var(--chat-surface);
 }
 
 .original-page-wood {
@@ -200,6 +200,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  background: var(--chat-surface);
 }
 
 .original-table {
@@ -364,6 +365,10 @@
   overflow: hidden;
 }
 .original-misc-menu--show { animation: original-menu-show 0.2s ease-out; }
+.table-feature-dialog { z-index: 150; max-width: min(400px,calc(100vw - 32px)); font-family: Arial, sans-serif; background: var(--game-menu-surface); color: var(--game-menu-text); }
+.table-feature-stats { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+.table-feature-scores { max-height: 50dvh; overflow-y: auto; }
+.table-feature-scores > div { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; }
 .original-misc-menu--hide { animation: original-menu-hide 0.1s ease-in forwards; pointer-events: none; }
 @keyframes original-menu-show { from { opacity: 0; } }
 @keyframes original-menu-hide { to { opacity: 0; } }
@@ -440,6 +445,8 @@ html, body, body * {
   -webkit-tap-highlight-color: transparent;
 }
 img, svg, canvas { -webkit-user-drag: none; user-drag: none; }
+html.game-active, html.game-active body { background: var(--chat-surface); }
+html.game-active .original-page-wood { display: none; }
 input, textarea, [contenteditable="true"] {
   -webkit-user-select: text;
   user-select: text;

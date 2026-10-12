@@ -43,6 +43,20 @@
       "when": 1791835545540,
       "tag": "0005_player_onboarding_and_mixed_gender_rounds",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791836941020,
+      "tag": "0006_initial_heart_balance",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791837045877,
+      "tag": "0007_change_room_transaction",
+      "breakpoints": true
     }
   ]
 }

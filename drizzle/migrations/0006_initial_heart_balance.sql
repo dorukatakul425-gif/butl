@@ -1,0 +1,1 @@
+ALTER TABLE public.wallets ALTER COLUMN hearts SET DEFAULT 10000;
