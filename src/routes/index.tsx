@@ -3,6 +3,7 @@ import woodTable from "@/assets/original-wood-table.png.asset.json";
 import { OriginalTableHeader } from "@/components/original-table-header";
 import { OriginalChatPanel } from "@/components/original-chat-panel";
 import { TableSeats } from "@/components/table/table-seats";
+import { OriginalLoadingScreen } from "@/components/original-loading-screen";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <main className="original-table-page" aria-label="Orijinal oyun masası">
+      <OriginalLoadingScreen />
       <img className="original-page-wood" src={woodTable.url} alt="" />
       <div className="original-game">
         <div className="original-table">

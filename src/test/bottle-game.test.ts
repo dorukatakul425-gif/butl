@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { CENTER_SECONDS, SPIN_SECONDS, TABLE_SEATS, eligibleTargets, leftRight, pickTarget, spinAngle } from "@/lib/bottle-game";
+import { CENTER_SECONDS, SPIN_SECONDS, TABLE_SEATS, eligibleTargets, leftRight, pickTarget, spinAngle, turnOfferSound } from "@/lib/bottle-game";
 
 describe("source-derived bottle game geometry", () => {
+  it("plays the original ding only when the loaded bottle offers the viewer a turn", () => {
+    expect(turnOfferSound("offer", 5, 5, true)).toBe("ding");
+    expect(turnOfferSound("offer", 4, 5, true)).toBeNull();
+    expect(turnOfferSound("spin", 5, 5, true)).toBeNull();
+    expect(turnOfferSound("offer", 5, 5, false)).toBeNull();
+  });
   it("uses the twelve original seats", () => {
     expect(TABLE_SEATS).toHaveLength(12);
     expect(TABLE_SEATS[5]).toEqual([41.5,143.5]);

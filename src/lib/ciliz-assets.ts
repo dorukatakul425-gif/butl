@@ -1,5 +1,6 @@
 // Live game data, loaded directly from the game's own servers (same chain as preloader.js):
 // server.json -> assets.json -> bundle images / spine skeletons.
+import { completeLoadingStage, failGameLoading } from "./game-loading";
 const SERVER_JSON_URL = "https://cdn-s.ciliz.com/mobile/server.json";
 
 // MetaRegistry constants from preloader.js.
@@ -81,7 +82,9 @@ export function loadCilizAssets(): Promise<CilizAssets> {
   if (!assetsPromise) {
     assetsPromise = (async () => {
       const server = await (await fetch(SERVER_JSON_URL)).json();
+      completeLoadingStage("server");
       const json = await (await fetch(server.assets.url)).json();
+      completeLoadingStage("assets");
       return {
         bottles: Object.fromEntries(Object.entries(json.bottles as Record<string, CilizBottle>).filter(([key]) => !key.startsWith('__'))),
         bottleStore: json.bottles.__store.flat(),
@@ -100,6 +103,7 @@ export function loadCilizAssets(): Promise<CilizAssets> {
       } satisfies CilizAssets;
     })();
     assetsPromise.catch(() => {
+      failGameLoading();
       assetsPromise = null;
     });
   }

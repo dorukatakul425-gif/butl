@@ -7,6 +7,7 @@ import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
 import type { CilizAssets } from "@/lib/ciliz-assets";
 import { BottlePlay } from "./bottle-play";
+import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
 
 export interface SeatPlayer {
   name: string;
@@ -53,7 +54,8 @@ export function TableSeats() {
       playersRef.current = buildPlayers(assets, decor.frame, decor.stone);
       table.setPlayers(playersRef.current);
       setActiveTable(table);
-    });
+      completeLoadingStage("renderer");
+    }).catch(error => { console.error("Table loading failed", error); failGameLoading(); });
     return () => {
       disposed = true;
       tableRef.current?.destroy();

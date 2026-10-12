@@ -10,6 +10,9 @@ export const SPIN_SECONDS = 5;
 export const CENTER_SECONDS = 1;
 export const DECISION_SECONDS = 9;
 export type Decision = "kiss" | "refuse";
+export function turnOfferSound(phase: string, spinner: number, viewer: number, ready: boolean) {
+  return phase === "offer" && spinner === viewer && ready ? "ding" : null;
+}
 export function spinAngle(seat: number, random = Math.random()) {
   const pt = TABLE_SEATS[seat];
   if (!pt) throw new Error("Unknown seat");

@@ -1,4 +1,9 @@
 # Tasks
+- [ ] Transfer all startup, bottle-icon and viewer-turn sound corrections to butl/main and verify remote file hashes.
+- [x] Verify bottle icons and add original SVG fallbacks; forced image failures still display kiss/refuse buttons and arrows.
+- [x] Restore original viewer-turn ding; browser verified audio source starts when bot rounds return the turn to viewer.
+- [x] Restore original green startup pattern, loading bar and Spin the Bottle artwork from source assets; progress tracks actual readiness.
+- [x] Verify startup, kiss/refuse and subsequent bot rounds at phone and desktop sizes; rule tests passed, build OK.
 - [x] Correct decor dialog frame thumbnails and preview using the original source dimensions.
 - [x] Verify selecting and applying frames in the live game.
 - [x] Transfer all game/decor changes to dorukatakul425-gif/butl and verify the remote commit.
@@ -16,4 +21,4 @@
 - [x] Add source-derived spin, turn indication, bot turns and kiss/refuse arrows.
 - [x] Verify complete bottle flow: select a live bottle, spin, kiss/refuse, arrows and subsequent bot rounds; 38 tests passed.
 - [x] Correct music autoplay recovery and add stop control; live audio time advanced, video view and two chat lines verified.
-- [ ] Transfer verified bottle and music corrections to butl and verify the remote commit.
+- [x] Transfer verified bottle and music corrections to butl/main: 23a4b5359a38b8db55421824cbe1e659084a2d54; GitHub branch update returned success.

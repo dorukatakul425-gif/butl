@@ -13,6 +13,8 @@
 .bottle-spin-hit { position: absolute; left: -32px; top: -58px; width: 64px; height: 116px; padding: 0; pointer-events: auto; background: transparent; border: 0; }
 .bottle-spin-hit:hover { background: transparent; }
 .bottle-roll-big { position: absolute; left: 45.5px; top: -23.5px; width: 57px; height: 21px; transform: translate(-50%,-50%); }
+.bottle-roll-big, .bottle-roll-text { animation: bottle-offer-drag 250ms steps(1, end) infinite; }
+@keyframes bottle-offer-drag { 0%,100% { rotate: -4deg; } 50% { rotate: 0deg; } }
 .bottle-roll-text { position: absolute; left: 42px; top: -14px; width: 56px; font-size: 14px; line-height: 15px; font-weight: bold; white-space: pre-line; text-shadow: 0 1px 2px var(--bottle-shadow); transform: rotate(-15deg); }
 .bottle-roll-small { position: absolute; width: 17px; height: 17px; }
 .bottle-small-text { position: absolute; width: 60px; font-size: 10px; line-height: 11px; white-space: pre-line; text-shadow: 0 1px 2px var(--bottle-shadow); }
@@ -29,5 +31,6 @@
 .bottle-retry { position: absolute; left: -80px; width: 160px; pointer-events: auto; color: var(--bottle-ink); }
 @keyframes bottle-drawer-open { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { .bottle-drawer { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .bottle-roll-big, .bottle-roll-text { animation: none; } }
 .music-play-toggle { position: absolute; inset: 0; margin: auto; width: 30px; height: 30px; padding: 0; z-index: 4; color: var(--foreground); background: var(--background); border-radius: 50%; }
 .music-stop-button { position: absolute; left: -24px; top: 0; width: 22px; height: 22px; padding: 0; z-index: 5; color: var(--foreground); background: var(--background); border-radius: 50%; }

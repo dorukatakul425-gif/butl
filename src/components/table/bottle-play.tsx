@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { TABLE_SEATS, leftRight, pickTarget, useBottle, DECISION_SECONDS, type Decision } from "@/lib/bottle-game";
+import { leftRight, pickTarget, useBottle, turnOfferSound, DECISION_SECONDS, type Decision } from "@/lib/bottle-game";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
-import { unlockSfx } from "@/lib/sfx";
+import { playSfx, preloadSfx, unlockSfx } from "@/lib/sfx";
+import { BottleIcon, preloadBottleIcon } from "./bottle-icon";
+import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
 import kissUp from "@/assets/ui_arrow_kiss_up.svg.asset.json";
 import kissDown from "@/assets/ui_arrow_kiss_down.svg.asset.json";
 import refuseUp from "@/assets/ui_arrow_refuse_up.svg.asset.json";
@@ -27,13 +29,17 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
   const [ready,setReady] = useState(false);
   const roundRef = useRef(round); roundRef.current = round;
   useEffect(() => {
-    [kissUp,kissDown,refuseUp,refuseDown,kissButton,refuseButton,rollBig,rollSmall].forEach(asset => {
-      const image = new Image(); image.src = asset.url;
-    });
+    void Promise.all([kissUp,kissDown,refuseUp,refuseDown,kissButton,refuseButton,rollBig,rollSmall].map(asset => preloadBottleIcon(asset.url)))
+      .then(() => completeLoadingStage("icons"), failGameLoading);
   },[]);
+  useEffect(() => { preloadSfx(assets.sfxUrl, "ding"); }, [assets.sfxUrl]);
+  useEffect(() => {
+    const sound = turnOfferSound(round.phase, round.spinner, VIEWER, ready);
+    if (sound) void playSfx(assets.sfxUrl, sound);
+  }, [round.phase, round.spinner, ready, assets.sfxUrl]);
   useEffect(() => {
     let alive = true; setReady(false); setBottleError(false);
-    table.setBottle(selected).then(()=>{if(alive)setReady(true);},()=>{if(alive)setBottleError(true);});
+    table.setBottle(selected).then(()=>{if(alive){setReady(true);completeLoadingStage("bottle");}},()=>{if(alive){setBottleError(true);failGameLoading();}});
     return ()=>{alive=false;};
   },[selected,table]);
   useEffect(() => {
@@ -96,19 +102,19 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     <span role="status" className="bottle-turn-status">{round.phase==="offer" ? (round.spinner===VIEWER ? "Sıra sende" : `Oyuncu ${round.spinner+1} • Sırası`) : round.phase==="spin" ? `${round.spinner===VIEWER ? "Sen" : `Oyuncu ${round.spinner+1}`} • Şişeyi çeviriyor` : round.phase==="choose" ? (participating ? translate(assets,"game:choose:title") : translate(assets,"game:willtheykiss")) : ""}</span>
     {round.phase==="offer" && round.spinner===VIEWER && <>
       <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={!ready} onClick={spin} />
-      <img className="bottle-roll-big" src={rollBig.url} alt="" /><span className="bottle-roll-text">{translate(assets,"game:spin")}</span>
+      <BottleIcon className="bottle-roll-big" src={rollBig.url} alt="" /><span className="bottle-roll-text">{translate(assets,"game:spin")}</span>
     </>}
     {round.phase==="offer" && round.spinner!==VIEWER && offer && <>
-      <img className="bottle-roll-small" src={rollSmall.url} alt="" style={{left:offer[0],top:offer[1],transform:`translate(-50%,-50%) rotate(${offer[2]}deg)`}} />
+      <BottleIcon className="bottle-roll-small" src={rollSmall.url} alt="" style={{left:offer[0],top:offer[1],transform:`translate(-50%,-50%) rotate(${offer[2]}deg)`}} />
       <span className="bottle-small-text" style={{left:offer[3],top:offer[4]}}>{translate(assets,"game:spins")}</span>
     </>}
     {(round.phase==="choose"||round.phase==="result") && <>
-      {round.decisions[left] && <img className="bottle-decision-arrow bottle-arrow-up" src={round.decisions[left]==="kiss" ? kissUp.url:refuseUp.url} alt={round.decisions[left]==="kiss" ? "Öptü":"Vazgeçti"} />}
-      {round.decisions[right] && <img className="bottle-decision-arrow bottle-arrow-down" src={round.decisions[right]==="kiss" ? kissDown.url:refuseDown.url} alt={round.decisions[right]==="kiss" ? "Öptü":"Vazgeçti"} />}
+      {round.decisions[left] && <BottleIcon className="bottle-decision-arrow bottle-arrow-up" src={round.decisions[left]==="kiss" ? kissUp.url:refuseUp.url} alt={round.decisions[left]==="kiss" ? "Öptü":"Vazgeçti"} />}
+      {round.decisions[right] && <BottleIcon className="bottle-decision-arrow bottle-arrow-down" src={round.decisions[right]==="kiss" ? kissDown.url:refuseDown.url} alt={round.decisions[right]==="kiss" ? "Öptü":"Vazgeçti"} />}
       {round.phase==="choose" && <span className="bottle-countdown">{remaining}</span>}
       {round.phase==="choose" && participating && !round.decisions[VIEWER] && <>
-        <Button variant="ghost" className="bottle-decision-button bottle-refuse-button" onClick={()=>decide("refuse")}><img src={refuseButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss_cancel")}</span></Button>
-        <Button variant="ghost" className="bottle-decision-button bottle-kiss-button" onClick={()=>decide("kiss")}><img src={kissButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss")}</span></Button>
+        <Button variant="ghost" className="bottle-decision-button bottle-refuse-button" onClick={()=>decide("refuse")}><BottleIcon src={refuseButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss_cancel")}</span></Button>
+        <Button variant="ghost" className="bottle-decision-button bottle-kiss-button" onClick={()=>decide("kiss")}><BottleIcon src={kissButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss")}</span></Button>
       </>}
     </>}
     {bottleError && <Button variant="ghost" className="bottle-retry" onClick={()=>{setBottleError(false);void table.setBottle(selected).then(()=>setReady(true),()=>setBottleError(true));}}>Şişeyi yeniden yükle</Button>}
