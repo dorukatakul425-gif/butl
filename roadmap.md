@@ -3,7 +3,7 @@
 - [x] Add username/player-ID login and email-free signup without email confirmation, with premium mobile-friendly graphics.
 - [x] Verify first entry, saved selection, upright waiting bottle, username login and two-account turn visibility/synchronized spin (15 regression tests passed).
 - [ ] Verify exact original waiting text and dimensions — current supplied-source inspection did not establish the waiting label.
-- [ ] Transfer onboarding/account changes to GitHub.
+- [x] Transfer onboarding/account changes to GitHub (main verified after upload).
 - [x] Add Cloud accounts, profiles, polished auth/home screens and private profile photo uploads.
 - [x] Replace demo seats with authenticated shared rooms and synchronized chat, rounds and gift/gesture events.
 - [x] Persist balances and validate gifts/gestures without granting invented VIP or currency.
