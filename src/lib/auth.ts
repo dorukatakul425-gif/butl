@@ -24,9 +24,18 @@ function start() {
   if (!sb) { set({ ready: true, configured: false }); return; }
   sb.auth.onAuthStateChange((event, session) => {
     if (event === "TOKEN_REFRESHED") { state = { ...state, session }; return; }
-    set({ session });
-    void refreshProfile().finally(() => set({ ready: true }));
+    // Session and profile switch together so pages never see a signed-in user without a profile.
+    if (!session) { set({ session: null, profile: null, ready: true }); return; }
+    void sb.from("profiles").select("*").eq("id", session.user.id).maybeSingle()
+      .then(({ data }) => set({ session, profile: (data as Profile | null) ?? null, ready: true }),
+            () => set({ session, profile: null, ready: true }));
   });
+}
+
+/** Signs out and updates every page immediately, without waiting for the network. */
+export async function signOut() {
+  set({ session: null, profile: null, ready: true });
+  await getSupabase()?.auth.signOut();
 }
 
 const SERVER: AuthState = { ready: false, configured: true, session: null, profile: null };

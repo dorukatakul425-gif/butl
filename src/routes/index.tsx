@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth, refreshProfile } from "@/lib/auth";
+import { signOut, useAuth, refreshProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import bottleIcon from "@/assets/original-menu-bottle.svg.asset.json";
@@ -63,7 +63,7 @@ function Home() {
           <img src={bottleIcon.url} alt="" className="h-24 w-24" />
           <span className="font-bold">Şişe Oyunu</span>
         </Link>
-        <Button variant="outline" className="w-full" onClick={() => void getSupabase()?.auth.signOut()}>Çıkış yap</Button>
+        <Button variant="outline" className="w-full" onClick={() => void signOut()}>Çıkış yap</Button>
       </div>
     </main>
   );

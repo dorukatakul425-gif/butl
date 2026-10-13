@@ -45,6 +45,8 @@ function syncMusic() {
   applyRoomMusic(music, serverOffsetMs, { id: music.sender, name: p?.name ?? "", photoUrl: p?.photo_url || DEFAULT_PHOTO, musicLevel: 0 });
 }
 function applyRoom(room: RoomRow) {
+  // A target/spinner we have not loaded yet means our seat list is stale: reload before animating.
+  for (const seat of [room.spinner, room.target]) if (seat !== null && !state.players[toDisplay(seat, state.mySeat)]) { void loadPlayers(); break; }
   const changed = !state.room || state.room.phase !== room.phase || state.room.round !== room.round;
   set({ room, ...(changed ? { phaseReceivedAt: Date.now() } : {}) });
   syncMusic();
@@ -64,7 +66,11 @@ async function loadPlayers() {
 export function profileBySeat(display: number) { return state.players[display] ?? null; }
 export function displaySeatOf(userId: string) { return state.players.findIndex(p => p?.id === userId); }
 
-export async function joinRoom() {
+// Join/leave run strictly in order so a late leave_room never removes a fresh seat.
+let queue: Promise<unknown> = Promise.resolve();
+const serial = <T,>(fn: () => Promise<T>) => { const p = queue.then(fn, fn); queue = p.catch(() => undefined); return p; };
+export const joinRoom = () => serial(joinRoomNow);
+async function joinRoomNow() {
   const sb = getSupabase();
   if (!sb) { set({ error: "Sunucu ayarlanmamış." }); return; }
   leaveRoomLocal();
@@ -81,7 +87,8 @@ export async function joinRoom() {
   if (room) applyRoom(room as RoomRow);
   channel = sb.channel(`room-${roomId}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "rooms", filter: `id=eq.${roomId}` }, p => { if (p.new && "id" in p.new) applyRoom(p.new as RoomRow); })
-    .on("postgres_changes", { event: "*", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` }, () => void loadPlayers())
+    // DELETE events cannot be filtered by column, so listen unfiltered and reload this table's seats.
+    .on("postgres_changes", { event: "*", schema: "public", table: "room_players" }, () => void loadPlayers())
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, p => {
       const prof = p.new as Profile;
       const i = state.players.findIndex(x => x?.id === prof.id);
@@ -93,17 +100,18 @@ export async function joinRoom() {
   // Server owns timing; any seated client nudges expired phases forward.
   timers.push(window.setInterval(() => void sb.rpc("room_tick", { p_room: roomId }), 1000));
   timers.push(window.setInterval(() => void sb.rpc("heartbeat"), 15000));
+  timers.push(window.setInterval(() => void loadPlayers(), 5000));
 }
 
 function leaveRoomLocal() {
   timers.forEach(t => window.clearInterval(t)); timers = [];
   if (channel) { void getSupabase()?.removeChannel(channel); channel = null; }
 }
-export async function leaveRoom() {
+export const leaveRoom = () => serial(async () => {
   leaveRoomLocal();
   set(EMPTY);
   await getSupabase()?.rpc("leave_room");
-}
+});
 
 export async function spinBottle() { await getSupabase()?.rpc("spin_bottle"); }
 export async function decide(kiss: boolean) { await getSupabase()?.rpc("decide", { p_kiss: kiss }); }

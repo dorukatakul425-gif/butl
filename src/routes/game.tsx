@@ -37,7 +37,10 @@ function Index() {
     setViewerProfile(auth.profile);
     let alive = true;
     void joinRoom().then(() => { if (alive) setJoined(true); });
-    return () => { alive = false; void leaveRoom(); };
+    // Closing the tab frees the seat at once, so others see the player leave immediately.
+    const bye = () => void leaveRoom();
+    window.addEventListener("pagehide", bye);
+    return () => { alive = false; window.removeEventListener("pagehide", bye); void leaveRoom(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.ready, auth.session?.user.id, Boolean(auth.profile)]);
   if (!joined || !room.roomId) {
