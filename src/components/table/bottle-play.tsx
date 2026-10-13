@@ -92,7 +92,10 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
   useEffect(() => {
     if(round.phase!=="result")return;
     // Mutual kiss with the viewer counts toward totalKisses (kiss-locked gifts).
-    if((round.spinner===VIEWER||round.target===VIEWER) && round.decisions[round.spinner]==="kiss" && round.decisions[round.target]==="kiss") addViewerKiss();
+    if(round.decisions[round.spinner]==="kiss" && round.decisions[round.target]==="kiss") {
+      table.addKiss(round.spinner); table.addKiss(round.target);
+      if(round.spinner===VIEWER||round.target===VIEWER) addViewerKiss();
+    }
     const timer=window.setTimeout(()=>{
       setRound(prev=>({...prev,phase:"return",decisions:{}}));
     },2000);

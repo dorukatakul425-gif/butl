@@ -11,6 +11,7 @@ import { PHOTO_SIZE as PHOTO, PHOTO_SHADOW_SIZE as SHADOW_SIZE, GIFT_SCALE, OVER
 import { GiftEffects } from "@/components/table/gift-effects";
 import { matchingTableEffects } from "@/lib/table-gift-effects";
 import { originalBottle } from "./original-bottle";
+import { TABLE_USER_KISS } from "@/lib/table-kiss-icon";
 import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
 
 // TableView seats (virtual 375px table space, origin at table centre).
@@ -30,6 +31,10 @@ const NAME_TEXT_STYLE = new TextStyle({
   strokeThickness: 1.25,
   trim: true,
 });
+// KISS_TEXT_STYLE = NAME_TEXT_STYLE.clone() with bold weight and no trim.
+const KISS_TEXT_STYLE = NAME_TEXT_STYLE.clone();
+KISS_TEXT_STYLE.fontWeight = "bold";
+KISS_TEXT_STYLE.trim = false;
 
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
 function loadImage(url: string) {
@@ -168,6 +173,12 @@ class SeatView {
   private disposed = false;
   // TableUserView.selectionSprite: ui_table_user_chat_highlight, shown while the gift dialog targets this player.
   private selection = new Sprite();
+  // TableUserView.kissContainer: 16x14 kiss icon + bold count at the photo's top-right corner.
+  private kissContainer = new Container();
+  private kissSprite = new Sprite();
+  private kissText = new Text("", KISS_TEXT_STYLE);
+  private kisses = 0;
+  private kissAnim = 0;
 
   constructor(onClick: () => void) {
     this.gifts.eventMode = "none";
@@ -186,7 +197,50 @@ class SeatView {
     this.selection.eventMode = "none";
     this.selection.anchor.set(0.5);
     this.selection.visible = false;
-    this.view.addChild(this.photo, this.frameContainer, this.selection, this.nameContainer, this.gifts);
+    this.kissContainer.eventMode = "none";
+    this.kissContainer.x = -PHOTO / 2 + PHOTO - 2;
+    this.kissContainer.y = -PHOTO / 2 + 0.15 * PHOTO;
+    this.kissSprite.anchor.set(0.5);
+    this.kissText.anchor.set(0.5);
+    this.kissContainer.addChild(this.kissSprite, this.kissText);
+    this.kissContainer.visible = false;
+    this.view.addChild(this.photo, this.frameContainer, this.selection, this.nameContainer, this.kissContainer, this.gifts);
+  }
+
+  /** TableUserView.setKisses + updateKisses + animateKisses. */
+  setKisses(kisses: number, res: number) {
+    if (this.disposed) return;
+    const wasVisible = this.kisses > 0;
+    this.kisses = kisses;
+    if (!this.kissSprite.texture.valid || this.kissSprite.texture === Texture.EMPTY) {
+      this.kissSprite.texture = Texture.from(TABLE_USER_KISS, { resourceOptions: { width: 16 * Math.ceil(res), height: 14 * Math.ceil(res) } });
+    }
+    this.kissSprite.width = 16;
+    this.kissSprite.height = 14;
+    this.kissText.resolution = Math.ceil(res);
+    this.kissContainer.visible = kisses > 0;
+    this.kissText.text = `${kisses}`;
+    if (wasVisible) this.animateKisses();
+  }
+  private animateKisses() {
+    // 0.15s -> 1.2, 0.2s -> 0.9, 0.15s -> 1 with ease-out.
+    const steps: Array<[number, number, number]> = [[0, 0.15, 1.2], [0.15, 0.2, 0.9], [0.35, 0.15, 1]];
+    const id = ++this.kissAnim;
+    const start = performance.now();
+    const ease = (t: number) => 1 - (1 - t) * (1 - t);
+    const tick = (now: number) => {
+      if (id !== this.kissAnim || this.disposed) return;
+      const t = (now - start) / 1000;
+      let from = 1, value = 1;
+      for (const [at, dur, to] of steps) {
+        if (t < at) break;
+        value = t >= at + dur ? to : from + (to - from) * ease((t - at) / dur);
+        from = to;
+      }
+      this.kissContainer.scale.set(value);
+      if (t < 0.5) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   }
 
   // updateSelection(): selected = photo size, selectable = +4, chat highlight = +8.
@@ -560,7 +614,14 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     if (gift.vfx && !destroyed) { await effects.preload(gift.vfx); if (!destroyed) await effects.prepare(app.renderer, gift.vfx); }
   };
 
+  const seatKisses = new Map<number, number>();
   return {
+    /** Kisses collected at this table, shown on the seat like TableUserView.setKisses. */
+    addKiss(index: number) {
+      const next = (seatKisses.get(index) ?? 0) + 1;
+      seatKisses.set(index, next);
+      seats[index]?.setKisses(next, res());
+    },
     seatPoint(index: number) {
       const seat = seats[index];
       if (!seat || destroyed) return null;

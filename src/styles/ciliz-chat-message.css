@@ -42,3 +42,7 @@
 .chat__premium-sender-name { background-color: var(--chat-premium-base); background-image: var(--chat-premium-gradient); color: transparent; background-clip: text; -webkit-background-clip: text; }
 .original-chat-round { padding: 0; flex-shrink: 0; }
 .original-chat-input-field { font-family: Arial, Helvetica, sans-serif; }
+
+/* ChatContent translate link (original preloader css). */
+.chat__translate { font-size: 12px; cursor: pointer; color: #808080; }
+.chat__translate:active { filter: brightness(70%); }

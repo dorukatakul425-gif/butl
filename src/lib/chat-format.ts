@@ -6,6 +6,8 @@ export interface ChatProfile {
   isPremium?: boolean;
   top?: boolean;
   isViewer?: boolean;
+  /** Server-provided player locale (e.g. "tr", "ru"). */
+  locale?: string;
 }
 
 const customColors: Record<string, string> = {

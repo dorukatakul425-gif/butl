@@ -15,7 +15,10 @@ import { EmojiPicker } from "@/components/chat/emoji-picker";
 import { emojiPickerSize, emojiSendDecision, insertEmoji } from "@/lib/emoji";
 import { useViewerProgress } from "@/lib/viewer-progress";
 import { OPEN_GIFT_FOR_SEAT_EVENT, shouldScheduleVipTeaser, VIP_TEASER_DELAY, widgetOfTheDay } from "@/lib/chat-promos";
-import { OPEN_VIP_EVENT, SourceInfoDialog } from "@/components/source-dialogs";
+import { OPEN_VIP_EVENT, SourceInfoDialog, showSourceToast } from "@/components/source-dialogs";
+import { applyTranslation, chatTranslator, needsTranslation, toggleTranslation, useChatTranslations } from "@/lib/chat-translation";
+
+const VIEWER_LOCALE = "tr";
 
 const VIEWER_COUNTRY = "TR";
 const VIEWER_SENDER = { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl, male: VIEWER.male, musicLevel: 0 };
@@ -24,6 +27,13 @@ const VIEWER_SENDER = { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoU
 export function OriginalChatPanel() {
   const assets = useCilizAssets();
   const session = useMusicSession();
+  const translations = useChatTranslations();
+  const onTranslate = (key: number, original: string) => {
+    if (translations[key]?.translated) { toggleTranslation(key); return; }
+    const fn = chatTranslator();
+    if (!fn) { showSourceToast("Çeviri sunucusu henüz bağlı değil."); return; }
+    void fn(original, key).then(t => applyTranslation(key, t), () => {});
+  };
   const [listType, setListType] = useState<"audio" | "video" | null>(null);
   const [preview, setPreview] = useState<{ music: MusicItem; service: MusicService } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -124,7 +134,12 @@ export function OriginalChatPanel() {
                   onClick={() => { setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
                 <span className={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}>: </span>
                 {line.receiver && <><span className="chat__sender-name">{line.receiver.name}</span><span>, </span></>}
-                <span className="chat__word-break">{line.text}</span>
+                <span className="chat__word-break">{translations[line.key]?.shown ? translations[line.key]?.translated : line.text}</span>
+                {assets && needsTranslation(line.sender, VIEWER_LOCALE) && (
+                  <div className="chat__translate js-translate" role="button" onClick={() => onTranslate(line.key, line.text)}>
+                    {translate(assets, translations[line.key]?.shown ? "dlg:translate:show_original" : "dlg:translate:show_translation")}
+                  </div>
+                )}
               </div>
             </div>
           ) : line.kind === "action" ? (
