@@ -19,6 +19,7 @@
 @import "./styles/ciliz-vip.css";
 @import "./styles/ciliz-hints.css";
 @import "./styles/ciliz-user-profile.css";
+@import "./styles/ciliz-emoji.css";
 
 @custom-variant dark (&:is(.dark *));
 

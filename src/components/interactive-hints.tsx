@@ -91,7 +91,7 @@ export function InteractiveHints() {
       }).catch(() => { a1.cancel(true); return false; });
       off1();
       if (!ok || disposed) return false;
-      const a2 = runHintAnimation(asset, center(send), 135, t("tutorial:post:message_label2"), { isSendMessage: true });
+      const a2 = runHintAnimation(asset, center(send), 135, t("tutorial:post:message_label2"));
       const off2 = follow(a2.update, () => center(send));
       const sent = await step<boolean>(MESSAGE_STEP_TIMEOUT, resolve => {
         const onSent = () => { a2.cancel(false); void a2.finished.then(() => resolve(true)); };

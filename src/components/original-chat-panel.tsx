@@ -10,6 +10,11 @@ import { pushTextLine, sendMusic, useMusicSession } from "@/lib/music-session";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
+import { translate } from "@/lib/ciliz-assets";
+import { EmojiPicker } from "@/components/chat/emoji-picker";
+import { emojiPickerSize, emojiSendDecision, insertEmoji } from "@/lib/emoji";
+import { useViewerProgress } from "@/lib/viewer-progress";
+import { OPEN_VIP_EVENT, SourceInfoDialog } from "@/components/source-dialogs";
 
 const VIEWER_COUNTRY = "TR";
 const VIEWER_SENDER = { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl, musicLevel: 0 };
@@ -30,6 +35,42 @@ export function OriginalChatPanel() {
   }, []);
   const [receiver, setReceiver] = useState<import("@/lib/music-session").ChatUser | undefined>();
   const [small, setSmall] = useState(false);
+  const { vip } = useViewerProgress();
+  const sectionRef = useRef<HTMLElement>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [emojiSize, setEmojiSize] = useState(0);
+  const [emojiWarning, setEmojiWarning] = useState<string | null>(null);
+  const openVip = () => window.dispatchEvent(new Event(OPEN_VIP_EVENT));
+  // ChatView.userAction: any click outside the picker / emoji button hides it.
+  useEffect(() => {
+    if (!emojiOpen) return;
+    const close = (e: MouseEvent) => {
+      const t = e.target;
+      if (t instanceof HTMLElement && (t.closest(".emoji-picker") || t.closest(".js-emoji"))) return;
+      setEmojiOpen(false);
+    };
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [emojiOpen]);
+  const toggleEmoji = () => {
+    setEmojiSize(emojiPickerSize(sectionRef.current?.clientWidth ?? 0));
+    setEmojiOpen(o => !o);
+  };
+  const pickEmoji = (emoji: string) => {
+    const input = inputRef.current;
+    const prefix = receiver ? `${receiver.name}, ` : "";
+    const start = Math.max(0, (input?.selectionStart ?? prefix.length + text.length) - prefix.length);
+    const end = Math.max(0, (input?.selectionEnd ?? prefix.length + text.length) - prefix.length);
+    const next = insertEmoji(text, start, end, emoji);
+    setText(next.text);
+    window.setTimeout(() => { input?.focus(); input?.setSelectionRange(prefix.length + next.caret, prefix.length + next.caret); }, 0);
+  };
+  const doSend = (value: string) => {
+    if (pushTextLine({ ...VIEWER_SENDER, isViewer: true }, value, receiver)) {
+      window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: value }));
+      setText(""); setReceiver(undefined); inputRef.current?.focus();
+    }
+  };
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -56,7 +97,7 @@ export function OriginalChatPanel() {
   const listService = listType ? services[listType] : null;
 
   return (
-    <section className="original-chat chat" aria-label="Sohbet">
+    <section ref={sectionRef} className="original-chat chat" aria-label="Sohbet">
       <div ref={scrollRef} className="original-chat-scroll chat__scroll">
         <div className={`chat__body${small ? " chat__small" : ""}`}>
           {session.lines.map((line) => line.kind === "text" ? (
@@ -106,12 +147,14 @@ export function OriginalChatPanel() {
       </div>
       {session.song && <MusicView key={session.song.key} song={session.song} muted={session.muted} volume={session.volume} />}
       <InteractiveHints />
+      {emojiOpen && assets && <EmojiPicker size={emojiSize} vip={vip} lockText={translate(assets, "chat:emoji:hint")} activateText={translate(assets, "chat:emoji:activate")}
+        onPick={pickEmoji} onBecomeVip={() => { setEmojiOpen(false); openVip(); }} />}
       <form className="original-chat-input" onSubmit={(e) => {
         e.preventDefault();
-        if (pushTextLine({ ...VIEWER_SENDER, isViewer: true }, text, receiver)) {
-          window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: text }));
-          setText(""); setReceiver(undefined); inputRef.current?.focus();
-        }
+        if (!text.trim()) return;
+        // EmojiPresenter.showWarning(onSkip): emoji are VIP-only; "Atla" still sends the message.
+        if (emojiSendDecision(text, vip) === "warn") { setEmojiWarning(text); return; }
+        doSend(text);
       }}>
         <input ref={inputRef} className="original-chat-input-field" type="text" placeholder="" aria-label="Mesaj yaz" value={receiver ? `${receiver.name}, ${text}` : text}
           onChange={(e) => {
@@ -119,9 +162,14 @@ export function OriginalChatPanel() {
             if (prefix && !e.target.value.startsWith(prefix)) setReceiver(undefined);
             setText(prefix && e.target.value.startsWith(prefix) ? e.target.value.slice(prefix.length) : e.target.value);
           }} />
-        <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji" style={{ backgroundImage: `url(${emojiIcon.url})` }} aria-label="Emoji" />
+        <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji js-emoji" onClick={toggleEmoji} aria-expanded={emojiOpen} style={{ backgroundImage: `url(${emojiIcon.url})` }} aria-label="Emoji" />
         <Button variant="ghost" type="submit" className="original-chat-round original-chat-send" style={{ backgroundImage: `url(${sendIcon.url})` }} aria-label="Gönder" />
       </form>
+      {assets && emojiWarning !== null && (
+        <SourceInfoDialog title={translate(assets, "dlg:emoji:title")} context={translate(assets, "dlg:emoji:desc2")} onClose={() => setEmojiWarning(null)}
+          cancel={{ title: translate(assets, "dlg:emoji:send2"), onClick: () => { const v = emojiWarning; setEmojiWarning(null); doSend(v); } }}
+          confirm={{ title: translate(assets, "dlg:emoji:subscribe"), onClick: () => { setEmojiWarning(null); openVip(); } }} />
+      )}
       {assets && listService && (
         <MusicListDialog open={!!listType} type={listType ?? "audio"} assets={assets} service={listService}
           onPurchase={(music) => setPreview({ music, service: listService })} onClose={() => setListType(null)} />

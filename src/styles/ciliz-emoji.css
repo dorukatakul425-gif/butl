@@ -1,0 +1,113 @@
+.svg__ui_chat_btn_emoji,
+.chat-input__emoji {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2225%22%20height%3D%2225%22%20viewBox%3D%220%200%2025%2025%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22%23EDEDED%22%20fill-rule%3D%22nonzero%22%20d%3D%22M4.4%204.5C2.033%206.833.85%209.65.85%2012.95c0%203.3%201.183%206.133%203.55%208.5%202.333%202.333%205.15%203.5%208.45%203.5%203.3%200%206.133-1.167%208.5-3.5%202.333-2.367%203.5-5.2%203.5-8.5s-1.167-6.117-3.5-8.45c-2.367-2.367-5.2-3.55-8.5-3.55S6.733%202.133%204.4%204.5z%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20stroke%3D%22%23B3B3B3%22%20stroke-width%3D%221.5%22%20d%3D%22M4.9%2013c0-2.233.8-4.133%202.4-5.7%201.567-1.6%203.467-2.4%205.7-2.4s4.133.8%205.7%202.4c1.6%201.567%202.4%203.467%202.4%205.7s-.8%204.133-2.4%205.7c-1.567%201.6-3.467%202.4-5.7%202.4s-4.133-.8-5.7-2.4c-1.6-1.567-2.4-3.467-2.4-5.7z%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20stroke%3D%22%23B3B3B3%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22M17.25%2014.65c-.267.9-.8%201.65-1.6%202.25-.767.6-1.65.9-2.65.9s-1.883-.3-2.65-.9c-.8-.6-1.333-1.35-1.6-2.25%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22%23B3B3B3%22%20fill-rule%3D%22nonzero%22%20d%3D%22M11%2011c0-.267-.1-.5-.3-.7a.96.96%200%200%200-.7-.3c-.267%200-.5.1-.7.3-.2.2-.3.433-.3.7%200%20.267.1.5.3.7.2.2.433.3.7.3.267%200%20.5-.1.7-.3.2-.2.3-.433.3-.7zM17%2011c0-.267-.1-.5-.3-.7a.96.96%200%200%200-.7-.3c-.267%200-.5.1-.7.3-.2.2-.3.433-.3.7%200%20.267.1.5.3.7.2.2.433.3.7.3.267%200%20.5-.1.7-.3.2-.2.3-.433.3-.7z%22%2F%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.svg__ui_lock_emoji,
+.emoji-picker__vip-lock {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2022.1.0%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2020%2024%22%20style%3D%22enable-background%3Anew%200%200%2020%2024%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3A%23FFFFFF%3B%7D%0A%3C%2Fstyle%3E%0A%3Cg%20transform%3D%22matrix(%201%2C%200%2C%200%2C%201%2C%2015.4%2C21.2)%20%22%3E%0A%09%3Cg%20transform%3D%22matrix(%200.5604705810546875%2C%200%2C%200%2C%200.5604705810546875%2C%20-475.8%2C-218.3)%20%22%3E%0A%09%09%3Cg%3E%0A%09%09%09%3Cg%20id%3D%22Symbol_1_0_Layer0_0_FILL%22%3E%0A%09%09%09%09%3Cpath%20class%3D%22st0%22%20d%3D%22M839.3%2C351.7L839.3%2C351.7c-3.5%2C0-6.4%2C1.2-8.9%2C3.6c-2.4%2C2.5-3.6%2C5.4-3.6%2C8.8v4.5h-1.2c-2.8%2C0-4.2%2C1.3-4.2%2C4%0A%09%09%09%09%09v17.9c0%2C2.7%2C1.4%2C4%2C4.2%2C4h27.3c2.8%2C0%2C4.2-1.3%2C4.2-4v-17.9c0-2.7-1.4-4-4.2-4h-1.2v-4.5c0-3.5-1.2-6.4-3.7-8.8%0A%09%09%09%09%09C845.7%2C352.9%2C842.8%2C351.7%2C839.3%2C351.7%20M830.8%2C364.1c0-2.3%2C0.8-4.3%2C2.4-6l0.1%2C0c1.7-1.6%2C3.7-2.4%2C6-2.4h0.1c2.3%2C0%2C4.3%2C0.8%2C6%2C2.5%0A%09%09%09%09%09c1.7%2C1.7%2C2.5%2C3.7%2C2.5%2C6v4.5h-17V364.1%20M835.6%2C375c1-1%2C2.3-1.4%2C3.7-1.4c1.4%2C0%2C2.7%2C0.5%2C3.7%2C1.4c1%2C1%2C1.5%2C2.1%2C1.5%2C3.5%0A%09%09%09%09%09c0%2C1.4-0.5%2C2.5-1.5%2C3.5c-0.2%2C0.2-0.4%2C0.3-0.6%2C0.4v4c0%2C0.8-0.3%2C1.5-0.9%2C2.1c-0.6%2C0.6-1.3%2C0.9-2.2%2C0.9s-1.6-0.3-2.3-0.9%0A%09%09%09%09%09c-0.6-0.6-0.9-1.3-0.9-2.1v-4c-0.2-0.2-0.4-0.3-0.6-0.5c-1-1-1.5-2.1-1.5-3.5C834%2C377.2%2C834.6%2C376%2C835.6%2C375z%22%2F%3E%0A%09%09%09%3C%2Fg%3E%0A%09%09%3C%2Fg%3E%0A%09%3C%2Fg%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.chat-input__emoji {
+  background-size: 26px 26px;
+  height: 26px;
+  width: 26px;
+  border-radius: 13px;
+  margin: 0 6px 0 4px;
+}
+.chat-input__emoji:active {
+  -webkit-filter: brightness(70%);
+          filter: brightness(70%);
+}
+.chat-input__emoji-icon {
+  height: 17px;
+  width: auto;
+  margin-bottom: -3px;
+}
+.emoji-picker__body {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.749);
+  border-radius: 10px;
+  bottom: 48px;
+  right: 20px;
+  max-height: 50%;
+}
+.emoji-picker__body-hidden {
+  display: none;
+}
+.emoji-picker__body-layer {
+  position: absolute;
+  border-radius: 10px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.emoji-picker__list {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  overflow-x: hidden;
+  overflow-y: auto;
+  pointer-events: auto;
+}
+.emoji-picker__list::-webkit-scrollbar {
+  display: none;
+}
+.emoji-picker__list:before,
+.emoji-picker__list:after {
+  content: '';
+  display: block;
+}
+.emoji-picker__vip-shade {
+  background-color: rgba(0, 0, 0, 0.749);
+  pointer-events: all;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+.emoji-picker__vip-shade-hidden {
+  display: none;
+}
+.emoji-picker__vip-lock {
+  background-size: 30px 36px;
+  height: 36px;
+  width: 30px;
+}
+.emoji-picker__vip-lock-text {
+  font-size: 20px;
+  color: white;
+  text-align: center;
+  margin: 15px 0;
+  white-space: pre-line;
+}
+.emoji-picker__item {
+  display: flex;
+  align-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 4px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.emoji-picker__item--image {
+  width: 100%;
+  height: 100%;
+}
+.emoji-picker__item--txt {
+  font-size: 21px;
+  line-height: 21px;
+  margin-top: 4px;
+}
+.emoji-picker__item--alt {
+  display: none;
+}
+/* Picker anchors to the chat section like the original .chat container. */
+.original-chat { position: relative; }
+.original-chat .emoji-picker__body { z-index: 20; }
+.emoji-picker .button--confirm { padding: 6px 14px; }
