@@ -6,6 +6,8 @@ import { useSyncExternalStore } from "react";
  * mutual kisses in rounds, so kiss-locked gifts unlock like the original.
  */
 export interface ViewerProgress { kisses: number; vip: false }
+/** Hearts balance: unknown until the game backend exists, so paid items need hearts (0). */
+export const VIEWER_GOLD = 0;
 const KEY = "bottle:viewer-progress";
 const listeners = new Set<() => void>();
 let state: ViewerProgress = { kisses: 0, vip: false };

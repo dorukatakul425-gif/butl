@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { OPEN_TOPS_EVENT, OPEN_VIP_EVENT, SourceToastHost } from "@/components/source-dialogs";
+import { OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT, SourceToastHost } from "@/components/source-dialogs";
+import { VipDialog } from "@/components/bank/vip-dialog";
+import { useCilizAssets } from "@/components/decor/decor-selection";
 import backgroundUp from "@/assets/ui_btn_bg_up.svg.asset.json";
 import backgroundDown from "@/assets/ui_btn_bg_down.svg.asset.json";
 import heartUp from "@/assets/ui_btn_gold_add_heart_up.svg.asset.json";
@@ -64,6 +66,8 @@ export function OriginalTableHeader() {
   const [bottleOpen, setBottleOpen] = useState(false);
   const [bankOpen, setBankOpen] = useState(false);
   const [topsOpen, setTopsOpen] = useState(false);
+  const [vipOpen, setVipOpen] = useState(false);
+  const vipAssets = useCilizAssets();
   const [boostersOpen, setBoostersOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const closeBank = useCallback(() => setBankOpen(false), []);
@@ -79,9 +83,9 @@ export function OriginalTableHeader() {
     if (id === "achievements") setAchievementsOpen(true);
   }, []);
   useEffect(() => {
-    const tops = () => setTopsOpen(true), vip = () => setBankOpen(true);
-    window.addEventListener(OPEN_TOPS_EVENT, tops); window.addEventListener(OPEN_VIP_EVENT, vip);
-    return () => { window.removeEventListener(OPEN_TOPS_EVENT, tops); window.removeEventListener(OPEN_VIP_EVENT, vip); };
+    const tops = () => setTopsOpen(true), vip = () => setVipOpen(true), gold = () => setBankOpen(true);
+    window.addEventListener(OPEN_TOPS_EVENT, tops); window.addEventListener(OPEN_VIP_EVENT, vip); window.addEventListener(OPEN_BANK_EVENT, gold);
+    return () => { window.removeEventListener(OPEN_TOPS_EVENT, tops); window.removeEventListener(OPEN_VIP_EVENT, vip); window.removeEventListener(OPEN_BANK_EVENT, gold); };
   }, []);
   return (
     <div className="original-table-header" aria-label="Orijinal üst masa ikonları">
@@ -113,7 +117,8 @@ export function OriginalTableHeader() {
       <OriginalMiscMenu open={menuOpen} triggerRef={menuTriggerRef} onClose={closeMenu} onSelect={onMenuSelect} />
       <DecorSelection open={decorOpen} onClose={closeDecor} />
       <BottleSelection open={bottleOpen} onClose={closeBottle} />
-      <BankDialog open={bankOpen} onClose={closeBank} isVip />
+      <BankDialog open={bankOpen} onClose={closeBank} isVip onVip={() => setVipOpen(true)} />
+      {vipOpen && vipAssets && <VipDialog assets={vipAssets} onClose={() => setVipOpen(false)} />}
       <SourceToastHost />
     </div>
   );

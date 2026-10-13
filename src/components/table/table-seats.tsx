@@ -11,8 +11,9 @@ import { closedTarget, giftReceivers, openFor, seatSelection, selectGender, setS
 import { pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
-import { useViewerProgress } from "@/lib/viewer-progress";
-import { SourceGiftLockedDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT } from "@/components/source-dialogs";
+import { useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-progress";
+import { ProfileDialog } from "@/components/profile/profile-dialog";
+import { SourceGiftLockedDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT } from "@/components/source-dialogs";
 
 export interface SeatPlayer {
   id?: string;
@@ -41,6 +42,7 @@ export function TableSeats() {
   const [gesturesOpen, setGesturesOpen] = useState(false);
 
   const progress = useViewerProgress();
+  const [profileSeat, setProfileSeat] = useState<number | null>(null);
   const [lockedGift, setLockedGift] = useState<GiftStoreItem | null>(null);
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: progress.kisses, vip: progress.vip }) : []), [assets, progress.kisses, progress.vip]);
   const gestureAccount = useMemo(() => ({ userId: "viewer", kisses: progress.kisses, vip: progress.vip, tokens: 0, social: VIEWER_STORE.social, platform: "web", scheduled: [] }), [progress.kisses, progress.vip]);
@@ -107,6 +109,8 @@ export function TableSeats() {
     (item: GiftStoreItem) => {
       if (!assets) return;
       unlockSfx();
+      // Viewer.decGold: not enough hearts for every receiver -> onGoldNeeded -> bank.
+      if (item.price * giftReceivers(target).length > VIEWER_GOLD) { window.dispatchEvent(new Event(OPEN_BANK_EVENT)); return; }
       // viewerSendGift(selectedUsers, gift): one independent gift per selected receiver.
       for (const seat of giftReceivers(target)) {
         const gift = createSentGift(assets, item.gift, Math.floor(Math.random() * RAND_MOD));
@@ -160,9 +164,16 @@ export function TableSeats() {
           onPreload={preload}
           onClose={close}
           onLocked={setLockedGift}
+          onProfile={() => { if (giftSeat !== null) { setProfileSeat(giftSeat); setTarget(closedTarget); } }}
           selective={target.selective}
           multiselect={multiselect}
         />
+      )}
+      {assets && profileSeat !== null && playersRef.current[profileSeat] && (
+        <ProfileDialog player={playersRef.current[profileSeat]!} self={false} assets={assets}
+          onClose={() => setProfileSeat(null)}
+          onGift={() => { const seat = profileSeat; setProfileSeat(null); setTarget(state => openFor(state, seat, VIEWER_SEAT)); }}
+          onDecor={() => setProfileSeat(null)} onMusic={() => setProfileSeat(null)} />
       )}
       {assets && lockedGift?.lock && (() => {
         const t = (key: string) => translate(assets, key);

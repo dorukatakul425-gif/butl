@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { InteractiveHints, HINT_SET_INPUT_EVENT, CHAT_SENT_EVENT } from "@/components/interactive-hints";
 import emojiIcon from "@/assets/original-chat-emoji.svg.asset.json";
 import sendIcon from "@/assets/original-chat-send.svg.asset.json";
 import { useCilizAssets } from "@/components/decor/decor-selection";
@@ -22,6 +23,11 @@ export function OriginalChatPanel() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
+  useEffect(() => {
+    const set = (e: Event) => { setReceiver(undefined); setText((e as CustomEvent<string>).detail); };
+    window.addEventListener(HINT_SET_INPUT_EVENT, set);
+    return () => window.removeEventListener(HINT_SET_INPUT_EVENT, set);
+  }, []);
   const [receiver, setReceiver] = useState<import("@/lib/music-session").ChatUser | undefined>();
   const [small, setSmall] = useState(false);
 
@@ -99,9 +105,11 @@ export function OriginalChatPanel() {
         </div>
       </div>
       {session.song && <MusicView key={session.song.key} song={session.song} muted={session.muted} volume={session.volume} />}
+      <InteractiveHints />
       <form className="original-chat-input" onSubmit={(e) => {
         e.preventDefault();
         if (pushTextLine({ ...VIEWER_SENDER, isViewer: true }, text, receiver)) {
+          window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: text }));
           setText(""); setReceiver(undefined); inputRef.current?.focus();
         }
       }}>

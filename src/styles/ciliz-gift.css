@@ -653,3 +653,10 @@
 .send-gift-mixin--multi .send-gift-mixin__multigift-gender-list {
   width: 170px;
 }
+
+/* Order fix: the profile reveal must win over the later hidden base rule. */
+.send-gift__btn--profile.send-gift__show-profile {
+  animation: show-profile 0.14s linear;
+  opacity: 1;
+  transform: scale(1);
+}

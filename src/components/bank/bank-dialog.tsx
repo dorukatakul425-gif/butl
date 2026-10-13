@@ -37,7 +37,7 @@ function DialogButton({ title, mods = [], onClick }: { title: React.ReactNode; m
   );
 }
 
-export function BankDialog({ open, onClose, isVip }: { open: boolean; onClose: () => void; isVip: boolean }) {
+export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }: { open: boolean; onClose: () => void; isVip: boolean; vipPurchased?: boolean; onVip?: () => void }) {
   const [assets, setAssets] = useState<CilizAssets | null>(null);
   const { mounted, phase } = usePopupPhase(open);
   useEffect(() => {
@@ -78,8 +78,8 @@ export function BankDialog({ open, onClose, isVip }: { open: boolean; onClose: (
                     <span className={cls("bonus", ["vip"])}>{t("bank:vip:status")}</span>
                   </div>
                   <div className={cls("opt-icon", ["vip"])} />
-                  <div className={cls("purchased")} />
-                  <DialogButton title={t("mobile:vip:know")} mods={["vip"]} onClick={onClose} />
+                  {vipPurchased && <div className={cls("purchased")} />}
+                  <DialogButton title={t("mobile:vip:know")} mods={["vip"]} onClick={onVip ?? onClose} />
                 </div>
               )}
               {options.map((opt) => (

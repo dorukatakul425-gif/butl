@@ -20,6 +20,7 @@ export interface SendGiftDialogProps {
   onPreload: (item: GiftStoreItem) => void;
   onClose: () => void;
   onLocked?: (item: GiftStoreItem) => void;
+  onProfile?: () => void;
   selective?: boolean;
   multiselect?: { title: string; onSelectState: (on: boolean) => void; onSelectMen: () => void; onSelectWomen: () => void };
 }
@@ -71,7 +72,7 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
   );
 }
 
-export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose, onLocked, selective = false, multiselect }: SendGiftDialogProps) {
+export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose, onLocked, onProfile, selective = false, multiselect }: SendGiftDialogProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -151,10 +152,13 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
             {selective && multiselect ? (
               <div className={cls("multi-title")}>{multiselect.title}</div>
             ) : (
+              <>
+              {onProfile && <div className={`${cls("btn", ["profile"])} ${showProfile ? "send-gift__show-profile" : ""}`} role="button" aria-label="Profil" onClick={(e) => { e.stopPropagation(); onProfile(); }} />}
               <div>
                 <div className={cls("gift-title")}>{title.charAt(0).toLocaleUpperCase("tr") + title.slice(1)}</div>
                 <div className={`${cls("name")} ${showProfile ? "send-gift__show-name" : ""}`}>{receiverName}</div>
               </div>
+              </>
             )}
           </div>
           {multiselect && (
