@@ -32,7 +32,8 @@ describe('original feature windows', () => {
  });
  it('help Escape preserves the underlying wheel and never spins locally', () => {
   const close = vi.fn(); render(<SourceSeasonDialog feature="roulette" onClose={close} />);
-  expect(screen.getByRole('button', { name: 'Çevir' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Çevir' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: /chances/ })).toHaveTextContent('2000');
   fireEvent.click(screen.getByRole('button', { name: 'Yardım' })); expect(screen.getByRole('dialog', { name: 'Oyunun Kuralları' })).toBeVisible();
   fireEvent.keyDown(document, { key: 'Escape' }); expect(screen.getByRole('dialog', { name: 'Çarkıfelek' })).toBeVisible(); expect(close).not.toHaveBeenCalled();
  });
@@ -49,13 +50,22 @@ describe('original feature windows', () => {
  it('renders all public league cups without inventing a player ranking', () => {
   render(<SourceSeasonDialog feature="league" onClose={vi.fn()} />); fireEvent.click(screen.getByRole('button', { name: 'Ligler listesi' })); expect(screen.getByRole('dialog', { name: 'Ligler listesi' })).toBeVisible(); expect(document.querySelectorAll('.league__user')).toHaveLength(0);
  });
- it('keeps the original frame, left arrow and center without inventing reward values', () => {
+ it('keeps the original frame, left arrow and center for the isolated visual test', () => {
   render(<SourceSeasonDialog feature="roulette" onClose={vi.fn()} />);
   expect(document.querySelector('.roulette__wheel-frame')).not.toBeNull();
   expect(document.querySelector('.roulette__wheel-center')).not.toBeNull();
   expect(document.querySelectorAll('.roulette__wheel-item')).toHaveLength(16);
   expect(document.querySelector('.roulette__wheel-section')).toHaveAttribute('data-reference-artwork', 'true');
-  expect(screen.getByRole('button', { name: 'Çevir' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Çevir' })).toBeEnabled();
+ });
+ it('spends one visual-test chance and shows the source reward popup without a host wallet', async () => {
+  vi.useFakeTimers();
+  render(<SourceSeasonDialog feature="roulette" onClose={vi.fn()} />);
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Çevir' })));
+  expect(screen.getByRole('button', { name: /chances/ })).toHaveTextContent('1999');
+  await act(async () => vi.advanceTimersByTime(4000));
+  expect(screen.getByRole('dialog', { name: 'dlg:bottle_pass:reward:achieved' })).toBeVisible();
+  expect(screen.getByText('Test ödülü · bakiyeye eklenmez')).toBeVisible();
  });
  it('rejects invalid winning indices and does not show an earned reward', async () => {
   host({ viewerId: 'me', roulette: { freeSpins: 1, price: 1, prizes: [{ id: 'p', image: 'cup', count: 1 }] } }, vi.fn().mockResolvedValue({ confirmed: true, rewardIndex: 99, rewards: [{ id: 'bad', image: 'cup', count: 9 }] }));

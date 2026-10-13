@@ -12,7 +12,7 @@ export interface SourceFeatureSnapshot {
 }
 export interface SourceTableEntry { id: string; name?: string; photo?: string; bottle: string; men: number; women: number; blockedUntil?: number }
 export type SourceFeatureAction = 'change-table' | 'invite' | 'save-profile' | 'feedback' | 'roulette-spin' | 'pass-claim' | 'pass-buy' | 'league-join' | 'league-settings' | 'roulette-buy-chances';
-export interface SourceFeatureResult { confirmed: boolean; rewards?: SourceReward[]; message?: string; rewardIndex?: number; inviteUrl?: string }
+export interface SourceFeatureResult { confirmed: boolean; rewards?: SourceReward[]; message?: string; rewardIndex?: number; inviteUrl?: string; testOnly?: boolean }
 export interface SourceFeatureAdapter {
   getSnapshot: () => SourceFeatureSnapshot;
   subscribe: (listener: () => void) => () => void;

@@ -2978,3 +2978,8 @@
 
 .source-feature-layer .source-roulette-help .popup__title{color:var(--game-menu-text)}
 .source-feature-layer .source-roulette-popup .roulette__x_popup__content{isolation:isolate}
+.source-roulette-reward-popup{width:250px}
+.source-roulette-reward-popup .popup__content{display:flex;flex-direction:column;align-items:center;padding-top:14px}
+.source-roulette-reward-popup .source-feature-reward{font-size:20px;font-weight:bold;color:var(--source-feature-color-69)}
+.source-roulette-reward-popup .roulette__reward-icon{width:54px;height:54px;background-size:54px 54px;margin:0}
+.roulette__test-note{max-width:210px;text-align:center;font-size:11px;line-height:1.35;color:var(--source-feature-color-24)}
