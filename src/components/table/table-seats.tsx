@@ -197,7 +197,7 @@ export function TableSeats() {
       {assets && ownProfileOpen && (
         <ProfileDialog player={{ ...playersRef.current[VIEWER_SEAT]!, age: VIEWER.age }} self assets={assets}
           onClose={() => setOwnProfileOpen(false)} onGift={() => setOwnProfileOpen(false)}
-          onDecor={() => setOwnProfileOpen(false)} onMusic={() => { setOwnProfileOpen(false); window.dispatchEvent(new CustomEvent("source:open-music-list")); }} />
+          onDecor={() => { setOwnProfileOpen(false); window.dispatchEvent(new CustomEvent("source:open-decor")); }} onMusic={() => { setOwnProfileOpen(false); window.dispatchEvent(new CustomEvent("source:open-music-list")); }} />
       )}
       {assets && lockedGift?.lock && (() => {
         const t = (key: string) => translate(assets, key);

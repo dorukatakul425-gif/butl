@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT, SourceToastHost } from "@/components/source-dialogs";
+import { OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT, OPEN_DECOR_EVENT, SourceToastHost } from "@/components/source-dialogs";
 import { VipDialog } from "@/components/bank/vip-dialog";
 import { useCilizAssets } from "@/components/decor/decor-selection";
 import backgroundUp from "@/assets/ui_btn_bg_up.svg.asset.json";
@@ -83,9 +83,9 @@ export function OriginalTableHeader() {
     if (id === "achievements") setAchievementsOpen(true);
   }, []);
   useEffect(() => {
-    const tops = () => setTopsOpen(true), vip = () => setVipOpen(true), gold = () => setBankOpen(true);
-    window.addEventListener(OPEN_TOPS_EVENT, tops); window.addEventListener(OPEN_VIP_EVENT, vip); window.addEventListener(OPEN_BANK_EVENT, gold);
-    return () => { window.removeEventListener(OPEN_TOPS_EVENT, tops); window.removeEventListener(OPEN_VIP_EVENT, vip); window.removeEventListener(OPEN_BANK_EVENT, gold); };
+    const tops = () => setTopsOpen(true), vip = () => setVipOpen(true), gold = () => setBankOpen(true), decor = () => setDecorOpen(true);
+    window.addEventListener(OPEN_TOPS_EVENT, tops); window.addEventListener(OPEN_VIP_EVENT, vip); window.addEventListener(OPEN_BANK_EVENT, gold); window.addEventListener(OPEN_DECOR_EVENT, decor);
+    return () => { window.removeEventListener(OPEN_TOPS_EVENT, tops); window.removeEventListener(OPEN_VIP_EVENT, vip); window.removeEventListener(OPEN_BANK_EVENT, gold); window.removeEventListener(OPEN_DECOR_EVENT, decor); };
   }, []);
   return (
     <div className="original-table-header" aria-label="Orijinal üst masa ikonları">

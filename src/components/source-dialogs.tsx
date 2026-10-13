@@ -99,4 +99,5 @@ export function SourceToastHost() {
 export const OPEN_TOPS_EVENT = "source:open-tops";
 export const OPEN_VIP_EVENT = "source:open-vip";
 // Viewer.onGoldNeeded -> BankPresenter.show() (insufficient hearts).
+export const OPEN_DECOR_EVENT = "source:open-decor";
 export const OPEN_BANK_EVENT = "source:open-bank";

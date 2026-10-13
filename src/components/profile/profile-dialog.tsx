@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
 import { useSourceFeatureSession } from "@/lib/source-feature-session";
-import { SourceLockedPopup, SourceProfileSettings, useFrameUnlocked } from "@/components/profile/source-own-profile";
+import { SourceProfileSettings } from "@/components/profile/source-own-profile";
 import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast } from "@/components/source-dialogs";
 import { formatHarem, formatStats, okProfileUrl, type ServerUserProfile } from "@/lib/user-profile";
 import { OK_SUPPORT_EMAIL as SUPPORT_EMAIL, CLIENT_VERSION } from "@/components/settings/settings-items";
@@ -20,10 +20,9 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
 }) {
   const t = (key: string, ...a: string[]) => translate(assets, key, ...a);
   const [statsState, setStatsState] = useState<"narrowed" | "expanded">("narrowed");
-  const [popup, setPopup] = useState<"settings" | "frame-locked" | "claims" | "report-photo" | "report-user" | null>(null);
+  const [popup, setPopup] = useState<"settings" | "claims" | "report-photo" | "report-user" | null>(null);
   const [report, setReport] = useState("");
   const feature = useSourceFeatureSession();
-  const frameUnlocked = useFrameUnlocked();
   const stats = profile ? formatStats(profile) : null;
   const userId = self ? feature.viewerId ?? undefined : player.id;
   const harem = formatHarem(self, userId ?? "", profile);
@@ -72,7 +71,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
             {player.city && <div className="user-profile__city">{player.city}</div>}
           </div>
           {player.zodiac !== undefined && <Div className={`user-profile__zodiac user-profile__zodiac--${player.zodiac}`} title={t(`hint:zodiac:${player.zodiac}`)} onClick={() => showSourceToast(t(`hint:zodiac:${player.zodiac}`))} />}
-          {self && <Div className={`user-profile__decor${frameUnlocked ? "" : " user-profile__action--greyscaled"}`} aria-label="Süsleme" onClick={() => frameUnlocked ? onDecor() : setPopup("frame-locked")} />}
+          {self && <Div className="user-profile__decor" aria-label="Süsleme" onClick={onDecor} />}
           {!self && <Div className="user-profile__claim" aria-label="Şikayet" onClick={() => setPopup("claims")} />}
         </div>
         <div className="user-profile__details">
@@ -152,6 +151,5 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
     </SourceDialogLayer>}
 
     {popup === "settings" && <SourceProfileSettings assets={assets} name={player.name} photo={player.photoUrl} onClose={() => setPopup(null)} />}
-    {popup === "frame-locked" && <SourceLockedPopup assets={assets} title={t("dlg:league_locked_gift:title")} desc={t("dlg:profile:frame:unavailable")} onClose={() => setPopup(null)} />}
   </div>, document.body);
 }
