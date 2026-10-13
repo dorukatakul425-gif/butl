@@ -6,10 +6,11 @@ const assets = { gifts: {}, giftStore: [], spines: {}, sfxUrl: "", frames: {}, s
 afterEach(cleanup);
 const mount = () => render(<ProfileDialog player={{ name: "Sen", photoUrl: "/p.png", frame: "", stone: "", male: true }} self assets={assets} onClose={() => {}} onGift={() => {}} onDecor={() => {}} onMusic={() => {}} />);
 describe("own profile", () => {
-  it("opens locked frame popup without a verified league", () => {
-    mount(); fireEvent.click(screen.getByRole("button", { name: "Süsleme" }));
-    expect(screen.getByText("Fotoğrafınızı güzelleştirmek için Demir Lig'e ulaşın")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Devam et" }));
+  it("decor button opens the Stil window directly, like the original", () => {
+    let opened = 0;
+    render(<ProfileDialog player={{ name: "Sen", photoUrl: "/p.png", frame: "", stone: "", male: true }} self assets={assets} onClose={() => {}} onGift={() => {}} onDecor={() => { opened++; }} onMusic={() => {}} />);
+    fireEvent.click(screen.getByRole("button", { name: "Süsleme" }));
+    expect(opened).toBe(1);
     expect(screen.queryByText("Gerektirir")).toBeNull();
   });
   it("opens profile settings with save disabled until a session exists", () => {
