@@ -32,11 +32,10 @@ export function SourceTopsHelp({ category, assets, onClose }: {
   return <div className="source-tops-help-layer">
     <div className="popup-shade" onClick={onClose} />
     <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title} className="popup popup--center source-tops-help-popup">
-      <header className="popup__header"><div className="popup__title">{title}</div>
-        <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Puan açıklamasını kapat" onClick={onClose}><span className="popup__close-icon" /></Button>
-      </header>
+      <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Puan açıklamasını kapat" onClick={onClose}><span className="popup__close-icon" /></Button>
+      <header className="popup__header"><div className="popup__title">{title}</div></header>
       <div className="popup__content popup__content--wrap popup__content--center"><div className="info__context">{context}</div></div>
-      <div className="popup__buttons"><Button variant="ghost" className="button button--confirm" onClick={onClose}>{translate(assets, 'dlg:navigate_vip:btn')}</Button></div>
+      <div className="popup__buttons popup__buttons--center"><Button variant="ghost" className="button button--confirm" onClick={onClose}>{translate(assets, 'dlg:navigate_vip:btn')}</Button></div>
     </section>
   </div>;
 }
