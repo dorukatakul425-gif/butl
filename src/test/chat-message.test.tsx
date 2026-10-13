@@ -35,14 +35,12 @@ describe("text chat rendering", () => {
   it("ignores blank messages", () => {
     expect(pushTextLine({ id: "a", name: "A", photoUrl: "" }, "   ")).toBe(false);
   });
-  it("submits a local message and clears the input", () => {
+  it("sends to the room without inventing a local line, and clears the input", () => {
     render(<OriginalChatPanel />);
     const input = screen.getByRole("textbox", { name: "Mesaj yaz" });
     fireEvent.change(input, { target: { value: "Merhaba masadakiler" } });
     fireEvent.click(screen.getByRole("button", { name: "Gönder" }));
-    const text = screen.getByText("Merhaba masadakiler");
-    expect(text.closest(".chat__message-line")).toBeInTheDocument();
-    expect(text.closest(".chat__message")).toHaveClass("chat__message--bold");
+    expect(screen.queryByText("Merhaba masadakiler")).not.toBeInTheDocument();
     expect(input).toHaveValue("");
   });
   it("renders source colors and escapes message markup", () => {

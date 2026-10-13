@@ -10,6 +10,9 @@ import { pushActionLine, pushTextLine, sendMusic, useMusicSession } from "@/lib/
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
+import { displaySeatOf, onRoomChat, profileBySeat, sendChat } from "@/lib/room-session";
+import type { Profile } from "@/lib/supabase";
+import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import { translate } from "@/lib/ciliz-assets";
 import { EmojiPicker } from "@/components/chat/emoji-picker";
 import { emojiPickerSize, emojiSendDecision, insertEmoji } from "@/lib/emoji";
@@ -21,7 +24,8 @@ import { applyTranslation, chatTranslator, needsTranslation, toggleTranslation, 
 const VIEWER_LOCALE = "tr";
 
 const VIEWER_COUNTRY = "TR";
-const VIEWER_SENDER = { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl, male: VIEWER.male, musicLevel: 0 };
+const viewerSender = () => ({ id: VIEWER.id || "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl, male: VIEWER.male, musicLevel: 0 });
+const profileUser = (p: Profile) => ({ id: p.id, name: p.name, photoUrl: p.photo_url || DEFAULT_PHOTO, male: p.male, isVip: Boolean(p.vip_until && Date.parse(p.vip_until) > Date.now()) });
 
 /** Original chat area: MediaPanel (video, music), chat body with info lines, input at bottom (source order). */
 export function OriginalChatPanel() {
@@ -91,12 +95,25 @@ export function OriginalChatPanel() {
     setText(next.text);
     window.setTimeout(() => { input?.focus(); input?.setSelectionRange(prefix.length + next.caret, prefix.length + next.caret); }, 0);
   };
+  // Messages go to the room on the server; every player (including us) renders them from the live feed.
   const doSend = (value: string) => {
-    if (pushTextLine({ ...VIEWER_SENDER, isViewer: true, isVip: vip }, value, receiver)) {
-      window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: value }));
-      setText(""); setReceiver(undefined); inputRef.current?.focus();
-    }
+    if (!value.trim()) return;
+    const to = receiver;
+    setText(""); setReceiver(undefined); inputRef.current?.focus();
+    void sendChat(value, to?.id && displaySeatOf(to.id) >= 0 ? to.id : undefined).then(ok => {
+      if (ok) window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: value }));
+      else showSourceToast("Mesaj gönderilemedi.");
+    });
   };
+  useEffect(() => onRoomChat(row => {
+    const seat = displaySeatOf(row.user_id);
+    const sender = seat >= 0 ? profileBySeat(seat) : null;
+    if (!sender) return;
+    const rSeat = row.receiver_id ? displaySeatOf(row.receiver_id) : -1;
+    const rec = rSeat >= 0 ? profileBySeat(rSeat) : null;
+    const isViewer = row.user_id === VIEWER.id;
+    pushTextLine({ ...profileUser(sender), ...(isViewer ? { isViewer: true } : {}) }, row.text, rec ? profileUser(rec) : undefined);
+  }), []);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -227,7 +244,7 @@ export function OriginalChatPanel() {
           onConfirm={(music) => {
             setPreview(null);
             setListType(null);
-            sendMusic(music, preview.service, VIEWER_SENDER);
+            sendMusic(music, preview.service, viewerSender());
           }} />
       )}
     </section>

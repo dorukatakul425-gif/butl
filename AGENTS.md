@@ -9,14 +9,14 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Keep the GitHub game on the index route and isolate Pixi/Spine imports behind dynamic browser loading, so the table remains SSR-safe.
+- The game lives on /game behind sign-in (/ is the profile home, /auth username sign-in); isolate Pixi/Spine imports behind dynamic browser loading, so the table remains SSR-safe.
 - Load gesture order, images, prices and skeleton timing through the existing public asset manifest; scheduled entries and spending require an authenticated game-session adapter, so previews never grant VIP or spend fictitious currency.
 - Keep source-derived profile presentation separate from account actions; show unknown statistics and a setup-needed state until verified profile/session data exists, while local music, decor and gift navigation remain available.
 - Route chat reads, sends, translations, moderation and balances through the authenticated game-session adapter; presentation must not invent server results.
 - Share gift texture preparation promises but never wait for GPU warm-up to start each click's independent animation, so repeated clicks do not batch.
 - Derive the game shell from the visual viewport and safe-area insets, so mobile keyboard/browser controls do not cover the composer.
-- Cloud Auth owns accounts; keep one root identity subscriber, profile presentation in a provider, and named protected home under the managed client-only gate while the public index remains the game with inline sign-in.
-- Shared room membership and rounds are transactional database RPCs; bot accounts (profiles.is_bot) fill empty seats and act only inside play_round on the server, so clients never simulate players or decisions.
+- The user's own Supabase project owns accounts and data (browser client from VITE_SUPABASE_URL/ANON_KEY, schema in supabase/schema.sql); no server functions are required so the site deploys to Vercel as-is.
+- Room membership, rounds, chat and gifts are security-definer RPCs with realtime feeds; there are no bots, empty seats stay empty, and clients only render server state and nudge expired phases via room_tick.
 - Item purchases require authenticated server validation against the public source manifest and a service-only atomic wallet/event transaction; clients cannot mint currency, VIP, prices or eligibility.
 - Profile photos use private storage with owner-scoped writes and signed reads; room animation samples server start times and turn counts to synchronize late joins.
 - Normalize username credentials through one deterministic internal address helper; resolve legacy names and numeric player IDs only on the server and never return account addresses, so existing accounts retain access without exposing emails.

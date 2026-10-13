@@ -1,0 +1,64 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { joinRoom, leaveRoom, useRoom } from "@/lib/room-session";
+import { setViewerProfile } from "@/lib/viewer";
+import woodTable from "@/assets/original-wood-table.png.asset.json";
+import { OriginalTableHeader } from "@/components/original-table-header";
+import { OriginalChatPanel } from "@/components/original-chat-panel";
+import { TableSeats } from "@/components/table/table-seats";
+import { OriginalLoadingScreen } from "@/components/original-loading-screen";
+
+import { SourceConnectionScreen } from "@/components/table/source-connection-screen";
+import { SourceHeartBonus } from "@/components/table/source-heart-bonus";
+
+export const Route = createFileRoute("/game")({
+  head: () => ({
+    meta: [
+      { title: "Şişe Oyunu — Masa" },
+      { name: "description", content: "Oyunun sunucusundan alınan orijinal ahşap masa ve masa ikonları." },
+      { property: "og:title", content: "Orijinal Oyun Masası" },
+      { property: "og:description", content: "Orijinal ahşap oyun masası ve sunucu görselleri." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Index,
+});
+
+function Index() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const room = useRoom();
+  const [joined, setJoined] = useState(false);
+  useEffect(() => {
+    if (!auth.ready) return;
+    if (!auth.session || !auth.profile) { void navigate({ to: "/auth" }); return; }
+    setViewerProfile(auth.profile);
+    let alive = true;
+    void joinRoom().then(() => { if (alive) setJoined(true); });
+    return () => { alive = false; void leaveRoom(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.ready, auth.session?.user.id, Boolean(auth.profile)]);
+  if (!joined || !room.roomId) {
+    return <main className="grid min-h-dvh place-items-center bg-background p-6 text-center text-foreground">
+      <p>{room.error ?? "Masaya bağlanılıyor…"}</p>
+    </main>;
+  }
+  return (
+    <main className="original-table-page" aria-label="Orijinal oyun masası">
+      <OriginalLoadingScreen />
+      <SourceConnectionScreen />
+      <SourceHeartBonus />
+      <img className="original-page-wood" src={woodTable.url} alt="" />
+      <div className="original-game">
+        <div className="original-table">
+          <img className="original-table-wood" src={woodTable.url} alt="Oyunun sunucusundan alınan orijinal ahşap masa" />
+          <TableSeats />
+          <OriginalTableHeader />
+        </div>
+        <OriginalChatPanel />
+      </div>
+    </main>
+  );
+}

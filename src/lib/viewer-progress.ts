@@ -35,3 +35,11 @@ const SERVER: ViewerProgress = { kisses: 0, vip: false };
 export function useViewerProgress(): ViewerProgress {
   return useSyncExternalStore(cb => { listeners.add(cb); return () => listeners.delete(cb); }, getViewerProgress, () => SERVER);
 }
+
+/** Server profile counter is the truth once signed in. */
+export function setViewerKisses(kisses: number) {
+  load();
+  if (state.kisses === kisses) return;
+  state = { kisses: Math.max(0, Math.floor(kisses)), vip: false };
+  listeners.forEach(l => l());
+}

@@ -11,9 +11,13 @@ import { closedTarget, giftReceivers, openFor, seatSelection, selectGender, setS
 import { pushActionLine, pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
-import { useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-progress";
+import { setViewerKisses, useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-progress";
 import { GIFT_SENT_EVENT, setSeatLocator } from "@/lib/interactive-hint-flags";
 import { newcomerKey, newcomerKind, newcomersToNotify, widgetParts, OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
+import { onRoomGift, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat } from "@/lib/room-session";
+import { getSupabase, type Profile } from "@/lib/supabase";
+import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
+import { showSourceToast } from "@/components/source-dialogs";
 import { ProfileDialog } from "@/components/profile/profile-dialog";
 import { SourceGiftLockedDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT } from "@/components/source-dialogs";
 
@@ -30,10 +34,10 @@ export interface SeatPlayer {
   age?: number;
   city?: string;
   zodiac?: number;
+  /** No player at this server seat. */
+  empty?: boolean;
 }
 
-// Players sitting at the other seats, each wearing a different animated frame from the game.
-const DEMO_FRAMES = ["diamond", "nitrodecor", "heartsdecor", "lavadecor", "discodecor", "angel", "demon", "icedecor", "kissesdecor", "egyptdecor", "cinemadecor"];
 export const VIEWER_SEAT = 5;
 
 type PixiTable = Awaited<ReturnType<typeof import("@/components/table/pixi-table").createPixiTable>>;
@@ -50,6 +54,9 @@ export function TableSeats() {
   const [gesturesOpen, setGesturesOpen] = useState(false);
 
   const progress = useViewerProgress();
+  const room = useRoom();
+  const ownKisses = room.players[VIEWER_SEAT]?.kisses;
+  useEffect(() => { if (ownKisses !== undefined) setViewerKisses(ownKisses); }, [ownKisses]);
   useEffect(() => {
     const open = (e: Event) => { const seat = (e as CustomEvent<number>).detail; if (seat !== VIEWER_SEAT && playersRef.current[seat]) { setGesturesOpen(false); setTarget(state => openFor(state, seat, VIEWER_SEAT)); } };
     window.addEventListener(OPEN_GIFT_FOR_SEAT_EVENT, open);
@@ -86,11 +93,8 @@ export function TableSeats() {
         return;
       }
       tableRef.current = table;
-      playersRef.current = buildPlayers(assets, decor.frame, decor.stone);
-      table.setPlayers(playersRef.current);
       setActiveTable(table);
       setSeatLocator(seat => table.seatPoint(seat));
-      notifyNewcomers(assets, playersRef.current);
       completeLoadingStage("renderer");
     }).catch(error => { console.error("Table loading failed", error); failGameLoading(); });
     return () => {
@@ -103,12 +107,35 @@ export function TableSeats() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assets]);
 
+  // Real players from the room; empty seats stay empty.
+  useEffect(() => {
+    if (!assets || !activeTable) return;
+    playersRef.current = buildPlayers(assets, room.players, decor.frame, decor.stone);
+    activeTable.setPlayers(playersRef.current);
+    notifyNewcomers(assets, playersRef.current);
+  }, [assets, activeTable, room.players, decor.frame, decor.stone]);
+  // Our decor is stored on the profile so everyone at the table sees it.
+  useEffect(() => {
+    if (!VIEWER.id) return;
+    void getSupabase()?.from("profiles").update({ frame: decor.frame, stone: decor.stone }).eq("id", VIEWER.id);
+  }, [decor.frame, decor.stone]);
+  // Every confirmed gift in the room (ours included) animates for everyone.
   useEffect(() => {
     if (!assets) return;
-    const viewer = { name: VIEWER.name, photoUrl: VIEWER.photoUrl, frame: decor.frame, stone: decor.stone, male: true };
-    playersRef.current[VIEWER_SEAT] = viewer;
-    tableRef.current?.setPlayer(VIEWER_SEAT, viewer);
-  }, [assets, decor.frame, decor.stone]);
+    return onRoomGift(row => {
+      const from = displaySeatOf(row.sender_id), to = displaySeatOf(row.receiver_id);
+      const meta = assets.gifts[row.gift_type];
+      if (from < 0 || to < 0 || !meta) return;
+      void tableRef.current?.sendGift(from, to, createSentGift(assets, meta, row.seed));
+      const s = profileBySeat(from), r = profileBySeat(to);
+      const item = giftItems.find(i => i.type === row.gift_type);
+      pushGiftLine(
+        { id: row.sender_id, name: s?.name ?? "", photoUrl: s?.photo_url || DEFAULT_PHOTO },
+        { id: row.receiver_id, name: r?.name ?? "", photoUrl: r?.photo_url || DEFAULT_PHOTO },
+        { type: row.gift_type, name: item?.name ?? row.gift_type, image: item ? dialogImage(assets, item.image, 28, 28).src : "" },
+      );
+    });
+  }, [assets, giftItems]);
 
   useEffect(() => {
     activeTable?.setSelection(Array.from({ length: 12 }, (_, seat) => seatSelection(target, seat, VIEWER_SEAT)));
@@ -127,21 +154,18 @@ export function TableSeats() {
       if (!assets) return;
       unlockSfx();
       // Viewer.decGold: not enough hearts for every receiver -> onGoldNeeded -> bank.
-      if (item.price * giftReceivers(target).length > VIEWER_GOLD) { window.dispatchEvent(new Event(OPEN_BANK_EVENT)); return; }
-      window.dispatchEvent(new CustomEvent(GIFT_SENT_EVENT, { detail: item.type }));
-      // viewerSendGift(selectedUsers, gift): one independent gift per selected receiver.
-      for (const seat of giftReceivers(target)) {
-        const gift = createSentGift(assets, item.gift, Math.floor(Math.random() * RAND_MOD));
-        void tableRef.current?.sendGift(VIEWER_SEAT, seat, gift);
-        const receiver = playersRef.current[seat];
-        pushGiftLine(
-          { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl },
-          { id: `seat-${seat}`, name: receiver?.name ?? "", photoUrl: receiver?.photoUrl ?? "" },
-          { type: item.type, name: item.name, image: dialogImage(assets, item.image, 28, 28).src },
-        );
-      }
+      const receivers = giftReceivers(target).map(seat => playersRef.current[seat]?.id).filter((id): id is string => Boolean(id));
+      if (!receivers.length) return;
+      const gold = room.players[VIEWER_SEAT]?.gold ?? VIEWER_GOLD;
+      if (item.price * receivers.length > gold) { window.dispatchEvent(new Event(OPEN_BANK_EVENT)); return; }
+      // Server checks price, locks and balance in one transaction; the room feed animates it.
+      void sendGiftRpc(item.type, receivers, Math.floor(Math.random() * RAND_MOD)).then(res => {
+        if (res.ok) { window.dispatchEvent(new CustomEvent(GIFT_SENT_EVENT, { detail: item.type })); return; }
+        if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
+        else showSourceToast("Hediye gönderilemedi.");
+      });
     },
-    [assets, target],
+    [assets, target, room.players],
   );
   const preload = useCallback((item: GiftStoreItem) => {
     void tableRef.current?.preloadGift(item.gift).catch(error => console.warn(`Gift preload ${item.type}`, error));
@@ -214,21 +238,22 @@ export function TableSeats() {
   );
 }
 
-function buildPlayers(assets: CilizAssets, frame: string, stone: string): SeatPlayer[] {
-  let demo = 0;
+function buildPlayers(assets: CilizAssets, profiles: Array<Profile | null>, frame: string, stone: string): SeatPlayer[] {
   return Array.from({ length: 12 }, (_, seat) => {
-    if (seat === VIEWER_SEAT) return { name: VIEWER.name, photoUrl: VIEWER.photoUrl, frame, stone, male: true };
-    const id = DEMO_FRAMES[demo++ % DEMO_FRAMES.length] ?? "";
+    const p = profiles[seat];
+    if (!p) return { name: "", photoUrl: DEFAULT_PHOTO, frame: "", stone: "", male: seat % 2 === 1, empty: true };
+    const own = seat === VIEWER_SEAT;
+    const f = own ? frame : p.frame, st = own ? stone : p.stone;
     return {
-      id: `seat-${seat}`,
-      name: `Oyuncu ${seat + 1}`,
-      // Preview stand-in for the server's isNew flag on one seat.
-      ...(seat === 1 ? { isNew: true } : {}),
-      photoUrl: VIEWER.photoUrl,
-      frame: assets.frames[id] ? id : "",
-      stone: assets.stones[id] ? id : "",
-      // Demo seats alternate gender so men/women multiselect has targets.
-      male: seat % 2 === 0,
+      id: p.id,
+      name: p.name,
+      photoUrl: p.photo_url || DEFAULT_PHOTO,
+      frame: assets.frames[f] ? f : "",
+      stone: assets.stones[st] ? st : "",
+      male: p.male,
+      isNew: Date.now() - Date.parse(p.created_at) < 24 * 3600 * 1000,
+      ...(p.age ? { age: p.age } : {}),
+      ...(p.city ? { city: p.city } : {}),
     };
   });
 }
@@ -236,9 +261,9 @@ function buildPlayers(assets: CilizAssets, frame: string, stone: string): SeatPl
 // GameSession.notifyNewcomers: one widget per new opposite-sex player per session.
 const notifiedNewcomers = new Set<string>();
 function notifyNewcomers(assets: CilizAssets, players: SeatPlayer[]) {
-  const users = players.map((p, seat) => ({ ...p, id: p.id ?? `seat-${seat}`, seat })).filter(u => u.seat !== VIEWER_SEAT);
-  const kind = newcomerKind(VIEWER_GOLD);
-  for (const u of newcomersToNotify(users, { id: "viewer", male: true }, notifiedNewcomers)) {
+  const users = players.map((p, seat) => ({ ...p, id: p.id ?? `seat-${seat}`, seat })).filter(u => u.seat !== VIEWER_SEAT && !u.empty);
+  const kind = newcomerKind(profileBySeat(VIEWER_SEAT)?.gold ?? VIEWER_GOLD);
+  for (const u of newcomersToNotify(users, { id: VIEWER.id || "viewer", male: VIEWER.male }, notifiedNewcomers)) {
     const user = { id: u.id, name: u.name, photoUrl: u.photoUrl, male: u.male };
     pushActionLine({ style: "newcomer", icon: kind, parts: widgetParts(translate(assets, newcomerKey(kind)), user), sender: user, seat: u.seat });
   }

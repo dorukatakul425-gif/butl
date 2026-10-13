@@ -258,6 +258,9 @@ class SeatView {
 
   async set(player: SeatPlayer, assets: CilizAssets, res: number, tableSize: number) {
     if (this.disposed) return;
+    // Empty server seat: nothing is drawn until a real player sits down.
+    this.view.visible = !player.empty;
+    if (player.empty) { this.current = "empty"; return; }
     const key = `${player.name}|${player.photoUrl}|${player.frame}|${player.stone}|${Math.ceil(res * 2) / 2}`;
     if (key === this.current) return;
     this.current = key;

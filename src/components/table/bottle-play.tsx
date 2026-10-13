@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { leftRight, pickTarget, useBottle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, DECISION_SECONDS, spinDelayMs, type Decision } from "@/lib/bottle-game";
+import { leftRight, useBottle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, DECISION_SECONDS, type Decision } from "@/lib/bottle-game";
+import { decide as decideRpc, spinBottle, toDisplay, useRoom } from "@/lib/room-session";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { playSfx, preloadSfx, unlockSfx } from "@/lib/sfx";
 import { BottleIcon, preloadBottleIcon } from "./bottle-icon";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
-import { addViewerKiss } from "@/lib/viewer-progress";
 import kissUp from "@/assets/ui_arrow_kiss_up.svg.asset.json";
 import kissDown from "@/assets/ui_arrow_kiss_down.svg.asset.json";
 import refuseUp from "@/assets/ui_arrow_refuse_up.svg.asset.json";
@@ -21,14 +21,22 @@ const VIEWER = 5;
 // RollSmallData from the source: arrow x/y/rotation and text x/y.
 const offers = [[35,-94,-45,13,-82],[74,-83,0,30,-74],[83,-43,45,27,-48],[83,38,45,27,32],[74,78,90,30,54],[35,91,135,13,67],[-47,91,135,-69,67],[-89,78,180,-90,54],[-99,38,-135,-86,32],[-99,-43,-135,-86,-48],[-89,-83,-90,-90,-74],[-47,-94,-45,-69,-82]];
 
+/** Renders the server-owned round: every player at the table sees the same phase, spinner, target and choices. */
 export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets}) {
   const selected = useBottle();
   const overlay = useRef<HTMLDivElement>(null);
-  const [round,setRound] = useState<Round>({phase:"offer",spinner:VIEWER,target:0,decisions:{}});
+  const live = useRoom();
+  const srv = live.room;
+  const round: Round = srv ? {
+    phase: srv.phase,
+    spinner: srv.spinner === null ? -1 : toDisplay(srv.spinner, live.mySeat),
+    target: srv.target === null ? -1 : toDisplay(srv.target, live.mySeat),
+    decisions: Object.fromEntries(Object.entries(srv.decisions ?? {}).map(([seat, d]) => [toDisplay(Number(seat), live.mySeat), d])),
+  } : {phase:"offer",spinner:-1,target:-1,decisions:{}};
   const [remaining,setRemaining] = useState(DECISION_SECONDS);
   const [bottleError,setBottleError] = useState(false);
   const [ready,setReady] = useState(false);
-  const roundRef = useRef(round); roundRef.current = round;
+  const animated = useRef({spun:-1, returned:-1, kissed:-1, from:-1, to:-1});
   useEffect(() => {
     void Promise.all([kissUp,kissDown,refuseUp,refuseDown,kissButton,refuseButton,rollBig,rollSmall].map(asset => preloadBottleIcon(asset.url)))
       .then(() => completeLoadingStage("icons"), failGameLoading);
@@ -60,68 +68,48 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     };
     layout(); const ro = new ResizeObserver(layout); ro.observe(host); return ()=>ro.disconnect();
   },[]);
-  const spin = () => {
-    const state = roundRef.current;
-    if (state.phase!=="offer" || !ready) return;
-    const target = pickTarget(state.spinner);
-    setRound({...state,phase:"spin",target,decisions:{}});
-    unlockSfx();
-    void table.spinBottle(state.spinner,target).then(()=>{
-      setRemaining(DECISION_SECONDS); setRound(prev=>({...prev,phase:"choose"}));
-    });
-  };
+  const roundNo = srv?.round ?? 0;
+  // Animations follow server phases; a late joiner skips the part already over.
   useEffect(() => {
-    if (round.phase!=="offer" || !ready) return;
-    const timer = window.setTimeout(spin,spinDelayMs(round.spinner,VIEWER));
-    return ()=>window.clearTimeout(timer);
-  },[round.phase,round.spinner,ready]);
+    if (round.phase==="spin" && animated.current.spun!==roundNo && round.spinner>=0 && round.target>=0) {
+      animated.current.spun = roundNo; animated.current.from = round.spinner; animated.current.to = round.target;
+      unlockSfx();
+      void table.spinBottle(round.spinner, round.target);
+    }
+    if (round.phase==="result" && animated.current.kissed!==roundNo && round.decisions[round.spinner]==="kiss" && round.decisions[round.target]==="kiss") {
+      animated.current.kissed = roundNo;
+      table.addKiss(round.spinner); table.addKiss(round.target);
+    }
+    if ((round.phase==="return" || round.phase==="offer") && animated.current.spun===roundNo && animated.current.returned!==roundNo) {
+      animated.current.returned = roundNo;
+      void table.returnPlayers(animated.current.from, animated.current.to);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[round.phase, roundNo, table]);
   useEffect(() => {
     if(round.phase!=="choose") return;
-    const timers = [round.spinner,round.target].filter(seat=>seat!==VIEWER).map(seat=>window.setTimeout(()=>{
-      setRound(prev=>({...prev,decisions:{...prev.decisions,[seat]:Math.random()<0.8 ? "kiss":"refuse"}}));
-    },700+Math.random()*1700));
-    const interval=window.setInterval(()=>setRemaining(n=>Math.max(0,n-1)),1000);
-    return ()=>{timers.forEach(window.clearTimeout);window.clearInterval(interval);};
-  },[round.phase,round.spinner,round.target]);
-  useEffect(() => {
-    if(round.phase!=="choose")return;
-    if(remaining===0) {
-      setRound(prev=>({...prev,phase:"result",decisions:{[prev.spinner]:"refuse",[prev.target]:"refuse",...prev.decisions}}));
-    } else if(round.decisions[round.spinner] && round.decisions[round.target]) setRound(prev=>({...prev,phase:"result"}));
-  },[round,remaining]);
-  useEffect(() => {
-    if(round.phase!=="result")return;
-    // Mutual kiss with the viewer counts toward totalKisses (kiss-locked gifts).
-    if(round.decisions[round.spinner]==="kiss" && round.decisions[round.target]==="kiss") {
-      table.addKiss(round.spinner); table.addKiss(round.target);
-      if(round.spinner===VIEWER||round.target===VIEWER) addViewerKiss();
-    }
-    const timer=window.setTimeout(()=>{
-      setRound(prev=>({...prev,phase:"return",decisions:{}}));
-    },2000);
-    return ()=>window.clearTimeout(timer);
-  },[round.phase]);
-  useEffect(() => {
-    if(round.phase!=="return")return;
-    let alive=true;
-      void table.returnPlayers(round.spinner,round.target).then(()=>{
-        if(alive)setRound({phase:"offer",spinner:round.target,target:0,decisions:{}});
-      });
-    return ()=>{alive=false;};
-  },[round.phase,round.spinner,round.target,table]);
+    const tick = () => setRemaining(Math.max(0, DECISION_SECONDS - Math.floor((Date.now()-live.phaseReceivedAt)/1000)));
+    tick(); const interval=window.setInterval(tick,250);
+    return ()=>window.clearInterval(interval);
+  },[round.phase, live.phaseReceivedAt]);
+  const spin = () => {
+    if (round.phase!=="offer" || round.spinner!==VIEWER || !ready) return;
+    unlockSfx();
+    void spinBottle();
+  };
   const participating = round.spinner===VIEWER || round.target===VIEWER;
-  const [left,right] = leftRight(round.spinner,round.target);
+  const [left,right] = round.spinner>=0 && round.target>=0 ? leftRight(round.spinner,round.target) : [-1,-1];
   const offer = offers[round.spinner] ?? offers[0];
   const decide = (decision:Decision) => {
     if(round.phase!=="choose" || !participating || round.decisions[VIEWER])return;
-    setRound(prev=>({...prev,decisions:{...prev.decisions,[VIEWER]:decision}}));
+    void decideRpc(decision==="kiss");
   };
   return <div ref={overlay} className="bottle-play-overlay" aria-label="Şişe oyunu" data-phase={round.phase} data-spinner={round.spinner} data-target={round.target}>
     {round.phase==="offer" && round.spinner===VIEWER && <>
       <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={!ready} onClick={spin} />
       <BottleIcon className="bottle-roll-big" src={rollBig.url} alt="" /><span className="bottle-roll-text">{translate(assets,"game:spin")}</span>
     </>}
-    {round.phase==="offer" && round.spinner!==VIEWER && offer && <>
+    {round.phase==="offer" && round.spinner!==VIEWER && round.spinner>=0 && offer && <>
       <BottleIcon className="bottle-roll-small" src={rollSmall.url} alt="" style={{left:offer[0],top:offer[1],transform:`translate(-50%,-50%) rotate(${offer[2]}deg)`}} />
       <span className="bottle-small-text" style={{left:offer[3],top:offer[4]}}>{translate(assets,"game:spins")}</span>
     </>}
