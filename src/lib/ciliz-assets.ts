@@ -63,6 +63,11 @@ export interface CilizGiftStoreEntry {
   user_s?: string[];
   platform?: string[];
 }
+export interface CilizAchievement {
+  counters?: Array<number | string>; translate_counters?: boolean; name_depends_on_level?: boolean;
+  image?: string | string[]; image_male?: string | string[]; image_female?: string | string[];
+  since_ms?: number; social?: string[];
+}
 export interface CilizAssets {
   bottles?: Record<string, CilizBottle>;
   bottleStore?: Array<{ id: string; social?: string[]; vip_s?: boolean }>;
@@ -76,6 +81,7 @@ export interface CilizAssets {
   decor: CilizDecor[];
   images: Record<string, { size: number[]; size_v2?: number[] }>;
   translation: Record<string, string>;
+  achievements?: Record<string, CilizAchievement>;
   bundles: Bundle[];
   dialogBundles: DialogBundle[];
 }
@@ -102,6 +108,7 @@ export function loadCilizAssets(): Promise<CilizAssets> {
         decor: json.decor.__store,
         images: json.images,
         translation: json.translation.tr,
+        achievements: json.achievement,
         bundles: server.assets.bundles_v2.table,
         dialogBundles: server.assets.bundles_v2.dlg,
       } satisfies CilizAssets;

@@ -1,0 +1,318 @@
+/* Source AchievementsListDialog / AchievementDialog (preloader.css), scoped. */
+.achievements-layer { position:fixed; inset:0; z-index:146; font-family:Arial,sans-serif; color:#000; }
+.achievements-layer .popup-shade { position:absolute; inset:0; background:transparent; }
+.achievements-layer .popup { background-color:#fff; display:flex; flex-direction:column; flex-wrap:nowrap; pointer-events:auto; }
+.achievements-layer .popup--center { top:calc(50% + env(safe-area-inset-top)); max-height:calc(80% - env(safe-area-inset-top)); transform:translate(-50%, calc(-50% - (env(safe-area-inset-top) / 2))); border-radius:17px; box-shadow:0 4px 8px 0 rgba(0,0,0,.2); left:50%; max-width:80%; position:absolute; width:400px; }
+.achievements-layer .popup__header { flex:0 0 44px; display:flex; align-items:center; color:#b4b4b4; font-size:16px; font-weight:bold; overflow:hidden; padding:0 15px; text-overflow:ellipsis; white-space:nowrap; }
+.achievements-layer .popup__title { display:flex; flex-direction:column; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; color:#cfcfcf; text-align:center; }
+.achievements-layer .popup__content { -webkit-overflow-scrolling:touch; overflow:auto; padding:0 15px; flex:1 1 auto; min-height:0; }
+.achievements-layer .popup__content--no-padding { padding:0; }
+.achievements-layer .popup__footer { flex:0 0 15px; }
+.achievements-layer .popup__close { display:flex; justify-content:center; align-items:center; position:absolute; box-shadow:0 4px 8px 0 rgba(0,0,0,.2); border-radius:16px; cursor:pointer; background-color:#fff; width:32px; height:32px; padding:0; border:0; }
+.achievements-layer .popup__close--dlg { top:-10px; right:-10px; transform:translateZ(0); z-index:1; }
+.achievements-layer .popup__close-icon { display:block; background-size:16px 16px; background-repeat:no-repeat; height:16px; width:16px; background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2020%2020%22%20style%3D%22enable-background%3Anew%200%200%2020%2020%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3A%239BCC33%3B%7D%0A%3C%2Fstyle%3E%0A%3Cg%3E%0A%09%3Cg%3E%0A%09%09%3Crect%20x%3D%228.5%22%20y%3D%22-2%22%20transform%3D%22matrix(0.7071%20-0.7071%200.7071%200.7071%20-4.1424%209.9997)%22%20class%3D%22st0%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%0A%09%09%3Crect%20x%3D%22-2%22%20y%3D%228.5%22%20transform%3D%22matrix(0.7071%20-0.7071%200.7071%200.7071%20-4.1419%2010.0003)%22%20class%3D%22st0%22%20width%3D%2224%22%20height%3D%223%22%2F%3E%0A%09%3C%2Fg%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A"); }
+.achievements-layer .achievements-list__x_popup { display:flex; }
+.achievements-layer .achievements-list__item { justify-self:center; background:transparent; border:0; padding:0; }
+.achievements-layer .achievement-item__star, .achievements-layer .achievements-list__title-star, .achievements-layer .achievement__term-icon, .achievements-layer .achievement-item__new, .achievements-layer .achievement-item__new_bg, .achievements-layer .achievement__background { background-repeat:no-repeat; }
+.achievements-layer .achievements-list__x_popup__title { align-items:center; justify-content:center; color:#cfcfcf; }
+.achievements-layer .achievement-detail-layer { z-index:1; position:absolute; inset:0; }
+.achievements-layer .svg__ui_achievement_bg,.achievements-layer .achievement__background {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22259%22%20height%3D%22181%22%20viewBox%3D%220%200%20259%20181%22%3E%0A%20%20%20%20%3Cdefs%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%22owg5r0qjwa%22%20cx%3D%22.046%25%22%20cy%3D%2298.746%25%22%20r%3D%22126.498%25%22%20fx%3D%22.046%25%22%20fy%3D%2298.746%25%22%20gradientTransform%3D%22matrix(.99704%20.06759%20-.07693%20.87596%20.076%20.122)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%22zt6afe9z6b%22%20cx%3D%22100.067%25%22%20cy%3D%2298.803%25%22%20r%3D%22206.926%25%22%20fx%3D%22100.067%25%22%20fy%3D%2298.803%25%22%20gradientTransform%3D%22scale(1%20.4341)%20rotate(-87.076%201.678%201.632)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%22362eejus0c%22%20cx%3D%22100.034%25%22%20cy%3D%2298.526%25%22%20r%3D%22146.73%25%22%20fx%3D%22100.034%25%22%20fy%3D%2298.526%25%22%20gradientTransform%3D%22scale(.69665%201)%20rotate(1.425%201.218%2018.494)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%22jezn0da00d%22%20cx%3D%22.015%25%22%20cy%3D%22-3.475%25%22%20r%3D%22431.472%25%22%20fx%3D%22.015%25%22%20fy%3D%22-3.475%25%22%20gradientTransform%3D%22matrix(0%20-1%20.22543%200%20.008%20-.035)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%22lqdmtvlqme%22%20cx%3D%22.012%25%22%20cy%3D%2297.964%25%22%20r%3D%22156.017%25%22%20fx%3D%22.012%25%22%20fy%3D%2297.964%25%22%20gradientTransform%3D%22matrix(0%20-1%20.64977%200%20-.636%20.98)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%226tz1dd1jpf%22%20cx%3D%22.088%25%22%20cy%3D%22-1.071%25%22%20r%3D%22243.124%25%22%20fx%3D%22.088%25%22%20fy%3D%22-1.071%25%22%20gradientTransform%3D%22matrix(1%200%200%20.4341%200%20-.006)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%2292.41%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%220r92z0fpcg%22%20cx%3D%22.024%25%22%20cy%3D%22-1.328%25%22%20r%3D%22143.881%25%22%20fx%3D%22.024%25%22%20fy%3D%22-1.328%25%22%20gradientTransform%3D%22scale(.69665%201)%20rotate(-86.58%200%20-.013)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%22h418qgawth%22%20cx%3D%22100.046%25%22%20cy%3D%22-1.126%25%22%20r%3D%22156.258%25%22%20fx%3D%22100.046%25%22%20fy%3D%22-1.126%25%22%20gradientTransform%3D%22matrix(1%200%200%20.62665%200%20-.004)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%22vzb9mqkj2i%22%20cx%3D%22100.024%25%22%20cy%3D%22-1.828%25%22%20r%3D%22220.884%25%22%20fx%3D%22100.024%25%22%20fy%3D%22-1.828%25%22%20gradientTransform%3D%22matrix(.05432%20-.9918%20.42139%20.12784%20.954%20.976)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%2212fkati1nj%22%20cx%3D%22100.01%25%22%20cy%3D%2296.511%25%22%20r%3D%22447.835%25%22%20fx%3D%22100.01%25%22%20fy%3D%2296.511%25%22%20gradientTransform%3D%22matrix(.01953%20-.99624%20.22459%20.08663%20.764%201.878)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FEC732%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FEC732%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%3C%2Fdefs%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%20opacity%3D%22.305%22%3E%0A%20%20%20%20%20%20%20%20%3Cg%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cg%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%23owg5r0qjwa)%22%20d%3D%22M205.163%2017.22c-10.84-5.535-22.872-9.852-35.88-12.841L129.5%2090.5l75.663-73.28z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%23zt6afe9z6b)%22%20d%3D%22M129.5%200c-13.702%200-26.976%201.549-39.287%204.425L129.5%2090.5V0z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%23362eejus0c)%22%20d%3D%22M53.407%2017.516c-11.01%205.513-20.713%2012.348-28.671%2019.955L129.5%2090.5%2053.407%2017.516z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%23jezn0da00d)%22%20d%3D%22M252.678%20119.694C256.71%20110.462%20259%20100.77%20259%2090.5H129.5l123.178%2029.194z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%23lqdmtvlqme)%22%20d%3D%22M253.18%2062.86c-4.269-9.067-10.508-17.37-18.497-24.908L129.5%2090.5l123.68-27.64z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%236tz1dd1jpf)%22%20d%3D%22M129.5%20181c13.702%200%2026.976-1.549%2039.287-4.425L129.5%2090.5V181z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%230r92z0fpcg)%22%20d%3D%22M205.593%20163.484c11.01-5.513%2020.713-12.348%2028.671-19.955L129.5%2090.5l76.093%2072.984z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%23h418qgawth)%22%20d%3D%22M53.837%20163.78c10.84%205.535%2022.872%209.852%2035.88%2012.841L129.5%2090.5l-75.663%2073.28z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%23vzb9mqkj2i)%22%20d%3D%22M5.82%20118.14c4.269%209.067%2010.508%2017.37%2018.497%2024.908L129.5%2090.5%205.82%20118.14z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%2312fkati1nj)%22%20d%3D%22M6.322%2061.306C2.18%2070.458%200%2080.306%200%2090.5h129.5L6.322%2061.306z%22%20transform%3D%22translate(-51%20-204)%20translate(51%20204)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.achievements-layer .svg__ui_achievement_icon_star_down,.achievements-layer .achievement-item__star {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2213%22%20viewBox%3D%220%200%2014%2013%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-opacity%3D%22.1%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cg%20fill%3D%22%23000%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cg%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M23.794%204.292c.05.129.172.216.311.222l4.408.19c.322.013.453.413.201.61L25.262%208.02c-.11.085-.156.227-.12.36l1.18%204.185c.086.306-.26.553-.528.378l-3.679-2.398c-.116-.076-.267-.076-.384%200l-3.68%202.398c-.268.175-.613-.072-.526-.378l1.178-4.186c.037-.132-.01-.274-.118-.36l-3.453-2.704c-.252-.197-.12-.597.201-.61l4.408-.19c.14-.006.262-.093.31-.222l1.546-4.07c.113-.296.54-.296.652%200l1.545%204.07z%22%20transform%3D%22translate(-42%20-165)%20translate(27%20165)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.achievements-layer .svg__ui_achievement_icon_star_up,.achievements-layer .achievement-item__star--active,.achievements-layer .achievements-list__title-star {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2213%22%20viewBox%3D%220%200%2014%2013%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cg%20fill%3D%22%23F7BC00%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cg%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M8.794%204.292c.05.129.172.216.311.222l4.408.19c.322.013.453.413.201.61L10.262%208.02c-.11.085-.156.227-.12.36l1.18%204.185c.086.306-.26.553-.528.378l-3.679-2.398c-.116-.076-.267-.076-.384%200l-3.68%202.398c-.268.175-.613-.072-.526-.378l1.178-4.186c.037-.132-.01-.274-.118-.36L.132%205.315c-.252-.197-.12-.597.201-.61l4.408-.19c.14-.006.262-.093.31-.222L6.598.222c.113-.296.54-.296.652%200l1.545%204.07z%22%20transform%3D%22translate(-27%20-165)%20translate(27%20165)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.achievements-layer .svg__ui_achievement_icon_term,.achievements-layer .achievement__term-icon {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2221%22%20height%3D%2221%22%20viewBox%3D%220%200%2021%2021%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cg%20fill%3D%22%23F8C125%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M48.236%20392.085c.864-.293%201.683.234%202.338.66.297.193.744.484.926.484.188%200%20.64-.287.941-.476.681-.431%201.455-.922%202.302-.645.851.275%201.2%201.135%201.507%201.895.124.307.332.817.469.917.136.099.676.135.998.157.778.052%201.745.116%202.284.85.54.738.298%201.677.105%202.43-.081.313-.215.838-.163%201%20.051.158.46.49.705.688.602.489%201.352%201.098%201.352%202.026%200%20.938-.759%201.565-1.371%202.068-.24.199-.644.53-.697.68-.047.158.085.677.163.989.202.798.432%201.702-.101%202.434-.531.728-1.454.789-2.268.845-.327.02-.873.059-1.011.16-.14.103-.344.61-.468.913-.306.755-.652%201.61-1.5%201.9-.863.295-1.674-.225-2.326-.638-.293-.188-.737-.471-.921-.471-.19%200-.641.286-.941.476-.543.342-1.145.723-1.798.723-.165%200-.334-.024-.505-.081-.852-.274-1.2-1.135-1.507-1.894-.124-.307-.331-.817-.468-.917-.137-.1-.676-.135-.998-.157-.775-.052-1.739-.117-2.285-.84-.562-.744-.315-1.693-.117-2.453.081-.31.217-.83.164-.99-.052-.161-.444-.486-.703-.701-.597-.496-1.342-1.115-1.342-2.047%200-.936.759-1.562%201.369-2.065.241-.2.646-.531.698-.682.049-.157-.087-.682-.167-.997-.203-.791-.433-1.686.08-2.412.522-.74%201.452-.803%202.272-.857.328-.023.877-.06%201.014-.16.141-.104.346-.611.469-.914.307-.753.651-1.61%201.501-1.898zm7.09%206.4l-5.038%206.05-2.693-2.678c-.34-.338-.889-.338-1.228%200-.339.34-.339.888%200%201.228l3.365%203.35c.163.165.383.255.614.255.012%200%20.024%200%20.037-.002.245-.01.471-.123.627-.31l5.646-6.78c.307-.367.26-.913-.108-1.221-.37-.31-.916-.26-1.222.108z%22%20transform%3D%22translate(-41%20-392)%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.achievements-layer .svg__ui_achievement_icon_term_disabled,.achievements-layer .achievement__term--disabled .achievement__term-icon {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2221%22%20height%3D%2221%22%20viewBox%3D%220%200%2021%2021%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cg%20fill%3D%22%23D5D5D5%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M49.236%20410.085c.864-.293%201.683.234%202.338.66.297.193.744.484.926.484.188%200%20.64-.287.941-.476.681-.431%201.455-.922%202.302-.645.851.275%201.2%201.135%201.507%201.895.124.307.332.817.469.917.136.099.676.135.998.157.778.052%201.745.116%202.284.85.54.738.298%201.677.105%202.43-.081.313-.215.838-.163%201%20.051.158.46.49.705.688.602.489%201.352%201.098%201.352%202.026%200%20.938-.759%201.565-1.371%202.068-.24.199-.644.53-.697.68-.047.158.085.677.163.989.202.798.432%201.702-.101%202.434-.531.728-1.454.789-2.268.845-.327.02-.873.059-1.011.16-.14.103-.344.61-.468.913-.306.755-.652%201.61-1.5%201.9-.863.295-1.674-.225-2.326-.638-.293-.188-.737-.471-.921-.471-.19%200-.641.286-.941.476-.543.342-1.145.723-1.798.723-.165%200-.334-.024-.505-.081-.852-.274-1.2-1.135-1.507-1.894-.124-.307-.331-.817-.468-.917-.137-.1-.676-.135-.998-.157-.775-.052-1.739-.117-2.285-.84-.562-.744-.315-1.693-.117-2.453.081-.31.217-.83.164-.99-.052-.161-.444-.486-.703-.701-.597-.496-1.342-1.115-1.342-2.047%200-.936.759-1.562%201.369-2.065.241-.2.646-.531.698-.682.049-.157-.087-.682-.167-.997-.203-.791-.433-1.686.08-2.412.522-.74%201.452-.803%202.272-.857.328-.023.877-.06%201.014-.16.141-.104.346-.611.469-.914.307-.753.651-1.61%201.501-1.898zm7.09%206.4l-5.038%206.05-2.693-2.678c-.34-.338-.889-.338-1.228%200-.339.34-.339.888%200%201.228l3.365%203.35c.163.165.383.255.614.255.012%200%20.024%200%20.037-.002.245-.01.471-.123.627-.31l5.646-6.78c.307-.367.26-.913-.108-1.221-.37-.31-.916-.26-1.222.108z%22%20transform%3D%22translate(-42%20-410)%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.achievements-layer .achievement__subtitle {
+  margin: 0 0 7px 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 16px;
+  overflow: hidden;
+}
+.achievements-layer .achievement__username {
+  font-weight: bold;
+  margin-right: 4px;
+}
+.achievements-layer .achievement__name {
+  margin-top: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+.achievements-layer .achievement__term {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 5px;
+  font-size: 12px;
+  background-color: #fffae2;
+  border-radius: 10px;
+  min-height: 46px;
+  padding: 0 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.achievements-layer .achievement__term--disabled {
+  background-color: #f1f1f1;
+}
+.achievements-layer .achievement__term-icon {
+  background-size: 21px 21px;
+  height: 21px;
+  width: 21px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+.achievements-layer .achievement__background {
+  background-size: 259px 181px;
+  height: 181px;
+  width: 259px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+}
+.achievements-layer .achievement-item {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+}
+.achievements-layer .achievement-item--big {
+  height: 124px;
+}
+.achievements-layer .achievement-item__icons {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  position: relative;
+  width: 78px;
+  height: 78px;
+}
+.achievements-layer .achievement-item--big .achievement-item__icons {
+  width: 103px;
+  height: 103px;
+}
+.achievements-layer .achievement-item__image {
+  position: absolute;
+}
+.achievements-layer .achievement-item__image--medium {
+  width: 80px;
+  height: 80px;
+}
+.achievements-layer .achievement-item__image--disabled {
+  -webkit-filter: grayscale(100%);
+          filter: grayscale(100%);
+  opacity: 0.75;
+}
+.achievements-layer .achievement-item__new {
+  background-size: 39px 24px;
+  height: 24px;
+  width: 39px;
+  position: absolute;
+  left: -3px;
+  top: 11px;
+}
+.achievements-layer .achievement-item__new_bg {
+  background-size: 8px 7px;
+  height: 7px;
+  width: 8px;
+  position: absolute;
+  top: 26px;
+  left: 1px;
+}
+.achievements-layer .achievement-item__stars {
+  display: flex;
+  position: absolute;
+  top: 0;
+}
+.achievements-layer .achievement-item__star {
+  background-size: 13px 12px;
+  height: 12px;
+  width: 13px;
+}
+.achievements-layer .achievement-item__star--1 {
+  -webkit-transform: rotate(311deg);
+          transform: rotate(311deg);
+  margin: 17px -3px 0 0;
+}
+.achievements-layer .achievement-item__star--2 {
+  -webkit-transform: rotate(327deg);
+          transform: rotate(327deg);
+  margin: 8px 0 0 0;
+}
+.achievements-layer .achievement-item__star--3 {
+  -webkit-transform: rotate(344deg);
+          transform: rotate(344deg);
+  margin: 2px 1px 0 0;
+}
+.achievements-layer .achievement-item__star--4 {
+  margin: 0 1px 0 0;
+}
+.achievements-layer .achievement-item__star--5 {
+  -webkit-transform: rotate(16deg);
+          transform: rotate(16deg);
+  margin: 2px 0 0 0;
+}
+.achievements-layer .achievement-item__star--6 {
+  -webkit-transform: rotate(33deg);
+          transform: rotate(33deg);
+  margin: 8px 0 0 0;
+}
+.achievements-layer .achievement-item__star--7 {
+  -webkit-transform: rotate(49deg);
+          transform: rotate(49deg);
+  margin: 17px 0 0 -3px;
+}
+.achievements-layer .achievement-item--big .achievement-item__star {
+  background-size: 17px 16px;
+  height: 16px;
+  width: 17px;
+}
+.achievements-layer .achievement-item--big .achievement-item__star--1 {
+  -webkit-transform: rotate(310deg);
+          transform: rotate(310deg);
+  margin: 23px -3px 0 0;
+}
+.achievements-layer .achievement-item--big .achievement-item__star--2 {
+  -webkit-transform: rotate(326deg);
+          transform: rotate(326deg);
+  margin: 11px 0 0 0;
+}
+.achievements-layer .achievement-item--big .achievement-item__star--3 {
+  -webkit-transform: rotate(344deg);
+          transform: rotate(344deg);
+  margin: 3px 1px 0 0;
+}
+.achievements-layer .achievement-item--big .achievement-item__star--4 {
+  margin: 0 1px 0 0;
+}
+.achievements-layer .achievement-item--big .achievement-item__star--5 {
+  -webkit-transform: rotate(16deg);
+          transform: rotate(16deg);
+  margin: 3px 0 0 0;
+}
+.achievements-layer .achievement-item--big .achievement-item__star--6 {
+  -webkit-transform: rotate(33deg);
+          transform: rotate(33deg);
+  margin: 11px 0 0 0;
+}
+.achievements-layer .achievement-item--big .achievement-item__star--7 {
+  -webkit-transform: rotate(50deg);
+          transform: rotate(50deg);
+  margin: 23px 0 0 -3px;
+}
+.achievements-layer .achievements-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px 2px;
+  padding: 5px 5px 10px 5px;
+}
+@media screen and (max-width: 510px) {
+.achievements-layer .achievements-list {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+.achievements-layer .achievements-list__x_popup {
+  height: 80%;
+  min-width: 294px;
+}
+@media screen and (min-width: 510px) {
+.achievements-layer .achievements-list__x_popup {
+    min-width: 384px;
+  }
+}
+.achievements-layer .achievements-list__x_popup__header {
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 0 0 80px;
+}
+.achievements-layer .achievements-list__x_popup__header:before,.achievements-layer .achievements-list__x_popup__header:after {
+  content: '';
+  display: block;
+}
+.achievements-layer .achievements-list__x_popup__title {
+  flex-direction: row;
+  flex: 0 0 auto;
+}
+.achievements-layer .achievements-list__title-star {
+  background-size: 14px 13px;
+  height: 13px;
+  width: 14px;
+  margin: 0 2px 0 8px;
+}
+.achievements-layer .achievements-list__sort {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.achievements-layer .achievements-list__tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: 15px;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+  height: 30px;
+}
+.achievements-layer .achievements-list__tabs-title {
+  font-size: 14px;
+  font-weight: normal;
+  color: black;
+  margin-right: 5px;
+}
+.achievements-layer .achievements-list__tab {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 12px 6px 12px;
+  border-radius: 13px;
+  font-size: 11px;
+  color: black;
+  font-weight: normal;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.achievements-layer .achievements-list__tab:first-child {
+  margin-left: 4px;
+}
+.achievements-layer .achievements-list__tab:last-child {
+  margin-right: 4px;
+}
+.achievements-layer .achievements-list__tab:only-child {
+  margin: 0 4px;
+}
+.achievements-layer .achievements-list__tab--active {
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+  cursor: auto;
+}
+.achievements-layer .achievements-list__item {
+  border-radius: 9px;
+  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  transition: background-color 500ms linear;
+  height: 94px;
+}
+.achievements-layer.portrait .achievements-list__item {
+  width: 90px;
+}
+.achievements-layer.landscape .achievements-list__item {
+  width: 92px;
+}
+.achievements-layer .achievements-list__item:active {
+  background-color: #d9dce3;
+}
