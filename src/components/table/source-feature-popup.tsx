@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 
-export function SourceFeaturePopup({ title, children, onClose, help, inactive = false, className = '' }: { title: string; children: ReactNode; onClose: () => void; help?: () => void; inactive?: boolean; className?: string }) {
+export function SourceFeaturePopup({ title, children, onClose, help, inactive = false, className = '' }: { title: string; children: ReactNode; onClose: () => void; help?: (() => void) | undefined; inactive?: boolean; className?: string }) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     if (inactive) return;
