@@ -12,11 +12,6 @@
 .gesture-close { position: absolute; right: 8px; bottom: 8px; width: 32px; height: 32px; border-radius: 50%; padding: 0; }
 .gesture-modal-layer { position: fixed; inset: 0; z-index: 1001; font-family: Arial, Helvetica, sans-serif; }
 .gesture-lock { width: min(320px,calc(100vw - 24px)); color: var(--gesture-ink); }
-.gesture-lock .gift-locked { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.gift-locked__description { text-align: center; font-size: 14px; white-space: pre-line; }
-.gesture-progress { width: 200px; height: 6px; accent-color: var(--gesture-fill); }
-.gesture-actions { display: flex; justify-content: center; padding: 0 16px 16px; gap: 12px; }
-.gesture-actions button { background: var(--gesture-accent); color: var(--gesture-surface); }
 .gesture-status { font-size: 12px; text-align: center; padding: 8px 12px; }
 @keyframes gesture-profile-in { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .gesture-profile,.gesture-lock { animation: none; } }.gesture-profile {

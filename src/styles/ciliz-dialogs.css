@@ -1,0 +1,325 @@
+/* Extracted unchanged from the game preloader bundle: Dialog.Button (bem "button"), GiftLockedDialog (bem "gift-locked"), InfoDialog (bem "info") and ToastDialog (bem "toast"). */
+.gift-locked__icon--price,
+.info__heart {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2022.0.1%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2072%2056%22%20style%3D%22enable-background%3Anew%200%200%2072%2056%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3Aurl(%23SVGID_1_)%3B%7D%0A%3C%2Fstyle%3E%0A%3ClinearGradient%20id%3D%22SVGID_1_%22%20gradientUnits%3D%22userSpaceOnUse%22%20x1%3D%2236%22%20y1%3D%221.6667%22%20x2%3D%2236%22%20y2%3D%2246.3676%22%3E%0A%09%3Cstop%20%20offset%3D%220%22%20style%3D%22stop-color%3A%23F6711C%22%2F%3E%0A%09%3Cstop%20%20offset%3D%221%22%20style%3D%22stop-color%3A%23DC3600%22%2F%3E%0A%3C%2FlinearGradient%3E%0A%3Cpath%20class%3D%22st0%22%20d%3D%22M51.2%2C1.1c-7.9%2C0-13%2C4.6-14.6%2C6.4c-0.3%2C0.3-0.8%2C0.3-1.2%2C0c-1.6-1.8-6.7-6.4-14.6-6.4c-9.7%2C0-19.7%2C8.1-19.7%2C19.3%0A%09s8%2C16.5%2C15.9%2C22c6.4%2C4.5%2C13.4%2C9.3%2C16.8%2C11.7c1.3%2C0.9%2C3.1%2C0.9%2C4.4%2C0C41.6%2C51.8%2C48.6%2C47%2C55%2C42.5c7.8-5.5%2C15.9-10.9%2C15.9-22%0A%09S60.9%2C1.1%2C51.2%2C1.1z%22%2F%3E%0A%3C%2Fsvg%3E%0A");
+}
+.gift-locked__icon--dj_score {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2222%22%20height%3D%2222%22%20viewBox%3D%220%200%2022%2022%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%20%20%3Cdefs%3E%0A%20%20%20%20%20%20%20%20%3ClinearGradient%20x1%3D%2239.002%25%22%20y1%3D%2275.999%25%22%20x2%3D%2283.86%25%22%20y2%3D%2218.643%25%22%20id%3D%22x1967fbkra%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20stop-color%3D%22%23D15DA6%22%20offset%3D%220%25%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20stop-color%3D%22%23C14C8C%22%20offset%3D%22100%25%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3C%2Fdefs%3E%0A%20%20%20%20%3Cpath%20d%3D%22M19.97.634a.8.8%200%200%201%20.03.217v15.182h-.031A4.5%204.5%200%201%201%2018%2011.758L18%207.387a.2.2%200%200%200-.247-.194l-8.448%202.06A.4.4%200%200%200%209%209.64v8.384h-.03a4.5%204.5%200%201%201-1.974-4.27V4.37a1.2%201.2%200%200%201%20.875-1.155L18.983.08a.8.8%200%200%201%20.987.553z%22%20fill%3D%22url(%23x1967fbkra)%22%20fill-rule%3D%22evenodd%22%2F%3E%0A%3C%2Fsvg%3E%0A");
+}
+.gift-locked__icon--harem_price {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2022.1.0%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2038%2027%22%20style%3D%22enable-background%3Anew%200%200%2038%2027%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3Aurl(%23SVGID_1_)%3B%7D%0A%09.st1%7Bopacity%3A0.65%3Bfill%3Aurl(%23SVGID_2_)%3Benable-background%3Anew%20%20%20%20%3B%7D%0A%09.st2%7Bfill%3Aurl(%23SVGID_3_)%3B%7D%0A%09.st3%7Bfill%3Aurl(%23SVGID_4_)%3B%7D%0A%09.st4%7Bopacity%3A0.22%3Bfill%3A%23510400%3Benable-background%3Anew%20%20%20%20%3B%7D%0A%09.st5%7Bfill%3Aurl(%23SVGID_5_)%3B%7D%0A%3C%2Fstyle%3E%0A%3Cg%3E%0A%09%0A%09%09%3ClinearGradient%20id%3D%22SVGID_1_%22%20gradientUnits%3D%22userSpaceOnUse%22%20x1%3D%2222.1062%22%20y1%3D%220.4083%22%20x2%3D%2222.1062%22%20y2%3D%2220.9298%22%20gradientTransform%3D%22matrix(1%200%200%201%200%200.6875)%22%3E%0A%09%09%3Cstop%20%20offset%3D%220%22%20style%3D%22stop-color%3A%23F6711C%22%2F%3E%0A%09%09%3Cstop%20%20offset%3D%221%22%20style%3D%22stop-color%3A%23DC3600%22%2F%3E%0A%09%3C%2FlinearGradient%3E%0A%09%3Cpath%20class%3D%22st0%22%20d%3D%22M28.8%2C0.8c-3.4%2C0-5.7%2C2.1-6.5%2C2.9c-0.1%2C0.1-0.3%2C0.1-0.5%2C0c-0.6-0.8-2.9-2.9-6.5-2.9c-4.3%2C0-8.6%2C3.6-8.6%2C8.7%0A%09%09s3.4%2C7.6%2C7%2C10.1c2.8%2C2%2C5.9%2C4.4%2C7.4%2C5.4c0.5%2C0.4%2C1.4%2C0.4%2C1.9%2C0c1.5-1%2C4.6-3.3%2C7.4-5.4c3.3-2.5%2C7-5%2C7-10.1S33%2C0.8%2C28.8%2C0.8z%22%2F%3E%0A%09%0A%09%09%3CradialGradient%20id%3D%22SVGID_2_%22%20cx%3D%2216.1838%22%20cy%3D%2221.6726%22%20r%3D%2215.4062%22%20gradientTransform%3D%22matrix(1.0921%200%200%201.1378%20-1.532%20-0.8979)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%0A%09%09%3Cstop%20%20offset%3D%220%22%20style%3D%22stop-color%3A%23B31200%22%2F%3E%0A%09%09%3Cstop%20%20offset%3D%221%22%20style%3D%22stop-color%3A%23B31200%3Bstop-opacity%3A0%22%2F%3E%0A%09%3C%2FradialGradient%3E%0A%09%3Cpath%20class%3D%22st1%22%20d%3D%22M28.8%2C0.8c-3.4%2C0-5.7%2C2.1-6.5%2C2.9c-0.1%2C0.1-0.3%2C0.1-0.5%2C0c-0.6-0.8-2.9-2.9-6.5-2.9c-4.3%2C0-8.6%2C3.6-8.6%2C8.7%0A%09%09s3.4%2C7.6%2C7%2C10.1c2.8%2C2%2C5.9%2C4.4%2C7.4%2C5.4c0.5%2C0.4%2C1.4%2C0.4%2C1.9%2C0c1.5-1%2C4.6-3.3%2C7.4-5.4c3.3-2.5%2C7-5%2C7-10.1S33%2C0.8%2C28.8%2C0.8z%22%2F%3E%0A%09%0A%09%09%3CradialGradient%20id%3D%22SVGID_3_%22%20cx%3D%22770.7535%22%20cy%3D%22-1284.455%22%20r%3D%2216.6479%22%20gradientTransform%3D%22matrix(0.4331%200%200%20-0.4513%20-324.7073%20-563.6445)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%0A%09%09%3Cstop%20%20offset%3D%220%22%20style%3D%22stop-color%3A%23990F00%22%2F%3E%0A%09%09%3Cstop%20%20offset%3D%221%22%20style%3D%22stop-color%3A%23990F00%3Bstop-opacity%3A0%22%2F%3E%0A%09%3C%2FradialGradient%3E%0A%09%3Cpath%20class%3D%22st2%22%20d%3D%22M7.7%2C5.8c-0.6%2C1.1-1%2C2.5-1%2C4c0%2C2.5%2C0.9%2C4.4%2C2%2C5.9c4.4-1%2C8.9-2.9%2C7-5.8C13.7%2C6.8%2C10.1%2C5.9%2C7.7%2C5.8z%22%2F%3E%0A%09%0A%09%09%3CradialGradient%20id%3D%22SVGID_4_%22%20cx%3D%221146.6503%22%20cy%3D%22-464.7798%22%20r%3D%2219.6608%22%20gradientTransform%3D%22matrix(0.4016%200.1691%200.1945%20-0.5015%20-353.9272%20-407.2883)%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%0A%09%09%3Cstop%20%20offset%3D%220%22%20style%3D%22stop-color%3A%23990F00%22%2F%3E%0A%09%09%3Cstop%20%20offset%3D%221%22%20style%3D%22stop-color%3A%23990F00%3Bstop-opacity%3A0%22%2F%3E%0A%09%3C%2FradialGradient%3E%0A%09%3Cpath%20class%3D%22st3%22%20d%3D%22M14.1%2C9.9c-1.7%2C0.9-3.2%2C3.7-4.4%2C6.7c1.2%2C1.1%2C2.5%2C2.1%2C4%2C3.1c2.8%2C2%2C5.9%2C4.4%2C7.4%2C5.4c0.5%2C0.4%2C1.4%2C0.4%2C1.9%2C0%0A%09%09c1.5-1%2C4.6-3.3%2C7.4-5.4c0.8-0.6%2C1.4-1.1%2C2.2-1.6C27.5%2C7.2%2C17.9%2C8%2C14.1%2C9.9z%22%2F%3E%0A%09%3Cpath%20class%3D%22st4%22%20d%3D%22M15.9%2C9.1c-2.4%2C0-4.1%2C1.5-4.5%2C2c-0.5-0.4-2-2-4.4-2c-0.1%2C0-0.1%2C0-0.2%2C0v0.4c0%2C5.2%2C3.4%2C7.6%2C7%2C10.1%0A%09%09c1.4%2C1%2C2.9%2C2.1%2C4.3%2C3c2.2-1.7%2C4.3-3.5%2C4.3-7C22.2%2C11.9%2C18.9%2C9.1%2C15.9%2C9.1z%22%2F%3E%0A%09%0A%09%09%3ClinearGradient%20id%3D%22SVGID_5_%22%20gradientUnits%3D%22userSpaceOnUse%22%20x1%3D%2211.3426%22%20y1%3D%229.0833%22%20x2%3D%2211.3426%22%20y2%3D%2222.9005%22%20gradientTransform%3D%22matrix(1%200%200%201%200%200.6875)%22%3E%0A%09%09%3Cstop%20%20offset%3D%220%22%20style%3D%22stop-color%3A%23F6711C%22%2F%3E%0A%09%09%3Cstop%20%20offset%3D%221%22%20style%3D%22stop-color%3A%23DC3600%22%2F%3E%0A%09%3C%2FlinearGradient%3E%0A%09%3Cpath%20class%3D%22st5%22%20d%3D%22M15.9%2C9.7c-2.3%2C0-3.9%2C1.5-4.4%2C1.9c-0.1%2C0.1-0.2%2C0.1-0.3%2C0C10.7%2C11%2C9.2%2C9.7%2C6.8%2C9.7c-2.8%2C0-5.9%2C2.5-5.9%2C5.9%0A%09%09s2.4%2C5.2%2C4.7%2C6.8c1.8%2C1.3%2C4%2C2.8%2C5.1%2C3.6c0.4%2C0.2%2C0.9%2C0.2%2C1.3%2C0c1-0.7%2C3-2.1%2C5.1-3.5c2.3-1.7%2C4.7-3.4%2C4.7-6.8S18.8%2C9.7%2C15.9%2C9.7z%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.gift-locked__icon--kisses,
+.info__kiss {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2022.1.0%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2032%2024%22%20style%3D%22enable-background%3Anew%200%200%2032%2024%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3A%23F63F29%3B%7D%0A%3C%2Fstyle%3E%0A%3Cg%3E%0A%09%3Cpath%20class%3D%22st0%22%20d%3D%22M2.7%2C18.1c-0.7%2C0-0.9%2C0.6-0.5%2C0.9c0.4%2C0.3%2C0.9%2C0.3%2C1-0.3C3.4%2C18.2%2C3.2%2C18.1%2C2.7%2C18.1z%22%2F%3E%0A%09%3Cpath%20class%3D%22st0%22%20d%3D%22M30.4%2C9.3c-0.2-0.3-0.1-0.8-0.3-1c-0.3-0.3-0.7%2C0.1-0.8%2C0.5c-0.1%2C0.4-0.4%2C0.1-0.7%2C0.4%0A%09%09c-0.3%2C0.3%2C0.3%2C0.4%2C0.3%2C0.8s-0.4%2C0.1-0.9-0.1c-0.4-0.2-0.2-0.5%2C0.2-0.9c0.3-0.3%2C0.3-0.3%2C0.1-0.6c-0.3-0.3-0.5%2C0-0.6%2C0.4%0A%09%09s-0.4%2C0-0.5-0.3c-0.1-0.3%2C0-0.7%2C0.3-0.7c0.3%2C0%2C0.5-0.1%2C0.8-0.4c0.3-0.3%2C0.9%2C0.1%2C1%2C0.4c0.2%2C0.3%2C0.8-0.2%2C0.9-0.7s-1-0.6-1.3-0.7%0A%09%09c-0.3-0.1-0.1-0.5-0.4-0.6c-0.3-0.1-0.6%2C0-0.4%2C0.3c0.2%2C0.3%2C0%2C0.3-0.3%2C0.3c-0.3%2C0-0.5-0.3-0.7-0.3c-0.2%2C0.1-0.5%2C0.7-0.9%2C0.8%0A%09%09c-0.3%2C0.1-0.3%2C0.5-0.1%2C0.8c0.3%2C0.3%2C0.1%2C1.4-0.3%2C1.4c-0.3%2C0-0.7-0.4-1.1-0.3c-0.4%2C0.1-1.3%2C0.3-0.6%2C0.9c0.7%2C0.5%2C0.9%2C0.9%2C0.4%2C0.9%0A%09%09s-0.5-0.7-0.8-0.9c-0.3-0.3-0.9-0.3-1%2C0.1c-0.1%2C0.3%2C0%2C0.9-0.3%2C0.9c-0.3%2C0.1-0.8%2C0.1-0.9%2C0.3c-0.1%2C0.3%2C0.3%2C0.7-0.3%2C0.6%0A%09%09c-0.5-0.1-1.6%2C0-1.3%2C0.6c0.3%2C0.6%2C0.9%2C0.3%2C0.9%2C0.8c-0.1%2C0.4-0.7%2C1.1-0.9%2C0.8c-0.2-0.3%2C0.4-0.3%2C0.2-0.6c-0.3-0.3-0.8-0.7-0.8-1.1%0A%09%09c0-0.4-0.4-0.6-0.6-0.3c-0.2%2C0.3-0.7%2C1.2-1%2C1.1c-0.3-0.1-0.6-0.2-0.8%2C0.1c-0.2%2C0.3-0.5%2C0.9-0.1%2C0.9c0.4%2C0.1%2C0.7%2C0.3%2C0.3%2C0.7%0A%09%09c-0.3%2C0.3-0.7%2C0.3-0.7-0.2c0-0.5-0.2-1.1-0.7-1.3c-0.5-0.2-0.7%2C0.1-0.7%2C0.4s-0.3%2C0.8-0.5%2C0.5c-0.2-0.3%2C0.2-0.6-0.1-0.9%0A%09%09c-0.3-0.3-0.6-0.3-0.8%2C0.2c-0.2%2C0.5%2C0%2C1.1%2C0.4%2C1.2s0.6%2C0.2%2C0.6%2C0.5s-0.6%2C0.9-0.3%2C1.4c0.3%2C0.5%2C0.9%2C0.8%2C0.9%2C1.4%0A%09%09c0%2C0.6-0.8%2C0.9-0.8%2C0.3s0.1-1.1-0.3-1.3c-0.3-0.2-0.3-0.5-0.3-0.9c0.1-0.3%2C0.6-0.6%2C0.1-0.9c-0.5-0.3-0.7-0.1-0.7-0.8%0A%09%09c0-0.7%2C0.1-0.9-0.3-0.9s-1.8%2C0.8-1%2C1.3c0.8%2C0.5%2C0.8%2C1%2C0.5%2C1.4c-0.3%2C0.3-0.9%2C0.6-1.2%2C0c-0.3-0.6%2C0.1-1.1%2C0.2-1.5s0.4-2.3-0.4-2.1%0A%09%09c0%2C0%2C0%2C0-0.1%2C0c-0.5%2C0.1-0.7%2C0.2-0.9%2C0.5c-0.2%2C0.3-0.5%2C0.4-0.5%2C0.2c0-0.3-0.4-0.6-0.8%2C0.1s-0.6%2C0.9-0.9%2C0.8C7.9%2C14.3%2C7.2%2C14.2%2C7%2C14%0A%09%09c-0.2-0.2-0.4%2C0-0.6%2C0.3s-0.3%2C0.2-0.8%2C0c-0.4-0.2-0.7%2C0.3-0.9%2C0.9c-0.3%2C0.6-1.4%2C0-1.9%2C0.2c-0.5%2C0.2-0.2%2C0.9-0.3%2C1.3%0A%09%09c-0.2%2C0.4-0.6%2C0-0.9%2C0.2c-0.3%2C0.2%2C0.2%2C0.3%2C0.3%2C0.6c0.1%2C0.3%2C0.6%2C0.3%2C0.9%2C0.2s-0.1-0.4%2C0-0.6C2.8%2C17%2C3%2C16.9%2C3%2C17.3%0A%09%09c0%2C0.4%2C0.5%2C0.3%2C0.5%2C0.1s0.1-0.4%2C0.3-0.3c0.2%2C0.1%2C0.3%2C0.4%2C0.1%2C0.6s-0.4%2C0.6-0.2%2C0.8s0.3%2C0.3%2C0.1%2C0.8s0.2%2C0.5%2C0.5%2C0.4s0.2-0.7%2C0.3-1%0A%09%09c0.2-0.3%2C0.5-0.1%2C0.6%2C0.3c0.1%2C0.3%2C0.3%2C0.1%2C0.3%2C0.7c0%2C0.6%2C0.7%2C0.7%2C0.9%2C0.8c0.3%2C0.1-0.1%2C0.5%2C0.2%2C0.8c0.3%2C0.3%2C0.4-0.3%2C0.7-0.6%0A%09%09c0.3-0.3%2C0.3-0.1%2C0.5%2C0.3c0.2%2C0.4%2C0.6%2C0.3%2C1%2C0.3s0.5%2C0.6%2C0.9%2C1s0.7%2C0.1%2C1.1-0.2c0.4-0.3%2C0.7%2C0%2C0.8%2C0.4c0.1%2C0.4%2C0.4%2C0.3%2C0.6%2C0.1%0A%09%09c0.2-0.2%2C0.5-0.1%2C0.8%2C0.3c0.3%2C0.3%2C0.9-0.2%2C0.9-0.4c0-0.3-0.4-0.4-0.6-0.9c-0.2-0.4%2C0.8-0.8%2C0.8%2C0s0.1%2C1%2C0.3%2C1.1%0A%09%09c0.2%2C0.1%2C0.5%2C0%2C0.6-0.4c0.1-0.4-0.2-0.8-0.7-1.3c-0.5-0.5-0.4-0.9-0.1-1c0.3-0.2%2C0.5%2C0.1%2C0.4%2C0.5c-0.1%2C0.4%2C0.5%2C0.7%2C0.8%2C0.9%0A%09%09c0.3%2C0.3%2C0.2%2C0.4-0.1%2C0.7c-0.3%2C0.3%2C0.1%2C0.8%2C0.6%2C0.8c0.5%2C0%2C0.9-0.8%2C0.8-1.2c-0.1-0.4%2C0.1-0.9%2C0.5-0.8c0.4%2C0.1%2C0.3%2C0.5%2C0%2C1%0A%09%09c-0.3%2C0.5%2C0.3%2C0.7%2C1.3%2C0.8c1%2C0.1%2C1.3-0.9%2C1.6-1.4c0.3-0.5%2C0.9-0.2%2C1.5-0.1c0.5%2C0.1%2C0.7-0.1%2C0.9-0.3c0.3-0.3%2C0.4-0.2%2C1-0.1%0A%09%09s0.9-0.8%2C1-0.9s0.5-0.9%2C0-0.9c-0.5-0.1-0.6-0.6-0.3-0.8c0.3-0.2%2C0.4%2C0.2%2C0.7%2C0.8c0.3%2C0.6%2C1.6-0.6%2C0.9-0.8s-0.8-0.9-0.4-1%0A%09%09c0.3-0.1%2C0.3%2C0.2%2C0.7%2C0.4c0.3%2C0.3%2C0.8-0.5%2C0.9-0.8s-0.4-0.6-0.7-0.8c-0.3-0.2-0.1-0.6-0.4-1.1c-0.3-0.5-0.3-0.8%2C0.1-0.9%0A%09%09c0.4-0.1%2C0.7%2C1.2%2C0.7%2C1.6s0.9%2C0.8%2C0.9%2C0.4c0.1-0.3-0.2-0.7-0.2-1.1c0-0.4%2C0.4-0.3%2C0.6%2C0c0.2%2C0.3%2C0.4%2C0%2C0.7-0.3%0A%09%09c0.3-0.3%2C0-0.6-0.5-0.9c-0.5-0.3-0.6-0.5-0.3-0.9c0.3-0.4%2C0.5-0.2%2C0.6%2C0.2s0.7%2C0.4%2C0.9%2C0.3c0.3-0.2%2C0-0.5-0.4-0.8%0A%09%09c-0.4-0.3-0.3-0.9-0.2-1.3c0.2-0.4%2C0.5-0.2%2C0.9%2C0.3c0.4%2C0.5%2C0.6%2C0.1%2C0.5-0.5c-0.1-0.6%2C0.3-0.4%2C0.5-0.7C31.1%2C10%2C30.5%2C9.5%2C30.4%2C9.3z%0A%09%09%20M7.4%2C15.6c-0.2%2C0.4-0.3%2C1-0.6%2C1.5c-0.3%2C0.4-0.3%2C0.6-0.3%2C1c0%2C0.4-0.2%2C0.6-0.3%2C0.3S5.7%2C17.5%2C6%2C17.2c0.3-0.3%2C0.7-0.5%2C0.7-0.9%0A%09%09c0-0.3-0.1-0.7%2C0.4-1C7.6%2C15%2C7.6%2C15.2%2C7.4%2C15.6z%20M8.3%2C19.1C8.4%2C19.5%2C8%2C20.5%2C8%2C19.4c0-1.1-0.5-1.1-0.2-1.8c0.3-0.7%2C0.4-1.6%2C0.5-0.7%0A%09%09c0%2C0.5%2C0%2C0.8%2C0.2%2C1C8.6%2C18.2%2C8.2%2C18.8%2C8.3%2C19.1z%20M10.4%2C21c-0.1%2C0.4-0.3%2C0-0.5-0.5c-0.3-0.5-0.9-0.4-0.8-1c0.1-0.9%2C0.6-0.9%2C0.7-1.3%0A%09%09c0.2-0.6%2C0.5-1%2C0.3%2C0s-0.1%2C1-0.1%2C1.6C9.9%2C20.3%2C10.5%2C20.6%2C10.4%2C21z%20M18.9%2C20.8c-0.3%2C0.3-0.4-0.4-0.7-0.7c-0.3-0.3%2C0.1-0.3%2C0.3-0.9%0A%09%09c0.2-0.6-0.3-0.6-0.7-1.2c-0.4-0.6%2C0-0.7-0.2-1.2c-0.2-0.4-0.6-0.1-0.6-0.5c0-0.4%2C0.4%2C0%2C0.4-0.3c0-0.3%2C0-0.5%2C0.3-0.3%0A%09%09c0.3%2C0.2%2C0.1%2C1%2C0.2%2C1.4c0.1%2C0.3%2C0.7%2C0.3%2C0.7%2C0.7c0%2C0.4-0.3%2C0.5%2C0.2%2C1c0.4%2C0.5%2C0.2%2C0.8-0.1%2C1.1C18.5%2C20.1%2C19.3%2C20.4%2C18.9%2C20.8z%0A%09%09%20M23.5%2C18c-0.2%2C0-0.7-0.3-0.7-0.7c0-0.3%2C0.1-0.7-0.2-0.8c-0.3-0.1-1.6-2-0.4-0.9c0.6%2C0.5%2C1.3%2C1%2C1.4%2C1.5C23.6%2C17.5%2C23.6%2C18%2C23.5%2C18z%0A%09%09%20M24.9%2C15.1c-0.2%2C0.2-1.1-0.2-1.4-0.9c-0.3-0.7-0.6-0.9-1-1.3c-0.9-0.9%2C1.1%2C0.1%2C1.3%2C0.8C24%2C14.2%2C25.1%2C14.9%2C24.9%2C15.1z%22%2F%3E%0A%09%3Cpath%20class%3D%22st0%22%20d%3D%22M2.6%2C14.2c0.2-0.2-0.2-0.3-0.3-0.4c-0.2-0.1-0.2-0.3-0.3-0.5s-0.3%2C0-0.4%2C0c-0.2%2C0-0.2%2C0.3-0.3%2C0.4%0A%09%09s-0.4%2C0.6-0.3%2C1s0.7%2C0%2C0.9-0.2C2%2C14.4%2C2.4%2C14.4%2C2.6%2C14.2z%22%2F%3E%0A%09%3Cpath%20class%3D%22st0%22%20d%3D%22M13.9%2C9.5c-0.5%2C0-0.6%2C0.2-0.8%2C0.4c-0.2%2C0.3-0.5%2C0.1-0.6%2C0.4c-0.1%2C0.3%2C0.9%2C0.3%2C1.6%2C0.3c0.7%2C0%2C0.8-0.3%2C1.1-0.6%0A%09%09c0.3-0.3%2C0.2-0.5-0.2-0.5s-0.3-0.5-0.5-0.7C14.3%2C8.6%2C14%2C8.7%2C14%2C8.9C14%2C9%2C14.3%2C9.5%2C13.9%2C9.5z%22%2F%3E%0A%09%3Cpath%20class%3D%22st0%22%20d%3D%22M1.7%2C11.5c0.2%2C0.1%2C0.5%2C0.3%2C0.3%2C0.6s-0.3%2C0.1-0.3%2C0.4s0.8%2C0.3%2C1%2C0.4c0.3%2C0.1%2C0.4%2C0.6%2C0.4%2C0.8%0A%09%09c0%2C0.2%2C0.3%2C0.4%2C0.7%2C0.4s0.5-0.5%2C0.6-0.7c0.1-0.2%2C0.6-0.3%2C0.6%2C0c0%2C0.3%2C0.1%2C0.3%2C0.5%2C0.3c0.4-0.1%2C0.2-0.5%2C0.4-1%0A%09%09c0.3-0.5%2C0.7-0.2%2C0.9%2C0.1c0.3%2C0.3%2C0.5-0.2%2C0.7-0.4s0.2-0.3%2C0.4-0.2c0.3%2C0.1%2C0.5-0.3%2C0.7-0.6c0.2-0.3%2C0.6-0.3%2C0.9-0.1%0A%09%09c0.3%2C0.3%2C0.3-0.2%2C0.6-0.3c0.3-0.2%2C0.5%2C0.2%2C0.8%2C0.1s0.1-0.3%2C0.3-0.4c0.3-0.1%2C0.5-0.3%2C0.6-0.8S12%2C9.5%2C11.5%2C9.3%0A%09%09c-0.5-0.2-0.3-0.4-0.1-0.5c0.2-0.1%2C0.3-0.1%2C0.5%2C0.3c0.2%2C0.4%2C0.6%2C0.3%2C1%2C0.3c0.4-0.1%2C0.4-0.4%2C0.4-0.8s0.4-0.4%2C0.3-0.7%0A%09%09c-0.1-0.3-0.4%2C0-0.6%2C0.2C13%2C8.3%2C12.7%2C8%2C12.6%2C7.8c-0.1-0.2%2C0.3-0.1%2C0.5-0.3C13.4%2C7.2%2C13%2C7%2C13.2%2C6.9c0.2-0.2%2C0.5-0.2%2C0.5%2C0%0A%09%09c0%2C0.3%2C0%2C0.5%2C0.2%2C0.7c0.2%2C0.2%2C0.7-0.3%2C0.9-0.3c0.3-0.1%2C0.2-0.3%2C0-0.5c-0.2-0.2-0.3-0.3%2C0.1-0.5c0.4-0.3%2C0.4%2C0.4%2C0.5%2C0.6%0A%09%09s0.1%2C0.3-0.1%2C0.8c-0.2%2C0.4-0.1%2C1.1%2C0%2C1.4c0.1%2C0.3%2C1.1%2C0.1%2C1.1%2C0.3s0%2C0.8%2C0.8%2C0.8s0.4-0.3%2C0.7-0.3c0.3%2C0.1%2C0.4%2C0%2C0.6-0.3%0A%09%09c0.2-0.3%2C0.5-0.3%2C0.9-0.2c0.4%2C0.2%2C0.7-0.3%2C1.1-0.5c0.4-0.3%2C0.7-0.4%2C0.8-0.8c0-0.1%2C0.1-0.2%2C0.3-0.2c0%2C0%2C0%2C0%2C0%2C0%0A%09%09c0.4-0.2%2C0.4-0.5%2C0.2-0.6s-0.6-0.5-0.3-0.6c0.3-0.1%2C0.8-0.7%2C0.9%2C0c0.2%2C0.7-0.3%2C0.5-0.3%2C0.8c-0.1%2C0.3%2C0.3%2C0.3%2C0.4%2C0.7%0A%09%09c0.2%2C0.7%2C0.9%2C0.1%2C0.7-0.2c-0.3-0.3%2C0-0.6%2C0.4-0.6c0.4%2C0%2C0.3%2C0.3%2C0.3%2C0.6s0.4%2C0.2%2C0.6-0.1c0.2-0.3%2C0.9-0.3%2C1.2-1.3%0A%09%09c0.3-0.9-0.7-0.4-0.7-1s0.6-0.5%2C0.7-0.3C26%2C5.4%2C26.6%2C5.5%2C27%2C5.4c0.4-0.1%2C0.1-1.4-0.3-1.7c-0.3-0.3-0.4%2C0.2-0.5%2C0.4%0A%09%09c-0.1%2C0.3-0.5-0.1-0.4-0.6s-0.2-0.7-0.5-0.7s-0.3%2C0.6-0.3%2C1s-0.7%2C1-0.9%2C0.9c-0.2-0.2%2C0.1-0.9%2C0.5-1.4c0.4-0.5%2C0.2-0.9-0.2-0.9%0A%09%09s-0.6%2C0.3-0.5%2C0s-0.5-0.3-0.8-0.2c-0.3%2C0.1%2C0.4%2C0.8-0.3%2C0.9c-0.7%2C0.2-0.5-0.3-0.3-0.3c0.2-0.1%2C0.3-0.6%2C0.3-0.9S22.4%2C1.7%2C22%2C1.8%0A%09%09c-0.3%2C0.1-0.4-0.2-0.3-0.4c0.1-0.3-0.9-0.4-1.2-0.4c-0.3%2C0-0.2%2C0.4%2C0%2C0.9s0.1%2C0.8-0.3%2C0.9c-0.4%2C0.2-0.9-0.3-0.9-0.5%0A%09%09s0.7-0.9%2C0.9-1.2c0.2-0.3-0.7-0.9-1.1-0.9c-0.4-0.1-0.6%2C0.1-0.5%2C0.3S18.1%2C0.9%2C18%2C0.9c-0.2%2C0%2C0-0.4%2C0-0.6s-0.9%2C0-1.1%2C0.2%0A%09%09c-0.3%2C0.2-0.1%2C0.5-0.3%2C0.6s-0.3-0.3-0.3-0.6S16%2C0.3%2C15.4%2C0.8c-0.6%2C0.5-0.2%2C0.6%2C0%2C0.9C15.5%2C2%2C15%2C2%2C14.9%2C1.9c-0.2-0.1%2C0-0.6-0.3-0.3%0A%09%09c-0.3%2C0.3%2C0%2C0.9%2C0%2C1.5s0.4%2C0.9%2C0.3%2C1.5c-0.1%2C0.5%2C0.1%2C0.9-0.1%2C1c-0.2%2C0.1-0.2-0.3-0.3-0.6c-0.1-0.3-0.4-1.8-0.4-2.2s0-1-0.4-1.1%0A%09%09C13.2%2C1.5%2C13%2C2%2C13%2C2.3s0.4%2C0.5%2C0.6%2C0.9c0.2%2C0.3-0.3%2C0.7-0.3%2C0.9c-0.1%2C0.2-0.2%2C0.7-0.4%2C0.8c-0.3%2C0.1-0.3-0.3%2C0-0.7%0A%09%09c0.3-0.3%2C0.4-1%2C0-1.2s-0.4%2C0.4-0.5%2C0.7s-0.4%2C0.1-0.5-0.3c-0.1-0.3%2C0.7-0.4%2C0.9-0.7S12.4%2C2%2C12.1%2C1.9C11.8%2C1.8%2C11.6%2C2%2C11.1%2C2%0A%09%09s-0.1-0.5-0.5-0.8C10.2%2C1%2C9.9%2C0.9%2C9.8%2C1.5c-0.2%2C0.6%2C0.6%2C0.9%2C1%2C1.3s0%2C0.5-0.1%2C1.1s0.3%2C1.1%2C0.4%2C1.4c0.2%2C0.3-0.1%2C0.8%2C0.2%2C1.2%0A%09%09c0.3%2C0.4%2C0.2%2C1%2C0%2C0.9c-0.2-0.2-0.4-1.5-0.7-1.9c-0.3-0.4-0.3-1.6-0.3-2.2s-0.8-0.6-1-0.9C9.1%2C2.1%2C9.1%2C1.7%2C9%2C1.4%0A%09%09C8.9%2C1.2%2C8.4%2C2.1%2C8.4%2C2.3s0.4%2C1.1%2C0.9%2C1.9C9.9%2C5%2C9.9%2C4.9%2C9.9%2C5.1c-0.1%2C0.2-0.4%2C0.1-0.5%2C0c-0.1-0.1%2C0-0.2%2C0-0.4S8.4%2C3.3%2C8.2%2C3%0A%09%09C8%2C2.7%2C7.8%2C2.6%2C7.5%2C2.7C7.3%2C2.7%2C7.1%2C3.4%2C7%2C3.5c-0.1%2C0.1-1.1%2C1-1.2%2C1.1C5.7%2C4.7%2C5.8%2C4.9%2C5.9%2C5C6%2C5.1%2C9.5%2C8.6%2C9.8%2C8.8%0A%09%09C10%2C8.9%2C9.4%2C9.4%2C9.3%2C9.3S9.2%2C9.1%2C9.2%2C8.9S8.4%2C8%2C8.1%2C7.7C7.9%2C7.3%2C5.6%2C5.4%2C5.5%2C5.3C5.3%2C5.2%2C5%2C5.9%2C4.9%2C6.1c-0.2%2C0.2-0.1%2C0.5%2C0%2C0.5%0A%09%09c0.3%2C0.1%2C0.5-0.3%2C0.7-0.2C5.7%2C6.5%2C5.9%2C6.6%2C5.7%2C7c-0.2%2C0.3-1%2C0-1.5%2C0C3.8%2C7%2C3.9%2C7.4%2C4.1%2C7.4c0.2%2C0%2C0.6%2C0.3%2C0.7%2C0.7%0A%09%09C4.9%2C8.5%2C5.5%2C8.3%2C6%2C8.3s0.3%2C0.3%2C0%2C0.6S5.3%2C9.1%2C5.5%2C8.8c0.2-0.3-0.7-0.3-0.9%2C0.2S3.8%2C9.2%2C4.1%2C8.9c0.3-0.3%2C0.1-0.7-0.4-1%0A%09%09S2.9%2C8.3%2C2.4%2C8.5C2%2C8.7%2C2.3%2C9.1%2C2.2%2C9.5c-0.1%2C0.4%2C0.2%2C0.5%2C0.3%2C0.5s0.2%2C0.5%2C0%2C0.7c-0.2%2C0.2-0.4-0.3-0.7-0.2%0A%09%09C1.6%2C10.8%2C1.6%2C11.4%2C1.7%2C11.5z%20M21.1%2C5.7c0.2-0.3%2C0.2-0.5-0.1-1c-0.3-0.5%2C0.2-0.6%2C0.2-1.1s-0.5-0.2%2C0.1-0.8s0%2C0.3%2C0.3%2C0.7%0A%09%09c0.3%2C0.4-0.3%2C0.6%2C0%2C1.1c0.3%2C0.5-0.1%2C0.5-0.2%2C1.1s-0.6%2C0.9-0.7%2C0.6C20.7%2C5.9%2C21%2C5.9%2C21.1%2C5.7z%20M20%2C3.8c0.5-0.3%2C0.7-0.4%2C0.6%2C0.3%0A%09%09s-0.3%2C0.4-0.3%2C1.1s0.3%2C1.1-0.2%2C1.2c-0.4%2C0.1-0.3-0.1-0.3-0.6s0.2-0.7%2C0-1C19.8%2C4.4%2C19.6%2C4%2C20%2C3.8z%20M15.9%2C2.7%0A%09%09c0.3-0.7%2C0.4-0.8%2C0.6-0.2s0.5%2C0.3%2C1%2C0.9s0%2C1-0.1%2C1.7S17.5%2C6%2C18%2C6.4c0.5%2C0.4%2C0.2%2C0.9%2C0%2C1.1s-0.5%2C0.9-0.4%2C0.1s0-0.6-0.3-0.9%0A%09%09c-0.3-0.3%2C0.1-2.2-0.3-2.6c-0.3-0.3-0.4-0.9-0.6-1.2c-0.2-0.3-0.8%2C0.7-0.3%2C1.1c0.4%2C0.4%2C0.5%2C0.6%2C0.5%2C1.3s-0.5%2C0.8-0.5%2C0.4%0A%09%09c0-0.7-0.1-1.2-0.3-1.6C15.5%2C3.9%2C15.6%2C3.3%2C15.9%2C2.7z%20M9.5%2C7.5c0-0.7-1-0.9-0.9-1.4S8.4%2C4.5%2C8.8%2C5.3c0.3%2C0.5%2C0.3%2C1%2C1.1%2C1.5%0A%09%09S9.5%2C7.9%2C9.5%2C7.5z%20M3.3%2C10.1c0.2-0.4%2C2%2C0.7%2C2.3%2C1.1s-0.2%2C0.7-0.3%2C0.9c-0.1%2C0.2%2C0.5%2C0.6%2C0%2C0.6S5%2C12.2%2C5%2C11.7s-0.9-0.5-1.1-1%0A%09%09C3.8%2C10.5%2C3.2%2C10.3%2C3.3%2C10.1z%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.toast__icon--timer {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22%23fff%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M4.7%205.773A1.322%201.322%200%200%200%206%207.321%201.321%201.321%200%201%200%205.774%204.7L4.396%203.324a.777.777%200%200%200-1.074%200%20.76.76%200%200%200%20.001%201.073L4.7%205.773z%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M6%200a.76.76%200%200%200-.76.76v1.502a.76.76%200%200%200%201.519%200v-.679A4.496%204.496%200%200%201%2010.48%206%204.486%204.486%200%200%201%206%2010.481%204.487%204.487%200%200%201%201.518%206c0-.957.315-1.906.887-2.675l.046-.062.01-.014.017-.024-.001-.001a.755.755%200%200%200-.706-1.147.762.762%200%200%200-.526.273l-.08.097A6.042%206.042%200%200%200%200%206c0%203.308%202.69%206%206%206%203.308%200%206-2.692%206-6%200-3.309-2.692-6-6-6%22%2F%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.button__heart {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2022.0.1%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2038%2030%22%20style%3D%22enable-background%3Anew%200%200%2038%2030%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3A%23EF6215%3B%7D%0A%3C%2Fstyle%3E%0A%3Cpath%20class%3D%22st0%22%20d%3D%22M26.8%2C1c-4.1%2C0-6.7%2C2.4-7.5%2C3.3c-0.2%2C0.2-0.4%2C0.2-0.6%2C0C17.9%2C3.4%2C15.2%2C1%2C11.2%2C1C6.2%2C1%2C1%2C5.2%2C1%2C11.1%0A%09s4.1%2C8.6%2C8.2%2C11.5c3.3%2C2.4%2C6.9%2C4.9%2C8.7%2C6.1c0.7%2C0.5%2C1.6%2C0.5%2C2.3%2C0c1.8-1.2%2C5.4-3.8%2C8.7-6.1c4-2.9%2C8.2-5.7%2C8.2-11.5S31.8%2C1%2C26.8%2C1z%22%0A%09%2F%3E%0A%3C%2Fsvg%3E%0A");
+}
+.gift-locked__icon--friends {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2218%22%20viewBox%3D%220%200%2016%2018%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cg%20fill%3D%22%234A90E2%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cg%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cg%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M8.039%204.855c0-1.25-.383-2.33-1.148-3.235C6.126.735%205.197.293%204.104.293S2.071.735%201.284%201.62C.52%202.526.137%203.604.137%204.855c0%201.316.382%202.545%201.147%203.689.831%201.207%201.771%201.811%202.82%201.811%201.05%200%201.978-.604%202.787-1.811C7.656%207.4%208.04%206.17%208.04%204.855%22%20transform%3D%22translate(-155.000000%2C%20-356.000000)%20translate(155.000000%2C%20356.000000)%20translate(3.764706%2C%200.169915)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cg%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M0%204.802h.033L0%205.028c0%20.798.776%201.466%202.328%202.005%201.53.561%203.399.842%205.607.842%202.185%200%204.054-.28%205.606-.842%201.552-.539%202.328-1.207%202.328-2.005l-.033-.226h.033c0-2.308-1.476-3.808-4.427-4.498C10.35%201.534%209.16%202.148%207.87%202.148S5.389%201.533%204.295.304C1.431%201.037%200%202.536%200%204.802%22%20transform%3D%22translate(-155.000000%2C%20-356.000000)%20translate(155.000000%2C%20356.000000)%20translate(0.000000%2C%209.897856)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.gift-locked__icon--gestures,
+.info__token {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2219%22%20height%3D%2219%22%20viewBox%3D%220%200%2019%2019%22%3E%0A%20%20%20%20%3Cdefs%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%223hb8unvv1b%22%20cx%3D%2244.229%25%22%20cy%3D%2278.319%25%22%20r%3D%2298.398%25%22%20fx%3D%2244.229%25%22%20fy%3D%2278.319%25%22%20gradientTransform%3D%22matrix(.75%200%200%201%20.11%200)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23F2821E%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%2286.067%25%22%20stop-color%3D%22%23E9671B%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%2221840ct5uc%22%20cx%3D%2255.754%25%22%20cy%3D%2278.319%25%22%20r%3D%2298.398%25%22%20fx%3D%2255.754%25%22%20fy%3D%2278.319%25%22%20gradientTransform%3D%22matrix(-.75%200%200%20-1%20.976%201.566)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23F2821E%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%2286.067%25%22%20stop-color%3D%22%23E9671B%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3CradialGradient%20id%3D%2218tyr8ge5d%22%20cx%3D%2251.188%25%22%20cy%3D%22136.437%25%22%20r%3D%22180.498%25%22%20fx%3D%2251.188%25%22%20fy%3D%22136.437%25%22%20gradientTransform%3D%22matrix(.46154%200%200%201%20.276%200)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23F2821E%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%2286.067%25%22%20stop-color%3D%22%23E9671B%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%20%20%20%20%20%20%3ClinearGradient%20id%3D%22sckj6feo6a%22%20x1%3D%2250%25%22%20x2%3D%2250%25%22%20y1%3D%225.714%25%22%20y2%3D%2299.222%25%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23FFD22A%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23FF9A23%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3C%2Fdefs%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Cg%20fill-rule%3D%22nonzero%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cg%20transform%3D%22translate(-21%20-373)%20translate(21%20373)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%229.5%22%20cy%3D%229.5%22%20r%3D%229.5%22%20fill%3D%22url(%23sckj6feo6a)%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%233hb8unvv1b)%22%20d%3D%22M6.092%204.892c.598%200%201.105.304%201.423.785.217.327.427.264.468-.155v-.008C8.126%204.029%207.334%203%206.238%203%205.14%203%204.153%204.03%204.012%205.514l-.009.104c-.03.448.162.51.445.146.414-.53%201.01-.872%201.644-.872z%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%2321840ct5uc)%22%20d%3D%22M12.908%204.892c-.598%200-1.105.304-1.423.785-.217.327-.427.264-.468-.155v-.008C10.874%204.029%2011.666%203%2012.762%203c1.097%200%202.084%201.03%202.225%202.514l.009.104c.03.448-.162.51-.445.146-.414-.53-1.01-.872-1.644-.872z%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22url(%2318tyr8ge5d)%22%20d%3D%22M9.5%2011.15c-1.988%200-3.821-.397-5.294-1.065-.535-.243-1.197.064-1.205.563l-.001.07C3%2013.635%205.91%2016%209.5%2016s6.5-2.365%206.5-5.282v-.07c-.009-.499-.67-.806-1.206-.563-1.473.668-3.306%201.064-5.294%201.064z%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+.button {
+  height: 30px;
+  background-color: #97ca31;
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: normal;
+  padding: 0 10px;
+  text-align: center;
+  white-space: nowrap;
+  transition: background-color 500ms linear, color 500ms linear;
+  flex-shrink: 0;
+}
+.button:active {
+  background-color: #f4f2ef;
+  color: #424242;
+}
+.button__bonus {
+  display: flex;
+  align-items: center;
+  margin-left: 5px;
+}
+.button__heart {
+  background-size: 17px 14px;
+  height: 14px;
+  width: 17px;
+  display: inline-block;
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+.button--cancel {
+  background-color: white;
+  color: #97ca31;
+  border: #97ca31 solid 1px;
+  min-width: 80px;
+}
+.button--confirm,
+.button--info,
+.button--share {
+  border-radius: 7px;
+  min-width: 80px;
+}
+.button--info {
+  background-color: #2f89e9;
+}
+.button--danger {
+  background-color: #e03d1f;
+}
+.button--share {
+  background-color: #07bdf0;
+}
+.button--disabled {
+  background-color: #c7c7c7;
+  border: 0px;
+  color: #ffffff;
+  pointer-events: none;
+  cursor: auto;
+}
+.gift-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.gift-locked__image {
+  margin: 8px 0 22px 0;
+}
+.gift-locked__image--gesture {
+  margin: 0 0 10px 0;
+}
+.gift-locked__image--grayscale {
+  -webkit-filter: grayscale(1);
+  filter: grayscale(1);
+}
+.gift-locked__image--bottle {
+  -webkit-transform: rotate(45deg);
+          transform: rotate(45deg);
+}
+.gift-locked__icon {
+  margin-right: 3px;
+}
+.gift-locked__icon--friends {
+  background-size: 16px 18px;
+  height: 18px;
+  width: 16px;
+}
+.gift-locked__icon--kisses {
+  background-size: 25px 19px;
+  height: 19px;
+  width: 25px;
+}
+.gift-locked__icon--harem_price {
+  background-size: 26px 18px;
+  height: 18px;
+  width: 26px;
+}
+.gift-locked__icon--price {
+  background-size: 23px 18px;
+  height: 18px;
+  width: 23px;
+}
+.gift-locked__icon--gestures {
+  background-size: 20px 20px;
+  height: 20px;
+  width: 20px;
+}
+.gift-locked__icon--dj_score {
+  background-size: 25px 18px;
+  height: 18px;
+  width: 25px;
+}
+.gift-locked__description {
+  text-align: center;
+  font-size: 14px;
+  white-space: pre-line;
+}
+.gift-locked__amount {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+.gift-locked__progress {
+  background-color: #ebebeb;
+  width: 200px;
+  border-radius: 3px;
+  margin: 15px 0 10px 0;
+}
+.gift-locked__progress--bar {
+  background-color: #9e9e9e;
+  height: 6px;
+  margin: unset;
+}
+.info__image {
+  margin: 0 auto 10px;
+}
+.info__description {
+  margin-bottom: 10px;
+}
+.info__description,
+.info__context {
+  font-size: 14px;
+}
+.info__heart {
+  display: inline;
+  background-size: 14px 11px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-position: left;
+  font-weight: bold;
+  padding-left: 16px;
+}
+.info__link {
+  color: #436fff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.info__token {
+  display: inline;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-position: left;
+  font-weight: bold;
+  padding-left: 18px;
+}
+.info__kiss {
+  display: inline;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-position: left;
+  font-weight: bold;
+  padding-left: 18px;
+}
+.info__uid {
+  font-size: 11px;
+  font-weight: bold;
+  display: inline;
+}
+.toast {
+  background-color: rgba(0, 0, 0, 0.85);
+  border-radius: 9999px;
+  color: #ffffff;
+  overflow: hidden;
+  padding: 10px;
+  text-align: center;
+  white-space: pre-wrap;
+}
+.toast--bottom {
+  bottom: 10px;
+  height: auto;
+  left: 50%;
+  max-width: 80%;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+  position: absolute;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);
+}
+.toast--hide {
+  -webkit-animation-name: toast--hide-frames;
+          animation-name: toast--hide-frames;
+  -webkit-animation-duration: 0.1s;
+          animation-duration: 0.1s;
+  -webkit-animation-timing-function: ease-in;
+          animation-timing-function: ease-in;
+}
+@-webkit-keyframes toast--hide-frames{
+  to {
+    opacity: 0;
+  }
+}
+@keyframes toast--hide-frames{
+  to {
+    opacity: 0;
+  }
+}
+.toast--show {
+  -webkit-animation-name: toast--show-frames;
+          animation-name: toast--show-frames;
+  -webkit-animation-duration: 0.2s;
+          animation-duration: 0.2s;
+  -webkit-animation-timing-function: ease-out;
+          animation-timing-function: ease-out;
+}
+@-webkit-keyframes toast--show-frames{
+  from {
+    opacity: 0;
+  }
+}
+@keyframes toast--show-frames{
+  from {
+    opacity: 0;
+  }
+}
+.toast--icon {
+  display: flex;
+  align-items: center;
+}
+.toast__icon {
+  flex-shrink: 0;
+}
+.toast__icon--timer {
+  background-size: 18px 18px;
+  height: 18px;
+  width: 18px;
+  margin-right: 6px;
+}
+/* Layer for toast messages; ToastDialog does not use a shade background. */
+.source-toast-layer { position: fixed; inset: 0; z-index: 1100; pointer-events: none; }
+
+/* Original Dialog.Header close button (popup__close--dlg), scoped to the ported dialog layers. */
+.source-feature-layer .popup__close-icon,
+.source-settings-layer .popup__close-icon {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%2020%2020%22%20style%3D%22enable-background%3Anew%200%200%2020%2020%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3A%239BCC33%3B%7D%0A%3C%2Fstyle%3E%0A%3Cg%3E%0A%09%3Cg%3E%0A%09%09%3Crect%20x%3D%228.5%22%20y%3D%22-2%22%20transform%3D%22matrix(0.7071%20-0.7071%200.7071%200.7071%20-4.1424%209.9997)%22%20class%3D%22st0%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%0A%09%09%3Crect%20x%3D%22-2%22%20y%3D%228.5%22%20transform%3D%22matrix(0.7071%20-0.7071%200.7071%200.7071%20-4.1419%2010.0003)%22%20class%3D%22st0%22%20width%3D%2224%22%20height%3D%223%22%2F%3E%0A%09%3C%2Fg%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}.source-feature-layer .popup__close,
+.source-settings-layer .popup__close {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: -webkit-filter 500ms linear;
+  transition: filter 500ms linear;
+  transition: filter 500ms linear, -webkit-filter 500ms linear;
+  background-color: white;
+  width: 32px;
+  height: 32px;
+}.source-feature-layer .popup__close:active,
+.source-settings-layer .popup__close:active {
+  -webkit-filter: brightness(70%);
+          filter: brightness(70%);
+}.source-feature-layer .popup__close--dlg,
+.source-settings-layer .popup__close--dlg {
+  top: -10px;
+  right: -10px;
+  -webkit-transform: translateZ(0px);
+          transform: translateZ(0px);
+  z-index: 1;
+}.source-feature-layer .popup__close-icon,
+.source-settings-layer .popup__close-icon {
+  background-size: 16px 16px;
+  height: 16px;
+  width: 16px;
+}
+.source-feature-layer .popup__close-icon,
+.source-settings-layer .popup__close-icon { flex: 0 0 16px; }
+.source-feature-layer .popup__close,
+.source-settings-layer .popup__close { padding: 0; }

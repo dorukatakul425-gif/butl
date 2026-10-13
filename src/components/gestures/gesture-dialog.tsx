@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
+import { SourceGiftLockedDialog, SourceInfoDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT } from "@/components/source-dialogs";
 import { buildGestureItems, gestureEligibility, type GestureAccount, type GestureItem } from "@/lib/gestures";
 
 export function GestureDialog({ open, assets, account = null, onClose, onPreview, onSend, onProfile }: {
@@ -36,20 +37,21 @@ export function GestureDialog({ open, assets, account = null, onClose, onPreview
   const activate = async (item: GestureItem) => {
     setStatus("");
     if (item.lock) { setSelected(item); return; }
+    if (!onSend) {
+      // No verified game session: play the animation locally without spending tokens.
+      setBusy(true);
+      try { await onPreview(item); } catch { setSelected(item); setStatus("Jest animasyonu yüklenemedi; tekrar deneyin."); } finally { setBusy(false); }
+      return;
+    }
     const eligibility = gestureEligibility(item, account);
-    if (eligibility !== "available" || !onSend) {
+    if (eligibility !== "available") {
       setSelected(item); setStatus(eligibility === "tokens" ? "Bu jest için yeterli jeton yok." : "Oyuncu hesabı bağlı değil; jeton harcanamaz."); return;
     }
     setBusy(true);
     try { await onSend(item); } catch { setStatus("Jest gönderilemedi; tekrar deneyin."); } finally { setBusy(false); }
   };
   if (!open || !box) return null;
-  const preview = async () => {
-    if (!selected) return;
-    setBusy(true); setStatus("");
-    try { await onPreview(selected); setSelected(null); } catch { setStatus("Jest animasyonu yüklenemedi; tekrar deneyin."); } finally { setBusy(false); }
-  };
-  const image = selected ? dialogImage(assets, selected.gesture.storeImage || selected.gesture.image, 100, 100) : null;
+  const image = selected ? dialogImage(assets, selected.gesture.storeImage || selected.gesture.image, 90, 90) : null;
   return createPortal(<>
     <section role="dialog" aria-label={t("dlg:gesture:send")} className="gesture-drawer" style={{ top: box.top, left: box.left, width: box.width }}>
       <header className="gesture-header">{onProfile && <Button variant="ghost" className="send-gift__btn send-gift__btn--profile gesture-profile" title="Profilim" aria-label="Profilim" onClick={onProfile} />}<span className="gesture-title">{t("dlg:gesture:send")}</span><Button variant="ghost" className="send-gift__tokens gesture-balance" title="Jetonlar" aria-label="Jeton bakiyesi" onClick={() => setStatus("Oyuncu hesabı bağlı değil; jeton bakiyesi doğrulanamıyor.")}>{account?.tokens ?? "—"}</Button></header>
@@ -62,10 +64,13 @@ export function GestureDialog({ open, assets, account = null, onClose, onPreview
       </div></div>
       <Button variant="ghost" className="popup__close popup__close--drawer gesture-close" aria-label="Jestleri kapat" title="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>
     </section>
-    {selected && <div className="gesture-modal-layer"><div className="popup-shade" onClick={() => setSelected(null)} /><section role="dialog" aria-modal="true" aria-label={selected.lock?.kind === "vip" ? t("dlg:locked:vip:title") : selected.lock ? t("dlg:locked_gift:title") : selected.name} className="popup popup--center popup--show gesture-lock">
-      <header className="popup__header"><div className="popup__title">{selected.lock?.kind === "vip" ? t("dlg:locked:vip:title") : selected.lock ? t("dlg:locked_gift:title") : selected.name}</div><Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Pencereyi kapat" onClick={() => setSelected(null)}><span className="popup__close-icon" /></Button></header>
-      <div className="popup__content gift-locked">{image && <img src={image.src} width={image.width} height={image.height} alt={selected.name} />}<p className="gift-locked__description">{selected.lock?.kind === "vip" ? t("dlg:locked_gesture:vip:desc") : selected.lock ? t("dlg:locked_gesture:kiss:desc") : status}</p>{selected.lock?.kind === "kisses" && <><progress className="gesture-progress" value={selected.lock.current} max={selected.lock.needed} /><div>{account ? selected.lock.current : "—"} / {selected.lock.needed}</div></>}{selected.lock && !account && <p className="gesture-status">Oyuncu hesabı bağlı değil; kilit durumu doğrulanamıyor.</p>}{busy && <p role="status">Yükleniyor…</p>}{status && selected.lock && <p role="status">{status}</p>}</div>
-      <div className="gesture-actions"><Button variant="secondary" disabled={busy} onClick={() => setSelected(null)}>{t("dlg:navigate_vip:btn")}</Button><Button disabled={busy} onClick={() => void preview()}>Önizle</Button></div>
-    </section></div>}
+    {selected?.lock && image && <SourceGiftLockedDialog kind="gesture" image={image}
+      title={selected.lock.kind === "vip" ? t("dlg:locked:vip:title") : t("dlg:locked_gift:title")}
+      description={selected.lock.kind === "vip" ? t("dlg:locked_gesture:vip:desc") : t("dlg:locked_gesture:kiss:desc")}
+      {...(selected.lock.kind === "kisses" ? { lock: { type: "kisses" as const, needed: selected.lock.needed, ...(account ? { current: selected.lock.current } : {}) } } : {})}
+      onClose={() => setSelected(null)}
+      cancel={{ title: t("dlg:navigate_vip:btn"), onClick: () => setSelected(null) }}
+      info={{ title: t("mobile:vip:know"), onClick: () => { const vip = selected.lock?.kind === "vip"; setSelected(null); onClose(); window.dispatchEvent(new CustomEvent(vip ? OPEN_VIP_EVENT : OPEN_TOPS_EVENT, { detail: "total_kisses" })); } }} />}
+    {selected && !selected.lock && status && <SourceInfoDialog title={selected.name} context={status} hasClose onClose={() => setSelected(null)} confirm={{ title: t("dlg:navigate_vip:btn"), onClick: () => setSelected(null) }} />}
   </>, document.body);
 }

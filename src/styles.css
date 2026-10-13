@@ -15,6 +15,7 @@
 @import "./styles/ciliz-source-features.css";
 @import "./styles/ciliz-gestures.css";
 @import "./styles/ciliz-change-table.css";
+@import "./styles/ciliz-dialogs.css";
 
 @custom-variant dark (&:is(.dark *));
 

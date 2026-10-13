@@ -1,4 +1,5 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { OPEN_TOPS_EVENT, OPEN_VIP_EVENT, SourceToastHost } from "@/components/source-dialogs";
 import backgroundUp from "@/assets/ui_btn_bg_up.svg.asset.json";
 import backgroundDown from "@/assets/ui_btn_bg_down.svg.asset.json";
 import heartUp from "@/assets/ui_btn_gold_add_heart_up.svg.asset.json";
@@ -77,6 +78,11 @@ export function OriginalTableHeader() {
     if (id === "boosters") setBoostersOpen(true);
     if (id === "achievements") setAchievementsOpen(true);
   }, []);
+  useEffect(() => {
+    const tops = () => setTopsOpen(true), vip = () => setBankOpen(true);
+    window.addEventListener(OPEN_TOPS_EVENT, tops); window.addEventListener(OPEN_VIP_EVENT, vip);
+    return () => { window.removeEventListener(OPEN_TOPS_EVENT, tops); window.removeEventListener(OPEN_VIP_EVENT, vip); };
+  }, []);
   return (
     <div className="original-table-header" aria-label="Orijinal üst masa ikonları">
       <Button type="button" variant="ghost" className="original-header-button original-heart-button"
@@ -108,6 +114,7 @@ export function OriginalTableHeader() {
       <DecorSelection open={decorOpen} onClose={closeDecor} />
       <BottleSelection open={bottleOpen} onClose={closeBottle} />
       <BankDialog open={bankOpen} onClose={closeBank} isVip />
+      <SourceToastHost />
     </div>
   );
 }

@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { loadCilizAssets, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { setSfxVolume, useSfxVolume } from "@/lib/sfx";
 import { setMusicVolume, useMusicSession } from "@/lib/music-session";
 import { VIEWER_STORE } from "@/lib/viewer";
-import { useSourceFeatureSession } from '@/lib/source-feature-session';
-import { SourceSettingsChild } from './source-settings-children';
+import { executeSourceFeature, useSourceFeatureSession } from '@/lib/source-feature-session';
 import { Button } from '@/components/ui/button';
+import { showSourceToast, SourceInfoDialog } from '@/components/source-dialogs';
+import { buildContactItems, buildSettingsItems, idCopyValue, type SettingsItem } from './settings-items';
 
 // Markup and class names ported from SettingsDialog.tsx + SettingsPresenter.ts
 // (Dialog.Header / Dialog.Content, popup--center + popup--show/--hide animation).
@@ -53,79 +54,115 @@ function Slider({ icon, name, value, onChange }: { icon: string; name: string; v
   );
 }
 
-function Simple({ icon, name, border, onClick }: { icon: string; name: string; border?: "top"; onClick: () => void }) {
+/** SettingsDialog_Items "simple" and "link" (window opener): the dialog closes, then the action runs. */
+function Simple({ item, close }: { item: Extract<SettingsItem, { type: "simple" | "link" }>; close: () => void }) {
   return (
     <>
-      {border === "top" && <div className={cls("border")} />}
-      <Button variant="ghost" className={cls("item", ["selectable"])} onClick={onClick}>
-        <div className={cls("icon", [icon])} />
-        <div className={cls("item-name")}>{name}</div>
+      {item.border === "top" && <div className={cls("border")} />}
+      <Button variant="ghost" className={cls("item", ["selectable"])} onClick={() => {
+        close();
+        if (item.type === "link") window.open(item.href, "_blank", "noopener"); else item.action();
+      }}>
+        <div className={cls("icon", [item.icon])} />
+        <div className={cls("item-name")}>{item.name}</div>
       </Button>
     </>
   );
 }
 
-export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const session = useSourceFeatureSession();
-  const [child, setChild] = useState<string | null>(null);
-  const [assets, setAssets] = useState<CilizAssets | null>(null);
-  const { mounted, phase } = usePopupPhase(open);
-  const sfxVolume = useSfxVolume();
-  const music = useMusicSession();
-  const [toast, setToast] = useState(false);
-  const toastTimer = useRef<number | undefined>(undefined);
+function SettingsPopup({ title, items, phase, onClose, info, sliders }: {
+  title: string; items: SettingsItem[]; phase: "show" | "hide" | null; onClose: () => void;
+  info?: { icons: string[]; id: string; onCopy: () => void };
+  sliders?: { sfx: number; music: number };
+}) {
   useEffect(() => {
-    if (open && !assets) loadCilizAssets().then(setAssets).catch(() => undefined);
-  }, [open, assets]);
-  useEffect(() => {
-    if (!open || child) return;
     const key = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", key);
     return () => document.removeEventListener("keydown", key);
-  }, [open, onClose, child]);
-  if (!mounted || !assets) return null;
-  const t = (key: string) => translate(assets, key);
-  const platform: string = VIEWER_STORE.social;
-  const viewerId = session.viewerId ?? '—';
-  const icons = platform === "android" ? ["android", "html5"] : [platform];
-
-  const copyId = async () => {
-    const value = [platform, viewerId].filter(Boolean).join(":");
-    try { await navigator.clipboard.writeText(value); } catch { return; }
-    setToast(true);
-    window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToast(false), 1500);
-  };
-
+  }, [onClose]);
   return createPortal(
     <div className="source-settings-layer">
       <div className="popup__dialog-manager">
         <div className="popup-shade" onClick={onClose} />
-        <div role="dialog" aria-modal={!child} inert={Boolean(child)} aria-label={t("ios:dlg:settings:title")}
+        <div role="dialog" aria-modal aria-label={title}
           className={["popup", "popup--center", phase === "show" && "popup--show", phase === "hide" && "popup--hide"].filter(Boolean).join(" ")}>
           <div className={popup("header")}>
-            <div className={popup("title")}>{t("ios:dlg:settings:title")}</div>
+            <div className={popup("title")}>{title}</div>
             <Button variant="ghost" className={popup("close", ["dlg"])} aria-label="Kapat" onClick={onClose}>
               <div className={popup("close-icon")} />
             </Button>
           </div>
           <div className={`${popup("content", ["center"])} ${cls("x_popup__content")}`}>
             <div className={cls("")}>
-              <Slider icon="sound" name={t("ios:dlg:settings:sounds")} value={sfxVolume} onChange={setSfxVolume} />
-              <Slider icon="music" name={t("ios:dlg:settings:music")} value={music.muted ? 0 : music.volume} onChange={setMusicVolume} />
-              <Simple icon="invite" name={t("bank:invite:btn")} border="top" onClick={() => setChild('invite')} />
-              <Simple icon="profile-info" name={t("dlg:profile_info:title")} onClick={() => setChild('profile')} />
-              <Simple icon="feedback" name={t("dlg:settings:contacts")} onClick={() => setChild('contacts')} />
-              <div className={cls("info")} style={{ position: "relative", cursor: "pointer" }} onClick={copyId}>
-                {icons.filter(Boolean).map((icon) => <div key={icon} className={cls("icon", [icon])} />)}
-                <div className={cls("id")}>{toast ? t("dlg:settings:id_toast") : viewerId}</div>
-              </div>
+              {items.map((item) => item.type === "slider"
+                ? <Slider key={item.icon} icon={item.icon} name={item.name} value={item.icon === "sound" ? sliders?.sfx ?? 0 : sliders?.music ?? 0} onChange={item.onChange} />
+                : <Simple key={item.icon + item.name} item={item} close={onClose} />)}
+              {info && (
+                <div className={cls("info")} style={{ position: "relative", cursor: "pointer" }} onClick={info.onCopy}>
+                  {info.icons.filter(Boolean).map((icon) => <div key={icon} className={cls("icon", [icon])} />)}
+                  <div className={cls("id")}>{info.id}</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-      {child && <SourceSettingsChild key={child} kind={child} assets={assets} onClose={() => setChild(null)} />}
     </div>,
     document.body,
   );
+}
+
+type View = "settings" | "contacts" | "report" | null;
+
+export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const session = useSourceFeatureSession();
+  const [view, setView] = useState<View>(null);
+  const [assets, setAssets] = useState<CilizAssets | null>(null);
+  const { mounted, phase } = usePopupPhase(open);
+  const sfxVolume = useSfxVolume();
+  const music = useMusicSession();
+  useEffect(() => { if (open) setView("settings"); }, [open]);
+  useEffect(() => {
+    if (open && !assets) loadCilizAssets().then(setAssets).catch(() => undefined);
+  }, [open, assets]);
+  if (!assets || (!mounted && view === "settings") || !view) return null;
+  const t = (key: string) => translate(assets, key);
+  const platform = "html5";
+  const social: string = VIEWER_STORE.social;
+  const viewerId = session.viewerId ?? undefined;
+  // Closing a child dialog does not reopen settings, as in the original presenter flow.
+  const finish = () => { setView(null); onClose(); };
+
+  if (view === "contacts") {
+    return <SettingsPopup title={t("dlg:settings:contacts")} phase="show" onClose={finish}
+      items={buildContactItems(t, { social, platform, viewerId, onReport: () => setView("report") })} />;
+  }
+  if (view === "report") {
+    return <SourceInfoDialog title={t("dlg:settings:console_report:title")} context={t("dlg:settings:console_report:context")} onClose={finish}
+      cancel={{ title: t("dlg:report_issue:cancel"), onClick: finish }}
+      confirm={{ title: t("android:dlg:feedback:send"), onClick: () => {
+        finish();
+        executeSourceFeature("feedback").then(r => showSourceToast(r.confirmed ? t("dlg:settings:console_report:sent") : r.message ?? t("dlg:music:unavailable")))
+          .catch((e: unknown) => showSourceToast(e instanceof Error ? e.message : t("dlg:music:unavailable")));
+      } }} />;
+  }
+
+  const items = buildSettingsItems(t, {
+    onSfx: setSfxVolume,
+    onMusic: setMusicVolume,
+    onInvite: () => {
+      // OKSocial.createInviter: native invite, or a toast when no friends can be invited.
+      executeSourceFeature("invite").then(r => { if (!r.confirmed) showSourceToast(r.message ?? t("dlg:settings:nofriends_toast")); })
+        .catch(() => showSourceToast(t("dlg:settings:nofriends_toast")));
+    },
+    onCommunity: () => window.open("https://ok.ru/group/51270498582711", "_blank", "noopener"),
+    onContacts: () => setView("contacts"),
+  });
+  const copyId = async () => {
+    const value = idCopyValue(platform, social, viewerId);
+    try { await navigator.clipboard.writeText(value); showSourceToast(t("dlg:settings:id_toast")); } catch { showSourceToast(value); }
+  };
+  return <SettingsPopup title={t("ios:dlg:settings:title")} phase={phase} onClose={finish} items={items}
+    sliders={{ sfx: sfxVolume, music: music.muted ? 0 : music.volume }}
+    info={{ icons: [platform], id: viewerId ?? "", onCopy: copyId }} />;
 }
