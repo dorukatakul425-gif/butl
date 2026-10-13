@@ -26,7 +26,7 @@ let seq = 0;
 /** Local chat only; real multiplayer transport is not configured. */
 export function pushTextLine(sender: ChatUser, text: string, receiver?: ChatUser) {
   if (!text.trim()) return false;
-  set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, receiver, text }] });
+  set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, text, ...(receiver ? { receiver } : {}) }] });
   return true;
 }
 
