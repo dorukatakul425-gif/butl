@@ -69,7 +69,9 @@ export interface CilizAchievement {
   since_ms?: number; social?: string[];
 }
 export interface CilizBooster { category: 'choice' | 'league'; image: string; type: string; spine?: string }
+export interface CilizLeague { image: string; gold: number; gifts?: string[]; frame?: string; stone?: string }
 export interface CilizAssets {
+  leagues?: CilizLeague[];
   boosters?: Record<string, CilizBooster>;
   bottles?: Record<string, CilizBottle>;
   bottleStore?: Array<{ id: string; social?: string[]; vip_s?: boolean }>;
@@ -112,6 +114,7 @@ export function loadCilizAssets(): Promise<CilizAssets> {
         translation: json.translation.tr,
         achievements: json.achievement,
         boosters: json.boosters,
+        leagues: json.leagues,
         bundles: server.assets.bundles_v2.table,
         dialogBundles: server.assets.bundles_v2.dlg,
       } satisfies CilizAssets;

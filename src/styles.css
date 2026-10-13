@@ -11,6 +11,8 @@
 @import "./styles/ciliz-achievements.css";
 @import "./styles/ciliz-boosters.css";
 @import "./styles/ciliz-connection-bonus.css";
+@import "./styles/ciliz-settings.css";
+@import "./styles/ciliz-source-features.css";
 
 @custom-variant dark (&:is(.dark *));
 

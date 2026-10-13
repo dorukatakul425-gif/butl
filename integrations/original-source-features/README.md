@@ -1,0 +1,11 @@
+# Source feature windows — backend deferred
+
+Change-table, Settings and child dialogs, League/ladder/help/reward information, Roulette/help/confirmed-reward display, and Bottle Pass/help/premium/reward views use the original public manifest and source artwork. Header clicks open dialogs instead of image URLs. Sound/music sliders are local preferences, not account transactions.
+
+Install attachSourceFeatureSession(adapter) once after authenticating, and detach it on sign-out. getSnapshot supplies verified profile, friends/history, administrative table-number capability, league standings/timer, roulette price/chances/prize list and pass levels/claim flags. subscribe must publish immutable snapshots after each confirmed action. execute validates all actions on the authenticated server. Profile photo blobs must be uploaded through owner-scoped storage before saving. Do not trust client prices, eligibility, balances or claimed flags.
+
+Confirmed roulette-spin must return rewardIndex within the authoritative prize list and unique server reward IDs. The wheel animates for four seconds with the original roulette_spin sound; Skip shows that same result, never spins or awards twice. Reward popups display confirmed rewards only; the view never credits a wallet. Pass claims/purchases, league joining and table changes remain server-owned. Kickout deadlines come from the snapshot. No client-generated probability, free spin, pass level, inventory or reward is supplied.
+
+The repository intentionally has no new account/backend implementation. Unknown values display a dash or source unavailable state and spending/claim controls stay disabled until connected. Public league cups and help are available. Source social-platform-specific settings are not claimed to work on unsupported platforms. Original game servers are used only for public assets; no unauthorized account/session access is attempted.
+
+Checks: eight focused tests for absent/confirmed adapters, blocked table access, nested Escape retention, server-selected wheel prize and profile lock; 18 selected tests total. Mobile 393x626 and desktop popup readback, original close artwork, 17 loaded league cups, wheel artwork, and local sliders were checked. Real backend purchases, league standings, live table changes and pass reward claims remain unverified/deferred.

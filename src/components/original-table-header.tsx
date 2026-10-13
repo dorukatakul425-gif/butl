@@ -20,6 +20,10 @@ import { SourceBoostersDialog } from "@/components/table/source-boosters-dialog"
 import { SourceAchievementNotifications } from "@/components/table/source-achievements-dialog";
 import { SourceAchievementsDialog } from "@/components/table/source-achievements-dialog";
 
+import { SettingsDialog } from '@/components/settings/settings-dialog';
+import { SourceSeasonDialog } from '@/components/table/source-season-dialogs';
+import { SourceChangeTable } from '@/components/table/source-change-table';
+
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
 // All artwork is extracted unchanged from the live game's preloader bundle.
 const middleIcons = [
@@ -31,7 +35,12 @@ const middleIcons = [
   { asset: fullscreen, label: "Tam ekran", kind: "fullscreen" },
 ];
 
-function OriginalIcon({ asset, label, kind }: (typeof middleIcons)[number]) {
+function OriginalIcon({ asset, label, kind, onClick }: (typeof middleIcons)[number] & { onClick?: () => void }) {
+  if (onClick) return <Button variant="ghost" onClick={onClick} aria-label={label} title={label} className={`original-header-button original-icon-${kind}`}>
+    <img src={backgroundUp.url} alt="" className="original-button-background original-button-up" />
+    <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
+    <img src={asset.url} alt="" className="original-button-icon" />
+  </Button>;
   return (
     <Button asChild variant="ghost" className={`original-header-button original-icon-${kind}`}>
       <a href={asset.url} target="_blank" rel="noreferrer" aria-label={`${label} orijinal görseli`} title={label}>
@@ -44,6 +53,10 @@ function OriginalIcon({ asset, label, kind }: (typeof middleIcons)[number]) {
 }
 
 export function OriginalTableHeader() {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [changeOpen, setChangeOpen] = useState(false);
+  const [season, setSeason] = useState<'league' | 'roulette' | 'bottle-pass' | null>(null);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const [decorOpen, setDecorOpen] = useState(false);
@@ -81,9 +94,12 @@ export function OriginalTableHeader() {
             <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
             <img src={menu.url} alt="" className="original-button-icon" />
           </Button>
-        ) : <OriginalIcon key={icon.label} {...icon} />)}
+        ) : <OriginalIcon key={icon.label} {...icon} onClick={icon.label === 'Ayarlar' ? () => setSettingsOpen(true) : icon.label === 'Lig' ? () => setSeason('league') : icon.label === 'Rulet' ? () => setSeason('roulette') : icon.kind === 'bottle-pass' ? () => setSeason('bottle-pass') : undefined} />)}
       </div>
-      <OriginalIcon asset={changeTable} label="Masa değiştir" kind="default" />
+      <OriginalIcon asset={changeTable} label="Masa değiştir" kind="default" onClick={() => setChangeOpen(true)} />
+      {changeOpen && <SourceChangeTable onClose={() => setChangeOpen(false)} />}
+      {season && <SourceSeasonDialog feature={season} onClose={() => setSeason(null)} />}
+      <SettingsDialog open={settingsOpen} onClose={closeSettings} />
       {topsOpen && <SourceTopsDialog onClose={() => setTopsOpen(false)} />}
       <SourceAchievementNotifications />
       {boostersOpen && <SourceBoostersDialog onClose={() => setBoostersOpen(false)} />}
