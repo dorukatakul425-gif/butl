@@ -15,6 +15,7 @@ import { useViewerProgress } from "@/lib/viewer-progress";
 import { SourceGiftLockedDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT } from "@/components/source-dialogs";
 
 export interface SeatPlayer {
+  id?: string;
   name: string;
   photoUrl: string;
   frame: string;

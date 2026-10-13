@@ -36,7 +36,7 @@ const middleIcons = [
   { asset: fullscreen, label: "Tam ekran", kind: "fullscreen" },
 ];
 
-function OriginalIcon({ asset, label, kind, onClick }: (typeof middleIcons)[number] & { onClick?: () => void }) {
+function OriginalIcon({ asset, label, kind, onClick }: (typeof middleIcons)[number] & { onClick?: (() => void) | undefined }) {
   if (onClick) return <Button variant="ghost" onClick={onClick} aria-label={label} title={label} className={`original-header-button original-icon-${kind}`}>
     <img src={backgroundUp.url} alt="" className="original-button-background original-button-up" />
     <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
