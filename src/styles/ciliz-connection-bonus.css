@@ -1,0 +1,10 @@
+:root { --source-connection-surface: #759951; --source-bonus-text: #ffffff; --source-bonus-shadow: rgba(0,0,0,.3); }
+.source-connection-screen { position: fixed; inset: 0; z-index: 500; background: var(--source-connection-surface); display: flex; align-items: center; justify-content: center; }
+.source-connection-screen .source-connection-popup { position: relative; inset: auto; transform: none; width: min(400px, 80%); max-height: 80%; overflow: auto; outline: none; }
+.source-disconnect-image { display: block; width: 124px; height: 136px; object-fit: contain; margin: 0 auto 10px; }
+.source-connection-popup .popup__buttons { justify-content: center; }
+.source-heart-bonus-layer { position: fixed; inset: 0; pointer-events: none; z-index: 130; }
+.source-bonus-heart { position: absolute; width: 12px; height: 12px; }
+.source-bonus-banner { position: absolute; width: 135px; height: 41px; }
+.source-bonus-banner img { width: 135px; height: 41px; }
+.source-bonus-banner span { position: absolute; left: 0; right: 0; top: 4px; text-align: center; font-size: 10px; font-weight: bold; color: var(--source-bonus-text); text-shadow: 1px 1px 2px var(--source-bonus-shadow); }

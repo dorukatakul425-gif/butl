@@ -10,6 +10,7 @@
 @import "./styles/ciliz-tops.css";
 @import "./styles/ciliz-achievements.css";
 @import "./styles/ciliz-boosters.css";
+@import "./styles/ciliz-connection-bonus.css";
 
 @custom-variant dark (&:is(.dark *));
 

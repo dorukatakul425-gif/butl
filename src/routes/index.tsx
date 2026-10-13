@@ -5,6 +5,9 @@ import { OriginalChatPanel } from "@/components/original-chat-panel";
 import { TableSeats } from "@/components/table/table-seats";
 import { OriginalLoadingScreen } from "@/components/original-loading-screen";
 
+import { SourceConnectionScreen } from "@/components/table/source-connection-screen";
+import { SourceHeartBonus } from "@/components/table/source-heart-bonus";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -23,6 +26,8 @@ function Index() {
   return (
     <main className="original-table-page" aria-label="Orijinal oyun masası">
       <OriginalLoadingScreen />
+      <SourceConnectionScreen />
+      <SourceHeartBonus />
       <img className="original-page-wood" src={woodTable.url} alt="" />
       <div className="original-game">
         <div className="original-table">
