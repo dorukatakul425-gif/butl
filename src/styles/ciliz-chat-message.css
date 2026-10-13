@@ -1,0 +1,44 @@
+/* ChatContent.pushMessageLine / User.color from the supplied game source. */
+:root {
+  --chat-message-text: #000000;
+  --chat-message-surface: #ffffff;
+  --chat-message-selected: #498fe1;
+  --chat-name-male: #3db2fe;
+  --chat-name-female: #ff7bac;
+  --chat-name-vip-male: #0000ff;
+  --chat-name-vip-female: #ff0000;
+  --chat-name-top: #ffbb00;
+  --chat-premium-base: #e9a103;
+  --chat-premium-gradient: linear-gradient(to bottom, #f0d033 0%, #d98300);
+  --chat-custom-pink: #ff0095;
+  --chat-custom-red: #f52e31;
+  --chat-custom-green: #55ff04;
+  --chat-custom-purple: #570373;
+  --chat-custom-magenta: #cc0099;
+  --chat-custom-violet: #b745d6;
+}
+.chat__body { line-height: normal; color: var(--chat-message-text); letter-spacing: 0; }
+.chat__message { display: flex; align-items: flex-start; gap: 9px; padding: 0 7px; max-width: 100%; box-sizing: border-box; flex-shrink: 0; }
+.chat__message-line { min-width: min(100px, 100%); min-height: 17px; box-sizing: content-box; background-color: var(--chat-message-surface); }
+.chat__message-line::after { border-right-color: var(--chat-message-surface); }
+.chat__message-line--selected { background-color: var(--chat-message-selected); }
+.chat__message-line--selected::after { border-right-color: var(--chat-message-selected); }
+.chat__sender-name { display: inline-block; vertical-align: bottom; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 1em); font-weight: bold; cursor: pointer; }
+.chat__word-break { word-break: break-word; hyphens: manual; }
+.chat__message--bold { font-weight: bold; }
+.chat__name-color--unknown { color: var(--chat-message-text); }
+.chat__name-color--male { color: var(--chat-name-male); }
+.chat__name-color--female { color: var(--chat-name-female); }
+.chat__name-color--vip-male { color: var(--chat-name-vip-male); }
+.chat__name-color--vip-female { color: var(--chat-name-vip-female); }
+.chat__name-color--top { color: var(--chat-name-top); }
+.chat__name-color--premium { color: inherit; }
+.chat__name-color--custom-pink { color: var(--chat-custom-pink); }
+.chat__name-color--custom-red { color: var(--chat-custom-red); }
+.chat__name-color--custom-green { color: var(--chat-custom-green); }
+.chat__name-color--custom-purple { color: var(--chat-custom-purple); }
+.chat__name-color--custom-magenta { color: var(--chat-custom-magenta); }
+.chat__name-color--custom-violet { color: var(--chat-custom-violet); }
+.chat__premium-sender-name { background-color: var(--chat-premium-base); background-image: var(--chat-premium-gradient); color: transparent; background-clip: text; -webkit-background-clip: text; }
+.original-chat-round { padding: 0; flex-shrink: 0; }
+.original-chat-input-field { font-family: Arial, Helvetica, sans-serif; }

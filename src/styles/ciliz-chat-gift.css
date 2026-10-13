@@ -1,3 +1,5 @@
+@import "./ciliz-chat-message.css";
+
 /* Gift chat line (ChatView.createGiftLine) from the original stylesheet. */
 .svg__ui_chat_icon_count,
 .chat__icon--count {

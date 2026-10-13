@@ -5,7 +5,9 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
 import { CilizMusicService, YTVideoService, type MusicItem, type MusicService } from "@/lib/music";
-import { sendMusic, useMusicSession } from "@/lib/music-session";
+import { pushTextLine, sendMusic, useMusicSession } from "@/lib/music-session";
+import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
+import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 
 const VIEWER_COUNTRY = "TR";
@@ -18,6 +20,20 @@ export function OriginalChatPanel() {
   const [listType, setListType] = useState<"audio" | "video" | null>(null);
   const [preview, setPreview] = useState<{ music: MusicItem; service: MusicService } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [text, setText] = useState("");
+  const [receiver, setReceiver] = useState<import("@/lib/music-session").ChatUser | undefined>();
+  const [small, setSmall] = useState(false);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) setSmall(entry.contentRect.width <= 200);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // createAudioProvider('cz') and createYTProvider() from the game's table presenter.
   const services = useMemo(() => ({
@@ -36,8 +52,19 @@ export function OriginalChatPanel() {
   return (
     <section className="original-chat chat" aria-label="Sohbet">
       <div ref={scrollRef} className="original-chat-scroll chat__scroll">
-        <div className="chat__body">
-          {session.lines.map((line) => line.kind === "gift" ? (
+        <div className={`chat__body${small ? " chat__small" : ""}`}>
+          {session.lines.map((line) => line.kind === "text" ? (
+            <div key={line.key} className={`chat__message chat__noselect${chatMessageIsBold(line.sender, line.receiver) ? " chat__message--bold" : ""}`}>
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
+              <div className="chat__message-line">
+                <span className={`chat__sender-name ${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
+                  onClick={() => { setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
+                <span className={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}>: </span>
+                {line.receiver && <><span className="chat__sender-name">{line.receiver.name}</span><span>, </span></>}
+                <span className="chat__word-break">{line.text}</span>
+              </div>
+            </div>
+          ) : line.kind === "gift" ? (
             <div key={line.key} className="chat__info chat__noselect">
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
               <img className="chat__gift" src={line.image} width={28} height={28} title={line.name} alt="" crossOrigin="anonymous" />
@@ -72,10 +99,20 @@ export function OriginalChatPanel() {
         </div>
       </div>
       {session.song && <MusicView key={session.song.key} song={session.song} muted={session.muted} volume={session.volume} />}
-      <form className="original-chat-input" onSubmit={(e) => e.preventDefault()}>
-        <input className="original-chat-input-field" type="text" placeholder="" aria-label="Mesaj yaz" />
-        <button type="button" className="original-chat-round original-chat-emoji" style={{ backgroundImage: `url(${emojiIcon.url})` }} aria-label="Emoji" />
-        <button type="submit" className="original-chat-round original-chat-send" style={{ backgroundImage: `url(${sendIcon.url})` }} aria-label="Gönder" />
+      <form className="original-chat-input" onSubmit={(e) => {
+        e.preventDefault();
+        if (pushTextLine({ ...VIEWER_SENDER, isViewer: true }, text, receiver)) {
+          setText(""); setReceiver(undefined); inputRef.current?.focus();
+        }
+      }}>
+        <input ref={inputRef} className="original-chat-input-field" type="text" placeholder="" aria-label="Mesaj yaz" value={receiver ? `${receiver.name}, ${text}` : text}
+          onChange={(e) => {
+            const prefix = receiver ? `${receiver.name}, ` : "";
+            if (prefix && !e.target.value.startsWith(prefix)) setReceiver(undefined);
+            setText(prefix && e.target.value.startsWith(prefix) ? e.target.value.slice(prefix.length) : e.target.value);
+          }} />
+        <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji" style={{ backgroundImage: `url(${emojiIcon.url})` }} aria-label="Emoji" />
+        <Button variant="ghost" type="submit" className="original-chat-round original-chat-send" style={{ backgroundImage: `url(${sendIcon.url})` }} aria-label="Gönder" />
       </form>
       {assets && listService && (
         <MusicListDialog open={!!listType} type={listType ?? "audio"} assets={assets} service={listService}

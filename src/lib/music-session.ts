@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { MusicItem, MusicService } from "@/lib/music";
+import type { ChatProfile } from "@/lib/chat-format";
 
 export interface MusicSender { id: string; name: string; photoUrl: string; musicLevel: number }
 export interface PlayingSong {
@@ -11,15 +12,23 @@ export interface PlayingSong {
   startedAt: number;
 }
 export interface ChatMusicLine { kind?: "music"; key: number; sender: MusicSender; artist: string; title: string }
-export interface ChatUser { id: string; name: string; photoUrl: string }
+export interface ChatUser extends ChatProfile { name: string; photoUrl: string }
 export interface ChatGiftLine { kind: "gift"; key: number; sender: ChatUser; receivers: ChatUser[]; giftType: string; image: string; name: string; count: number }
-export type ChatLine = ChatMusicLine | ChatGiftLine;
+export interface ChatTextLine { kind: "text"; key: number; sender: ChatUser; receiver?: ChatUser; text: string }
+export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine;
 
 interface State { song: PlayingSong | null; lines: ChatLine[]; muted: boolean; volume: number }
 let state: State = { song: null, lines: [], muted: false, volume: 1 };
 const listeners = new Set<() => void>();
 const set = (next: Partial<State>) => { state = { ...state, ...next }; listeners.forEach(l => l()); };
 let seq = 0;
+
+/** Local chat only; real multiplayer transport is not configured. */
+export function pushTextLine(sender: ChatUser, text: string, receiver?: ChatUser) {
+  if (!text.trim()) return false;
+  set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, receiver, text }] });
+  return true;
+}
 
 /** session.viewerSendMusic + ChatPresenter.music(): start the track for the table and log it in the chat. */
 // Mobile browsers (iOS Safari) only allow play() inside the tap itself, so the shared
