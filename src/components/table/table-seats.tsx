@@ -26,6 +26,10 @@ export interface SeatPlayer {
   male: boolean;
   /** user.detail.isNew from the server: first time in the game. */
   isNew?: boolean;
+  /** Server profile fields (age, city, zodiac index 0-11). */
+  age?: number;
+  city?: string;
+  zodiac?: number;
 }
 
 // Players sitting at the other seats, each wearing a different animated frame from the game.
