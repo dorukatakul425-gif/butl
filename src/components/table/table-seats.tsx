@@ -12,6 +12,7 @@ import { pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
 import { useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-progress";
+import { GIFT_SENT_EVENT, setSeatLocator } from "@/lib/interactive-hint-flags";
 import { ProfileDialog } from "@/components/profile/profile-dialog";
 import { SourceGiftLockedDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT } from "@/components/source-dialogs";
 
@@ -75,10 +76,12 @@ export function TableSeats() {
       playersRef.current = buildPlayers(assets, decor.frame, decor.stone);
       table.setPlayers(playersRef.current);
       setActiveTable(table);
+      setSeatLocator(seat => table.seatPoint(seat));
       completeLoadingStage("renderer");
     }).catch(error => { console.error("Table loading failed", error); failGameLoading(); });
     return () => {
       disposed = true;
+      setSeatLocator(null);
       tableRef.current?.destroy();
       tableRef.current = null;
       setActiveTable(null);
@@ -111,6 +114,7 @@ export function TableSeats() {
       unlockSfx();
       // Viewer.decGold: not enough hearts for every receiver -> onGoldNeeded -> bank.
       if (item.price * giftReceivers(target).length > VIEWER_GOLD) { window.dispatchEvent(new Event(OPEN_BANK_EVENT)); return; }
+      window.dispatchEvent(new CustomEvent(GIFT_SENT_EVENT, { detail: item.type }));
       // viewerSendGift(selectedUsers, gift): one independent gift per selected receiver.
       for (const seat of giftReceivers(target)) {
         const gift = createSentGift(assets, item.gift, Math.floor(Math.random() * RAND_MOD));

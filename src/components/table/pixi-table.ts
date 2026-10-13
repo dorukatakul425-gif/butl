@@ -561,6 +561,12 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   };
 
   return {
+    seatPoint(index: number) {
+      const seat = seats[index];
+      if (!seat || destroyed) return null;
+      const r = host.getBoundingClientRect();
+      return { x: r.left + stage.x + seat.view.x * scale, y: r.top + stage.y + seat.view.y * scale };
+    },
     async setBottle(type: string) {
       const version = ++bottleVersion;
       const view = await originalBottle(assets,type,tableSize(),loadImage,bottleLayer);
