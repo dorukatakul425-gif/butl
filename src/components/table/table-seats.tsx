@@ -8,11 +8,12 @@ import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { closedTarget, giftReceivers, openFor, seatSelection, selectGender, setSelective, type GiftTargetState } from "@/lib/gift-selection";
-import { pushGiftLine } from "@/lib/music-session";
+import { pushActionLine, pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
 import { useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-progress";
 import { GIFT_SENT_EVENT, setSeatLocator } from "@/lib/interactive-hint-flags";
+import { newcomerKey, newcomerKind, newcomersToNotify, widgetParts, OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
 import { ProfileDialog } from "@/components/profile/profile-dialog";
 import { SourceGiftLockedDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT } from "@/components/source-dialogs";
 
@@ -23,6 +24,8 @@ export interface SeatPlayer {
   frame: string;
   stone: string;
   male: boolean;
+  /** user.detail.isNew from the server: first time in the game. */
+  isNew?: boolean;
 }
 
 // Players sitting at the other seats, each wearing a different animated frame from the game.
@@ -43,6 +46,11 @@ export function TableSeats() {
   const [gesturesOpen, setGesturesOpen] = useState(false);
 
   const progress = useViewerProgress();
+  useEffect(() => {
+    const open = (e: Event) => { const seat = (e as CustomEvent<number>).detail; if (seat !== VIEWER_SEAT && playersRef.current[seat]) { setGesturesOpen(false); setTarget(state => openFor(state, seat, VIEWER_SEAT)); } };
+    window.addEventListener(OPEN_GIFT_FOR_SEAT_EVENT, open);
+    return () => window.removeEventListener(OPEN_GIFT_FOR_SEAT_EVENT, open);
+  }, []);
   const [profileSeat, setProfileSeat] = useState<number | null>(null);
   const [lockedGift, setLockedGift] = useState<GiftStoreItem | null>(null);
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: progress.kisses, vip: progress.vip }) : []), [assets, progress.kisses, progress.vip]);
@@ -77,6 +85,7 @@ export function TableSeats() {
       table.setPlayers(playersRef.current);
       setActiveTable(table);
       setSeatLocator(seat => table.seatPoint(seat));
+      notifyNewcomers(assets, playersRef.current);
       completeLoadingStage("renderer");
     }).catch(error => { console.error("Table loading failed", error); failGameLoading(); });
     return () => {
@@ -200,7 +209,10 @@ function buildPlayers(assets: CilizAssets, frame: string, stone: string): SeatPl
     if (seat === VIEWER_SEAT) return { name: VIEWER.name, photoUrl: VIEWER.photoUrl, frame, stone, male: true };
     const id = DEMO_FRAMES[demo++ % DEMO_FRAMES.length] ?? "";
     return {
+      id: `seat-${seat}`,
       name: `Oyuncu ${seat + 1}`,
+      // Preview stand-in for the server's isNew flag on one seat.
+      ...(seat === 1 ? { isNew: true } : {}),
       photoUrl: VIEWER.photoUrl,
       frame: assets.frames[id] ? id : "",
       stone: assets.stones[id] ? id : "",
@@ -208,4 +220,15 @@ function buildPlayers(assets: CilizAssets, frame: string, stone: string): SeatPl
       male: seat % 2 === 0,
     };
   });
+}
+
+// GameSession.notifyNewcomers: one widget per new opposite-sex player per session.
+const notifiedNewcomers = new Set<string>();
+function notifyNewcomers(assets: CilizAssets, players: SeatPlayer[]) {
+  const users = players.map((p, seat) => ({ ...p, id: p.id ?? `seat-${seat}`, seat })).filter(u => u.seat !== VIEWER_SEAT);
+  const kind = newcomerKind(VIEWER_GOLD);
+  for (const u of newcomersToNotify(users, { id: "viewer", male: true }, notifiedNewcomers)) {
+    const user = { id: u.id, name: u.name, photoUrl: u.photoUrl, male: u.male };
+    pushActionLine({ style: "newcomer", icon: kind, parts: widgetParts(translate(assets, newcomerKey(kind)), user), sender: user, seat: u.seat });
+  }
 }

@@ -6,7 +6,7 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
 import { CilizMusicService, YTVideoService, type MusicItem, type MusicService } from "@/lib/music";
-import { pushTextLine, sendMusic, useMusicSession } from "@/lib/music-session";
+import { pushActionLine, pushTextLine, sendMusic, useMusicSession } from "@/lib/music-session";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
@@ -14,6 +14,7 @@ import { translate } from "@/lib/ciliz-assets";
 import { EmojiPicker } from "@/components/chat/emoji-picker";
 import { emojiPickerSize, emojiSendDecision, insertEmoji } from "@/lib/emoji";
 import { useViewerProgress } from "@/lib/viewer-progress";
+import { OPEN_GIFT_FOR_SEAT_EVENT, shouldScheduleVipTeaser, VIP_TEASER_DELAY, widgetOfTheDay } from "@/lib/chat-promos";
 import { OPEN_VIP_EVENT, SourceInfoDialog } from "@/components/source-dialogs";
 
 const VIEWER_COUNTRY = "TR";
@@ -41,6 +42,14 @@ export function OriginalChatPanel() {
   const [emojiSize, setEmojiSize] = useState(0);
   const [emojiWarning, setEmojiWarning] = useState<string | null>(null);
   const openVip = () => window.dispatchEvent(new Event(OPEN_VIP_EVENT));
+  // Session.scheduleWidgetOfTheDay → scheduleVipTeaser: VIP widget 5 minutes in, non-VIP only.
+  // Web has no rewarded video, so the widget is always VIP. `?teaser=now` previews it.
+  useEffect(() => {
+    if (!assets || widgetOfTheDay("0", new Date().getDate(), false) !== "vip" || !shouldScheduleVipTeaser(vip, true)) return;
+    const delay = new URLSearchParams(window.location.search).get("teaser") === "now" ? 3000 : VIP_TEASER_DELAY;
+    const timer = window.setTimeout(() => pushActionLine({ style: "vip", icon: "vip", parts: [{ text: translate(assets, "chat:vip:desc") }] }), delay);
+    return () => window.clearTimeout(timer);
+  }, [assets, vip]);
   // ChatView.userAction: any click outside the picker / emoji button hides it.
   useEffect(() => {
     if (!emojiOpen) return;
@@ -110,6 +119,22 @@ export function OriginalChatPanel() {
                 {line.receiver && <><span className="chat__sender-name">{line.receiver.name}</span><span>, </span></>}
                 <span className="chat__word-break">{line.text}</span>
               </div>
+            </div>
+          ) : line.kind === "action" ? (
+            <div key={line.key} className={`chat__action chat__action--${line.style} chat__noselect`} role="button"
+              onClick={() => {
+                if (line.style === "vip") openVip();
+                else if (line.icon === "gift" && line.seat !== undefined) window.dispatchEvent(new CustomEvent(OPEN_GIFT_FOR_SEAT_EVENT, { detail: line.seat }));
+                else if (line.icon === "chat" && line.sender) { setReceiver(line.sender); inputRef.current?.focus(); }
+              }}>
+              <div className="chat__action-line">
+                {line.sender && (line.style === "newcomer" || line.style === "birthday") && <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />}
+                {line.parts.map((part, i) => "user" in part
+                  ? <span key={i} className={`chat__sender-name ${chatNameClass(part.user)}`} style={{ fontWeight: "bold", whiteSpace: "nowrap" }}
+                      onClick={e => { e.stopPropagation(); setReceiver(part.user); inputRef.current?.focus(); }}>{part.user.name}</span>
+                  : <span key={i}>{part.text}</span>)}
+              </div>
+              <div className={`chat__btn-bg chat__btn-bg--${line.style}`}><div className={`chat__btn chat__btn--${line.icon}`} /></div>
             </div>
           ) : line.kind === "gift" ? (
             <div key={line.key} className="chat__info chat__noselect">

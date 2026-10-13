@@ -20,6 +20,7 @@
 @import "./styles/ciliz-hints.css";
 @import "./styles/ciliz-user-profile.css";
 @import "./styles/ciliz-emoji.css";
+@import "./styles/ciliz-chat-action.css";
 
 @custom-variant dark (&:is(.dark *));
 

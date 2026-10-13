@@ -15,7 +15,10 @@ export interface ChatMusicLine { kind?: "music"; key: number; sender: MusicSende
 export interface ChatUser extends ChatProfile { name: string; photoUrl: string }
 export interface ChatGiftLine { kind: "gift"; key: number; sender: ChatUser; receivers: ChatUser[]; giftType: string; image: string; name: string; count: number }
 export interface ChatTextLine { kind: "text"; key: number; sender: ChatUser; receiver?: ChatUser; text: string }
-export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine;
+export type ChatActionPart = { text: string } | { user: ChatUser };
+/** ChatContent.pushActionLine: newcomer / birthday / vip / rewarded-video widget rows. */
+export interface ChatActionLine { kind: "action"; key: number; style: "newcomer" | "birthday" | "vip" | "rewarded-video"; icon: "gift" | "chat" | "vip" | "rewarded-video"; parts: ChatActionPart[]; sender?: ChatUser; seat?: number }
+export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine;
 
 interface State { song: PlayingSong | null; lines: ChatLine[]; muted: boolean; volume: number }
 let state: State = { song: null, lines: [], muted: false, volume: 1 };
@@ -28,6 +31,10 @@ export function pushTextLine(sender: ChatUser, text: string, receiver?: ChatUser
   if (!text.trim()) return false;
   set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, text, ...(receiver ? { receiver } : {}) }] });
   return true;
+}
+
+export function pushActionLine(line: Omit<ChatActionLine, "kind" | "key">) {
+  set({ lines: [...state.lines, { kind: "action", key: ++seq, ...line }] });
 }
 
 /** session.viewerSendMusic + ChatPresenter.music(): start the track for the table and log it in the chat. */
