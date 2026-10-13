@@ -5,6 +5,7 @@ import { AtlasAttachmentLoader, SkeletonJson, Spine, type SkeletonData } from "@
 import { bundleUrl, SPINE_DESIGN_TO_TABLE, tableFrameSize, VIRTUAL_SIZE, type CilizAssets, type CilizGift } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
 import { type SentGift } from "@/lib/gifts";
+import type { SeatSelection } from "@/lib/gift-selection";
 import { PHOTO_SIZE as PHOTO, PHOTO_SHADOW_SIZE as SHADOW_SIZE, GIFT_SCALE, OVER_SCALE, FLY_SEC, giftImageFrame, calcGiftPosition } from "@/lib/gift-geometry";
 import { GiftEffects } from "@/components/table/gift-effects";
 import { matchingTableEffects } from "@/lib/table-gift-effects";
@@ -147,6 +148,9 @@ function drawPhoto(img: HTMLImageElement, res: number) {
 
 const USER_CHAT_HIGHLIGHT = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI3MiI+CiAgICA8cmVjdCB4PSIyIiB5PSIyIiB3aWR0aD0iNjgiIGhlaWdodD0iNjgiIHJ4PSI4IiBmaWxsLW9wYWNpdHk9IjAiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utb3BhY2l0eT0iLjQ1Ii8+Cjwvc3ZnPgo=";
 
+const USER_SELECTED_HIGHLIGHT = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NiIgaGVpZ2h0PSI2NiI+CiAgICA8cmVjdCB3aWR0aD0iNjYiIGhlaWdodD0iNjYiIHJ4PSI2IiBmaWxsPSIjOWJjYzMzIiBmaWxsLW9wYWNpdHk9Ii43NSIvPgogICAgPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTMwLjUgNDEuNWwtNi4xLTYuOSAyLjMtMiA0IDQuNiAxMC45LTEwLjkgMi4xIDIuMXoiLz4KPC9zdmc+Cg==";
+const USER_SELECTABLE_HIGHLIGHT = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjAiIHk9IjAiIHdpZHRoPSI2NiIgaGVpZ2h0PSI2NiIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CiAgICA8c3R5bGU+LnN0MntmaWxsOiNmZmZ9PC9zdHlsZT4KICAgIDxnIGlkPSJMYXllcl8yXzFfIj4KICAgICAgICA8cGF0aCBkPSJNOCAyaDUwYzMuMyAwIDYgMi43IDYgNnY1MGMwIDMuMy0yLjcgNi02IDZIOGMtMy4zIDAtNi0yLjctNi02VjhjMC0zLjMgMi43LTYgNi02eiIgZmlsbC1vcGFjaXR5PSIuNzUiIGlkPSJMYXllcl8xLTJfMV8iIG9wYWNpdHk9Ii4zNSIvPgogICAgICAgIDxnIGlkPSJMYXllcl8yXzNfIj4KICAgICAgICAgICAgPHBhdGggY2xhc3M9InN0MiIgZD0iTTU4IDJjMy4zIDAgNiAyLjcgNiA2djUwYzAgMy4zLTIuNyA2LTYgNkg4Yy0zLjMgMC02LTIuNy02LTZWOGMwLTMuMyAyLjctNiA2LTZoNTBtMC0ySDhDMy42IDAgMCAzLjYgMCA4djUwYzAgNC40IDMuNiA4IDggOGg1MGM0LjQgMCA4LTMuNiA4LThWOGMwLTQuNC0zLjYtOC04LTh6IiBpZD0iTGF5ZXJfMS0yXzJfIi8+CiAgICAgICAgPC9nPgogICAgICAgIDxwYXRoIGNsYXNzPSJzdDIiIGQ9Ik0zNC41IDQyaC0zdi03LjVIMjR2LTNoNy41VjI0aDN2Ny41SDQydjNoLTcuNXoiIGlkPSJMYXllcl8xLTIiLz4KICAgIDwvZz4KPC9zdmc+Cg==";
+
 class SeatView {
   readonly view = new Container();
   private photo = new Sprite();
@@ -184,12 +188,13 @@ class SeatView {
     this.view.addChild(this.photo, this.frameContainer, this.selection, this.nameContainer, this.gifts);
   }
 
-  // updateSelection(): isHighlighted -> chat highlight sized photoFrame.width + 8.
-  setHighlighted(on: boolean, res: number) {
+  // updateSelection(): selected = photo size, selectable = +4, chat highlight = +8.
+  setSelection(mode: SeatSelection, res: number) {
     if (this.disposed) return;
-    if (!on) { this.selection.visible = false; this.selection.texture = Texture.EMPTY; return; }
-    const size = PHOTO + 8;
-    this.selection.texture = Texture.from(USER_CHAT_HIGHLIGHT, { resourceOptions: { width: size * res, height: size * res } });
+    const source = mode === "selected" ? USER_SELECTED_HIGHLIGHT : mode === "selectable" ? USER_SELECTABLE_HIGHLIGHT : mode === "highlighted" ? USER_CHAT_HIGHLIGHT : "";
+    if (!source) { this.selection.visible = false; this.selection.texture = Texture.EMPTY; return; }
+    const size = PHOTO + (mode === "selected" ? 0 : mode === "selectable" ? 4 : 8);
+    this.selection.texture = Texture.from(source, { resourceOptions: { width: size * res, height: size * res } });
     this.selection.width = size;
     this.selection.height = size;
     this.selection.visible = true;
@@ -594,9 +599,9 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       players[index] = player;
       void seats[index]?.set(player, assets, res(), tableSize());
     },
-    // TablePresenter.toggleHighlightUser(id, isHighlighted).
-    setHighlighted(index: number | null) {
-      seats.forEach((seat, i) => seat.setHighlighted(i === index, res()));
+    // TablePresenter isSelective / selectedUsers / toggleHighlightUser.
+    setSelection(modes: SeatSelection[]) {
+      seats.forEach((seat, i) => seat.setSelection(modes[i] ?? "none", res()));
     },
     sendGift(from: number, to: number, gift: SentGift) {
       return flyGift(from, to, gift).catch((error) => console.error(`Gift ${gift.type} could not be shown`, error));

@@ -468,3 +468,188 @@
     width: 170px;
   }
 }
+
+
+/* Multigift header controls ported from preloader.css (SendGiftDialog multiselect). */
+.svg__ui_profile_btn_add,
+.send-gift__btn--add,
+.send-gift-mixin--multi .send-gift-mixin__btn--add {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%20viewBox%3D%220%200%2030%2030%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22nonzero%22%3E%0A%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%2215%22%20cy%3D%2215%22%20r%3D%2215%22%20fill%3D%22%239BCC33%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cg%20stroke%3D%22%23FFF%22%20stroke-width%3D%222%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M22.262%2014.83h-14.5M15.142%2022.143V7.642%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+
+.svg__ui_profile_btn_cancel,
+.send-gift__btn--cancel,
+.send-gift-mixin--multi .send-gift-mixin__btn--cancel {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%20viewBox%3D%220%200%2030%2030%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22nonzero%22%3E%0A%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%2215%22%20cy%3D%2215%22%20r%3D%2215%22%20fill%3D%22%23F00%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cg%20stroke%3D%22%23FFF%22%20stroke-width%3D%222%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M20.06%209.637L9.806%2019.89M20.196%2019.843L9.942%209.589%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+
+.svg__ui_profile_btn_men,
+.send-gift__btn--men,
+.send-gift-mixin--multi .send-gift-mixin__btn--men {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2230%22%20height%3D%2230%22%20viewBox%3D%220%200%2030%2030%22%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%2215%22%20cy%3D%2215%22%20r%3D%2215%22%20fill%3D%22%239BCC33%22%20fill-rule%3D%22nonzero%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cg%20fill%3D%22%23FFF%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M11.935%2015.993c-.642%200-1.164.254-1.164.565%200%20.311.522.565%201.164.565.641%200%201.163-.254%201.163-.565%200-.311-.522-.565-1.163-.565M17.679%2015.993c-.642%200-1.164.254-1.164.565%200%20.311.522.565%201.164.565.641%200%201.164-.254%201.164-.565%200-.311-.523-.565-1.164-.565%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d%3D%22M15.493%206.327c.02%200%20.039.003.059.003l-.082-.001.023-.002zm-.63%2017.064a6.064%206.064%200%200%201-6.052-5.729A1.533%201.533%200%200%201%207.4%2016.136c0-.432.182-.816.47-1.094l1.224%201.345v-2.38l8.577-2.75.015.003%202.803%202.414v2.713l1.185-1.305c.263.275.428.643.428%201.054%200%20.728-.507%201.335-1.187%201.495a6.063%206.063%200%200%201-6.051%205.76zm7.546-8.484l.016-.013h.007l-.023.013zm.621.796a5.795%205.795%200%200%200-.116-.42%202.686%202.686%200%200%200-.216-.445l-.005-.008c.294-2.488-.325-6.877-4.462-8.136l-.567-.844a.966.966%200%200%200-.72-.426c-2.435-.216-4.408.093-5.886.906-4.143%202.281-4.27%206.895-4.192%208.409l-.048.079a2.374%202.374%200%200%200-.32.759l-.024.102c-.03.164-.045.314-.045.457%200%20.996.591%201.894%201.49%202.289a7.052%207.052%200%200%200%206.944%205.936%207.03%207.03%200%200%200%206.962-6.058%202.486%202.486%200%200%200%201.205-2.6z%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+
+.svg__ui_profile_btn_women,
+.send-gift__btn--women,
+.send-gift-mixin--multi .send-gift-mixin__btn--women {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%2230%22%20height%3D%2230%22%20viewBox%3D%220%200%2030%2030%22%3E%0A%20%20%20%20%3Cdefs%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20id%3D%22a%22%20d%3D%22M0%20.143h20.84v19.56H0z%22%2F%3E%0A%20%20%20%20%3C%2Fdefs%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%2215%22%20cy%3D%2215%22%20r%3D%2215%22%20fill%3D%22%239BCC33%22%20fill-rule%3D%22nonzero%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22%23FFF%22%20d%3D%22M11.754%2015.808c-.659%200-1.194.28-1.194.623%200%20.343.535.623%201.194.623.658%200%201.193-.28%201.193-.623%200-.343-.535-.623-1.193-.623M17.647%2015.808c-.658%200-1.194.28-1.194.623%200%20.343.536.623%201.194.623.658%200%201.195-.28%201.195-.623%200-.343-.537-.623-1.195-.623%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cg%20transform%3D%22translate(4.286%204.74)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cmask%20id%3D%22b%22%20fill%3D%22%23fff%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cuse%20xlink%3Ahref%3D%22%23a%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fmask%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22%23FFF%22%20d%3D%22M10.472%2018.7a6.22%206.22%200%200%201-6.208-5.876%201.574%201.574%200%200%201-1.45-1.566c0-.443.187-.838.482-1.122l1.256%201.38V9.073l8.8-2.82.016.002%202.876%202.477v2.784l1.215-1.34c.27.282.44.66.44%201.082%200%20.747-.52%201.37-1.217%201.533a6.22%206.22%200%200%201-6.21%205.91zm10.366-3.341c-.102-9.392-4.005-13.012-7.3-14.39L13.357.7a.969.969%200%200%200-.704-.435C12.102.141%2011.073.072%209.85.253c-1.27.123-2.373.439-3.281.938a7.904%207.904%200%200%200-1.462%201.032C1.787%204.736.07%209.156.002%2015.36L0%2015.502l.109.09c1.549%201.29%203.585%202.19%206.054%202.674a7.145%207.145%200%200%200%204.314%201.438%207.15%207.15%200%200%200%204.359-1.468c2.397-.494%204.38-1.383%205.895-2.644l.109-.09-.002-.143z%22%20mask%3D%22url(%23b)%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+
+.svg__ui_profile_icon_blue,
+.send-gift__btn--profile,
+.send-gift-mixin--multi .send-gift-mixin__btn--profile {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%2230%22%20height%3D%2230%22%20viewBox%3D%220%200%2030%2030%22%3E%0A%20%20%20%20%3Cdefs%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20id%3D%22a%22%20d%3D%22M.12.26h6.914v8.945H.12z%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cpath%20id%3D%22c%22%20d%3D%22M0%20.27h13.885V7H0z%22%2F%3E%0A%20%20%20%20%3C%2Fdefs%3E%0A%20%20%20%20%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%0A%20%20%20%20%20%20%20%20%3Ccircle%20cx%3D%2215%22%20cy%3D%2215%22%20r%3D%2215%22%20fill%3D%22%234A90E2%22%20fill-rule%3D%22nonzero%22%2F%3E%0A%20%20%20%20%20%20%20%20%3Cg%20transform%3D%22translate(11.294%207.151)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cmask%20id%3D%22b%22%20fill%3D%22%23fff%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cuse%20xlink%3Ahref%3D%22%23a%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fmask%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22%23FFF%22%20d%3D%22M7.034%204.316c0-1.112-.335-2.07-1.004-2.876C5.36.654%204.547.26%203.59.26S1.813.654%201.124%201.44C.454%202.245.12%203.204.12%204.316c0%201.17.335%202.262%201.004%203.278.727%201.074%201.55%201.61%202.467%201.61.918%200%201.731-.536%202.439-1.61.669-1.016%201.004-2.109%201.004-3.278%22%20mask%3D%22url(%23b)%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%20%20%20%20%3Cg%20transform%3D%22translate(8%2015.798)%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cmask%20id%3D%22d%22%20fill%3D%22%23fff%22%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cuse%20xlink%3Ahref%3D%22%23c%22%2F%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3C%2Fmask%3E%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20fill%3D%22%23FFF%22%20d%3D%22M0%204.268h.029L0%204.469c0%20.71.679%201.304%202.037%201.783C3.376%206.75%205.011%207%206.943%207c1.912%200%203.547-.25%204.905-.748%201.358-.48%202.037-1.074%202.037-1.783l-.028-.201h.028c0-2.051-1.29-3.384-3.873-3.998-.956%201.093-1.998%201.64-3.127%201.64-1.128%200-2.17-.547-3.127-1.64C1.253.922%200%202.254%200%204.268%22%20mask%3D%22url(%23d)%22%2F%3E%0A%20%20%20%20%20%20%20%20%3C%2Fg%3E%0A%20%20%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E%0A");
+}
+
+.send-gift__btn {
+  background-position: center;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  transition: -webkit-filter 500ms linear;
+  transition: filter 500ms linear;
+  transition: filter 500ms linear, -webkit-filter 500ms linear;
+}
+
+.send-gift__btn:active {
+  -webkit-filter: brightness(70%);
+          filter: brightness(70%);
+}
+
+.send-gift__btn--profile {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 5px;
+  flex-shrink: 0;
+  opacity: 0;
+  -webkit-transform: scale(0);
+          transform: scale(0);
+}
+
+.send-gift__btn--add {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.send-gift__btn--cancel {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.send-gift__btn--men {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.send-gift__btn--women {
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.send-gift__multigift-btn-list {
+  display: flex;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.send-gift__multigift-gender-list {
+  display: flex;
+  justify-content: space-between;
+  flex-shrink: 0;
+  width: 104px;
+}
+
+.send-gift__multi-title {
+  max-width: 90px;
+  white-space: pre-line;
+}
+
+@media screen and (min-width: 500px) {
+  .portrait .send-gift--multi .portrait .send-gift__btn {
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
+  }
+  .portrait .send-gift--multi .portrait .send-gift__btn:last-child {
+    margin-right: 0;
+  }
+  .portrait .send-gift--multi .portrait .send-gift__btn--profile {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 5px;
+  }
+  .portrait .send-gift--multi .portrait .send-gift__btn--add {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .portrait .send-gift--multi .portrait .send-gift__btn--cancel {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .portrait .send-gift--multi .portrait .send-gift__btn--men {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .portrait .send-gift--multi .portrait .send-gift__btn--women {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .portrait .send-gift--multi .portrait .send-gift__multigift-gender-list {
+    width: 170px;
+  }
+}
+
+@media screen and (min-height: 414px) {
+  .landscape .send-gift--multi .landscape .send-gift__btn {
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
+  }
+  .landscape .send-gift--multi .landscape .send-gift__btn:last-child {
+    margin-right: 0;
+  }
+  .landscape .send-gift--multi .landscape .send-gift__btn--profile {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 5px;
+  }
+  .landscape .send-gift--multi .landscape .send-gift__btn--add {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .landscape .send-gift--multi .landscape .send-gift__btn--cancel {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .landscape .send-gift--multi .landscape .send-gift__btn--men {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .landscape .send-gift--multi .landscape .send-gift__btn--women {
+    background-size: 50px 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .landscape .send-gift--multi .landscape .send-gift__multigift-gender-list {
+    width: 170px;
+  }
+}
+
+.send-gift-mixin--multi .send-gift-mixin__multigift-gender-list {
+  width: 170px;
+}

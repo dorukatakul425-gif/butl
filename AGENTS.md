@@ -18,3 +18,4 @@
 - Keep text chat in the same browser-safe line store as gifts/music and derive presentation from original User.color and ChatPresenter rules; local messages must not be represented as connected multiplayer.
 - Keep bottle catalogues and selected state browser-safe, render live Bottle3d maps with the original lighting shader only in the lazy Pixi renderer, and run local bot rounds separately from remote game services so simulated play is not represented as live multiplayer.
 - Gate startup on actual manifest, renderer, bottle, icon and splash-artwork readiness with a browser-safe loading store; retain original inline SVG fallbacks for controls, splash and particles so CDN failures never silently remove original artwork or effects.
+- Gift receiver/multiselect state lives in a browser-safe selection module ported from TablePresenter; the Pixi renderer only draws the selection mode it is given, so selection rules stay testable without graphics.

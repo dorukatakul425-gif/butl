@@ -19,6 +19,8 @@ export interface SendGiftDialogProps {
   onSend: (item: GiftStoreItem) => void;
   onPreload: (item: GiftStoreItem) => void;
   onClose: () => void;
+  selective?: boolean;
+  multiselect?: { title: string; onSelectState: (on: boolean) => void; onSelectMen: () => void; onSelectWomen: () => void };
 }
 
 function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; item: GiftStoreItem; onSend: (item: GiftStoreItem) => void; onPreload: (item: GiftStoreItem) => void }) {
@@ -68,7 +70,7 @@ function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; it
   );
 }
 
-export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose }: SendGiftDialogProps) {
+export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose, selective = false, multiselect }: SendGiftDialogProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -145,11 +147,28 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
         </div>
         <div className={`popup__header ${cls("x_header")}`}>
           <div className={`popup__title popup__title--left ${cls("x_popup__title")}`}>
-            <div>
-              <div className={cls("gift-title")}>{title.charAt(0).toLocaleUpperCase("tr") + title.slice(1)}</div>
-              <div className={`${cls("name")} ${showProfile ? "send-gift__show-name" : ""}`}>{receiverName}</div>
-            </div>
+            {selective && multiselect ? (
+              <div className={cls("multi-title")}>{multiselect.title}</div>
+            ) : (
+              <div>
+                <div className={cls("gift-title")}>{title.charAt(0).toLocaleUpperCase("tr") + title.slice(1)}</div>
+                <div className={`${cls("name")} ${showProfile ? "send-gift__show-name" : ""}`}>{receiverName}</div>
+              </div>
+            )}
           </div>
+          {multiselect && (
+            <div className={cls("multigift-btn-list")}>
+              {selective ? (
+                <div className={cls("multigift-gender-list")}>
+                  <div className={cls("btn", ["men"])} role="button" aria-label="Erkekleri seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectMen(); }} />
+                  <div className={cls("btn", ["women"])} role="button" aria-label="Kadınları seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectWomen(); }} />
+                  <div className={cls("btn", ["cancel"])} role="button" aria-label="Toplu seçimi iptal et" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(false); }} />
+                </div>
+              ) : (
+                <div className={cls("btn", ["add"])} role="button" aria-label="Toplu hediye" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(true); }} />
+              )}
+            </div>
+          )}
         </div>
         <div className={`popup__content popup__content--no-padding ${cls("x_popup__content")}`} style={{ flex: 1 }}>
           <div ref={listRef} className={cls("", ["gift"])}>

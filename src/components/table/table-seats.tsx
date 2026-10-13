@@ -5,7 +5,8 @@ import { useDecorState } from "@/lib/decor-store";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/lib/gifts";
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
-import { dialogImage, type CilizAssets } from "@/lib/ciliz-assets";
+import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
+import { closedTarget, giftReceivers, openFor, seatSelection, selectGender, setSelective, type GiftTargetState } from "@/lib/gift-selection";
 import { pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
@@ -15,6 +16,7 @@ export interface SeatPlayer {
   photoUrl: string;
   frame: string;
   stone: string;
+  male: boolean;
 }
 
 // Players sitting at the other seats, each wearing a different animated frame from the game.
@@ -29,7 +31,8 @@ export function TableSeats() {
   const decor = useDecorState();
   const tableRef = useRef<PixiTable | null>(null);
   const playersRef = useRef<SeatPlayer[]>([]);
-  const [giftSeat, setGiftSeat] = useState<number | null>(null);
+  const [target, setTarget] = useState<GiftTargetState>(closedTarget);
+  const giftSeat = target.receiver;
   const [activeTable, setActiveTable] = useState<PixiTable | null>(null);
 
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: 0, vip: true }) : []), [assets]);
@@ -42,9 +45,8 @@ export function TableSeats() {
       const table = await createPixiTable(host, assets, {
         onSeatClick: (index) => {
           unlockSfx();
-          // showGifts(receiver): self gifts are refused; another player re-targets the open dialog.
-          if (index === VIEWER_SEAT) return;
-          setGiftSeat(index);
+          // showGifts(receiver) / selectable pointertap: self gifts refused; others re-target or toggle.
+          setTarget(state => openFor(state, index, VIEWER_SEAT));
         },
         playSfx: (id) => void playSfx(assets.sfxUrl, id),
         prepareSfx: (id) => prepareSfx(assets.sfxUrl, id),
@@ -70,14 +72,14 @@ export function TableSeats() {
 
   useEffect(() => {
     if (!assets) return;
-    const viewer = { name: VIEWER.name, photoUrl: VIEWER.photoUrl, frame: decor.frame, stone: decor.stone };
+    const viewer = { name: VIEWER.name, photoUrl: VIEWER.photoUrl, frame: decor.frame, stone: decor.stone, male: true };
     playersRef.current[VIEWER_SEAT] = viewer;
     tableRef.current?.setPlayer(VIEWER_SEAT, viewer);
   }, [assets, decor.frame, decor.stone]);
 
   useEffect(() => {
-    activeTable?.setHighlighted(giftSeat);
-  }, [activeTable, giftSeat]);
+    activeTable?.setSelection(Array.from({ length: 12 }, (_, seat) => seatSelection(target, seat, VIEWER_SEAT)));
+  }, [activeTable, target]);
 
   // Warm sounds on open; visible/pointed gift items preload their own visuals.
   // Parsing the entire catalogue here competes with rapid sends on slower phones.
@@ -89,23 +91,32 @@ export function TableSeats() {
 
   const send = useCallback(
     (item: GiftStoreItem) => {
-      if (!assets || giftSeat === null) return;
+      if (!assets) return;
       unlockSfx();
-      const gift = createSentGift(assets, item.gift, Math.floor(Math.random() * RAND_MOD));
-      void tableRef.current?.sendGift(VIEWER_SEAT, giftSeat, gift);
-      const receiver = playersRef.current[giftSeat];
-      pushGiftLine(
-        { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl },
-        { id: `seat-${giftSeat}`, name: receiver?.name ?? "", photoUrl: receiver?.photoUrl ?? "" },
-        { type: item.type, name: item.name, image: dialogImage(assets, item.image, 28, 28).src },
-      );
+      // viewerSendGift(selectedUsers, gift): one independent gift per selected receiver.
+      for (const seat of giftReceivers(target)) {
+        const gift = createSentGift(assets, item.gift, Math.floor(Math.random() * RAND_MOD));
+        void tableRef.current?.sendGift(VIEWER_SEAT, seat, gift);
+        const receiver = playersRef.current[seat];
+        pushGiftLine(
+          { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl },
+          { id: `seat-${seat}`, name: receiver?.name ?? "", photoUrl: receiver?.photoUrl ?? "" },
+          { type: item.type, name: item.name, image: dialogImage(assets, item.image, 28, 28).src },
+        );
+      }
     },
-    [assets, giftSeat],
+    [assets, target],
   );
   const preload = useCallback((item: GiftStoreItem) => {
     void tableRef.current?.preloadGift(item.gift).catch(error => console.warn(`Gift preload ${item.type}`, error));
   }, []);
-  const close = useCallback(() => setGiftSeat(null), []);
+  const close = useCallback(() => setTarget(closedTarget), []);
+  const multiselect = useMemo(() => ({
+    title: assets ? translate(assets, "mobile:dlg:gift:multiselect", "Birden fazla kişi seç") : "",
+    onSelectState: (on: boolean) => setTarget(state => setSelective(state, on)),
+    onSelectMen: () => setTarget(state => selectGender(state, playersRef.current.map(p => p.male), true, VIEWER_SEAT)),
+    onSelectWomen: () => setTarget(state => selectGender(state, playersRef.current.map(p => p.male), false, VIEWER_SEAT)),
+  }), [assets]);
 
   return (
     <>
@@ -121,6 +132,8 @@ export function TableSeats() {
           onSend={send}
           onPreload={preload}
           onClose={close}
+          selective={target.selective}
+          multiselect={multiselect}
         />
       )}
     </>
@@ -130,13 +143,15 @@ export function TableSeats() {
 function buildPlayers(assets: CilizAssets, frame: string, stone: string): SeatPlayer[] {
   let demo = 0;
   return Array.from({ length: 12 }, (_, seat) => {
-    if (seat === VIEWER_SEAT) return { name: VIEWER.name, photoUrl: VIEWER.photoUrl, frame, stone };
+    if (seat === VIEWER_SEAT) return { name: VIEWER.name, photoUrl: VIEWER.photoUrl, frame, stone, male: true };
     const id = DEMO_FRAMES[demo++ % DEMO_FRAMES.length] ?? "";
     return {
       name: `Oyuncu ${seat + 1}`,
       photoUrl: VIEWER.photoUrl,
       frame: assets.frames[id] ? id : "",
       stone: assets.stones[id] ? id : "",
+      // Demo seats alternate gender so men/women multiselect has targets.
+      male: seat % 2 === 0,
     };
   });
 }
