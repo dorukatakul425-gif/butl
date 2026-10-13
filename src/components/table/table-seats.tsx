@@ -5,7 +5,8 @@ import { useDecorState } from "@/lib/decor-store";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/lib/gifts";
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
-import type { CilizAssets } from "@/lib/ciliz-assets";
+import { dialogImage, type CilizAssets } from "@/lib/ciliz-assets";
+import { pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
 
@@ -88,6 +89,12 @@ export function TableSeats() {
       unlockSfx();
       const gift = createSentGift(assets, item.gift, Math.floor(Math.random() * RAND_MOD));
       void tableRef.current?.sendGift(VIEWER_SEAT, giftSeat, gift);
+      const receiver = playersRef.current[giftSeat];
+      pushGiftLine(
+        { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl },
+        { id: `seat-${giftSeat}`, name: receiver?.name ?? "", photoUrl: receiver?.photoUrl ?? "" },
+        { type: item.type, name: item.name, image: dialogImage(assets, item.image, 28, 28).src },
+      );
     },
     [assets, giftSeat],
   );

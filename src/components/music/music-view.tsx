@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { YouTubeFrame } from "@/components/music/youtube-player";
-import { finishMusic, setMusicMuted, setMusicVolume, type PlayingSong } from "@/lib/music-session";
+import { finishMusic, setMusicMuted, setMusicVolume, getSharedAudio, type PlayingSong } from "@/lib/music-session";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, X } from "lucide-react";
 
@@ -20,26 +20,40 @@ function backgroundImageSector(deg: number, bg: string, fg: string) {
 
 /** HTMLAudioPlayer: plays the catalogue url from the shared start time. */
 function HtmlAudio({ url, startPosition, muted, volume, onReady, onProgress, onComplete }: { url: string; startPosition: number; muted: boolean; volume: number; onReady: () => void; onProgress: (s: number) => void; onComplete: () => void }) {
-  const ref = useRef<HTMLAudioElement>(null);
   const [playing,setPlaying] = useState(false);
   const [failed,setFailed] = useState(false);
+  const cb = useRef({ onReady, onProgress, onComplete });
+  cb.current = { onReady, onProgress, onComplete };
   useEffect(() => {
-    const a = ref.current;
+    const a = getSharedAudio();
     if (!a) return;
-    const ready = () => { try { a.currentTime = startPosition; } catch { /* ignore */ } onReady(); };
-    const time = () => onProgress(a.currentTime);
-    a.addEventListener("loadedmetadata", ready, { once: true });
-    a.addEventListener("timeupdate", time);
-    a.addEventListener("ended", onComplete);
-    a.play().catch(() => setPlaying(false));
-    return () => { a.pause(); a.removeEventListener("timeupdate", time); a.removeEventListener("ended", onComplete); };
+    if (a.src !== url) a.src = url;
+    const ready = () => { try { if (startPosition > 1) a.currentTime = startPosition; } catch { /* ignore */ } cb.current.onReady(); };
+    const time = () => cb.current.onProgress(a.currentTime);
+    const ended = () => cb.current.onComplete();
+    const onPlay = () => { setPlaying(true); setFailed(false); };
+    const onPause = () => setPlaying(false);
+    const onError = () => setFailed(true);
+    if (a.readyState >= 1) ready(); else a.addEventListener("loadedmetadata", ready, { once: true });
+    a.addEventListener("timeupdate", time); a.addEventListener("ended", ended);
+    a.addEventListener("play", onPlay); a.addEventListener("pause", onPause); a.addEventListener("error", onError);
+    setPlaying(!a.paused);
+    if (a.paused) void a.play().catch(() => setPlaying(false));
+    // If the browser still blocked playback, the first tap anywhere starts it.
+    const resume = () => { if (a.paused && !a.ended) void a.play().catch(() => {}); };
+    document.addEventListener("pointerdown", resume, true);
+    return () => {
+      a.pause();
+      document.removeEventListener("pointerdown", resume, true);
+      a.removeEventListener("loadedmetadata", ready); a.removeEventListener("timeupdate", time); a.removeEventListener("ended", ended);
+      a.removeEventListener("play", onPlay); a.removeEventListener("pause", onPause); a.removeEventListener("error", onError);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
-  useEffect(() => { if (ref.current) { ref.current.muted = muted; ref.current.volume = volume; } }, [muted, volume]);
+  useEffect(() => { const a = getSharedAudio(); if (a) { a.muted = muted; a.volume = volume; } }, [muted, volume]);
   return <>
-    <audio ref={ref} src={url} className="music__html-audio--hidden" preload="auto" onPlay={()=>{setPlaying(true);setFailed(false);}} onPause={()=>setPlaying(false)} onError={()=>setFailed(true)} />
     <Button variant="ghost" className="music-play-toggle" aria-label={playing ? "Müziği duraklat" : failed ? "Müziği yeniden dene" : "Müziği oynat"} title={playing ? "Duraklat" : "Oynat"} onClick={()=>{
-      const audio=ref.current; if(!audio)return;
+      const audio=getSharedAudio(); if(!audio)return;
       if(playing)audio.pause();else {if(failed){audio.load();setFailed(false);}void audio.play().catch(()=>setPlaying(false));}
     }}>{playing ? <Pause size={18}/> : <Play size={18}/>}</Button>
   </>;

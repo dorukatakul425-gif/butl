@@ -37,7 +37,21 @@ export function OriginalChatPanel() {
     <section className="original-chat chat" aria-label="Sohbet">
       <div ref={scrollRef} className="original-chat-scroll chat__scroll">
         <div className="chat__body">
-          {session.lines.map((line) => (
+          {session.lines.map((line) => line.kind === "gift" ? (
+            <div key={line.key} className="chat__info chat__noselect">
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
+              <img className="chat__gift" src={line.image} width={28} height={28} title={line.name} alt="" crossOrigin="anonymous" />
+              {line.count > 1 && <div className="chat__count"><div className="chat__icon chat__icon--count" />{line.count}</div>}
+              <div className="chat__icon chat__icon--arrows" />
+              <div className="chat__multigift-receivers">
+                {line.receivers.map((u) => (
+                  <div key={u.id} className="chat__multigift-photo-wrapper">
+                    <div className="chat__photo chat__multigift-photo" style={{ backgroundImage: `url('${u.photoUrl}')` }} title={u.name} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
             <div key={line.key} className="chat__info chat__noselect">
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
               <div className="chat__icon chat__icon--music" />
