@@ -49,7 +49,7 @@ function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; it
     timer.current = window.setTimeout(() => el.classList.remove("send-gift__item--active"), 500);
   };
   return (
-    <div ref={ref} className={cls("item")} title={item.name} onClick={activate} onPointerEnter={() => onPreload(item)} onPointerDown={() => onPreload(item)} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
+    <div ref={ref} className={`${cls("item")} touch-manipulation`} title={item.name} onClick={activate} onPointerEnter={() => onPreload(item)} onPointerDown={() => onPreload(item)} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
       <div className={cls("image-block")}>
         <img className={cls("image", [item.lock && "locked"])} draggable={false} src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" loading="lazy" decoding="async" />
       </div>

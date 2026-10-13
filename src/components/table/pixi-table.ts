@@ -446,12 +446,13 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     const sender = seats[from];
     const receiver = seats[to];
     if (!sender || !receiver) return;
+    // Optional audio must never hold up a gift flight (slow CDN / suspended audio context).
+    void options.prepareSfx?.(gift.startSound)?.catch(() => {});
+    void options.prepareSfx?.(gift.finishSound)?.catch(() => {});
     const [flyView, stickView] = await Promise.all([
       createGiftView(assets, gift.flyImage, gift.spine, false, tableSize()),
       !gift.spine && gift.stickImage !== gift.flyImage ? createGiftView(assets, gift.stickImage, undefined, true, tableSize()) : undefined,
       gift.vfx ? effects.preload(gift.vfx) : undefined,
-      options.prepareSfx?.(gift.startSound)?.catch(() => {}),
-      options.prepareSfx?.(gift.finishSound)?.catch(() => {}),
     ]);
     if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
     // Upload in the background: the flight starts immediately, textures upload on first render.

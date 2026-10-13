@@ -73,14 +73,12 @@ export function TableSeats() {
     tableRef.current?.setPlayer(VIEWER_SEAT, viewer);
   }, [assets, decor.frame, decor.stone]);
 
-  // Warm the sounds and visuals of the store gifts once the drawer opens, so every send starts instantly.
+  // Warm sounds on open; visible/pointed gift items preload their own visuals.
+  // Parsing the entire catalogue here competes with rapid sends on slower phones.
   useEffect(() => {
     if (giftSeat === null || !assets) return;
     const ids = new Set(giftItems.flatMap((item) => [...item.gift.startSounds, ...item.gift.finishSounds]));
     ids.forEach((id) => preloadSfx(assets.sfxUrl, id));
-    giftItems.forEach((item) => {
-      if (!item.lock) void tableRef.current?.preloadGift(item.gift).catch(() => {});
-    });
   }, [giftSeat, assets, giftItems]);
 
   const send = useCallback(
