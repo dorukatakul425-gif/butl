@@ -9,19 +9,11 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Keep the GitHub game on the index route and isolate Pixi/Spine imports behind dynamic browser loading, so the table remains SSR-safe.
-- Load gesture order, images, prices and skeleton timing through the existing public asset manifest; scheduled entries and spending require an authenticated game-session adapter, so previews never grant VIP or spend fictitious currency.
-- Keep source-derived profile presentation separate from account actions; show unknown statistics and a setup-needed state until verified profile/session data exists, while local music, decor and gift navigation remain available.
-- Route chat reads, sends, translations, moderation and balances through the authenticated game-session adapter; presentation must not invent server results.
-- Share gift texture preparation promises but never wait for GPU warm-up to start each click's independent animation, so repeated clicks do not batch.
-- Derive the game shell from the visual viewport and safe-area insets, so mobile keyboard/browser controls do not cover the composer.
-- Cloud Auth owns accounts; keep one root identity subscriber, profile presentation in a provider, and named protected home under the managed client-only gate while the public index remains the game with inline sign-in.
-- Shared room membership and rounds are transactional database RPCs; subscribe and reconcile stored room/chat/event state, never simulate other players or decisions.
-- Item purchases require authenticated server validation against the public source manifest and a service-only atomic wallet/event transaction; clients cannot mint currency, VIP, prices or eligibility.
-- Profile photos use private storage with owner-scoped writes and signed reads; room animation samples server start times and turn counts to synchronize late joins.
-- Normalize username credentials through one deterministic internal address helper; resolve legacy names and numeric player IDs only on the server and never return account addresses, so existing accounts retain access without exposing emails.
-- Complete first-entry profile setup through an owner-scoped RPC before mounting the live room; round RPCs enforce completed opposite-gender participants, so UI hiding cannot bypass eligibility.
-- Apply confirmed round RPC responses and room-state events directly to React state; cache signed avatar URLs until expiry, so round controls do not wait on unrelated photo/chat reads.
-- Change tables through an authenticated transactional RPC and restart the room subscription after confirmation; never navigate icons to their image assets.
-- Share the pure table-layout calculation between Pixi and bottle overlays to anchor the lowest seat to the chat boundary consistently.
-- Cache only resolved public purchase catalogues briefly on the server; keep every click's authenticated spending transaction independent and never cache user eligibility or results.
+- Keep downloaded game media in CDN asset pointers and compose the table in the index route with a dedicated original header component using source-derived order and dimensions, so original artwork stays separate from presentation.
+- Load live decor dialog images from the source's DPR-selected dialog bundles and table animations from its size-selected table bundles; store thumbnails are not available in table bundles.
+- Keep the decor presenter, source-derived dialog, and browser-only Pixi/Spine table renderer separate so server rendering never imports browser graphics code.
+- Gift sending ports GiftAnimations/Gift/SendGiftDialog from the source: gift data, images, spines and sounds load live from the game servers, and gift views are fully loaded before the flight starts so animations never hitch.
+- Preserve intrinsic gift image sizing inside an outer animation container; geometry and combo thresholds live in browser-safe modules, while original particle configs stay in the browser-only effect renderer. This prevents flight scaling from overriding server image dimensions and keeps rendering out of SSR.
+- Chat music/video ports MusicListDialog, MusicPreviewDialog, MusicViewPreact and the Ciliz music/YouTube services; catalogues and playback load live from the game servers, and the shared playing-song state lives in a browser-safe store so the chat line, media panel and player stay in sync.
+- Keep bottle catalogues and selected state browser-safe, render live Bottle3d maps with the original lighting shader only in the lazy Pixi renderer, and run local bot rounds separately from remote game services so simulated play is not represented as live multiplayer.
+- Gate startup on actual manifest, renderer, bottle, icon and splash-artwork readiness with a browser-safe loading store; retain original inline SVG fallbacks for controls, splash and particles so CDN failures never silently remove original artwork or effects.

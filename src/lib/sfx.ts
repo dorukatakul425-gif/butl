@@ -1,15 +1,7 @@
-import { useSyncExternalStore } from "react";
 // SfxPresenter: sounds come from the game's sfx bundle as `${id}.mp3`.
 // Decoded once with Web Audio so repeated gifts never stall the page.
 let ctx: AudioContext | null = null;
 const buffers = new Map<string, Promise<AudioBuffer | null>>();
-let volume = 1;
-const volumeListeners = new Set<() => void>();
-/** SettingsPresenter sounds slider: preferences.sfxVolume. */
-export function setSfxVolume(v: number) { volume = v; volumeListeners.forEach((l) => l()); }
-export function useSfxVolume() {
-  return useSyncExternalStore((l) => { volumeListeners.add(l); return () => volumeListeners.delete(l); }, () => volume, () => 1);
-}
 const raw = new Map<string, Promise<ArrayBuffer | null>>();
 
 export function sfxUrl(template: string, id: string) {
@@ -70,15 +62,13 @@ export function unlockSfx() {
 }
 
 export async function playSfx(template: string, id: string) {
-  if (!id || volume <= 0) return;
+  if (!id) return;
   const ac = context();
   const buffer = await decoded(sfxUrl(template, id));
   if (!ac || !buffer) return;
   const source = ac.createBufferSource();
   source.buffer = buffer;
-  const gain = ac.createGain();
-  gain.gain.value = volume;
-  source.connect(gain).connect(ac.destination);
-  source.onended = () => { source.disconnect(); gain.disconnect(); };
+  source.connect(ac.destination);
+  source.onended = () => source.disconnect();
   source.start();
 }

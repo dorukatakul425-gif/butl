@@ -1,3 +1,0 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { AuthScreen } from '@/components/account/auth-screen';
-export const Route = createFileRoute('/auth')({ head: () => ({ meta: [{ title: 'Giriş & Kayıt | Şişe Çevirmece' }, { name: 'description', content: 'Kullanıcı adın veya oyuncu ID’nle giriş yap; e-posta olmadan oyuncu hesabını oluştur.' }, { property: 'og:title', content: 'Giriş & Kayıt | Şişe Çevirmece' }, { property: 'og:description', content: 'Hesabını oluştur, gerçek oyuncularla masaya katıl.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }), component: AuthScreen });

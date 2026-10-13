@@ -67,5 +67,5 @@ export function buildDecorItems(assets: CilizAssets, viewer: DecorViewer): Decor
 
 /** DecorSelectionViewModel.find(): the item matching an applied (frame, stone) pair. */
 export function findDecorItem(items: DecorItem[], frame = "", stone = "") {
-  return items.find((item) => (item.frame?.type || "") === frame && (item.stone?.type || "") === stone) ?? items[0];
+  return items.find((item) => (item.frame?.type || "") === frame && (item.stone?.type || "") === stone) ?? items[0]!;
 }

@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import type { GiftStoreItem } from "@/lib/gifts";
-import { Button } from "@/components/ui/button";
 
 // Markup and class names ported from SendGiftDialog.tsx (giftType 'gift', html5 layout) and Dialog.Header.
 const bem = (block: string) => (element?: string, mods: Array<string | false | undefined> = []) => {
@@ -20,7 +19,6 @@ export interface SendGiftDialogProps {
   onSend: (item: GiftStoreItem) => void;
   onPreload: (item: GiftStoreItem) => void;
   onClose: () => void;
-  onProfile: () => void;
 }
 
 function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; item: GiftStoreItem; onSend: (item: GiftStoreItem) => void; onPreload: (item: GiftStoreItem) => void }) {
@@ -70,7 +68,7 @@ function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; it
   );
 }
 
-export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose, onProfile }: SendGiftDialogProps) {
+export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose }: SendGiftDialogProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -138,7 +136,6 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
           </div>
         </div>
         <div className={`popup__header ${cls("x_header")}`}>
-          <Button variant="ghost" className="send-gift__btn send-gift__btn--profile gesture-profile" title="Oyuncu profili" aria-label="Oyuncu profili" onClick={onProfile} />
           <div className={`popup__title popup__title--left ${cls("x_popup__title")}`}>
             <div>
               <div className={cls("gift-title")}>{title.charAt(0).toLocaleUpperCase("tr") + title.slice(1)}</div>
