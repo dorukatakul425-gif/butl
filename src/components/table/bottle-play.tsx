@@ -5,6 +5,7 @@ import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { playSfx, preloadSfx, unlockSfx } from "@/lib/sfx";
 import { BottleIcon, preloadBottleIcon } from "./bottle-icon";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
+import { addViewerKiss } from "@/lib/viewer-progress";
 import kissUp from "@/assets/ui_arrow_kiss_up.svg.asset.json";
 import kissDown from "@/assets/ui_arrow_kiss_down.svg.asset.json";
 import refuseUp from "@/assets/ui_arrow_refuse_up.svg.asset.json";
@@ -83,6 +84,8 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
   },[round,remaining]);
   useEffect(() => {
     if(round.phase!=="result")return;
+    // Mutual kiss with the viewer counts toward totalKisses (kiss-locked gifts).
+    if((round.spinner===VIEWER||round.target===VIEWER) && round.decisions[round.spinner]==="kiss" && round.decisions[round.target]==="kiss") addViewerKiss();
     const timer=window.setTimeout(()=>{
       setRound(prev=>({...prev,phase:"return",decisions:{}}));
     },2000);

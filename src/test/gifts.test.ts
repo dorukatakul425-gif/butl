@@ -41,8 +41,16 @@ describe("gifts from the game server", () => {
   });
   it("locks vip and kiss-gated gifts until the viewer qualifies", () => {
     const a = { ...assets, giftStore: [{ id: "rose", vip_s: true }, { id: "air_kiss", kisses_s: 20 }] } as unknown as CilizAssets;
-    expect(buildGiftItems(a, "ok").map((i) => i.lock)).toEqual([{ kind: "vip" }, { kind: "kisses", need: 20 }]);
+    expect(buildGiftItems(a, "ok").map((i) => i.lock)).toEqual([{ kind: "kisses", need: 20 }, { kind: "vip" }]);
     expect(buildGiftItems(a, "ok", { kisses: 20, vip: true }).map((i) => i.lock)).toEqual([undefined, undefined]);
+  });
+  it("unlocks a kiss gift for a non-VIP viewer at exactly the needed kisses", () => {
+    const a = { ...assets, giftStore: [{ id: "rose", vip_s: true }, { id: "air_kiss", kisses_s: 20 }] } as unknown as CilizAssets;
+    expect(buildGiftItems(a, "ok", { kisses: 19, vip: false }).find(i => i.type === "air_kiss")?.lock).toEqual({ kind: "kisses", need: 20 });
+    const open = buildGiftItems(a, "ok", { kisses: 20, vip: false });
+    expect(open.map(i => i.type)).toEqual(["air_kiss", "rose"]);
+    expect(open[0]?.lock).toBeUndefined();
+    expect(open[1]?.lock).toEqual({ kind: "vip" });
   });
   it("hides scheduled, other-network and birthday entries", () => {
     expect(buildGiftItems(assets, "ok").map((i) => i.type)).toEqual(["rose", "air_kiss"]);

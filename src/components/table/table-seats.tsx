@@ -11,6 +11,8 @@ import { closedTarget, giftReceivers, openFor, seatSelection, selectGender, setS
 import { pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
+import { useViewerProgress } from "@/lib/viewer-progress";
+import { SourceGiftLockedDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT } from "@/components/source-dialogs";
 
 export interface SeatPlayer {
   name: string;
@@ -37,7 +39,14 @@ export function TableSeats() {
   const [activeTable, setActiveTable] = useState<PixiTable | null>(null);
   const [gesturesOpen, setGesturesOpen] = useState(false);
 
-  const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: 0, vip: true }) : []), [assets]);
+  const progress = useViewerProgress();
+  const [lockedGift, setLockedGift] = useState<GiftStoreItem | null>(null);
+  const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: progress.kisses, vip: progress.vip }) : []), [assets, progress.kisses, progress.vip]);
+  const gestureAccount = useMemo(() => ({ userId: "viewer", kisses: progress.kisses, vip: progress.vip, tokens: 0, social: VIEWER_STORE.social, platform: "web", scheduled: [] }), [progress.kisses, progress.vip]);
+  // GiftLockedPresenter.showKiss: the open dialog follows totalKisses and closes once reached.
+  useEffect(() => {
+    if (lockedGift?.lock?.kind === "kisses" && progress.kisses >= lockedGift.lock.need) setLockedGift(null);
+  }, [lockedGift, progress.kisses]);
 
   useEffect(() => {
     if (!assets || !hostRef.current) return;
@@ -131,6 +140,7 @@ export function TableSeats() {
         <GestureDialog
           open={gesturesOpen}
           assets={assets}
+          account={gestureAccount}
           onClose={() => setGesturesOpen(false)}
           onPreview={async item => {
             const table = tableRef.current;
@@ -148,10 +158,22 @@ export function TableSeats() {
           onSend={send}
           onPreload={preload}
           onClose={close}
+          onLocked={setLockedGift}
           selective={target.selective}
           multiselect={multiselect}
         />
       )}
+      {assets && lockedGift?.lock && (() => {
+        const t = (key: string) => translate(assets, key);
+        const vip = lockedGift.lock.kind === "vip";
+        return <SourceGiftLockedDialog kind="gift" image={dialogImage(assets, lockedGift.image, 60, 60)}
+          title={vip ? t("dlg:locked:vip:title") : t("dlg:locked_gift:title")}
+          description={vip ? t("dlg:locked_gift:vip:desc") : t("dlg:locked:kiss:desc")}
+          {...(lockedGift.lock.kind === "kisses" ? { lock: { type: "kisses" as const, needed: lockedGift.lock.need, current: progress.kisses } } : {})}
+          onClose={() => setLockedGift(null)}
+          cancel={{ title: t("dlg:navigate_vip:btn"), onClick: () => setLockedGift(null) }}
+          info={{ title: t("mobile:vip:know"), onClick: () => { setLockedGift(null); setTarget(closedTarget); window.dispatchEvent(new CustomEvent(vip ? OPEN_VIP_EVENT : OPEN_TOPS_EVENT, { detail: "total_kisses" })); } }} />;
+      })()}
     </>
   );
 }

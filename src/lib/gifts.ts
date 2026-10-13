@@ -74,8 +74,10 @@ export function buildGiftItems(assets: CilizAssets, social: string, viewer: Gift
       image: gift.storeImage,
       price: gift.storePrice,
       gift,
-      lock: entry.vip_s && !viewer.vip ? { kind: "vip" } : entry.kisses_s && viewer.kisses < entry.kisses_s ? { kind: "kisses", need: entry.kisses_s } : undefined,
+      lock: entry.kisses_s && viewer.kisses < entry.kisses_s ? { kind: "kisses", need: entry.kisses_s } : entry.vip_s && !viewer.vip ? { kind: "vip" } : undefined,
     });
   }
-  return items;
+  // GiftStore.build(): opened, then kiss-locked, then VIP-locked groups.
+  const rank = (i: GiftStoreItem) => (i.lock ? (i.lock.kind === "kisses" ? 1 : 2) : 0);
+  return items.map((item, index) => ({ item, index })).sort((a, b) => rank(a.item) - rank(b.item) || a.index - b.index).map(x => x.item);
 }

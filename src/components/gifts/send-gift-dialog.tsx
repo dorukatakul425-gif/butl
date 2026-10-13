@@ -19,11 +19,12 @@ export interface SendGiftDialogProps {
   onSend: (item: GiftStoreItem) => void;
   onPreload: (item: GiftStoreItem) => void;
   onClose: () => void;
+  onLocked?: (item: GiftStoreItem) => void;
   selective?: boolean;
   multiselect?: { title: string; onSelectState: (on: boolean) => void; onSelectMen: () => void; onSelectWomen: () => void };
 }
 
-function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; item: GiftStoreItem; onSend: (item: GiftStoreItem) => void; onPreload: (item: GiftStoreItem) => void }) {
+function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: CilizAssets; item: GiftStoreItem; onSend: (item: GiftStoreItem) => void; onPreload: (item: GiftStoreItem) => void; onLocked?: ((item: GiftStoreItem) => void) | undefined }) {
   const ref = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
   const img = dialogImage(assets, item.image, 60, 60);
@@ -42,7 +43,7 @@ function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; it
     return () => { observer.disconnect(); window.clearTimeout(timer); };
   }, [item, onPreload]);
   const activate = () => {
-    if (item.lock) return;
+    if (item.lock) { onLocked?.(item); return; }
     onSend(item);
     const el = ref.current;
     if (!el) return;
@@ -70,7 +71,7 @@ function GiftItem({ assets, item, onSend, onPreload }: { assets: CilizAssets; it
   );
 }
 
-export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose, selective = false, multiselect }: SendGiftDialogProps) {
+export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose, onLocked, selective = false, multiselect }: SendGiftDialogProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -173,7 +174,7 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
         <div className={`popup__content popup__content--no-padding ${cls("x_popup__content")}`} style={{ flex: 1 }}>
           <div ref={listRef} className={cls("", ["gift"])}>
             {items.map((item) => (
-              <GiftItem key={item.type} assets={assets} item={item} onSend={onSend} onPreload={onPreload} />
+              <GiftItem key={item.type} assets={assets} item={item} onSend={onSend} onPreload={onPreload} onLocked={onLocked} />
             ))}
           </div>
         </div>
