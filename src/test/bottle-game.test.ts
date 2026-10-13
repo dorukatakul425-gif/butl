@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE, SPIN_SECONDS, TABLE_SEATS, eligibleTargets, leftRight, pickTarget, spinAngle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible } from "@/lib/bottle-game";
+import { CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE, SPIN_SECONDS, TABLE_SEATS, eligibleTargets, leftRight, pickTarget, spinAngle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, spinDelayMs } from "@/lib/bottle-game";
 
 describe("source-derived bottle game geometry", () => {
+  it("spins the bottle automatically 9 seconds into the viewer's turn", () => {
+    expect(spinDelayMs(5,5)).toBe(9000);
+    expect(spinDelayMs(4,5,0)).toBe(1400);
+  });
   it("removes decision arrows as soon as the players start returning", () => {
     expect(decisionArrowsVisible("choose")).toBe(true);
     expect(decisionArrowsVisible("result")).toBe(true);

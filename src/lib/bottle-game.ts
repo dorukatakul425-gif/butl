@@ -11,6 +11,11 @@ export const CENTER_SECONDS = 1;
 export const RETURN_SECONDS = 0.5;
 export const CENTER_PLAYER_SCALE = 69 / 64;
 export const DECISION_SECONDS = 9;
+/** When the viewer does not tap, the bottle spins itself after this many seconds. */
+export const AUTO_SPIN_SECONDS = 9;
+export function spinDelayMs(spinner: number, viewer: number, random = Math.random()) {
+  return spinner === viewer ? AUTO_SPIN_SECONDS * 1000 : 1400 + random * 1400;
+}
 export function decisionArrowsVisible(phase: string) { return phase === "choose" || phase === "result"; }
 export function decisionTimerVisible(phase: string, participating: boolean, decided: boolean) {
   return phase === "choose" && (!participating || !decided);

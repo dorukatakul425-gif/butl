@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { leftRight, pickTarget, useBottle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, DECISION_SECONDS, type Decision } from "@/lib/bottle-game";
+import { leftRight, pickTarget, useBottle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, DECISION_SECONDS, spinDelayMs, type Decision } from "@/lib/bottle-game";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { playSfx, preloadSfx, unlockSfx } from "@/lib/sfx";
 import { BottleIcon, preloadBottleIcon } from "./bottle-icon";
@@ -33,7 +33,14 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     void Promise.all([kissUp,kissDown,refuseUp,refuseDown,kissButton,refuseButton,rollBig,rollSmall].map(asset => preloadBottleIcon(asset.url)))
       .then(() => completeLoadingStage("icons"), failGameLoading);
   },[]);
-  useEffect(() => { preloadSfx(assets.sfxUrl, "ding"); }, [assets.sfxUrl]);
+  useEffect(() => {
+    preloadSfx(assets.sfxUrl, "ding");
+    // Browsers keep audio suspended until a gesture; unlock on the first touch so the turn ding is instant.
+    const unlock = () => unlockSfx();
+    window.addEventListener("pointerdown", unlock, {once:true});
+    window.addEventListener("keydown", unlock, {once:true});
+    return () => { window.removeEventListener("pointerdown", unlock); window.removeEventListener("keydown", unlock); };
+  }, [assets.sfxUrl]);
   useEffect(() => {
     const sound = turnOfferSound(round.phase, round.spinner, VIEWER, ready);
     if (sound) void playSfx(assets.sfxUrl, sound);
@@ -64,8 +71,8 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     });
   };
   useEffect(() => {
-    if (round.phase!=="offer" || round.spinner===VIEWER || !ready) return;
-    const timer = window.setTimeout(spin,1400+Math.random()*1400);
+    if (round.phase!=="offer" || !ready) return;
+    const timer = window.setTimeout(spin,spinDelayMs(round.spinner,VIEWER));
     return ()=>window.clearTimeout(timer);
   },[round.phase,round.spinner,ready]);
   useEffect(() => {
