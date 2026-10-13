@@ -52,16 +52,29 @@ function applyRoom(room: RoomRow) {
   syncMusic();
 }
 
+let rejoining = false;
 async function loadPlayers() {
   const sb = getSupabase();
   if (!sb || state.roomId === null) return;
-  const { data } = await sb.from("room_players").select("seat, profiles(*)").eq("room_id", state.roomId);
+  const roomId = state.roomId;
+  const { data, error } = await sb.from("room_players").select("seat, user_id, profiles(*)").eq("room_id", roomId);
+  if (error || state.roomId !== roomId) return;
+  const rows = (data ?? []) as unknown as Array<{ seat: number; user_id: string; profiles: Profile | null }>;
+  const uid = (await sb.auth.getSession()).data.session?.user.id;
+  if (state.roomId !== roomId) return;
+  const mine = rows.find(r => r.user_id === uid);
+  // The server dropped our seat (tab slept, network lost): take a seat again instead of watching a ghost table.
+  if (!mine) { if (uid && !rejoining) { rejoining = true; void joinRoom().finally(() => { rejoining = false; }); } return; }
+  const mySeat = mine.seat;
   const players: Array<Profile | null> = Array(12).fill(null);
-  for (const row of (data ?? []) as unknown as Array<{ seat: number; profiles: Profile | null }>) {
-    if (row.profiles) players[toDisplay(row.seat, state.mySeat)] = row.profiles;
-  }
-  set({ players });
+  for (const row of rows) if (row.profiles) players[toDisplay(row.seat, mySeat)] = row.profiles;
+  set({ players, mySeat });
 }
+
+/** True when the server seat is occupied by a loaded player. */
+export function seatOccupied(serverSeat: number | null) { return serverSeat !== null && Boolean(state.players[toDisplay(serverSeat, state.mySeat)]); }
+/** Asks the server to fix a stale round right away (e.g. the spinner left). */
+export function nudgeRoom() { const sb = getSupabase(); if (sb && state.roomId !== null) void sb.rpc("room_tick", { p_room: state.roomId }); }
 
 export function profileBySeat(display: number) { return state.players[display] ?? null; }
 export function displaySeatOf(userId: string) { return state.players.findIndex(p => p?.id === userId); }
@@ -99,7 +112,7 @@ async function joinRoomNow() {
     .subscribe();
   // Server owns timing; any seated client nudges expired phases forward.
   timers.push(window.setInterval(() => void sb.rpc("room_tick", { p_room: roomId }), 1000));
-  timers.push(window.setInterval(() => void sb.rpc("heartbeat"), 15000));
+  timers.push(window.setInterval(() => void sb.rpc("heartbeat"), 5000));
   timers.push(window.setInterval(() => void loadPlayers(), 5000));
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { leftRight, useBottle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, DECISION_SECONDS, type Decision } from "@/lib/bottle-game";
-import { decide as decideRpc, spinBottle, toDisplay, useRoom } from "@/lib/room-session";
+import { decide as decideRpc, nudgeRoom, spinBottle, toDisplay, useRoom } from "@/lib/room-session";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { playSfx, preloadSfx, unlockSfx } from "@/lib/sfx";
 import { BottleIcon, preloadBottleIcon } from "./bottle-icon";
@@ -33,6 +33,11 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     target: srv.target === null ? -1 : toDisplay(srv.target, live.mySeat),
     decisions: Object.fromEntries(Object.entries(srv.decisions ?? {}).map(([seat, d]) => [toDisplay(Number(seat), live.mySeat), d])),
   } : {phase:"offer",spinner:-1,target:-1,decisions:{}};
+  // Never point at an empty chair: a spinner/target missing from the table is stale server state.
+  const spinnerHere = round.spinner>=0 && Boolean(live.players[round.spinner]);
+  const targetHere = round.target<0 || Boolean(live.players[round.target]);
+  const stale = srv !== null && srv.spinner !== null && (!spinnerHere || !targetHere);
+  useEffect(() => { if (stale) nudgeRoom(); }, [stale, srv?.spinner, srv?.target]);
   const [remaining,setRemaining] = useState(DECISION_SECONDS);
   const [bottleError,setBottleError] = useState(false);
   const [ready,setReady] = useState(false);
@@ -71,7 +76,7 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
   const roundNo = srv?.round ?? 0;
   // Animations follow server phases; a late joiner skips the part already over.
   useEffect(() => {
-    if (round.phase==="spin" && animated.current.spun!==roundNo && round.spinner>=0 && round.target>=0) {
+    if (round.phase==="spin" && animated.current.spun!==roundNo && round.spinner>=0 && round.target>=0 && live.players[round.target]) {
       animated.current.spun = roundNo; animated.current.from = round.spinner; animated.current.to = round.target;
       unlockSfx();
       void table.spinBottle(round.spinner, round.target);
@@ -85,7 +90,7 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
       void table.returnPlayers(animated.current.from, animated.current.to);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[round.phase, roundNo, table]);
+  },[round.phase, roundNo, table, Boolean(live.players[round.target])]);
   useEffect(() => {
     if(round.phase!=="choose") return;
     const tick = () => setRemaining(Math.max(0, DECISION_SECONDS - Math.floor((Date.now()-live.phaseReceivedAt)/1000)));
@@ -105,11 +110,11 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     void decideRpc(decision==="kiss");
   };
   return <div ref={overlay} className="bottle-play-overlay" aria-label="Şişe oyunu" data-phase={round.phase} data-spinner={round.spinner} data-target={round.target}>
-    {round.phase==="offer" && round.spinner===VIEWER && <>
+    {!stale && round.phase==="offer" && round.spinner===VIEWER && <>
       <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={!ready} onClick={spin} />
       <BottleIcon className="bottle-roll-big" src={rollBig.url} alt="" /><span className="bottle-roll-text">{translate(assets,"game:spin")}</span>
     </>}
-    {round.phase==="offer" && round.spinner!==VIEWER && round.spinner>=0 && offer && <>
+    {!stale && round.phase==="offer" && round.spinner!==VIEWER && spinnerHere && offer && <>
       <BottleIcon className="bottle-roll-small" src={rollSmall.url} alt="" style={{left:offer[0],top:offer[1],transform:`translate(-50%,-50%) rotate(${offer[2]}deg)`}} />
       <span className="bottle-small-text" style={{left:offer[3],top:offer[4]}}>{translate(assets,"game:spins")}</span>
     </>}
