@@ -6,14 +6,16 @@ import tops from "@/assets/original-menu-tops.svg.asset.json";
 import bottle from "@/assets/original-menu-bottle.svg.asset.json";
 import decor from "@/assets/original-menu-decor.svg.asset.json";
 import boosters from "@/assets/original-menu-boosters.svg.asset.json";
+import { useCilizAssets } from '@/components/decor/decor-selection';
+import { translate } from '@/lib/ciliz-assets';
 
 // MiscMenuPresenter order, MiscMenuDialog geometry and the live assets.json Turkish strings.
 const items = [
-  { id: "achievements", title: "Başarılar", icon: achievements.url },
-  { id: "tops", title: "Puanlar", icon: tops.url },
-  { id: "bottle", title: "Şişe", icon: bottle.url },
-  { id: "decor", title: "Stil", icon: decor.url },
-  { id: "boosters", title: "Booster'lar", icon: boosters.url },
+  { id: "achievements", title: "Başarılar", key: 'table:hint:achievement', icon: achievements.url },
+  { id: "tops", title: "Puanlar", key: 'table:hint:top', icon: tops.url },
+  { id: "bottle", title: "Şişe", key: 'table:menu:change_bottle', icon: bottle.url },
+  { id: "decor", title: "Stil", key: 'table:menu:decor', icon: decor.url },
+  { id: "boosters", title: "Booster'lar", key: 'table:menu:boosters', icon: boosters.url },
 ] as const;
 
 interface OriginalMiscMenuProps {
@@ -24,6 +26,7 @@ interface OriginalMiscMenuProps {
 }
 
 export function OriginalMiscMenu({ open, triggerRef, onClose, onSelect }: OriginalMiscMenuProps) {
+  const assets = useCilizAssets();
   const [mounted, setMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -105,8 +108,8 @@ export function OriginalMiscMenu({ open, triggerRef, onClose, onSelect }: Origin
     >
       {items.map((item) => (
         <Button key={item.id} type="button" variant="ghost" className="original-misc-menu-item" onClick={() => { onClose(); onSelect?.(item.id); }}>
-          <span className="original-misc-menu-icon"><img src={item.icon} alt="" className={`original-misc-menu-image--${item.id}`} /></span>
-          {item.title}
+          <span className="original-misc-menu-icon"><span aria-hidden="true" className={`original-misc-menu-image--${item.id}`} /></span>
+          {assets ? translate(assets, item.key) : item.title}
         </Button>
       ))}
     </div>,

@@ -9,11 +9,13 @@ import { VIEWER_STORE } from "@/lib/viewer";
 export function BottleSelection({ open, onClose }: { open: boolean; onClose: () => void }) {
   const assets = useCilizAssets();
   const active = useBottle();
+  const [notice, setNotice] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{top: number; left: number; width: number} | null>(null);
   const items = useMemo(() => assets ? bottleItems(assets, VIEWER_STORE.social) : [], [assets]);
   useEffect(() => {
     if (!open) return;
+    setNotice('');
     const place = () => {
       const chat = document.querySelector(".original-chat")?.getBoundingClientRect();
       setBox({top: chat?.top ?? window.innerHeight/2, left: chat?.left ?? 0, width: chat?.width ?? window.innerWidth});
@@ -42,12 +44,19 @@ export function BottleSelection({ open, onClose }: { open: boolean; onClose: () 
       <div className="popup__content popup__content--no-padding send-gift__x_popup__content"><div ref={listRef} className="send-gift send-gift--bottle">
         {items.map(item => {
           const image = dialogImage(assets,item.bottle.image,60,60);
-          return <Button variant="ghost" key={item.bottle.type} className="send-gift__item bottle-store-item" aria-label={item.name} aria-pressed={active===item.bottle.type} disabled={item.locked} onClick={()=>{selectBottle(item.bottle.type);onClose();}}>
+          const locked = item.locked;
+          return <Button variant="ghost" key={item.bottle.type} className="send-gift__item bottle-store-item" aria-label={item.name} title={item.name} aria-pressed={active===item.bottle.type} onClick={()=>{
+            if (locked) { setNotice(translate(assets, 'dlg:locked_bottle:vip:desc')); return; }
+            if (active === item.bottle.type) { onClose(); return; }
+            if (item.bottle.storePrice > 0) { setNotice('Şişe satın alma henüz hesabınızda kullanıma açık değil. Bakiye değişmedi.'); return; }
+            selectBottle(item.bottle.type); onClose();
+          }}>
             <span className="send-gift__image-block"><img className="send-gift__image" src={image.src} width={image.width} height={image.height} alt="" /></span>
-            <span className={`send-gift__price${item.locked ? " bottle-store-lock" : ""}`}>{item.locked ? "VIP" : item.bottle.storePrice}</span>
+            <span className="send-gift__price">{locked ? <span className="send-gift__icon send-gift__icon--viplock" /> : <><span className="send-gift__icon send-gift__icon--heart" />{item.bottle.storePrice}</>}</span>
           </Button>;
         })}
       </div></div>
+      {notice && <p className="source-tops-notice" role="status">{notice}</p>}
     </div>
   </div>,document.body);
 }
