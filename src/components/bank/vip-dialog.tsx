@@ -1,3 +1,4 @@
+import { DatPrice } from "@/components/bank/dat-price";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
@@ -122,7 +123,7 @@ export function VipDialog({ assets, onClose }: { assets: CilizAssets; onClose: (
                   {o.isPopular && <div className="vip__popular">{t("bank:popular")}</div>}
                 </div>
                 <div role="button" className="button button--confirm vip__x_button" style={buttonWidth > 0 ? { width: buttonWidth } : undefined}
-                  onClick={() => showSourceToast("Ödeme sistemi henüz bağlı değil.")}>{`${o.price}/${o.term}`}</div>
+                  onClick={() => showSourceToast("Ödeme sistemi henüz bağlı değil.")}><DatPrice text={`${o.price}/${o.term}`} /></div>
               </div>)}
             </div>
           </div>

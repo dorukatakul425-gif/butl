@@ -1,3 +1,4 @@
+import { DatPrice } from "@/components/bank/dat-price";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { loadCilizAssets, translate, type CilizAssets } from "@/lib/ciliz-assets";
@@ -100,7 +101,7 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
                       {[1, 2, 3, 4].map((n) => <div key={n} className={cls("blick", [String(n)])} />)}
                     </div>
                   </div>
-                  <DialogButton title={opt.price} onClick={onClose} />
+                  <DialogButton title={<DatPrice text={opt.price} />} onClick={onClose} />
                 </div>
               ))}
             </div>

@@ -111,8 +111,8 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
           </div>
           <div className="user-profile__actions user-profile__actions--justify">
             {socialHref
-              ? <a className="user-profile__action user-profile__action--ok" href={socialHref} target="_blank" rel="noreferrer" aria-label="OK" />
-              : <div className="user-profile__action user-profile__action--ok user-profile__action--disabled" aria-label="OK" />}
+              ? <a className="user-profile__action user-profile__action--ok" href={socialHref} target="_blank" rel="noreferrer" aria-label="DAT" />
+              : <div className="user-profile__action user-profile__action--ok user-profile__action--disabled" aria-label="DAT" />}
             {self
               ? <Div className="user-profile__action user-profile__action--music" aria-label="Müzik" onClick={onMusic} />
               : <Div className="user-profile__action user-profile__action--gift" aria-label="Hediye" onClick={onGift} />}

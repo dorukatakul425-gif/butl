@@ -1108,3 +1108,6 @@
 a.user-profile__action { display: block; }
 .user-profile__owner-photo { background-size: cover; background-position: center; }
 .source-feature-layer .message-actions__x_popup { width: auto; min-width: 0; padding: 10px 15px; }
+
+/* DAT replaces the OK brand on the profile social button. */
+.user-profile .user-profile__action--ok{background:url("../assets/dat-coin.png") center/100% no-repeat !important}
