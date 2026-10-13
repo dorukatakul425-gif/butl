@@ -579,6 +579,15 @@
 .source-tops-layer .popup__close--dlg { top:5px; right:5px; width:24px; height:24px; padding:0; background:transparent; box-shadow:none; }
 .source-tops-layer .top-dlg__x_popup__close-icon { display:block; background-repeat:no-repeat; }
 .source-tops-layer .top-dlg__tab { display:block; }
+:root { --source-tops-confirm:#97ca31; }
+.source-tops-help-layer { position:fixed; inset:0; z-index:146; font-family:Arial,sans-serif; }
+.source-tops-help-popup { position:fixed; overflow:visible; color:var(--game-menu-text); outline:none; }
+.source-tops-help-popup .popup__header { min-height:44px; }
+.source-tops-help-popup .popup__title { white-space:normal; overflow-wrap:anywhere; line-height:17px; }
+.source-tops-help-popup .info__context { font-size:14px; line-height:normal; }
+.source-tops-help-popup .popup__content { min-height:0; }
+.source-tops-help-popup .popup__close--dlg { top:-10px; right:-10px; width:32px; height:32px; padding:0; }
+.source-tops-help-popup .button--confirm { height:30px; min-width:80px; padding:0 10px; background:var(--source-tops-confirm); color:var(--source-tops-color-3); font-size:14px; font-weight:normal; border-radius:7px; }
 .bottle-drawer .send-gift__x_popup__title { color:var(--game-menu-text); }
 .bottle-drawer .send-gift__price { display:flex; justify-content:center; align-items:center; gap:3px; }
 .bottle-drawer .send-gift__icon { display:inline-block; background-repeat:no-repeat; }
