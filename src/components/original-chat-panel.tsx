@@ -18,7 +18,7 @@ import { OPEN_GIFT_FOR_SEAT_EVENT, shouldScheduleVipTeaser, VIP_TEASER_DELAY, wi
 import { OPEN_VIP_EVENT, SourceInfoDialog } from "@/components/source-dialogs";
 
 const VIEWER_COUNTRY = "TR";
-const VIEWER_SENDER = { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl, musicLevel: 0 };
+const VIEWER_SENDER = { id: "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl, male: VIEWER.male, musicLevel: 0 };
 
 /** Original chat area: MediaPanel (video, music), chat body with info lines, input at bottom (source order). */
 export function OriginalChatPanel() {
@@ -37,6 +37,13 @@ export function OriginalChatPanel() {
   const [receiver, setReceiver] = useState<import("@/lib/music-session").ChatUser | undefined>();
   const [small, setSmall] = useState(false);
   const { vip } = useViewerProgress();
+  useEffect(() => {
+    const reply = (e: Event) => { setReceiver((e as CustomEvent).detail); inputRef.current?.focus(); };
+    const music = () => setListType("audio");
+    window.addEventListener("game-reply-to", reply);
+    window.addEventListener("source:open-music-list", music);
+    return () => { window.removeEventListener("game-reply-to", reply); window.removeEventListener("source:open-music-list", music); };
+  }, []);
   const sectionRef = useRef<HTMLElement>(null);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [emojiSize, setEmojiSize] = useState(0);
@@ -75,7 +82,7 @@ export function OriginalChatPanel() {
     window.setTimeout(() => { input?.focus(); input?.setSelectionRange(prefix.length + next.caret, prefix.length + next.caret); }, 0);
   };
   const doSend = (value: string) => {
-    if (pushTextLine({ ...VIEWER_SENDER, isViewer: true }, value, receiver)) {
+    if (pushTextLine({ ...VIEWER_SENDER, isViewer: true, isVip: vip }, value, receiver)) {
       window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: value }));
       setText(""); setReceiver(undefined); inputRef.current?.focus();
     }

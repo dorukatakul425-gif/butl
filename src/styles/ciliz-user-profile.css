@@ -1099,10 +1099,11 @@
 
 
 /* Native buttons: reset browser defaults so original sprites/sizes apply. */
-.user-profile .profile-native-btn, .user-profile__x_popup > .profile-native-btn {
   border: 0; padding: 0; margin: 0; font: inherit; color: inherit; background-repeat: no-repeat;
 }
-.user-profile .profile-native-btn.user-profile__claim { background-size: 14px 14px; }
-.user-profile .profile-native-btn.user-profile__x_button { padding: 4px 11px; color: #fff; background: #8bc43f; border-radius: 3px; font-size: 18px; height: auto; }
 .user-profile__harem .user-profile__owner-photo { background-color: #e8e8e8; }
 .user-profile__action--disabled { filter: grayscale(1); opacity: .6; }
+.user-profile__x_popup > .popup__close { cursor: pointer; }
+a.user-profile__action { display: block; }
+.user-profile__owner-photo { background-size: cover; background-position: center; }
+.source-feature-layer .message-actions__x_popup { width: auto; min-width: 0; padding: 10px 15px; }

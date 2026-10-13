@@ -5,6 +5,7 @@ import type { DecorViewer } from "@/lib/decor-selection";
 export const VIEWER = {
   name: "Sen",
   age: 25,
+  male: true,
   photoUrl: DEFAULT_PHOTO,
 };
 

@@ -56,6 +56,7 @@ export function TableSeats() {
     return () => window.removeEventListener(OPEN_GIFT_FOR_SEAT_EVENT, open);
   }, []);
   const [profileSeat, setProfileSeat] = useState<number | null>(null);
+  const [ownProfileOpen, setOwnProfileOpen] = useState(false);
   const [lockedGift, setLockedGift] = useState<GiftStoreItem | null>(null);
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: progress.kisses, vip: progress.vip }) : []), [assets, progress.kisses, progress.vip]);
   const gestureAccount = useMemo(() => ({ userId: "viewer", kisses: progress.kisses, vip: progress.vip, tokens: 0, social: VIEWER_STORE.social, platform: "web", scheduled: [] }), [progress.kisses, progress.vip]);
@@ -164,6 +165,7 @@ export function TableSeats() {
           assets={assets}
           account={gestureAccount}
           onClose={() => setGesturesOpen(false)}
+          onProfile={() => { setGesturesOpen(false); setOwnProfileOpen(true); }}
           onPreview={async item => {
             const table = tableRef.current;
             if (!table) throw new Error("Table unavailable");
@@ -191,6 +193,11 @@ export function TableSeats() {
           onClose={() => setProfileSeat(null)}
           onGift={() => { const seat = profileSeat; setProfileSeat(null); setTarget(state => openFor(state, seat, VIEWER_SEAT)); }}
           onDecor={() => setProfileSeat(null)} onMusic={() => setProfileSeat(null)} />
+      )}
+      {assets && ownProfileOpen && (
+        <ProfileDialog player={{ ...playersRef.current[VIEWER_SEAT]!, age: VIEWER.age }} self assets={assets}
+          onClose={() => setOwnProfileOpen(false)} onGift={() => setOwnProfileOpen(false)}
+          onDecor={() => setOwnProfileOpen(false)} onMusic={() => { setOwnProfileOpen(false); window.dispatchEvent(new CustomEvent("source:open-music-list")); }} />
       )}
       {assets && lockedGift?.lock && (() => {
         const t = (key: string) => translate(assets, key);

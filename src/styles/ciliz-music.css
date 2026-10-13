@@ -1320,3 +1320,6 @@
   user-select: text;
 }
 .chat__body { font-family: Arial, Helvetica, sans-serif; }
+
+/* Original media panel icons use content-box sizing (padding-left outside the 28px icon). */
+.media-panel__music, .media-panel__video, .media-panel__button { box-sizing: content-box; }
