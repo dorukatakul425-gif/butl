@@ -590,6 +590,5 @@
 .source-tops-help-popup .popup__close--dlg { top:-10px; right:-10px; width:32px; height:32px; padding:0; background:var(--game-menu-surface); box-shadow:var(--source-tops-close-shadow); border-radius:50%; }
 .source-tops-help-popup .popup__close-icon { display:block; flex-shrink:0; background-repeat:no-repeat; background-position:center; }
 .source-tops-help-popup .button--confirm { height:30px; min-width:80px; padding:0 10px; background:var(--source-tops-confirm); color:var(--source-tops-color-3); font-size:14px; font-weight:normal; border-radius:7px; }
-.bottle-drawer .send-gift__x_popup__title { color:var(--game-menu-text); }
 .bottle-drawer .send-gift__price { display:flex; justify-content:center; align-items:center; gap:3px; }
 .bottle-drawer .send-gift__icon { display:inline-block; background-repeat:no-repeat; }

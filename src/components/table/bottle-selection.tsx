@@ -10,26 +10,58 @@ export function BottleSelection({ open, onClose }: { open: boolean; onClose: () 
   const assets = useCilizAssets();
   const active = useBottle();
   const [notice, setNotice] = useState('');
+  const [scrolled, setScrolled] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
-  const [box, setBox] = useState<{top: number; left: number; width: number} | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const [box, setBox] = useState<{top: number; left: number; width: number; height: number; landscape: boolean} | null>(null);
   const items = useMemo(() => assets ? bottleItems(assets, VIEWER_STORE.social) : [], [assets]);
   useEffect(() => {
     if (!open) return;
     setNotice('');
+    setScrolled(false);
     const place = () => {
       const chat = document.querySelector(".original-chat")?.getBoundingClientRect();
-      setBox({top: chat?.top ?? window.innerHeight/2, left: chat?.left ?? 0, width: chat?.width ?? window.innerWidth});
+      const game = document.querySelector(".original-game")?.getBoundingClientRect();
+      if (!chat || !game) return;
+      const viewport = window.visualViewport;
+      const landscape = (viewport?.width ?? window.innerWidth) > (viewport?.height ?? window.innerHeight);
+      const top = landscape ? game.top : chat.top;
+      setBox({top, left: chat.left, width: chat.width, height: game.bottom - top, landscape});
     };
-    const key = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    place(); window.addEventListener("resize",place); document.addEventListener("keydown",key);
-    return () => { window.removeEventListener("resize",place); document.removeEventListener("keydown",key); };
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); onClose(); }
+      if (e.key !== 'Tab') return;
+      const controls = Array.from(dialogRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (!first || !last) return;
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    const observer = new ResizeObserver(place);
+    const game = document.querySelector('.original-game');
+    const chat = document.querySelector('.original-chat');
+    if (game) observer.observe(game);
+    if (chat) observer.observe(chat);
+    place(); window.addEventListener("resize",place); document.addEventListener("keydown",key, true);
+    window.visualViewport?.addEventListener('resize', place);
+    window.visualViewport?.addEventListener('scroll', place);
+    return () => {
+      observer.disconnect(); window.removeEventListener("resize",place); document.removeEventListener("keydown",key, true);
+      window.visualViewport?.removeEventListener('resize', place);
+      window.visualViewport?.removeEventListener('scroll', place);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
   }, [open,onClose]);
+  useEffect(() => { if (open && box && assets) closeRef.current?.focus({ preventScroll: true }); }, [open, Boolean(box), Boolean(assets)]);
   useLayoutEffect(() => {
     const list = listRef.current;
     if (!list) return;
     const align = () => {
-      const cols = Math.max(1, Math.floor(list.clientWidth/72));
-      const spacing = Math.floor((list.clientWidth-cols*72)/(cols+1));
+      const itemWidth = box?.landscape ? 77 : 90;
+      const cols = Math.max(1, Math.floor(list.clientWidth/itemWidth));
+      const spacing = Math.max(0, Math.floor((list.clientWidth-cols*itemWidth)/(cols+1)));
       list.style.padding = `${spacing}px 0 ${spacing}px ${spacing}px`;
       Array.from(list.children).forEach(child => { if (child instanceof HTMLElement) child.style.margin = `0 ${spacing}px ${spacing}px 0`; });
     };
@@ -38,12 +70,12 @@ export function BottleSelection({ open, onClose }: { open: boolean; onClose: () 
   }, [open,box,items.length]);
   if (!open || !assets || !box) return null;
   return createPortal(<div className="bottle-drawer-overlay" onClick={onClose}>
-    <div role="dialog" aria-modal="true" aria-label={translate(assets,"dlg:change_bottle:title")} className="popup popup--absolute bottle-drawer" style={{top:box.top,left:box.left,width:box.width,bottom:0}} onClick={e=>e.stopPropagation()}>
-      <Button variant="ghost" className="popup__close-drawer-bg" aria-label="Kapat" onClick={onClose}><span className="popup__close popup__close--drawer"><span className="popup__close-icon" /></span></Button>
-      <div className="popup__header send-gift__x_header"><div className="popup__title popup__title--left send-gift__x_popup__title">{translate(assets,"dlg:change_bottle:title")}</div></div>
-      <div className="popup__content popup__content--no-padding send-gift__x_popup__content"><div ref={listRef} className="send-gift send-gift--bottle">
+    <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={translate(assets,"dlg:change_bottle:title")} className={`popup popup--absolute bottle-drawer${box.landscape ? ' bottle-drawer--landscape' : ''}`} style={{top:box.top,left:box.left,width:box.width,height:box.height}} onClick={e=>e.stopPropagation()}>
+      <Button ref={closeRef} variant="ghost" className="popup__close-drawer-bg" aria-label="Kapat" title="Kapat" onClick={onClose}><span className="popup__close popup__close--drawer"><span className="popup__close-icon" /></span></Button>
+      <div className={`popup__header send-gift__x_header${scrolled ? ' popup__border--bottom' : ''}`}><div className="popup__title popup__title--left send-gift__x_popup__title">{translate(assets,"dlg:change_bottle:title")}</div></div>
+      <div className="popup__content popup__content--no-padding send-gift__x_popup__content" onScroll={e => setScrolled(e.currentTarget.scrollTop > 0)}><div ref={listRef} className="send-gift send-gift--bottle">
         {items.map(item => {
-          const image = dialogImage(assets,item.bottle.image,60,60);
+          const image = dialogImage(assets,item.bottle.image,70,70);
           const locked = item.locked;
           return <Button variant="ghost" key={item.bottle.type} className="send-gift__item bottle-store-item" aria-label={item.name} title={item.name} aria-pressed={active===item.bottle.type} onClick={()=>{
             if (locked) { setNotice(translate(assets, 'dlg:locked_bottle:vip:desc')); return; }
@@ -51,8 +83,8 @@ export function BottleSelection({ open, onClose }: { open: boolean; onClose: () 
             if (item.bottle.storePrice > 0) { setNotice('Şişe satın alma henüz hesabınızda kullanıma açık değil. Bakiye değişmedi.'); return; }
             selectBottle(item.bottle.type); onClose();
           }}>
-            <span className="send-gift__image-block"><img className="send-gift__image" src={image.src} width={image.width} height={image.height} alt="" /></span>
-            <span className="send-gift__price">{locked ? <span className="send-gift__icon send-gift__icon--viplock" /> : <><span className="send-gift__icon send-gift__icon--heart" />{item.bottle.storePrice}</>}</span>
+            <span className="send-gift__image-block"><img className={`send-gift__image${locked ? ' send-gift__image--locked' : ''}`} src={image.src} width={image.width} height={image.height} alt="" /></span>
+            {locked ? <span className="send-gift__icon send-gift__icon--viplock" /> : <span className={`send-gift__subitem${item.bottle.storePrice ? '' : ' send-gift__subitem--invisible'}`}><span className="send-gift__icon send-gift__icon--heart" /><span className="send-gift__price">{item.bottle.storePrice}</span></span>}
           </Button>;
         })}
       </div></div>
