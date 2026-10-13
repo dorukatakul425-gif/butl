@@ -193,10 +193,23 @@
   overflow: hidden;
 }
 
+/* Source getLayout() portraitWide: square table (size = width) under the header; chat takes the rest. */
+@media (orientation: portrait) and (max-aspect-ratio: 3/4) {
+  .original-table { flex: 0 0 auto; height: calc(100vw + 84px); }
+}
+@media (orientation: portrait) and (max-aspect-ratio: 3/4) and (max-width: 500px) {
+  .original-table { height: calc(100vw + 48px); }
+}
+/* Other shapes: keep the chat at the previous share so nothing else changes. */
+@media not ((orientation: portrait) and (max-aspect-ratio: 3/4)) {
+  .original-chat { flex: 0 0 38%; }
+}
+
 /* Original chat area — values copied from the game's source CSS */
 .original-chat {
   position: relative;
-  flex: 0 0 38%;
+  flex: 1 1 auto;
+  min-height: 0;
   background-color: #f5f5f5;
 }
 .original-chat-scroll { position: absolute; top: 0; bottom: 40px; width: 100%; overflow-y: auto; }
