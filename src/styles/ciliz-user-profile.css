@@ -1099,6 +1099,7 @@
 
 
 /* Native buttons: reset browser defaults so original sprites/sizes apply. */
+.user-profile button {
   border: 0; padding: 0; margin: 0; font: inherit; color: inherit; background-repeat: no-repeat;
 }
 .user-profile__harem .user-profile__owner-photo { background-color: #e8e8e8; }
