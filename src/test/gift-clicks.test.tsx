@@ -57,3 +57,22 @@ describe("source gift dispatch has no click cooldown", () => {
     expect(onSend).toHaveBeenCalledTimes(2);
   });
 });
+describe("gift dialog stays open", () => {
+  it("does not close when tapping outside the drawer (e.g. another player)", () => {
+    const onClose = vi.fn();
+    render(<SendGiftDialog open assets={assets} items={[item]} receiverName="Oyuncu 2" onSend={() => {}} onPreload={() => {}} onClose={onClose} />);
+    act(() => { vi.runAllTimers(); });
+    fireEvent.click(document.body);
+    fireEvent.click(screen.getByRole("dialog").parentElement!);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toBeTruthy();
+  });
+  it("shows the new receiver name when retargeted", () => {
+    const props = { open: true, assets, items: [item], onSend: () => {}, onPreload: () => {}, onClose: () => {} };
+    const { rerender } = render(<SendGiftDialog {...props} receiverName="Oyuncu 2" />);
+    act(() => { vi.runAllTimers(); });
+    rerender(<SendGiftDialog {...props} receiverName="Oyuncu 7" />);
+    act(() => { vi.runAllTimers(); });
+    expect(screen.getByRole("dialog").textContent).toContain("Oyuncu 7");
+  });
+});

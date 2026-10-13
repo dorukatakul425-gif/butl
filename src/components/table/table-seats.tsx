@@ -42,6 +42,8 @@ export function TableSeats() {
       const table = await createPixiTable(host, assets, {
         onSeatClick: (index) => {
           unlockSfx();
+          // showGifts(receiver): self gifts are refused; another player re-targets the open dialog.
+          if (index === VIEWER_SEAT) return;
           setGiftSeat(index);
         },
         playSfx: (id) => void playSfx(assets.sfxUrl, id),
@@ -72,6 +74,10 @@ export function TableSeats() {
     playersRef.current[VIEWER_SEAT] = viewer;
     tableRef.current?.setPlayer(VIEWER_SEAT, viewer);
   }, [assets, decor.frame, decor.stone]);
+
+  useEffect(() => {
+    activeTable?.setHighlighted(giftSeat);
+  }, [activeTable, giftSeat]);
 
   // Warm sounds on open; visible/pointed gift items preload their own visuals.
   // Parsing the entire catalogue here competes with rapid sends on slower phones.

@@ -145,6 +145,8 @@ function drawPhoto(img: HTMLImageElement, res: number) {
   return canvas;
 }
 
+const USER_CHAT_HIGHLIGHT = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI3MiI+CiAgICA8cmVjdCB4PSIyIiB5PSIyIiB3aWR0aD0iNjgiIGhlaWdodD0iNjgiIHJ4PSI4IiBmaWxsLW9wYWNpdHk9IjAiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utb3BhY2l0eT0iLjQ1Ii8+Cjwvc3ZnPgo=";
+
 class SeatView {
   readonly view = new Container();
   private photo = new Sprite();
@@ -159,6 +161,8 @@ class SeatView {
   private current = "";
   private photoKey = "";
   private disposed = false;
+  // TableUserView.selectionSprite: ui_table_user_chat_highlight, shown while the gift dialog targets this player.
+  private selection = new Sprite();
 
   constructor(onClick: () => void) {
     this.gifts.eventMode = "none";
@@ -174,7 +178,21 @@ class SeatView {
     this.nameContainer.y = -PHOTO / 2 + PHOTO - 1 + NAME_HEIGHT / 2;
     this.nameText.anchor.set(0.5);
     this.nameContainer.addChild(this.nameText, this.stoneLeft, this.stoneRight);
-    this.view.addChild(this.photo, this.frameContainer, this.nameContainer, this.gifts);
+    this.selection.eventMode = "none";
+    this.selection.anchor.set(0.5);
+    this.selection.visible = false;
+    this.view.addChild(this.photo, this.frameContainer, this.selection, this.nameContainer, this.gifts);
+  }
+
+  // updateSelection(): isHighlighted -> chat highlight sized photoFrame.width + 8.
+  setHighlighted(on: boolean, res: number) {
+    if (this.disposed) return;
+    if (!on) { this.selection.visible = false; this.selection.texture = Texture.EMPTY; return; }
+    const size = PHOTO + 8;
+    this.selection.texture = Texture.from(USER_CHAT_HIGHLIGHT, { resourceOptions: { width: size * res, height: size * res } });
+    this.selection.width = size;
+    this.selection.height = size;
+    this.selection.visible = true;
   }
 
   async set(player: SeatPlayer, assets: CilizAssets, res: number, tableSize: number) {
@@ -575,6 +593,10 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       if (!players.length) return;
       players[index] = player;
       void seats[index]?.set(player, assets, res(), tableSize());
+    },
+    // TablePresenter.toggleHighlightUser(id, isHighlighted).
+    setHighlighted(index: number | null) {
+      seats.forEach((seat, i) => seat.setHighlighted(i === index, res()));
     },
     sendGift(from: number, to: number, gift: SentGift) {
       return flyGift(from, to, gift).catch((error) => console.error(`Gift ${gift.type} could not be shown`, error));

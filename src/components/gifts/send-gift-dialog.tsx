@@ -93,6 +93,14 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
     };
   }, [open]);
 
+  // A new receiver re-runs the name reveal like a freshly opened dialog.
+  useEffect(() => {
+    if (!open) return;
+    setShowProfile(false);
+    const id = window.setTimeout(() => setShowProfile(true), 0);
+    return () => window.clearTimeout(id);
+  }, [open, receiverName]);
+
   // alignGiftsImpl(): evenly spaced columns.
   useLayoutEffect(() => {
     const list = listRef.current;
@@ -121,13 +129,13 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
   const title = translate(assets, "dlg:gift:title", "").replace("%", "").trim();
 
   return createPortal(
-    <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif" }} onClick={onClose}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif", pointerEvents: "none" }}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label={`${title} ${receiverName}`}
         className="popup popup--absolute"
-        style={{ top: box.top, left: box.left, width: box.width, bottom: 0 }}
+        style={{ top: box.top, left: box.left, width: box.width, bottom: 0, pointerEvents: "auto" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="popup__close-drawer-bg" style={{ zIndex: 1 }} onClick={onClose} role="button" aria-label="Kapat">
