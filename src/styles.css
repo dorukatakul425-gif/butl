@@ -13,6 +13,7 @@
 @import "./styles/ciliz-connection-bonus.css";
 @import "./styles/ciliz-settings.css";
 @import "./styles/ciliz-source-features.css";
+@import "./styles/ciliz-gestures.css";
 
 @custom-variant dark (&:is(.dark *));
 

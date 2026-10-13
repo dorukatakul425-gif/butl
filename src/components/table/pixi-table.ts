@@ -6,6 +6,7 @@ import { bundleUrl, SPINE_DESIGN_TO_TABLE, tableFrameSize, VIRTUAL_SIZE, type Ci
 import type { SeatPlayer } from "@/components/table/table-seats";
 import { type SentGift } from "@/lib/gifts";
 import type { SeatSelection } from "@/lib/gift-selection";
+import type { CilizGesture } from "@/lib/gestures";
 import { PHOTO_SIZE as PHOTO, PHOTO_SHADOW_SIZE as SHADOW_SIZE, GIFT_SCALE, OVER_SCALE, FLY_SEC, giftImageFrame, calcGiftPosition } from "@/lib/gift-geometry";
 import { GiftEffects } from "@/components/table/gift-effects";
 import { matchingTableEffects } from "@/lib/table-gift-effects";
@@ -189,6 +190,7 @@ class SeatView {
   }
 
   // updateSelection(): selected = photo size, selectable = +4, chat highlight = +8.
+  setGestureShade(shade: number) { this.photo.alpha = 1 - shade; }
   setSelection(mode: SeatSelection, res: number) {
     if (this.disposed) return;
     const source = mode === "selected" ? USER_SELECTED_HIGHLIGHT : mode === "selectable" ? USER_SELECTABLE_HIGHLIGHT : mode === "highlighted" ? USER_CHAT_HIGHLIGHT : "";
@@ -426,6 +428,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     }
   };
 
+  const gestureViews = new Map<number, DisplayObject>();
   const activate = (view: DisplayObject) => {
     if (view instanceof Container) for (const child of view.children) if (child instanceof Spine) child.autoUpdate = true;
   };
@@ -565,6 +568,31 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       bottleLayer.removeChildren().forEach(destroyView);
       bottleLayer.addChild(view);
       await app.renderer.plugins["prepare"].upload(view);
+    },
+    async playGesture(index: number, gesture: CilizGesture) {
+      const seat = seats[index];
+      if (!seat || destroyed) throw new Error("Seat unavailable");
+      const name = Array.isArray(gesture.spine) ? gesture.spine[0] : gesture.spine;
+      if (!name) throw new Error("Gesture skeleton missing");
+      const data = await loadSkeleton(assets, name, tableSize());
+      if (!data || destroyed) throw new Error("Gesture skeleton unavailable");
+      const view = spineFromSkeleton(data, false);
+      await app.renderer.plugins["prepare"].upload(view);
+      if (destroyed) { destroyView(view); return; }
+      const previous = gestureViews.get(index);
+      if (previous) destroyView(previous);
+      view.zIndex = 100; seat.gifts.addChild(view); activate(view); gestureViews.set(index, view);
+      const [enter, full, leave, end] = gesture.shade;
+      const duration = Math.max(end, data.animations[0]?.duration ?? end);
+      run(duration, p => {
+        if (gestureViews.get(index) !== view) return;
+        const time = p * duration;
+        const shade = time < enter ? 0 : time < full ? (time-enter)/Math.max(0.001,full-enter) : time < leave ? 1 : Math.max(0,1-(time-leave)/Math.max(0.001,end-leave));
+        seat.setGestureShade(shade);
+      }, () => {
+        if (gestureViews.get(index) !== view) return;
+        seat.setGestureShade(0); destroyView(view); gestureViews.delete(index);
+      });
     },
     async spinBottle(from: number, to: number) {
       if (destroyed) return;

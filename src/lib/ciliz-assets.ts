@@ -1,6 +1,7 @@
 // Live game data, loaded directly from the game's own servers (same chain as preloader.js):
 // server.json -> assets.json -> bundle images / spine skeletons.
 import { completeLoadingStage, failGameLoading } from "./game-loading";
+import type { CilizGesture, GestureEntry } from "./gestures";
 const SERVER_JSON_URL = "https://cdn-s.ciliz.com/mobile/server.json";
 
 // MetaRegistry constants from preloader.js.
@@ -76,6 +77,8 @@ export interface CilizAssets {
   bottles?: Record<string, CilizBottle>;
   bottleStore?: Array<{ id: string; social?: string[]; vip_s?: boolean }>;
   bottle3d?: Record<string, CilizBottle3d>;
+  gestures?: Record<string, CilizGesture>;
+  gestureStore?: GestureEntry[];
   gifts: Record<string, CilizGift>;
   giftStore: CilizGiftStoreEntry[];
   spines: Record<string, { finishSec?: number }>;
@@ -103,6 +106,8 @@ export function loadCilizAssets(): Promise<CilizAssets> {
         bottles: Object.fromEntries(Object.entries(json.bottles as Record<string, CilizBottle>).filter(([key]) => !key.startsWith('__'))),
         bottleStore: json.bottles.__store.flat(),
         bottle3d: json.bottle3d,
+        gestures: Object.fromEntries(Object.entries(json.gestures ?? {}).filter(([key]) => !key.startsWith("__"))) as Record<string, CilizGesture>,
+        gestureStore: (json.gestures?.__store_v3 ?? []).flat(),
         gifts: json.gifts,
         giftStore: json.gifts.__store,
         spines: json.spines,
