@@ -454,11 +454,10 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       options.prepareSfx?.(gift.finishSound)?.catch(() => {}),
     ]);
     if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
-    // Upload both flying and landing textures before starting the clock.
-    await app.renderer.plugins["prepare"].upload(flyView);
-    if (stickView) await app.renderer.plugins["prepare"].upload(stickView);
-    if (gift.vfx) await effects.prepare(app.renderer, gift.vfx);
-    if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
+    // Upload in the background: the flight starts immediately, textures upload on first render.
+    void app.renderer.plugins["prepare"].upload(flyView);
+    if (stickView) void app.renderer.plugins["prepare"].upload(stickView);
+    if (gift.vfx) void effects.prepare(app.renderer, gift.vfx);
     activate(flyView);
     const src = { x: sender.view.x, y: sender.view.y, scale: GIFT_SCALE, rotation: 0 };
     flyView.position.set(src.x, src.y);
