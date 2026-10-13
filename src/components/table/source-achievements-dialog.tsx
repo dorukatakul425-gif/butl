@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCilizAssets } from '@/components/decor/decor-selection';
 import { dialogImage, type CilizAchievement, type CilizAssets } from '@/lib/ciliz-assets';
+import { Button } from '@/components/ui/button';
+import { acknowledgeAchievement, useAchievementSession, type CompletedAchievement } from '@/lib/achievement-session';
+import { toast } from 'sonner';
 
 /** Source TranslatorTemplate: %N args, %b(male|female), %N`d(...)` treated as plain arg. */
 function tr(assets: CilizAssets, key: string, ...args: Array<string | number | boolean>) {
@@ -26,18 +29,19 @@ function select(v: CilizAchievement['image'], male: boolean, a: CilizAchievement
   return value ?? '';
 }
 
-/** No verified achievement records exist for this account yet: every item is the source "disabled" (locked) view. */
-function buildItems(assets: CilizAssets, male: boolean): ViewItem[] {
+export function buildItems(assets: CilizAssets, male: boolean, completed: CompletedAchievement[] = []): ViewItem[] {
   const now = Date.now();
   return Object.entries(assets.achievements ?? {})
     .filter(([, a]) => a.since_ms === undefined || a.since_ms <= now)
     .map(([id, a]) => {
-      const level = 0;
+      const verifiedLevel = completed.filter(row => row.achievement_id === id).reduce((max, row) => Math.max(max, row.level), -1);
+      const maxLevel = a.counters?.length ?? 1;
+      const level = Math.max(0, Math.min(verifiedLevel, maxLevel - 1));
       const nameKey = a.name_depends_on_level ? `achievement:${id}:name:${level}` : `achievement:${id}:name`;
-      let counter = a.counters?.[level];
+      let counter = a.counters?.[verifiedLevel >= 0 && level < maxLevel - 1 ? level + 1 : level];
       if (a.translate_counters && typeof counter === 'string') counter = tr(assets, counter);
       const term = a.counters ? tr(assets, `achievement:${id}:terms`, counter ?? '') : tr(assets, `achievement:${id}:terms`);
-      return { id, asset: a, level, maxLevel: a.counters?.length ?? 0, disabled: true, name: tr(assets, nameKey, male), image: select(a.image, male, a, level), term };
+      return { id, asset: a, level, maxLevel, disabled: verifiedLevel < 0, name: tr(assets, nameKey, male), image: select(a.image, male, a, level), term };
     });
 }
 
@@ -47,35 +51,37 @@ function Stars({ item }: { item: ViewItem }) {
     <div key={i} className={`achievement-item__star achievement-item__star--${i + pad}${i <= item.level && !item.disabled ? ' achievement-item__star--active' : ''}`} />)}</div>;
 }
 
-function useEscape(onClose: () => void) {
+function useEscape(onClose: () => void, enabled = true) {
   useEffect(() => {
+    if (!enabled) return;
     const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); onClose(); } };
     document.addEventListener('keydown', key, true);
     return () => document.removeEventListener('keydown', key, true);
-  }, [onClose]);
+  }, [onClose, enabled]);
 }
 
-function Detail({ assets, item, onClose }: { assets: CilizAssets; item: ViewItem; onClose: () => void }) {
+function Detail({ assets, item, onClose, completion = false, pending = false }: { assets: CilizAssets; item: ViewItem; onClose: () => void; completion?: boolean; pending?: boolean }) {
   useEscape(onClose);
   const img = dialogImage(assets, item.image, 103, 103);
-  const termDisabled = item.disabled || item.level < item.maxLevel - 1;
+  const termDisabled = !completion && (item.disabled || item.level < item.maxLevel - 1);
   return <div className="achievement-detail-layer">
     <div className="popup-shade" onClick={onClose} />
-    <section role="dialog" aria-modal="true" aria-label={tr(assets, 'dlg:achievement:info_title')} className="popup popup--center">
-      <button type="button" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></button>
-      <header className="popup__header"><div className="popup__title">{tr(assets, 'dlg:achievement:info_title')}</div></header>
+    <section role="dialog" aria-modal="true" aria-label={tr(assets, completion ? 'dlg:kiss_bonus:title' : 'dlg:achievement:info_title')} className="popup popup--center">
+      {!completion && <Button variant="ghost" type="button" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>}
+      <header className="popup__header"><div className="popup__title">{tr(assets, completion ? 'dlg:kiss_bonus:title' : 'dlg:achievement:info_title')}</div></header>
       <div className="popup__content"><div className="achievement">
-        <div className="achievement__subtitle">{tr(assets, 'achievement:info2')}</div>
+        <div className="achievement__subtitle">{tr(assets, completion ? 'achievement:congratulation2' : 'achievement:info2')}</div>
         <div className="achievement-item achievement-item--big">
           <Stars item={item} />
           <div className="achievement-item__icons">
+            {completion && <div className="achievement__background" />}
             <img className={`achievement-item__image${item.disabled ? ' achievement-item__image--disabled' : ''}`} src={img.src} width={img.width} height={img.height} alt="" />
           </div>
         </div>
         <div className="achievement__name">{item.name}</div>
         <div className={`achievement__term${termDisabled ? ' achievement__term--disabled' : ''}`}><div className="achievement__term-icon" />{item.term}</div>
       </div></div>
-      <div className="popup__footer" />
+      {completion ? <div className="popup__buttons"><Button disabled={pending} className="achievement-continue" onClick={onClose}>{tr(assets, 'dlg:achievement:btn_continue')}</Button></div> : <div className="popup__footer" />}
     </section>
   </div>;
 }
@@ -83,10 +89,11 @@ function Detail({ assets, item, onClose }: { assets: CilizAssets; item: ViewItem
 /** Source AchievementsListDialog + AchievementPresenter.showList for the viewer. */
 export function SourceAchievementsDialog({ onClose, male = true }: { onClose: () => void; male?: boolean }) {
   const assets = useCilizAssets();
+  const session = useAchievementSession();
   const [tab, setTab] = useState<'enabled' | 'disabled'>('enabled');
   const [open, setOpen] = useState<ViewItem | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const items = useMemo(() => assets ? buildItems(assets, male) : [], [assets, male]);
+  const items = useMemo(() => assets ? buildItems(assets, male, session.completed) : [], [assets, male, session.completed]);
   const total = useMemo(() => Object.values(assets?.achievements ?? {}).reduce((acc, a) =>
     a.since_ms && a.since_ms > Date.now() ? acc : acc + (a.counters ? a.counters.length : 1), 0), [assets]);
   const ordered = useMemo(() => {
@@ -96,7 +103,7 @@ export function SourceAchievementsDialog({ onClose, male = true }: { onClose: ()
     return tab === 'enabled' ? [...done, ...progress, ...locked] : [...locked, ...progress, ...done];
   }, [items, tab]);
   useEffect(() => { if (contentRef.current) contentRef.current.scrollTop = 0; }, [tab]);
-  useEscape(open ? () => {} : onClose);
+  useEscape(onClose, !open);
   if (!assets) return null;
   const current = items.reduce((acc, a) => acc + (a.disabled ? 0 : Math.max(0, a.level) + 1), 0);
   const portrait = typeof window === 'undefined' || window.innerHeight >= window.innerWidth;
@@ -127,4 +134,25 @@ export function SourceAchievementsDialog({ onClose, male = true }: { onClose: ()
     </section>
     {open && <Detail assets={assets} item={open} onClose={() => setOpen(null)} />}
   </div>, document.body);
+}
+
+/** Mounted at the table, so earned achievements appear even while the list is closed. */
+export function SourceAchievementNotifications({ male = true }: { male?: boolean }) {
+  const assets = useCilizAssets();
+  const session = useAchievementSession();
+  const [pending, setPending] = useState(false);
+  const next = session.completed.find(row => !row.acknowledged_at);
+  if (!assets || !session.verified || !next) return null;
+  const item = buildItems(assets, male, [next]).find(row => row.id === next.achievement_id);
+  if (!item) return null;
+  const counter = item.asset.counters?.[next.level];
+  item.term = tr(assets, `achievement:${item.id}:terms`, counter ?? '');
+  const close = async () => {
+    if (pending) return;
+    setPending(true);
+    try { await acknowledgeAchievement(next.achievement_id, next.level); }
+    catch (e) { toast.error(e instanceof Error ? e.message : 'Başarı kaydedilemedi.'); }
+    finally { setPending(false); }
+  };
+  return createPortal(<div className="achievements-layer"><Detail assets={assets} item={item} completion pending={pending} onClose={() => { void close(); }} /></div>, document.body);
 }

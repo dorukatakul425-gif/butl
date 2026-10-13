@@ -9,6 +9,7 @@
 @import "./styles/ciliz-bottle.css";
 @import "./styles/ciliz-tops.css";
 @import "./styles/ciliz-achievements.css";
+@import "./styles/ciliz-boosters.css";
 
 @custom-variant dark (&:is(.dark *));
 

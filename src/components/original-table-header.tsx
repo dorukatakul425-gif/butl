@@ -16,6 +16,8 @@ import { DecorSelection } from "@/components/decor/decor-selection";
 import { BottleSelection } from "@/components/table/bottle-selection";
 import { BankDialog } from "@/components/bank/bank-dialog";
 import { SourceTopsDialog } from "@/components/table/source-tops-dialog";
+import { SourceBoostersDialog } from "@/components/table/source-boosters-dialog";
+import { SourceAchievementNotifications } from "@/components/table/source-achievements-dialog";
 import { SourceAchievementsDialog } from "@/components/table/source-achievements-dialog";
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
@@ -48,6 +50,7 @@ export function OriginalTableHeader() {
   const [bottleOpen, setBottleOpen] = useState(false);
   const [bankOpen, setBankOpen] = useState(false);
   const [topsOpen, setTopsOpen] = useState(false);
+  const [boostersOpen, setBoostersOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const closeBank = useCallback(() => setBankOpen(false), []);
   const closeBottle = useCallback(() => setBottleOpen(false), []);
@@ -58,6 +61,7 @@ export function OriginalTableHeader() {
     if (id === "decor") setDecorOpen(true);
     if (id === "bottle") setBottleOpen(true);
     if (id === "tops") setTopsOpen(true);
+    if (id === "boosters") setBoostersOpen(true);
     if (id === "achievements") setAchievementsOpen(true);
   }, []);
   return (
@@ -81,6 +85,8 @@ export function OriginalTableHeader() {
       </div>
       <OriginalIcon asset={changeTable} label="Masa değiştir" kind="default" />
       {topsOpen && <SourceTopsDialog onClose={() => setTopsOpen(false)} />}
+      <SourceAchievementNotifications />
+      {boostersOpen && <SourceBoostersDialog onClose={() => setBoostersOpen(false)} />}
       {achievementsOpen && <SourceAchievementsDialog onClose={() => setAchievementsOpen(false)} />}
       <OriginalMiscMenu open={menuOpen} triggerRef={menuTriggerRef} onClose={closeMenu} onSelect={onMenuSelect} />
       <DecorSelection open={decorOpen} onClose={closeDecor} />

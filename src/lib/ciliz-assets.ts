@@ -68,7 +68,9 @@ export interface CilizAchievement {
   image?: string | string[]; image_male?: string | string[]; image_female?: string | string[];
   since_ms?: number; social?: string[];
 }
+export interface CilizBooster { category: 'choice' | 'league'; image: string; type: string; spine?: string }
 export interface CilizAssets {
+  boosters?: Record<string, CilizBooster>;
   bottles?: Record<string, CilizBottle>;
   bottleStore?: Array<{ id: string; social?: string[]; vip_s?: boolean }>;
   bottle3d?: Record<string, CilizBottle3d>;
@@ -109,6 +111,7 @@ export function loadCilizAssets(): Promise<CilizAssets> {
         images: json.images,
         translation: json.translation.tr,
         achievements: json.achievement,
+        boosters: json.boosters,
         bundles: server.assets.bundles_v2.table,
         dialogBundles: server.assets.bundles_v2.dlg,
       } satisfies CilizAssets;

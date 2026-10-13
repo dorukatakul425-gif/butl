@@ -1,0 +1,35 @@
+CREATE TABLE public.achievement_counters (user_id uuid PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE, counters jsonb NOT NULL DEFAULT '{}'::jsonb);
+GRANT SELECT ON public.achievement_counters TO authenticated;
+GRANT ALL ON public.achievement_counters TO service_role;
+ALTER TABLE public.achievement_counters ENABLE ROW LEVEL SECURITY;
+CREATE POLICY achievement_counters_owner ON public.achievement_counters FOR SELECT TO authenticated USING(user_id=auth.uid());
+CREATE TABLE public.player_achievements (user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE, achievement_id text NOT NULL, level integer NOT NULL CHECK(level>=0), completed_at timestamptz NOT NULL DEFAULT now(), acknowledged_at timestamptz, PRIMARY KEY(user_id,achievement_id,level));
+GRANT SELECT ON public.player_achievements TO authenticated;
+GRANT ALL ON public.player_achievements TO service_role;
+ALTER TABLE public.player_achievements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY player_achievements_owner ON public.player_achievements FOR SELECT TO authenticated USING(user_id=auth.uid());
+CREATE OR REPLACE FUNCTION public.increment_achievement_counter(player uuid, counter text, amount bigint) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN IF amount<=0 THEN RETURN; END IF; INSERT INTO public.achievement_counters(user_id,counters) VALUES(player,jsonb_build_object(counter,amount)) ON CONFLICT(user_id) DO UPDATE SET counters=jsonb_set(achievement_counters.counters,ARRAY[counter],to_jsonb(coalesce((achievement_counters.counters->>counter)::bigint,0)+amount)); END; $$;
+REVOKE ALL ON FUNCTION public.increment_achievement_counter(uuid,text,bigint) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.increment_achievement_counter(uuid,text,bigint) TO service_role;
+CREATE OR REPLACE FUNCTION public.track_achievement_event() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE key text; BEGIN
+IF NEW.kind='gesture' THEN PERFORM public.increment_achievement_counter(NEW.actor_id,'pantomime',1); IF NEW.item_id IN ('hello','bye') THEN PERFORM public.increment_achievement_counter(NEW.actor_id,'rulesofdecorum',1); END IF;
+ELSIF NEW.kind='gift' THEN
+key:=CASE WHEN NEW.item_id IN ('coffee','latte') THEN 'barista' WHEN NEW.item_id IN ('martini','love') THEN 'romantic' WHEN NEW.item_id='pirat' THEN 'jack' WHEN NEW.item_id='magichat' THEN 'magic' WHEN NEW.item_id='juice' THEN 'vegan' ELSE NULL END;
+IF key IS NOT NULL THEN PERFORM public.increment_achievement_counter(NEW.actor_id,key,1); END IF;
+key:=CASE WHEN NEW.item_id IN ('coffee','latte') THEN 'coffeeman' WHEN NEW.item_id='romcola' THEN 'cuba' WHEN NEW.item_id='valentine' THEN 'cupid' WHEN NEW.item_id='mojito' THEN 'hemingway' WHEN NEW.item_id IN ('popcorn','oscar') THEN 'kinoman' WHEN NEW.item_id='leaf' THEN 'leaf' WHEN NEW.item_id='sombrero' THEN 'mexico' WHEN NEW.item_id='leninbadge' THEN 'redoctober' WHEN NEW.item_id='tomato' THEN 'seniorpomidor' WHEN NEW.item_id='slug' THEN 'slug' WHEN NEW.item_id='wine' THEN 'sommelier' WHEN NEW.item_id='milk' THEN 'sportsman' WHEN NEW.item_id IN ('icecream','candy') THEN 'sweet' ELSE NULL END;
+IF key IS NOT NULL AND NEW.receiver_id IS NOT NULL THEN PERFORM public.increment_achievement_counter(NEW.receiver_id,key,1); END IF;
+IF NEW.item_id='snowball' THEN PERFORM public.increment_achievement_counter(NEW.actor_id,'snow',1); IF NEW.receiver_id IS DISTINCT FROM NEW.actor_id AND NEW.receiver_id IS NOT NULL THEN PERFORM public.increment_achievement_counter(NEW.receiver_id,'snow',1); END IF; END IF;
+END IF; RETURN NEW; END; $$;
+REVOKE ALL ON FUNCTION public.track_achievement_event() FROM PUBLIC,anon,authenticated;
+CREATE TRIGGER track_achievement_event AFTER INSERT ON public.game_events FOR EACH ROW EXECUTE FUNCTION public.track_achievement_event();
+CREATE OR REPLACE FUNCTION public.track_achievement_kiss() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN IF NEW.kisses>OLD.kisses THEN PERFORM public.increment_achievement_counter(NEW.user_id,'csar',NEW.kisses-OLD.kisses); END IF; RETURN NEW; END; $$;
+REVOKE ALL ON FUNCTION public.track_achievement_kiss() FROM PUBLIC,anon,authenticated;
+CREATE TRIGGER track_achievement_kiss AFTER UPDATE OF kisses ON public.wallets FOR EACH ROW EXECUTE FUNCTION public.track_achievement_kiss();
+INSERT INTO public.achievement_counters(user_id,counters) SELECT user_id,jsonb_build_object('csar',kisses,'pantomime',gestures) FROM public.wallets WHERE kisses>0 OR gestures>0 ON CONFLICT(user_id) DO NOTHING;
+CREATE OR REPLACE FUNCTION public.record_verified_achievement(player uuid, achievement text, thresholds jsonb) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE value bigint; threshold jsonb; idx integer:=0; BEGIN SELECT coalesce((counters->>achievement)::bigint,0) INTO value FROM public.achievement_counters WHERE user_id=player; IF value IS NULL OR jsonb_typeof(thresholds)<>'array' THEN RETURN; END IF; FOR threshold IN SELECT * FROM jsonb_array_elements(thresholds) LOOP IF jsonb_typeof(threshold)='number' AND value>=(threshold::text)::bigint THEN INSERT INTO public.player_achievements(user_id,achievement_id,level) VALUES(player,achievement,idx) ON CONFLICT DO NOTHING; END IF; idx:=idx+1; END LOOP; END; $$;
+REVOKE ALL ON FUNCTION public.record_verified_achievement(uuid,text,jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.record_verified_achievement(uuid,text,jsonb) TO service_role;
+CREATE OR REPLACE FUNCTION public.acknowledge_achievement(achievement text, completed_level integer) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Giriş gerekli'; END IF; UPDATE public.player_achievements SET acknowledged_at=coalesce(acknowledged_at,now()) WHERE user_id=auth.uid() AND achievement_id=achievement AND level=completed_level; IF NOT FOUND THEN RAISE EXCEPTION 'Tamamlanan başarı bulunamadı'; END IF; END; $$;
+REVOKE ALL ON FUNCTION public.acknowledge_achievement(text,integer) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.acknowledge_achievement(text,integer) TO authenticated;
+COMMENT ON TABLE public.player_achievements IS 'Verified completed levels only. Public source manifest contains no reward amounts; no invented currency is credited.';
