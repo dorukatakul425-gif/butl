@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { getSupabase } from "@/lib/supabase";
 
 export interface DecorState {
   frame: string;
@@ -6,59 +7,48 @@ export interface DecorState {
   ownedItems: string[];
 }
 
-const STORAGE_KEY = "bottle-decor";
+/** New accounts own nothing; ownership and the applied decor live on the server profile. */
 const DEFAULT_STATE: DecorState = { frame: "", stone: "", ownedItems: [] };
 
 let state: DecorState = DEFAULT_STATE;
-let loaded = false;
 const listeners = new Set<() => void>();
+const emit = () => listeners.forEach((listener) => listener());
 
-function load() {
-  if (loaded || typeof window === "undefined") return;
-  loaded = true;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) state = { ...DEFAULT_STATE, ...JSON.parse(raw) };
-  } catch {
-    state = DEFAULT_STATE;
-  }
+/** Mirror the confirmed server profile (realtime profile updates included). */
+export function syncDecorFromProfile(p: { frame: string; stone: string; owned_items?: string[] | undefined }) {
+  const owned = p.owned_items ?? [];
+  if (state.frame === p.frame && state.stone === p.stone && state.ownedItems.join() === owned.join()) return;
+  state = { frame: p.frame, stone: p.stone, ownedItems: owned };
+  emit();
 }
 
-function emit() {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    // storage unavailable: keep the in-memory state
-  }
-  listeners.forEach((listener) => listener());
-}
-
-export function setDecorations(frame: string, stone: string) {
-  load();
+/** set_decor RPC: the server only accepts owned items (or empty). */
+export async function setDecorations(frame: string, stone: string): Promise<boolean> {
+  const sb = getSupabase();
+  if (!sb) return false;
+  const { error } = await sb.rpc("set_decor", { p_frame: frame, p_stone: stone });
+  if (error) return false;
   state = { ...state, frame, stone };
   emit();
+  return true;
 }
 
-export function purchaseItem(id: string) {
-  load();
-  if (state.ownedItems.includes(id)) return;
-  state = { ...state, ownedItems: [...state.ownedItems, id] };
+/** buy_decor RPC: price from the server list, hearts deducted in one transaction. */
+export async function purchaseItem(id: string): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const sb = getSupabase();
+  if (!sb) return { ok: false, reason: "offline" };
+  const { error } = await sb.rpc("buy_decor", { p_item: id });
+  if (error) return { ok: false, reason: error.message };
+  if (!state.ownedItems.includes(id)) state = { ...state, ownedItems: [...state.ownedItems, id] };
   emit();
+  return { ok: true };
 }
 
 function subscribe(listener: () => void) {
-  load();
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
 
 export function useDecorState() {
-  return useSyncExternalStore(
-    subscribe,
-    () => {
-      load();
-      return state;
-    },
-    () => DEFAULT_STATE,
-  );
+  return useSyncExternalStore(subscribe, () => state, () => DEFAULT_STATE);
 }

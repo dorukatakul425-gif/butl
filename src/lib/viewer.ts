@@ -14,7 +14,8 @@ export const VIEWER = {
 
 export const VIEWER_STORE: Omit<DecorViewer, "ownedItems"> = {
   social: "ok",
-  league: 16,
+  // New accounts start below every league: league frames stay locked, store frames must be bought.
+  league: 0,
   maxLeague: 16,
 };
 

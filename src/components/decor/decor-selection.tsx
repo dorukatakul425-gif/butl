@@ -3,6 +3,7 @@ import { loadCilizAssets, type CilizAssets } from "@/lib/ciliz-assets";
 import { buildDecorItems, findDecorItem, type DecorItem } from "@/lib/decor-selection";
 import { purchaseItem, setDecorations, useDecorState } from "@/lib/decor-store";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
+import { OPEN_BANK_EVENT, showSourceToast } from "@/components/source-dialogs";
 import { DecorSelectionDialog } from "@/components/decor/decor-selection-dialog";
 
 export function useCilizAssets() {
@@ -31,9 +32,17 @@ export function DecorSelection({ open, onClose }: { open: boolean; onClose: () =
   if (!assets || items.length === 0) return null;
   const activeItem = findDecorItem(items, decor.frame, decor.stone);
 
-  const onApply = (item: DecorItem) => {
-    if (item.frame && item.price.type === "open" && item.price.price) purchaseItem(item.type);
-    setDecorations(item.frame?.type || "", item.stone?.type || "");
+  const onApply = async (item: DecorItem) => {
+    if (item.price.type === "open" && item.price.price && !decor.ownedItems.includes(item.type)) {
+      const res = await purchaseItem(item.type);
+      if (!res.ok) {
+        if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
+        else showSourceToast("Satın alınamadı.");
+        return;
+      }
+    }
+    const ok = await setDecorations(item.frame?.type || "", item.stone?.type || "");
+    if (!ok) showSourceToast("Uygulanamadı.");
   };
 
   return (

@@ -33,5 +33,6 @@ export interface Profile {
   kisses: number;
   gold: number;
   vip_until: string | null;
+  owned_items?: string[];
   created_at: string;
 }

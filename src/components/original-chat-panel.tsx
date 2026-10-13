@@ -6,7 +6,7 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
 import { CilizMusicService, YTVideoService, type MusicItem, type MusicService } from "@/lib/music";
-import { pushActionLine, pushTextLine, sendMusic, useMusicSession } from "@/lib/music-session";
+import { pushActionLine, pushTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
@@ -18,13 +18,12 @@ import { EmojiPicker } from "@/components/chat/emoji-picker";
 import { emojiPickerSize, emojiSendDecision, insertEmoji } from "@/lib/emoji";
 import { useViewerProgress } from "@/lib/viewer-progress";
 import { OPEN_GIFT_FOR_SEAT_EVENT, shouldScheduleVipTeaser, VIP_TEASER_DELAY, widgetOfTheDay } from "@/lib/chat-promos";
-import { OPEN_VIP_EVENT, SourceInfoDialog, showSourceToast } from "@/components/source-dialogs";
+import { OPEN_BANK_EVENT, OPEN_VIP_EVENT, SourceInfoDialog, showSourceToast } from "@/components/source-dialogs";
 import { applyTranslation, chatTranslator, needsTranslation, toggleTranslation, useChatTranslations } from "@/lib/chat-translation";
 
 const VIEWER_LOCALE = "tr";
 
 const VIEWER_COUNTRY = "TR";
-const viewerSender = () => ({ id: VIEWER.id || "viewer", name: VIEWER.name, photoUrl: VIEWER.photoUrl, male: VIEWER.male, musicLevel: 0 });
 const profileUser = (p: Profile) => ({ id: p.id, name: p.name, photoUrl: p.photo_url || DEFAULT_PHOTO, male: p.male, isVip: Boolean(p.vip_until && Date.parse(p.vip_until) > Date.now()) });
 
 /** Original chat area: MediaPanel (video, music), chat body with info lines, input at bottom (source order). */
@@ -131,6 +130,7 @@ export function OriginalChatPanel() {
     // The OK video catalogue needs the OK app login; the web game's YouTube catalogue is used instead.
     video: new YTVideoService({ socialId: "fb", user_country: VIEWER_COUNTRY, user_vip: false }),
   }), []);
+  useEffect(() => { registerMusicServices([services.audio, services.video]); }, [services]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -244,7 +244,11 @@ export function OriginalChatPanel() {
           onConfirm={(music) => {
             setPreview(null);
             setListType(null);
-            sendMusic(music, preview.service, viewerSender());
+            void sendMusic(music, preview.service).then(res => {
+              if (res.ok) return;
+              if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
+              else showSourceToast("Müzik gönderilemedi.");
+            });
           }} />
       )}
     </section>

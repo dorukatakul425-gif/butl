@@ -424,3 +424,173 @@ insert into public.gift_prices (gift_type, price, kisses_required, vip_only) val
 ('blackcrown',3,0,true),
 ('blackring',1,0,true)
 on conflict (gift_type) do update set price=excluded.price, kisses_required=excluded.kisses_required, vip_only=excluded.vip_only;
+
+-- =====================================================================
+-- Ek kurallar (v2): 50 kalp, satın alınan çerçeveler, ortak müzik,
+-- oyun sadece masada en az 1 kız + 1 erkek varken döner.
+-- Bu dosya tekrar çalıştırılabilir.
+-- =====================================================================
+
+-- ---------- 50 kalp (yeni hesaplar + mevcut hesaplara bir kez) ----------
+alter table public.profiles alter column gold set default 50;
+alter table public.profiles add column if not exists welcome_gold boolean not null default false;
+update public.profiles set gold = gold + 50, welcome_gold = true where not welcome_gold;
+alter table public.profiles alter column welcome_gold set default true;
+
+-- ---------- Çerçeveler: yeni hesapta yok, sadece satın alınınca ----------
+alter table public.profiles add column if not exists owned_items text[] not null default '{}';
+revoke update (frame, stone) on public.profiles from authenticated;
+update public.profiles set frame = '', stone = '' where not (frame = '' or frame = any(owned_items)) or not (stone = '' or stone = any(owned_items));
+
+create table if not exists public.decor_prices (
+  item text primary key,
+  price int not null check (price > 0)
+);
+grant select on public.decor_prices to anon, authenticated;
+grant all on public.decor_prices to service_role;
+alter table public.decor_prices enable row level security;
+drop policy if exists "decor prices read" on public.decor_prices;
+create policy "decor prices read" on public.decor_prices for select using (true);
+
+-- Satın al: fiyat sunucudaki listeden, kalp tek işlemde düşer.
+create or replace function public.buy_decor(p_item text) returns int
+language plpgsql security definer set search_path = public as $$
+declare me public.profiles; pr int;
+begin
+  select * into me from public.profiles where id = auth.uid() for update;
+  if not found then raise exception 'not signed in'; end if;
+  if p_item = any(me.owned_items) then return me.gold; end if;
+  select price into pr from public.decor_prices where item = p_item;
+  if pr is null then raise exception 'not for sale'; end if;
+  if me.gold < pr then raise exception 'insufficient gold'; end if;
+  update public.profiles set gold = gold - pr, owned_items = array_append(owned_items, p_item) where id = me.id;
+  return me.gold - pr;
+end $$;
+
+-- Tak: sadece sahip olunan çerçeve/taş (ya da boş).
+create or replace function public.set_decor(p_frame text, p_stone text) returns void
+language plpgsql security definer set search_path = public as $$
+declare me public.profiles;
+begin
+  select * into me from public.profiles where id = auth.uid();
+  if not found then raise exception 'not signed in'; end if;
+  if coalesce(p_frame,'') <> '' and not (p_frame = any(me.owned_items)) then raise exception 'not owned'; end if;
+  if coalesce(p_stone,'') <> '' and not (p_stone = any(me.owned_items)) then raise exception 'not owned'; end if;
+  update public.profiles set frame = coalesce(p_frame,''), stone = coalesce(p_stone,'') where id = me.id;
+end $$;
+
+-- ---------- Ortak müzik: masadaki herkes aynı anda dinler ----------
+alter table public.rooms add column if not exists music jsonb;
+
+create or replace function public.play_music(p_service text, p_item jsonb) returns int
+language plpgsql security definer set search_path = public as $$
+declare rid bigint; me public.profiles; pr int;
+begin
+  select room_id into rid from public.room_players where user_id = auth.uid();
+  if rid is null then raise exception 'not seated'; end if;
+  pr := case p_service when 'cz' then 5 when 'yt' then 9 else null end;
+  if pr is null then raise exception 'unknown service'; end if;
+  if coalesce((p_item->>'duration')::numeric, 0) <= 0 or coalesce(p_item->>'song_id','') = '' then raise exception 'bad item'; end if;
+  select * into me from public.profiles where id = auth.uid() for update;
+  if me.gold < pr then raise exception 'insufficient gold'; end if;
+  update public.profiles set gold = gold - pr where id = me.id;
+  update public.rooms set music = jsonb_build_object(
+    'service', p_service,
+    'item', jsonb_build_object('artist', left(coalesce(p_item->>'artist',''),200), 'title', left(coalesce(p_item->>'title',''),200),
+       'duration', (p_item->>'duration')::numeric, 'song_id', left(p_item->>'song_id',100), 'provider', p_service,
+       'url', left(coalesce(p_item->>'url',''),500), 'icon', left(coalesce(p_item->>'icon',''),500)),
+    'sender', me.id, 'started_at', now(), 'key', (extract(epoch from clock_timestamp())*1000)::bigint)
+   where id = rid;
+  return me.gold - pr;
+end $$;
+
+-- Sunucu saati (istemci saat farkını düzeltmek için).
+create or replace function public.server_now() returns timestamptz language sql stable as $$ select now() $$;
+
+-- ---------- Tur kuralı: en az 1 erkek + 1 kız olmadan şişe dönmez ----------
+create or replace function public._has_pair(p_room bigint) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.room_players where room_id = p_room and seat % 2 = 1)
+     and exists (select 1 from public.room_players where room_id = p_room and seat % 2 = 0)
+$$;
+
+create or replace function public.room_tick(p_room bigint) returns void
+language plpgsql security definer set search_path = public as $$
+declare r public.rooms; age double precision; nxt smallint;
+begin
+  delete from public.room_players where room_id = p_room and last_seen < now() - interval '45 seconds';
+  select * into r from public.rooms where id = p_room for update;
+  if not found then return; end if;
+  if not public._has_pair(p_room) then
+    if r.phase <> 'offer' or r.spinner is not null then
+      update public.rooms set phase='offer', spinner=null, target=null, decisions='{}'::jsonb, phase_at=now() where id = p_room;
+    end if;
+    return;
+  end if;
+  age := extract(epoch from now() - r.phase_at);
+  if r.phase = 'offer' then
+    if r.spinner is null or not exists (select 1 from public.room_players where room_id=p_room and seat=r.spinner) then
+      nxt := public._next_seat(p_room, coalesce(r.spinner, 0));
+      update public.rooms set spinner = nxt, phase_at = now() where id = p_room;
+    elsif age >= 9 then perform public._do_spin(p_room);
+    end if;
+  elsif r.phase = 'spin' and age >= 6 then
+    update public.rooms set phase='choose', phase_at=now() where id = p_room;
+  elsif r.phase = 'choose' and age >= 9 then
+    perform public._finish_choice(p_room);
+  elsif r.phase = 'result' and age >= 2 then
+    update public.rooms set phase='return', phase_at=now() where id = p_room;
+  elsif r.phase = 'return' and age >= 1 then
+    nxt := case when exists (select 1 from public.room_players where room_id=p_room and seat=r.target) then r.target
+                else public._next_seat(p_room, coalesce(r.target, 0)) end;
+    update public.rooms set phase='offer', spinner=nxt, target=null, decisions='{}'::jsonb, phase_at=now() where id = p_room;
+  end if;
+end $$;
+
+create or replace function public.spin_bottle() returns boolean
+language plpgsql security definer set search_path = public as $$
+declare rid bigint; s smallint; r public.rooms;
+begin
+  select room_id, seat into rid, s from public.room_players where user_id = auth.uid();
+  if rid is null or not public._has_pair(rid) then return false; end if;
+  select * into r from public.rooms where id = rid;
+  if r.phase <> 'offer' or r.spinner <> s then return false; end if;
+  return public._do_spin(rid);
+end $$;
+
+revoke all on function public._has_pair(bigint) from public, anon, authenticated;
+grant execute on function public.buy_decor(text), public.set_decor(text, text), public.play_music(text, jsonb),
+  public.server_now(), public.room_tick(bigint), public.spin_bottle() to authenticated;
+
+insert into public.decor_prices (item, price) values
+('turbodecor',500),
+('tourismdecor',500),
+('heartsdecor',500),
+('kissesdecor',500),
+('theatredecor',500),
+('cinemadecor',500),
+('eastdecor',500),
+('westdecor',500),
+('lovedecor',500),
+('hatreddecor',500),
+('chipsdecor',500),
+('cardsdecor',500),
+('nightdecor',500),
+('daydecor',500),
+('discodecor',500),
+('rockdecor',500),
+('fruitjellydecor',500),
+('carameldecor',500),
+('naturedecor',500),
+('stonedecor',500),
+('violetdecor',500),
+('greendecor',500),
+('egyptdecor',500),
+('romedecor',500),
+('venusdecor',500),
+('marsdecor',500),
+('icedecor',500),
+('lavadecor',500),
+('angel',500),
+('demon',500)
+on conflict (item) do update set price = excluded.price;

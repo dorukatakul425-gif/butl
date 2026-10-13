@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCilizAssets } from "@/components/decor/decor-selection";
 import { SendGiftDialog } from "@/components/gifts/send-gift-dialog";
 import { GestureDialog } from "@/components/gestures/gesture-dialog";
-import { useDecorState } from "@/lib/decor-store";
+import { syncDecorFromProfile, useDecorState } from "@/lib/decor-store";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/lib/gifts";
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
@@ -15,7 +15,7 @@ import { setViewerKisses, useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-pr
 import { GIFT_SENT_EVENT, setSeatLocator } from "@/lib/interactive-hint-flags";
 import { newcomerKey, newcomerKind, newcomersToNotify, widgetParts, OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
 import { onRoomGift, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat } from "@/lib/room-session";
-import { getSupabase, type Profile } from "@/lib/supabase";
+import type { Profile } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import { showSourceToast } from "@/components/source-dialogs";
 import { ProfileDialog } from "@/components/profile/profile-dialog";
@@ -114,11 +114,9 @@ export function TableSeats() {
     activeTable.setPlayers(playersRef.current);
     notifyNewcomers(assets, playersRef.current);
   }, [assets, activeTable, room.players, decor.frame, decor.stone]);
-  // Our decor is stored on the profile so everyone at the table sees it.
-  useEffect(() => {
-    if (!VIEWER.id) return;
-    void getSupabase()?.from("profiles").update({ frame: decor.frame, stone: decor.stone }).eq("id", VIEWER.id);
-  }, [decor.frame, decor.stone]);
+  // Decor and ownership come from our server profile (set_decor / buy_decor RPCs).
+  const ownProfile = room.players[VIEWER_SEAT];
+  useEffect(() => { if (ownProfile) syncDecorFromProfile(ownProfile); }, [ownProfile]);
   // Every confirmed gift in the room (ours included) animates for everyone.
   useEffect(() => {
     if (!assets) return;

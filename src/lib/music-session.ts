@@ -45,16 +45,36 @@ export function getSharedAudio() {
   if (!sharedAudio && typeof Audio !== "undefined") { sharedAudio = new Audio(); sharedAudio.preload = "auto"; (sharedAudio as HTMLAudioElement & { playsInline?: boolean }).playsInline = true; }
   return sharedAudio;
 }
-export function sendMusic(music: MusicItem, service: MusicService, sender: MusicSender) {
-  const key = ++seq;
+/** Server-confirmed table song (rooms.music). */
+export interface RoomMusic { service: "cz" | "yt"; item: MusicItem; sender: string; started_at: string; key: number }
+const serviceRegistry: Partial<Record<"cz" | "yt", MusicService>> = {};
+export function registerMusicServices(services: MusicService[]) { services.forEach(s => { serviceRegistry[s.id] = s; }); }
+const stubService = (id: "cz" | "yt"): MusicService => ({ id, musicPrice: id === "yt" ? 9 : 5, confirmationTitleId: "", mediaSearchCooldown: 200, supportsMusicTabs: true,
+  search: async () => [], getPopular: async () => [], getMusicByIds: async () => [] });
+
+/** session.viewerSendMusic: the server charges the price and stores the song on the table; everyone (sender included) plays it from the room feed. */
+export async function sendMusic(music: MusicItem, service: MusicService): Promise<{ ok: true } | { ok: false; reason: string }> {
   const audio = getSharedAudio();
-  if (audio) {
-    if (service.id === "yt") audio.pause();
-    else { audio.src = music.url; audio.currentTime = 0; void audio.play().catch(() => {}); }
-  }
+  // Unlock audio inside the tap (iOS); the feed then sets the real start position.
+  if (audio && service.id !== "yt") { audio.src = music.url; audio.currentTime = 0; void audio.play().catch(() => {}); }
+  const { getSupabase } = await import("@/lib/supabase");
+  const sb = getSupabase();
+  if (!sb) { audio?.pause(); return { ok: false, reason: "offline" }; }
+  const { error } = await sb.rpc("play_music", { p_service: service.id, p_item: music });
+  if (error) { if (state.song?.musicItem.url !== music.url) audio?.pause(); return { ok: false, reason: error.message }; }
+  return { ok: true };
+}
+
+/** Apply rooms.music: same song for everyone, resumed at the shared position after a reload. */
+export function applyRoomMusic(music: RoomMusic | null | undefined, serverOffsetMs: number, sender: MusicSender | null) {
+  if (!music || !sender) return;
+  if (state.song?.key === music.key) return;
+  const startedAt = Date.parse(music.started_at) - serverOffsetMs;
+  if (Date.now() - startedAt > music.item.duration * 1000) return; // already finished
+  const fresh = !state.lines.some(l => l.kind !== "gift" && l.kind !== "text" && l.kind !== "action" && l.key === music.key);
   set({
-    song: { key, musicItem: music, isVideo: service.id === "yt", service, sender, startedAt: Date.now() },
-    lines: [...state.lines, { key, sender, artist: music.artist, title: music.title }],
+    song: { key: music.key, musicItem: music.item, isVideo: music.service === "yt", service: serviceRegistry[music.service] ?? stubService(music.service), sender, startedAt },
+    lines: fresh ? [...state.lines, { key: music.key, sender, artist: music.item.artist, title: music.item.title }] : state.lines,
   });
 }
 const sameUsers = (a: ChatUser[], b: ChatUser[]) => a.length === b.length && a.every(u => b.some(v => v.id === u.id));

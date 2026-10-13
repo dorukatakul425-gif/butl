@@ -1,9 +1,11 @@
 import { useSyncExternalStore } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getSupabase, type Profile } from "./supabase";
+import { applyRoomMusic, type RoomMusic } from "./music-session";
+import { DEFAULT_PHOTO } from "./ciliz-default-photo";
 
 export type RoomPhase = "offer" | "spin" | "choose" | "result" | "return";
-export interface RoomRow { id: number; phase: RoomPhase; spinner: number | null; target: number | null; decisions: Record<string, "kiss" | "refuse">; round: number; phase_at: string }
+export interface RoomRow { id: number; phase: RoomPhase; spinner: number | null; target: number | null; decisions: Record<string, "kiss" | "refuse">; round: number; phase_at: string; music?: RoomMusic | null }
 export interface ChatRow { id: number; user_id: string; receiver_id: string | null; text: string; created_at: string }
 export interface GiftRow { id: number; sender_id: string; receiver_id: string; gift_type: string; seed: number }
 
@@ -34,9 +36,18 @@ export const onRoomGift = (fn: (row: GiftRow) => void) => { giftListeners.add(fn
 let channel: RealtimeChannel | null = null;
 let timers: number[] = [];
 
+let serverOffsetMs = 0;
+function syncMusic() {
+  const music = state.room?.music;
+  if (!music) return;
+  const p = state.players.find(x => x?.id === music.sender);
+  // Sender may have left the table; the song keeps playing for everyone.
+  applyRoomMusic(music, serverOffsetMs, { id: music.sender, name: p?.name ?? "", photoUrl: p?.photo_url || DEFAULT_PHOTO, musicLevel: 0 });
+}
 function applyRoom(room: RoomRow) {
   const changed = !state.room || state.room.phase !== room.phase || state.room.round !== room.round;
   set({ room, ...(changed ? { phaseReceivedAt: Date.now() } : {}) });
+  syncMusic();
 }
 
 async function loadPlayers() {
@@ -62,9 +73,12 @@ export async function joinRoom() {
   if (error || !row) { set({ error: error?.message ?? "Masaya katılınamadı." }); return; }
   const roomId = Number(row.room_id), mySeat = Number(row.seat);
   set({ ...EMPTY, roomId, mySeat });
+  const t0 = Date.now();
+  const { data: now } = await sb.rpc("server_now");
+  if (now) serverOffsetMs = Date.parse(String(now)) - (t0 + Date.now()) / 2;
+  await loadPlayers();
   const { data: room } = await sb.from("rooms").select("*").eq("id", roomId).single();
   if (room) applyRoom(room as RoomRow);
-  await loadPlayers();
   channel = sb.channel(`room-${roomId}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "rooms", filter: `id=eq.${roomId}` }, p => { if (p.new && "id" in p.new) applyRoom(p.new as RoomRow); })
     .on("postgres_changes", { event: "*", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` }, () => void loadPlayers())
