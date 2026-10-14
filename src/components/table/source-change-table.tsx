@@ -1,14 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Button } from '@/components/ui/button';
 import { useCilizAssets } from '@/components/decor/decor-selection';
 import { translate } from '@/lib/ciliz-assets';
 import { executeSourceFeature, useSourceFeatureSession, type SourceTableEntry } from '@/lib/source-feature-session';
 import { SourceFeaturePopup } from './source-feature-popup';
 
+// Markup mirrors the original ChangeTableDialog (bem "change-table") from the game bundle 1:1.
+const EMBEDDED_IMAGES = ['baby', 'champagne', 'champagnebot', 'cognac', 'cola', 'jackdaniels', 'ketchup', 'lemonade', 'martini', 'martinibot', 'milk', 'milkbot', 'nybottle', 'pirate', 'ship', 'skeleton', 'skewer', 'sprite', 'standart', 'vipbottle', 'vodka', 'vodkabot', 'yacht'];
+const cls = (el: string, mods: string[] = []) => { const b = el ? `change-table__${el}` : 'change-table'; return [b, ...mods.filter(Boolean).map(m => `${b}--${m}`)].join(' '); };
+const press = (fn: () => void) => ({ role: 'button', tabIndex: 0, onClick: fn, onKeyDown: (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } } });
+const mmss = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
+
+function Stats({ men, women, timer }: { men: number; women: number; timer?: string | undefined }) {
+  const [timerSub, setTimerSub] = useState(''), [playersSub, setPlayersSub] = useState('');
+  useEffect(() => {
+    if (timer === undefined) { setTimerSub(''); setPlayersSub(''); }
+    else if (timer === '00:00') { setTimerSub('hide'); setPlayersSub('show'); }
+    else { setTimerSub(v => v || 'show'); setPlayersSub(v => v || 'hide'); }
+  }, [timer]);
+  return <div className={cls('stats')}>
+    {timer !== undefined && <div className={cls('kickout-timer', [timerSub])}>{timer}</div>}
+    <div className={cls('stats-players', [playersSub])}>
+      <div className={cls('men')}><div className={cls('stats-icon', ['men'])} />{men}</div>
+      <div className={cls('women')}><div className={cls( stats-icon', ['women'])} />{women}</div>
+    </div>
+  </div>;
+}
+
 export function SourceChangeTable({ onClose }: { onClose: () => void }) {
   const assets = useCilizAssets(), session = useSourceFeatureSession();
-  const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [now, setNow] = useState(Date.now()), [tableId, setTableId] = useState('');
+  const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [now, setNow] = useState(Date.now());
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
   if (!assets) return null;
   const t = (key: string) => translate(assets, key);
@@ -19,18 +41,33 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
     catch (e) { setMessage(e instanceof Error ? e.message : t('dlg:music:unavailable')); }
     finally { setBusy(false); }
   };
-  const row = (entry: SourceTableEntry) => {
-    const seconds = Math.max(0, Math.ceil(((entry.blockedUntil ?? 0) - now) / 1000));
-    const timer = `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
-    return <Button variant="ghost" key={entry.id} className="change-table__item" disabled={busy} onClick={() => seconds ? setMessage(timer) : void change(entry.id)}>
-      <span className="change-table__info">{entry.photo ? <img className="change-table__photo" src={entry.photo} alt="" /> : <span className="change-table__table-icon"><span className={`change-table__bottle change-table__bottle--${assets.bottles?.[entry.bottle] ? entry.bottle : 'standart'}`} /></span>}<span className="change-table__item-border">{entry.name ?? `#${entry.id}`}</span></span>
-      <span className="change-table__stats">{seconds ? <span className="change-table__kickout-timer">{timer}</span> : <span className="change-table__stats-players"><span className="change-table__men"><span className="change-table__stats-icon change-table__stats-icon--men" />{entry.men}</span><span className="change-table__women"><span className="change-table__stats-icon change-table__stats-icon--women" />{entry.women}</span></span>}</span>
-    </Button>;
-  };
-  return createPortal(<SourceFeaturePopup title={t('dlg:change_table:title')} onClose={onClose}>
-    <div className="change-table change-table--support-borders"><Button variant="ghost" className="change-table__random-button" disabled={busy || !session.viewerId} onClick={() => void change()}>{t('dlg:change_table:btn_random2')}</Button>
-      {session.tables?.canViewById && <form className="change-table__view-form" onSubmit={e => { e.preventDefault(); if (/^\d+$/.test(tableId)) void change(tableId); }}><input aria-label="Masa numarası" type="number" min="0" step="1" required value={tableId} onChange={e => setTableId(e.target.value)} /><Button variant="ghost" type="submit" disabled={busy}>{t('dlg:change_table:btn_number')}</Button></form>}
-      <div className="change-table__items">{Boolean(session.tables?.friends.length) && <div className="change-table__subtitle">{t('ios:dlg:change_table:desc_friends_and_fellows')}</div>}{session.tables?.friends.map(row)}{Boolean(session.tables?.history.length) && <><div className="change-table__border" /><div className="change-table__subtitle">{t('dlg:change_table:desc_recent2')}</div>{session.tables?.history.map(row)}</>}</div>
-    </div>{!session.viewerId && <div className="source-feature-message">{t('dlg:music:unavailable')}</div>}{message && <div role="status" className="source-feature-message">{message}</div>}
+  const timerOf = (e: SourceTableEntry) => { if (!e.blockedUntil) return undefined; return mmss(Math.max(0, Math.ceil((e.blockedUntil - now) / 1000))); };
+  const click = (e: SourceTableEntry, timer?: string) => () => { if (timer && timer !== '00:00') setMessage(timer); else void change(e.id); };
+  const PlayerItem = (e: SourceTableEntry) => { const timer = timerOf(e); return <div key={`f${e.id}`} className={cls('item')} aria-label={e.name ?? `#${e.id}`} {...press(click(e, timer))}>
+    <div className={cls('info')}><div className={cls('photo')} style={e.photo ? { backgroundImage: `url(${e.photo})` } : undefined} /><div className={cls('item-border')}>{e.name}</div></div>
+    <Stats men={e.men} women={e.women} timer={timer} />
+  </div>; };
+  const TableItem = (e: SourceTableEntry) => { const timer = timerOf(e), image = EMBEDDED_IMAGES.includes(e.bottle) ? e.bottle : 'standart'; return <div key={`h${e.id}`} className={cls('item')} aria-label={`#${e.id}`} {...press(click(e, timer))}>
+    <div className={cls('info')}><div className={cls('table-icon')}><div className={cls('bottle', [image])} /></div><div className={cls('item-border')}>#{e.id}</div></div>
+    <Stats men={e.men} women={e.women} timer={timer} />
+  </div>; };
+  const friends = session.tables?.friends ?? [], tables = session.tables?.history ?? [];
+  const isBrokenBorders = /Android 8\.1\.0.*Chrome\/(91|94)/.test(navigator.userAgent);
+  return createPortal(<SourceFeaturePopup title={t('dlg:change_table:title')} onClose={onClose} contentClass="popup__content--no-padding" footer={<div className="popup__footer change-table__x_popup__footer" />}>
+    <div className={cls('', [isBrokenBorders ? '' : 'support-borders'])}>
+      <div className={cls('random-button')} aria-disabled={busy || !session.viewerId} {...press(() => { if (session.viewerId) void change(); })}>{t('dlg:change_table:btn_random2')}</div>
+      {session.tables?.canViewById && <form className={cls('view-form')} onSubmit={e => { e.preventDefault(); const v = inputRef.current?.value ?? ''; if (/^\d+$/.test(v)) void change(String(Number(v))); }}>
+        <label htmlFor="table-id" className={cls('subtitle', ['input'])}>Указать стол</label>
+        <div className={cls('input-line')}><input type="number" id="table-id" className={cls('input')} placeholder="Id стола" step="1" min="0" ref={inputRef} required /><span className="validity" /><input className={cls('submit')} type="submit" value="Перейти" disabled={busy} /></div>
+      </form>}
+      <div className={cls('items')}>
+        {friends.length > 0 && <div className={cls('subtitle')}>{t('ios:dlg:change_table:desc_friends_and_fellows')}</div>}
+        {friends.map(PlayerItem)}
+        {friends.length > 0 && tables.length > 0 && <div className={cls('border')} />}
+        {tables.length > 0 && <div className={cls('subtitle')}>{t('dlg:change_table:desc_recent2')}</div>}
+        {tables.map(TableItem)}
+      </div>
+    </div>
+    {!session.viewerId && <div className="source-feature-message">{t('dlg:music:unavailable')}</div>}{message && <div role="status" className="source-feature-message">{message}</div>}
   </SourceFeaturePopup>, document.body);
 }
