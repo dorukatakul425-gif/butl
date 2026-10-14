@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 
-export function SourceFeaturePopup({ title, children, onClose, help, inactive = false, className = '' }: { title: string; children: ReactNode; onClose: () => void; help?: (() => void) | undefined; inactive?: boolean; className?: string }) {
+export function SourceFeaturePopup({ title, children, onClose, help, inactive = false, className = '', contentClass = '', footer }: { contentClass?: string; footer?: ReactNode; title: string; children: ReactNode; onClose: () => void; help?: (() => void) | undefined; inactive?: boolean; className?: string }) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     if (inactive) return;
@@ -24,7 +24,7 @@ export function SourceFeaturePopup({ title, children, onClose, help, inactive = 
     <section ref={ref} tabIndex={-1} role="dialog" aria-modal={!inactive} inert={inactive} aria-label={title} className={`popup popup--center source-feature-popup ${className}`}>
       <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>
       <header className="popup__header"><div className="popup__title">{title}</div>{help && <Button variant="ghost" className="source-feature-help" aria-label="Yardım" onClick={help}>?</Button>}</header>
-      <div className="popup__content">{children}</div>
+      <div className={`popup__content ${contentClass}`}>{children}</div>{footer}
     </section>
   </div>;
 }
