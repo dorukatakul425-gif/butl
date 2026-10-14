@@ -13,7 +13,7 @@ function host(snapshot: SourceFeatureSnapshot, execute = vi.fn().mockResolvedVal
 describe('original feature windows', () => {
  it('never changes tables or spins without an authenticated host', async () => {
   render(<SourceChangeTable onClose={vi.fn()} />);
-  expect(screen.getByRole('button', { name: 'Rastgele tablo!' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Rastgele tablo!' })).toHaveAttribute('aria-disabled', 'true');
   await expect(executeSourceFeature('roulette-spin')).rejects.toThrow('Oyuncu hesabı');
  });
  it('changes only after the host confirms, never before', async () => {
