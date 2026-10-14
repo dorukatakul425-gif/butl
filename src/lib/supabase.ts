@@ -1,17 +1,25 @@
+// supabase.ts — dəyişmədi, yalnız Profile tipi export edilir
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-/** Browser-only client for the project's own Supabase (env set on Vercel / .env). */
 let client: SupabaseClient | null | undefined;
+
 export function getSupabase(): SupabaseClient | null {
   if (typeof window === "undefined") return null;
   if (client !== undefined) return client;
   const url = import.meta.env["VITE_SUPABASE_URL"] as string | undefined;
-  const key = (import.meta.env["VITE_SUPABASE_ANON_KEY"] ?? import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"]) as string | undefined;
-  client = url && key ? createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true } }) : null;
+  const key = (
+    import.meta.env["VITE_SUPABASE_ANON_KEY"] ??
+    import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"]
+  ) as string | undefined;
+  client =
+    url && key
+      ? createClient(url, key, {
+          auth: { persistSession: true, autoRefreshToken: true },
+        })
+      : null;
   return client;
 }
 
-/** Usernames are the credential; Supabase Auth needs an address, derived deterministically. */
 export function normalizeUsername(name: string) {
   return name.trim().toLowerCase().replace(/[^a-z0-9_.]/g, "");
 }
