@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth, refreshProfile } from "@/lib/auth";
 import { getSupabase, normalizeUsername, usernameEmail } from "@/lib/supabase";
-const bottle = "https://id-preview--296002db-204c-4db3-8856-b7ba5992757d.lovable.app/__l5e/assets-v1/9fe969ab-f2aa-4c5c-a3fc-aa6096e17b94/deltagame-bottle.jpeg";
+const bottle = "https://deltagame.az/deltagame-icon-512.png";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -13,6 +13,9 @@ export const Route = createFileRoute("/auth")({
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" },
+      { rel: "icon", type: "image/png", href: "/favicon.ico" },
+      { rel: "icon", type: "image/png", sizes: "512x512", href: "/deltagame-icon-512.png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
     meta: [
       { title: "Deltagame.az — Şüşə oyunu" },
@@ -21,8 +24,9 @@ export const Route = createFileRoute("/auth")({
       { property: "og:description", content: "Deltagame.az — hər fırlanış yeni tanışlıq, hər oyun unudulmaz bir an. Şüşəni fırlat və əyləncəyə qoşul!" },
       { property: "og:type", content: "website" },
       { property: "og:image", content: bottle },
+      { property: "og:image:alt", content: "Deltagame.az şişə ikonu" },
       { name: "twitter:image", content: bottle },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
