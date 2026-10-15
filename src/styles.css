@@ -27,6 +27,7 @@
 @import "./styles/ciliz-emoji.css";
 @import "./styles/ciliz-chat-action.css";
 @import "./styles/ciliz-chat-controls.css";
+@import "./styles/profile-home.css";
 
 @custom-variant dark (&:is(.dark *));
 

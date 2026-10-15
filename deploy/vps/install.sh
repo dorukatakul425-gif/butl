@@ -66,7 +66,7 @@ if [[ ! -f "$CONF" ]]; then
 fi
 # shellcheck disable=SC1090
 source "$CONF"
-sed -i "/^DOMAIN=/d" "$CONF"; echo "DOMAIN=$DOMAIN" >> "$CONF"
+sed -i "/^DOMAIN=/d;/^ADMIN_EMAIL=/d" "$CONF"; echo "DOMAIN=$DOMAIN" >> "$CONF"; echo "ADMIN_EMAIL=$EMAIL" >> "$CONF"
 
 # ---------- Self-hosted Supabase ----------
 if [[ ! -f "$SB_DIR/docker-compose.yml" ]]; then
@@ -176,25 +176,9 @@ systemctl daemon-reload
 systemctl enable --now butl
 systemctl restart butl
 
-# ---------- HTTPS reverse proxy (WebSocket included) ----------
+# ---------- HTTPS reverse proxy (WebSocket included) + static files ----------
 log "Caddy (HTTPS) ayarlanıyor"
-cat > /etc/caddy/Caddyfile <<EOF
-{
-  email $EMAIL
-}
-$DOMAIN {
-  encode zstd gzip
-  @api path /auth/v1/* /rest/v1/* /realtime/v1/* /storage/v1/* /graphql/v1/*
-  handle @api {
-    reverse_proxy 127.0.0.1:$KONG_PORT
-  }
-  handle {
-    reverse_proxy 127.0.0.1:$APP_PORT
-  }
-}
-EOF
-systemctl enable caddy
-systemctl reload caddy || systemctl restart caddy
+APP_PORT=$APP_PORT KONG_PORT=$KONG_PORT bash "$APP_DIR/deploy/vps/caddy.sh"
 
 log "Güvenlik duvarı"
 ufw allow OpenSSH >/dev/null; ufw allow 80/tcp >/dev/null; ufw allow 443/tcp >/dev/null

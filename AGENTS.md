@@ -35,8 +35,6 @@
 - Feature dialogs require verified session state for mutations; league rank/time header strings, kick prices and seasons stay host-owned. Participation metadata grants no privilege.
 - Composite manifest-sized original center artwork below the bottle in Pixi so layout and input remain shared.
 - Roulette uses original wheel/frame/center and host-fed prizes/winners. Screenshot labels are inert, not payouts; the 2,000-spin preview never changes wallets. Only authenticated host awards persist.
-- Bootstrap only application migrations/catalogues, never player data or secrets.
-- Use image children for composer artwork to resist background resets; place small-screen title rules after base sizes.
 
 - Root prints the inspector notice once client-side; no DevTools detection or execution/input blocking, to preserve operation.
-- VPS self-hosting lives only in deploy/vps (self-hosted Supabase + Node build via NITRO_PRESET=node-server + Caddy); never change Lovable's .env/vite config for it, so both targets keep working.
+- VPS hosting lives only in deploy/vps (subdirectories have their own AGENTS.md to read first); never change Lovable's .env/vite config for it, so both targets work.

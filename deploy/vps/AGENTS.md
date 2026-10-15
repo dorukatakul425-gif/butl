@@ -1,0 +1,3 @@
+- Self-host with self-hosted Supabase, a Node build (NITRO_PRESET=node-server) and Caddy routing /auth|rest|realtime|storage/v1 to the gateway; this reuses the app's Cloud client code unchanged.
+- Bootstrap only application migrations/catalogues, never player data or secrets.
+- Caddy serves built public files from a copied static dir (deploy/vps/caddy.sh, run after every build); Node only renders pages, so asset delivery never depends on the Node server's file paths.

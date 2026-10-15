@@ -1,0 +1,47 @@
+.profile-home {
+  --home-surface: oklch(0.98 0.004 160);
+  --home-ink: oklch(0.28 0.035 160);
+  --home-muted: oklch(0.54 0.02 160);
+  --home-line: oklch(0.9 0.015 160);
+  --home-green: oklch(0.45 0.095 160);
+  --home-paper: oklch(1 0 0);
+  --home-heart: oklch(0.62 0.2 20);
+  --home-shadow: 0 8px 20px oklch(0.2 0.03 160 / 0.12);
+  min-height: 100dvh;
+  background: var(--home-surface);
+  color: var(--home-ink);
+  font-family: Arial, sans-serif;
+  padding: max(20px, env(safe-area-inset-top)) 24px max(18px, env(safe-area-inset-bottom));
+}
+.profile-home__inner { width: 100%; max-width: 480px; margin: 0 auto; }
+.profile-home__header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 32px; }
+.profile-home__brand { font-size: 20px; font-weight: 800; }
+.profile-home__brand > span { color: var(--home-green); margin-left: 5px; }
+.profile-home__identity { display: flex; gap: 20px; align-items: center; padding: 8px 0 28px; }
+.profile-home .profile-home__avatar { position: relative; height: 80px; width: 80px; padding: 0; flex-shrink: 0; border-radius: 50%; background: var(--home-paper); overflow: visible; }
+.profile-home__avatar > img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--home-paper); box-shadow: var(--home-shadow); }
+.profile-home__camera { position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--home-green); color: var(--home-paper); border: 2px solid var(--home-surface); }
+.profile-home__name { min-width: 0; }
+.profile-home__name p { font-size: 13px; color: var(--home-muted); overflow-wrap: anywhere; }
+.profile-home__name h1 { font-size: 26px; line-height: 1.2; font-weight: 700; margin: 5px 0 8px; overflow-wrap: anywhere; }
+.profile-home__name h1 span { font-size: 19px; color: var(--home-muted); font-weight: 400; }
+.profile-home__name p span { white-space: nowrap; }
+.profile-home__wallet { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--home-line); border-bottom: 1px solid var(--home-line); padding: 23px 0; margin-bottom: 32px; }
+.profile-home__wallet > div { display: flex; flex-direction: column; gap: 7px; align-items: center; min-width: 0; }
+.profile-home__wallet > div + div { border-left: 1px solid var(--home-line); }
+.profile-home__wallet strong { font-size: 20px; max-width: 100%; overflow-wrap: anywhere; }
+.profile-home__wallet > div > span:last-child { font-size: 12px; color: var(--home-muted); }
+.profile-home__heart { color: var(--home-heart); fill: currentColor; }
+.profile-home__kiss { height: 22px; font-size: 20px; line-height: 22px; }
+.profile-home__play { position: relative; isolation: isolate; background: var(--home-green); color: var(--home-paper); margin: 0 -24px; overflow: hidden; }
+.profile-home__pattern { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.1; z-index: -1; }
+.profile-home__play-content { padding: 28px 24px 30px; text-align: center; display: flex; align-items: center; flex-direction: column; }
+.profile-home__eyebrow { font-size: 11px; font-weight: 700; }
+.profile-home__play h2 { font-size: 32px; line-height: 1.2; font-weight: 800; margin-top: 9px; }
+.profile-home__bottle { height: 150px; width: 150px; object-fit: contain; margin: 12px 0 20px; transform: rotate(-12deg); }
+.profile-home .profile-home__join { width: 100%; height: 54px; background: var(--home-paper); color: var(--home-green); border-radius: 8px; justify-content: space-between; padding: 0 20px; font-size: 16px; font-weight: 700; box-shadow: var(--home-shadow); }
+.profile-home .profile-home__join:hover { background: var(--home-surface); }
+.profile-home__footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; font-size: 11px; color: var(--home-muted); }
+.profile-home__notice { font-size: 13px; color: var(--home-heart); margin-bottom: 15px; }
+@media (min-width: 600px) { .profile-home { padding-top: 40px; } .profile-home__play { margin: 0; } }
+@media (max-width: 359px) { .profile-home { padding-left: 16px; padding-right: 16px; } .profile-home__identity { gap: 12px; } .profile-home__name h1 { font-size: 22px; } .profile-home__play { margin-left: -16px; margin-right: -16px; } .profile-home__wallet strong { font-size: 17px; } }

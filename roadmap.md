@@ -1,4 +1,7 @@
 # Tasks
+- [ ] Correct own-profile gender changes and repeat-change confirmation using verified original rules and prices.
+- [ ] Replace plain profile home with a polished mobile-style entry screen and verify real account navigation.
+- [ ] Transfer this task's verified changes to both GitHub repositories and verify matching contents.
 - [ ] Connect live league seasons: original service requires social-authenticated binary WebSocket and unavailable supported access/rules. User accepted whichever works; attempted first-party daily verified-kiss ranking with owner preferences and no currency rewards. Migration tool refused existing 0000/0001 snapshot collision; SQL never ran. Blocked on managed migration metadata repair; do not edit generated snapshots or claim service activated.
 - [x] Add exact one-time developer-console notice without inspection traps; 3 tests passed, browser confirmed notice once, normal typing and no runtime errors; build OK. This is a notice, not frontend code-copy protection.
 - [x] Restore original emoji/gift/send as image children and source Arial bold white table title (9px small / 14px large); replace fullscreen with home back button and guard destroyed Pixi cleanup. Signed-in phone/desktop checks confirmed loaded icons, emoji menu, recipient prompt, server chat readback and home return; 42 tests passed. Exact original back artwork was not found, so the back arrow is standard, not claimed source-identical.

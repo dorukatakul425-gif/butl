@@ -1,0 +1,1 @@
+- Use image children for composer artwork to resist background resets; place small-screen title rules after base sizes.

@@ -88,7 +88,7 @@ Script tekrar çalıştırılabilir: anahtarlar ve veritabanı korunur, yalnız 
 ```bash
 cd /opt/butl && sudo bash deploy/vps/update.sh
 ```
-`git pull` yapar, `drizzle/migrations` içindeki **yeni** SQL dosyalarını bir kez uygular, oyunu yeniden derler ve servisi yeniden başlatır.
+`git pull` yapar, `drizzle/migrations` içindeki **yeni** SQL dosyalarını bir kez uygular, oyunu yeniden derler, servisi yeniden başlatır ve resim/CSS/JS dosyalarını `/var/www/butl` içine kopyalayıp Caddy'yi yeniler (`deploy/vps/caddy.sh`).
 
 ## 7. Faydalı komutlar
 
@@ -119,6 +119,7 @@ Geri yükleme: `docker compose exec -T db pg_restore -U supabase_admin -d postgr
 | Giriş "Email not confirmed" | `/opt/butl-supabase/.env` içinde `ENABLE_EMAIL_AUTOCONFIRM=true` → `docker compose up -d` |
 | Mesajlar canlı gelmiyor | `docker compose logs realtime`; tarayıcıda `wss://DOMAIN/realtime/v1/websocket` 101 dönmeli |
 | `permission denied for table` | Bootstrap tamamlanmadı: `docker compose exec db psql ...` ile hatayı görün, boş DB'de install.sh'ı tekrar çalıştırın |
+| Resimler/CSS açılmıyor (soru işaretli kutular, düz beyaz sayfa) | `cd /opt/butl && sudo bash deploy/vps/update.sh` — derlenen dosyalar `/var/www/butl` içine kopyalanır ve Caddy onları doğrudan sunar. Yalnız bu adım için: `sudo bash deploy/vps/caddy.sh` |
 | 502 Bad Gateway | `systemctl status butl` ve `docker compose ps` — biri durmuş olabilir |
 | RAM yetmiyor | Kullanılmayan `analytics`, `vector`, `functions`, `imgproxy` servislerini durdurabilirsiniz; oyun bunları kullanmaz |
 
