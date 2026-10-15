@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { setUserBlocked, useBlockedUsers } from "@/lib/block-session";
 import { SourceAchievementsDialog } from "@/components/table/source-achievements-dialog";
+import { SourceKickoutDialog } from './source-kickout-dialog';
+import { Button } from '@/components/ui/button';
 import type React from "react";
 import { createPortal } from "react-dom";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
@@ -23,7 +25,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
 }) {
   const t = (key: string, ...a: string[]) => translate(assets, key, ...a);
   const [statsState, setStatsState] = useState<"narrowed" | "expanded">("narrowed");
-  const [popup, setPopup] = useState<"settings" | "claims" | "report-photo" | "report-user" | "achievements" | null>(null);
+  const [popup, setPopup] = useState<"settings" | "claims" | "report-photo" | "report-user" | "achievements" | "kickout" | null>(null);
   const [loaded, setLoaded] = useState<ServerUserProfile | null>(null);
   const profile = profileProp ?? loaded;
   const sectionRef = useRef<HTMLElement>(null);
@@ -181,6 +183,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
             </div>
           </div>
           <div className="user-profile__actions user-profile__actions--justify">
+            <Button variant="ghost" className={`user-profile__action user-profile__action--kickout-${feature.kickout?.targets[player.id ?? '']?.kickAt ? 'save' : self ? 'self' : 'kick'}`} aria-label={t('kickout:header')} title={t('kickout:header')} onClick={() => setPopup('kickout')} />
             {socialHref
               ? <a className="user-profile__action user-profile__action--ok" href={socialHref} target="_blank" rel="noreferrer" aria-label="DAT" />
               : <div className="user-profile__action user-profile__action--ok user-profile__action--disabled" aria-label="DAT" />}
@@ -224,5 +227,6 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
     {popup === "achievements" && userId && <SourceAchievementsDialog male={player.male} user={self ? undefined : { id: userId, name: player.name, male: player.male }} onClose={() => setPopup(null)} />}
 
     {popup === "settings" && <SourceProfileSettings assets={assets} name={player.name} photo={player.photoUrl} onClose={() => setPopup(null)} />}
+    {popup === 'kickout' && <SourceKickoutDialog player={player} self={self} assets={assets} onClose={() => setPopup(null)} onConfirmed={onClose} />}
   </div>, document.body);
 }

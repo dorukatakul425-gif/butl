@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_Слой_2" data-name="Слой 2" xmlns="http://www.w3.org/2000/svg" width="82" height="134" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 82 134">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #b22a28;
+      }
+
+      .cls-2 {
+        fill: url(#_Безымянный_градиент_37);
+        opacity: .9;
+      }
+
+      .cls-3 {
+        fill: none;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+        stroke-width: .5px;
+      }
+    </style>
+    <radialGradient id="_Безымянный_градиент_37" data-name="Безымянный градиент 37" cx="46.9" cy="45.65" fx="46.9" fy="45.65" r="20.93" gradientTransform="translate(0 -15.32) scale(1 1.34)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#db914f"/>
+      <stop offset=".17" stop-color="#d98b4c"/>
+      <stop offset=".38" stop-color="#d57b46"/>
+      <stop offset=".62" stop-color="#ce613c"/>
+      <stop offset=".88" stop-color="#c53d2f"/>
+      <stop offset="1" stop-color="#c12a28"/>
+    </radialGradient>
+  </defs>
+  <g id="_Слой_2-2" data-name="Слой 2">
+    <g>
+      <path class="cls-3" d="M47.71,133.92s2.24-7.43,0-22.95,0-31.04,0-31.04"/>
+      <path class="cls-2" d="M64.02,31.38c-2.22-3.09-7.01-8.42-16.31-8.42s-14.09,5.32-16.31,8.42c-2.22,3.09-8,15.19-1.43,29.4,6.57,14.22,17.74,15.88,17.74,15.88,0,0,11.17-1.66,17.74-15.88,6.57-14.22.78-26.31-1.43-29.4Z"/>
+      <path class="cls-1" d="M46.9,75.56s-.97,3.44-2.69,4.38c0,0,.66,1.55,3.5,1.55s3.48-1.66,3.48-1.66c0,0-2.72-1.91-2.47-4.41l-1.83.14Z"/>
+      <image width="82" height="84" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABUCAYAAAARdWCGAAAACXBIWXMAAAsSAAALEgHS3X78AAADD0lEQVR4nO2a23LiMBBEWyaw2fz/vybBYO0Dars9yCH7EMkV+lSpxPpCvKdG0mgMYIwxxhhjjDHGGGOMMcYYY4wxxuyX1PsBIjnnbz1TSin/9LP8D7sQGeR955lmiXsR2lXkhsDY390GEcnPvYV2EykStdem5+bbQkP43E1oF5FBorahcmy+rfQT1jInrKV2kfnS+g9WJA7SxxZFUpw2PQesh30zmkbkhsQBwEH6A9Yy59uxyLtKi2K7RGXziERd4qE8C5sKTVgijvIupaXyb5TzST43pZnIEI0qkfKOoVEmRTISx9J06OvQnsrfaxqVrSMyyqTII4A/AE6lV5kUyUgcAXxiGfZxJef1TWkispIvRpEU+FoaZb5gLfJcWhzyOkfy+3POObWKypYRGdMcijxiEfm3NMpUkRfcJH6U79Phfin9gGUlbxqZPYZ2LSI5tF8BvOEmk1FJORfcJCasBY5Y5tOrfP9TrNpxsTmVxqH9VnoVyQWG0TniFqG6KMUkvhl7iEiNyjhXnrCIPOAmcSzHNVXSBP4pRCpxvoxp0AnriKTEWp75qNDx47RebNhv7bHjFpGyEI7vQp4yPL6kCbGSUytKxD5WgYAO+SNpGZFbsjQHrG0BuUpzgeG5uM/uWrRoPUdGmSqQW79zeS7OjdxPn3Hb0Zzl2ij0KSKSqESNPm79KDFjScgnLMn4R7lORV5xP+ybsheRjEIuLswVmR8yj/wE8I5F5hnrqOxWl+wxtOOQrhUiOJRVpG4R37FE5Yh1VM4yf131J6WUc57/T1pbHLAIYhpDaRziuiVk0eIT9YjsNk/2Gtq6iIzhHI9pDhnLaLrgRIlPMUfq/MUoUzTN0VcNWc7Vmg5rAL/4VUMZ3lrRnsIlsQpeq4BfN1qMyOb0GtpkCscnbBcgKKr2wmslscfr2Ob71I132kPoY0lsa9t4lzv6BwL3hYitX1no527pTmRvP1mp9fMtX/VP+9sfoPpSLPLVe+puK3SNXdTygDupD9mDPGOMMcYYY4wxxhhjjDHGGGOMMcYYYzryD6kaoLuUHVyDAAAAAElFTkSuQmCC"/>
+    </g>
+  </g>
+</svg>

@@ -24,6 +24,10 @@ Yeni hesaplar 10.000 kalp, 10.000 test DAT ve 50 jest jetonuyla başlar. Kullan�
 - Bu repo kopyası yeni Lovable hesabını veya workspace bağlantılarını otomatik eşitlemez.
 - Eski export kaldırıldı: oyuncu kayıtları ve imzalı fotoğraf bağlantıları kaynak reposunda bulunmamalıdır. Önceki Git geçmişinde kalan kişisel veriler ayrıca değerlendirilmelidir; bu aktarım geçmişi yeniden yazmaz.
 
+## VPS (kendi sunucunuz)
+
+Aynı kod kendi sunucunuzda da çalışır: `sudo bash deploy/vps/install.sh <domain> <eposta>`. Ayrıntılı adımlar: [deploy/vps/KURULUM.md](deploy/vps/KURULUM.md). Lovable çalışması bundan etkilenmez.
+
 ## Yerel geliştirme
 
 ```sh

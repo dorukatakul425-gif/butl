@@ -18,7 +18,8 @@ export function SourceHeartBonus() {
       const overlay = document.querySelector('.bottle-play-overlay')?.getBoundingClientRect();
       const origin = award.from ?? (overlay ? { x: overlay.x, y: overlay.y } : undefined);
       const target = document.querySelector('.original-heart-button')?.getBoundingClientRect();
-      if (!assets || !host || !origin || !target || seen.has(award.id)) { if (award.prepaid) setPendingGold(-award.amount); return; }
+      if (seen.has(award.id)) return;
+      if (!assets || !host || !origin || !target) { if (award.prepaid) setPendingGold(-award.amount); return; }
       seen.add(award.id);
       if (!award.prepaid) setPendingGold(award.amount);
       if (seen.size > 1000) seen.delete(seen.values().next().value ?? '');

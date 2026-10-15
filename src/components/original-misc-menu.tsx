@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
-import achievements from "@/assets/original-menu-achievements.svg.asset.json";
-import tops from "@/assets/original-menu-tops.svg.asset.json";
-import bottle from "@/assets/original-menu-bottle.svg.asset.json";
-import decor from "@/assets/original-menu-decor.svg.asset.json";
-import boosters from "@/assets/original-menu-boosters.svg.asset.json";
+import achievements from "@/assets/original-menu-achievements.svg";
+import tops from "@/assets/original-menu-tops.svg";
+import bottle from "@/assets/original-menu-bottle.svg";
+import decor from "@/assets/original-menu-decor.svg";
+import boosters from "@/assets/original-menu-boosters.svg";
 import { useCilizAssets } from '@/components/decor/decor-selection';
 import { translate } from '@/lib/ciliz-assets';
 
 // MiscMenuPresenter order, MiscMenuDialog geometry and the live assets.json Turkish strings.
 const items = [
-  { id: "achievements", title: "Başarılar", key: 'table:hint:achievement', icon: achievements.url },
-  { id: "tops", title: "Puanlar", key: 'table:hint:top', icon: tops.url },
-  { id: "bottle", title: "Şişe", key: 'table:menu:change_bottle', icon: bottle.url },
-  { id: "decor", title: "Stil", key: 'table:menu:decor', icon: decor.url },
-  { id: "boosters", title: "Booster'lar", key: 'table:menu:boosters', icon: boosters.url },
+  { id: "achievements", title: "Başarılar", key: 'table:hint:achievement', icon: achievements },
+  { id: "tops", title: "Puanlar", key: 'table:hint:top', icon: tops },
+  { id: "bottle", title: "Şişe", key: 'table:menu:change_bottle', icon: bottle },
+  { id: "decor", title: "Stil", key: 'table:menu:decor', icon: decor },
+  { id: "boosters", title: "Booster'lar", key: 'table:menu:boosters', icon: boosters },
 ] as const;
 
 interface OriginalMiscMenuProps {

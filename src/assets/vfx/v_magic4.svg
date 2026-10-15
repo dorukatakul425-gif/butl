@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="15px" height="14px" viewBox="0 0 15 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>magic4</title>
+    <defs>
+        <radialGradient cx="50%" cy="50%" fx="50%" fy="50%" r="54.5454545%" id="radialGradient-1">
+            <stop stop-color="#FFCFE1" offset="27.4509804%"></stop>
+            <stop stop-color="#FFCFE1" stop-opacity="0.0470588235" offset="100%"></stop>
+            <stop stop-color="#E3EE9F" stop-opacity="0.2" offset="100%"></stop>
+            <stop stop-color="#FFF8A2" stop-opacity="0.0509803922" offset="100%"></stop>
+        </radialGradient>
+        <radialGradient cx="49.6453901%" cy="50%" fx="49.6453901%" fy="50%" r="54.6099291%" gradientTransform="translate(0.496454,0.500000),scale(1.000000,0.992958),translate(-0.496454,-0.500000)" id="radialGradient-2">
+            <stop stop-color="#FFE7F0" stop-opacity="0.901960784" offset="6.66666667%"></stop>
+            <stop stop-color="#FFE7F0" stop-opacity="0.0470588235" offset="100%"></stop>
+            <stop stop-color="#E3EE9F" stop-opacity="0.2" offset="100%"></stop>
+            <stop stop-color="#FFF8A2" stop-opacity="0.0509803922" offset="100%"></stop>
+        </radialGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="magic4" transform="translate(0.850000, 0.000000)" fill-rule="nonzero">
+            <g id="Group">
+                <g fill="#FFBCD6" id="Tween_1_0_Layer0_0_MEMBER_0_FILL">
+                    <polygon id="Path" points="14 3.95 8.4 3.5 4 0 3.5 5.6 0 10.05 5.65 10.5 10.05 14 10.55 8.4"></polygon>
+                </g>
+                <g transform="translate(2.000000, 2.000000)" fill="url(#radialGradient-1)" id="Tween_1_0_Layer0_0_MEMBER_1_FILL">
+                    <polygon id="Path" points="9.95 2.85 6 2.5 2.85 0.05 2.55 4 0.05 7.15 4.05 7.5 7.15 9.95 7.5 6"></polygon>
+                </g>
+                <g transform="translate(3.000000, 3.000000)" fill="url(#radialGradient-2)" id="Tween_1_0_Layer0_0_MEMBER_2_FILL">
+                    <polygon id="Path" points="7.55 2.45 4.7 2.2 2.5 0.45 2.25 3.3 0.5 5.55 3.3 5.75 5.55 7.55 5.8 4.7"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

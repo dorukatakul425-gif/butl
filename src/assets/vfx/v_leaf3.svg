@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_Слой_2" data-name="Слой 2" xmlns="http://www.w3.org/2000/svg" width="37.43" height="51.91" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 37.43 51.91">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#_Безымянный_градиент_237);
+      }
+
+      .cls-2 {
+        fill: url(#_Безымянный_градиент_252);
+      }
+    </style>
+    <linearGradient id="_Безымянный_градиент_237" data-name="Безымянный градиент 237" x1="3.26" y1=".49" x2="32.39" y2="49.25" gradientTransform="translate(33.57 -1.78) rotate(64.27)" gradientUnits="userSpaceOnUse">
+      <stop offset=".19" stop-color="#d15545"/>
+      <stop offset=".34" stop-color="#da5d45"/>
+      <stop offset=".57" stop-color="#f17447"/>
+      <stop offset=".68" stop-color="#f27c49"/>
+      <stop offset=".87" stop-color="#f7924f"/>
+      <stop offset=".89" stop-color="#f89650"/>
+    </linearGradient>
+    <linearGradient id="_Безымянный_градиент_252" data-name="Безымянный градиент 252" x1="4.29" y1=".54" x2="31.81" y2="52.34" gradientTransform="translate(33.57 -1.78) rotate(64.27)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b84238"/>
+      <stop offset=".3" stop-color="#cb553e"/>
+      <stop offset=".61" stop-color="#d76243"/>
+      <stop offset=".89" stop-color="#dc6745"/>
+    </linearGradient>
+  </defs>
+  <g id="_Слой_2-2" data-name="Слой 2">
+    <g>
+      <path class="cls-1" d="M34.1,4.69s-4.09,1.07-8.08.47c-4-.6-11.75,1.32-17.53,6.43C2.71,16.69.34,24.5.34,24.5c0,0,2.55,1.09,4.18,1.06,0,0-2.59,3.64-3.17,6.17-.58,2.53-.43,4.7.18,6.28s-.1,11.28-1.53,13.91c0,0,7.8-5.56,10.41-6.36,2.61-.81,3.49.56,6.81-1.41,3.32-1.97,5.94-5.86,5.94-5.86,0,0,1.47,2.43,3.6,3.43,0,0,5.34-3.99,8.86-12.21,3.53-8.21-1.52-24.82-1.52-24.82Z"/>
+      <path class="cls-2" d="M35.67,0s-.33,1.96-3.05,6.26-4.74,6.33-4.74,6.33c0,0-4.09-.72-10.37,1.33-6.27,2.05-12.61,6.6-12.61,6.6,0,0,12.26-7.33,21.66-6.17l-7.57,12.26s-6.16.27-10.85,3.73c0,0,4.9-2.88,9.69-2.27L2.94,48.57l15.25-18.84s-1.18,5.47-3.09,8.9c0,0,4.02-6.09,4.57-11.18l9.86-13.05s1.4,1.85.62,8.97c-.78,7.11-3.17,12.53-3.17,12.53,0,0,4.73-10.7,4.95-16.76.22-6.06-.86-6.44-.86-6.44,0,0,5.21-8.07,6.36-10.81"/>
+    </g>
+  </g>
+</svg>

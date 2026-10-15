@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="43px" height="43px" viewBox="0 0 43 43" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>v_fire2</title>
+    <defs>
+        <radialGradient cx="50%" cy="50%" fx="50%" fy="50%" r="51.1538462%" id="radialGradient-1">
+            <stop stop-color="#FCD730" stop-opacity="0.956862745" offset="10.1960784%"></stop>
+            <stop stop-color="#FCB330" stop-opacity="0.956862745" offset="43.1372549%"></stop>
+            <stop stop-color="#FC8D30" stop-opacity="0.0980392157" offset="92.5490196%"></stop>
+            <stop stop-color="#FC8D30" stop-opacity="0" offset="100%"></stop>
+        </radialGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="v_fire2" transform="translate(0.950000, 0.950000)" fill="url(#radialGradient-1)" fill-rule="nonzero">
+            <g id="FL_1_0_Layer0_0_FILL" transform="translate(0.439490, 0.415784)">
+                <path d="M20.5846939,0.584617615 C15.0667241,0.584617615 10.3487574,2.533343 6.43079376,6.43079376 C2.533343,10.3487574 0.584617615,15.0667241 0.584617615,20.5846939 C0.584617615,26.1026637 2.533343,30.8103739 6.43079376,34.7078247 C10.3487574,38.6257884 15.0667241,40.5847702 20.5846939,40.5847702 C26.1026637,40.5847702 30.8103739,38.6257884 34.7078247,34.7078247 C38.6257884,30.8103739 40.5847702,26.1026637 40.5847702,20.5846939 C40.5847702,15.0667241 38.6257884,10.3487574 34.7078247,6.43079376 C30.8103739,2.533343 26.1026637,0.584617615 20.5846939,0.584617615 Z" id="Path"></path>
+            </g>
+        </g>
+    </g>
+</svg>

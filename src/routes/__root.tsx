@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { showInspectorNotice } from "../lib/inspector-notice";
 
 function NotFoundComponent() {
   return (
@@ -117,6 +118,9 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    showInspectorNotice();
+  }, []);
   useEffect(() => {
     const editable = (t: EventTarget | null) => t instanceof HTMLElement && !!t.closest("input, textarea, [contenteditable='true']");
     const block = (e: Event) => { if (!editable(e.target)) e.preventDefault(); };

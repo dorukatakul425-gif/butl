@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="52px" height="53px" viewBox="0 0 52 53" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>v_fire4</title>
+    <defs>
+        <radialGradient cx="50%" cy="50%" fx="50%" fy="50%" r="51.9166667%" id="radialGradient-1">
+            <stop stop-color="#FCEDAC" stop-opacity="0.956862745" offset="0.392156863%"></stop>
+            <stop stop-color="#FCE992" stop-opacity="0.956862745" offset="9.41176471%"></stop>
+            <stop stop-color="#FCB330" stop-opacity="0.956862745" offset="46.2745098%"></stop>
+            <stop stop-color="#FC8D30" stop-opacity="0.0980392157" offset="92.5490196%"></stop>
+            <stop stop-color="#FC8D30" stop-opacity="0" offset="100%"></stop>
+        </radialGradient>
+        <radialGradient cx="50%" cy="50%" fx="50%" fy="50%" r="51.1538462%" id="radialGradient-2">
+            <stop stop-color="#FCD730" stop-opacity="0.956862745" offset="10.1960784%"></stop>
+            <stop stop-color="#FCB330" stop-opacity="0.956862745" offset="43.1372549%"></stop>
+            <stop stop-color="#FC8D30" stop-opacity="0.0980392157" offset="92.5490196%"></stop>
+            <stop stop-color="#FC8D30" stop-opacity="0" offset="100%"></stop>
+        </radialGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="v_fire4" transform="translate(0.000000, 0.500000)" fill-rule="nonzero">
+            <g id="Group">
+                <g transform="translate(0.445068, 0.445068)" fill="url(#radialGradient-1)" id="FL_2_0_Layer0_0_FILL-link">
+                    <g transform="translate(0.555542, 0.555542)" id="FL_2_0_Layer0_0_FILL">
+                        <path d="M49.9987793,24.9993896 C49.9987793,18.0828918 47.5543945,12.1802582 42.665625,7.29148865 C37.8046326,2.43049622 31.9158875,0 24.9993896,0 C18.0828918,0 12.1802582,2.43049622 7.29148865,7.29148865 C2.43049622,12.1802582 0,18.0828918 0,24.9993896 C0,31.9158875 2.43049622,37.8046326 7.29148865,42.665625 C12.1802582,47.5543945 18.0828918,49.9987793 24.9993896,49.9987793 C31.9158875,49.9987793 37.8046326,47.5543945 42.665625,42.665625 C47.5543945,37.8046326 49.9987793,31.9158875 49.9987793,24.9993896 Z" id="Path"></path>
+                    </g>
+                </g>
+                <g transform="translate(5.000000, 4.500000)" fill="url(#radialGradient-2)" id="FL_1_0_Layer0_0_FILL-link">
+                    <g transform="translate(0.000000, 0.500000)">
+                        <g transform="translate(0.439490, 0.415784)" id="FL_1_0_Layer0_0_FILL">
+                            <path d="M20.5846939,0.584617615 C15.0667241,0.584617615 10.3487574,2.533343 6.43079376,6.43079376 C2.533343,10.3487574 0.584617615,15.0667241 0.584617615,20.5846939 C0.584617615,26.1026637 2.533343,30.8103739 6.43079376,34.7078247 C10.3487574,38.6257884 15.0667241,40.5847702 20.5846939,40.5847702 C26.1026637,40.5847702 30.8103739,38.6257884 34.7078247,34.7078247 C38.6257884,30.8103739 40.5847702,26.1026637 40.5847702,20.5846939 C40.5847702,15.0667241 38.6257884,10.3487574 34.7078247,6.43079376 C30.8103739,2.533343 26.1026637,0.584617615 20.5846939,0.584617615 Z" id="Path"></path>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -5,6 +5,8 @@ import { pushTextLine } from "@/lib/music-session";
 import { OriginalChatPanel } from "@/components/original-chat-panel";
 
 vi.mock("@/components/decor/decor-selection", () => ({ useCilizAssets: () => null }));
+vi.mock('@/assets/original-chat-emoji.svg', () => ({ default: '/emoji.svg' }));
+vi.mock('@/assets/original-chat-send.svg', () => ({ default: '/send.svg' }));
 vi.mock("@/components/music/music-view", () => ({ MusicView: () => null }));
 vi.mock("@/components/music/music-dialogs", () => ({ MusicListDialog: () => null, MusicPreviewDialog: () => null }));
 afterEach(cleanup);
@@ -32,6 +34,16 @@ describe("original User.color rules", () => {
 });
 
 describe("text chat rendering", () => {
+  it("renders original composer images independently of button backgrounds", () => {
+    render(<OriginalChatPanel />);
+    for (const name of ['Emoji', 'Hediye', 'Gönder']) {
+      const image = screen.getByRole('button', { name }).querySelector('img');
+      expect(image).toHaveClass('original-chat-control-image');
+      expect(image).toHaveAttribute('width', '26');
+      expect(image?.getAttribute('src')).toBeTruthy();
+    }
+    expect(screen.getByRole('button', { name: 'Hediye' })).toHaveClass('original-chat-gift');
+  });
   it("ignores blank messages", () => {
     expect(pushTextLine({ id: "a", name: "A", photoUrl: "" }, "   ")).toBe(false);
   });

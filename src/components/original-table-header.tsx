@@ -1,21 +1,22 @@
 import { translate } from "@/lib/ciliz-assets";
+import { useNavigate } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { getPendingGold, subscribePendingGold } from "@/lib/game-session";
 import { OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT, OPEN_DECOR_EVENT, SourceToastHost } from "@/components/source-dialogs";
 import { VipDialog } from "@/components/bank/vip-dialog";
 import { useCilizAssets } from "@/components/decor/decor-selection";
-import backgroundUp from "@/assets/ui_btn_bg_up.svg.asset.json";
-import backgroundDown from "@/assets/ui_btn_bg_down.svg.asset.json";
-import heartUp from "@/assets/ui_btn_gold_add_heart_up.svg.asset.json";
-import heartDown from "@/assets/ui_btn_gold_add_heart_down.svg.asset.json";
-import bottlePass from "@/assets/ui_btn_bottle_pass.svg.asset.json";
-import roulette from "@/assets/ui_btn_roulette.svg.asset.json";
-import league from "@/assets/ui_btn_league.svg.asset.json";
-import menu from "@/assets/ui_btn_misc_menu.svg.asset.json";
-import settings from "@/assets/ui_btn_settings.svg.asset.json";
-import fullscreen from "@/assets/ui_btn_fullscreen_on.svg.asset.json";
-import fullscreenOff from "@/assets/ui_btn_fullscreen_off.svg.asset.json";
-import changeTable from "@/assets/ui_btn_change_table.svg.asset.json";
+import backgroundUp from "@/assets/ui_btn_bg_up.svg";
+import backgroundDown from "@/assets/ui_btn_bg_down.svg";
+import heartUp from "@/assets/ui_btn_gold_add_heart_up.svg";
+import heartDown from "@/assets/ui_btn_gold_add_heart_down.svg";
+import bottlePass from "@/assets/ui_btn_bottle_pass.svg";
+import leagueInfo from "@/assets/ui_btn_league_info.svg";
+import roulette from "@/assets/ui_btn_roulette.svg";
+import league from "@/assets/ui_btn_league.svg";
+import menu from "@/assets/ui_btn_misc_menu.svg";
+import settings from "@/assets/ui_btn_settings.svg";
+import changeTable from "@/assets/ui_btn_change_table.svg";
 import { Button } from "@/components/ui/button";
 import { OriginalMiscMenu } from "@/components/original-misc-menu";
 import { DecorSelection } from "@/components/decor/decor-selection";
@@ -28,7 +29,9 @@ import { SourceAchievementsDialog } from "@/components/table/source-achievements
 
 import { SettingsDialog } from '@/components/settings/settings-dialog';
 import { SourceSeasonDialog } from '@/components/table/source-season-dialogs';
+import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceChangeTable } from '@/components/table/source-change-table';
+import { SourceLeagueButton } from '@/components/table/source-league-button';
 import { useRoom, VIEWER_DISPLAY_SEAT } from '@/lib/room-session';
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
@@ -39,53 +42,27 @@ const middleIcons = [
   { asset: league, label: "Lig", kind: "default" },
   { asset: menu, label: "Menü", kind: "menu" },
   { asset: settings, label: "Ayarlar", kind: "default" },
-  { asset: fullscreen, label: "Tam ekran", kind: "fullscreen" },
 ];
-
-// FullscreenButton + screenfull.toggle(htmlRoot): "on" icon while windowed, "off" icon while fullscreen.
-type FsDoc = Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => Promise<void> | void; webkitFullscreenEnabled?: boolean };
-type FsEl = HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void };
-function FullscreenIcon() {
-  const [on, setOn] = useState(false);
-  useEffect(() => {
-    const d = document as FsDoc;
-    const sync = () => setOn(Boolean(d.fullscreenElement ?? d.webkitFullscreenElement));
-    sync();
-    document.addEventListener("fullscreenchange", sync); document.addEventListener("webkitfullscreenchange", sync);
-    return () => { document.removeEventListener("fullscreenchange", sync); document.removeEventListener("webkitfullscreenchange", sync); };
-  }, []);
-  const toggle = () => {
-    const d = document as FsDoc; const root = document.documentElement as FsEl;
-    if (!(d.fullscreenEnabled || d.webkitFullscreenEnabled)) return;
-    if (d.fullscreenElement ?? d.webkitFullscreenElement) void (d.exitFullscreen ? d.exitFullscreen() : d.webkitExitFullscreen?.())?.catch?.(() => {});
-    else void (root.requestFullscreen ? root.requestFullscreen() : root.webkitRequestFullscreen?.())?.catch?.(() => {});
-  };
-  const label = on ? "Tam ekrandan çık" : "Tam ekran";
-  return <Button variant="ghost" onClick={toggle} aria-label={label} title={label} aria-pressed={on} className="original-header-button original-icon-fullscreen">
-    <img src={backgroundUp.url} alt="" className="original-button-background original-button-up" />
-    <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
-    <img src={on ? fullscreenOff.url : fullscreen.url} alt="" className="original-button-icon" />
-  </Button>;
-}
 
 function OriginalIcon({ asset, label, kind, onClick }: (typeof middleIcons)[number] & { onClick?: (() => void) | undefined }) {
   if (onClick) return <Button variant="ghost" onClick={onClick} aria-label={label} title={label} className={`original-header-button original-icon-${kind}`}>
-    <img src={backgroundUp.url} alt="" className="original-button-background original-button-up" />
-    <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
-    <img src={asset.url} alt="" className="original-button-icon" />
+    <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
+    <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
+    <img src={asset} alt="" className="original-button-icon" />
   </Button>;
   return (
     <Button asChild variant="ghost" className={`original-header-button original-icon-${kind}`}>
-      <a href={asset.url} target="_blank" rel="noreferrer" aria-label={`${label} orijinal görseli`} title={label}>
-        <img src={backgroundUp.url} alt="" className="original-button-background original-button-up" />
-        <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
-        <img src={asset.url} alt={label} className="original-button-icon" />
+      <a href={asset} target="_blank" rel="noreferrer" aria-label={`${label} orijinal görseli`} title={label}>
+        <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
+        <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
+        <img src={asset} alt={label} className="original-button-icon" />
       </a>
     </Button>
   );
 }
 
 export function OriginalTableHeader() {
+  const navigate = useNavigate();
   const room = useRoom();
   const pending = useSyncExternalStore(subscribePendingGold, getPendingGold, () => 0);
   const rawGold = room.players[VIEWER_DISPLAY_SEAT]?.gold;
@@ -134,8 +111,8 @@ export function OriginalTableHeader() {
       <div className="original-header-wallet">
       <Button type="button" variant="ghost" className="original-header-button original-heart-button"
         aria-label="Kalp al" title="Kalp al" aria-haspopup="dialog" onClick={() => setBankOpen(true)}>
-        <img src={heartUp.url} alt="" className="original-heart-image original-button-up" />
-        <img src={heartDown.url} alt="" className="original-heart-image original-button-down" />
+        <img src={heartUp} alt="" className="original-heart-image original-button-up" />
+        <img src={heartDown} alt="" className="original-heart-image original-button-down" />
       </Button>
       <output className="original-header-balance" aria-label="Kalp bakiyesi" aria-live="polite" style={{ width: `${String(gold ?? '—').length}ch` }}>{gold ?? '—'}</output>
       </div>
@@ -145,11 +122,16 @@ export function OriginalTableHeader() {
             className="original-header-button original-icon-menu" aria-label="Menü" title="Menü"
             aria-expanded={menuOpen} aria-controls="original-misc-menu" aria-haspopup="dialog"
             onClick={() => setMenuOpen((value) => !value)}>
-            <img src={backgroundUp.url} alt="" className="original-button-background original-button-up" />
-            <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
-            <img src={menu.url} alt="" className="original-button-icon" />
+            <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
+            <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
+            <img src={menu} alt="" className="original-button-icon" />
           </Button>
-        ) : icon.kind === 'fullscreen' ? <FullscreenIcon key={icon.label} /> : <OriginalIcon key={icon.label} {...icon} onClick={icon.label === 'Ayarlar' ? () => setSettingsOpen(true) : icon.label === 'Lig' ? () => setSeason('league') : icon.label === 'Rulet' ? () => setSeason('roulette') : icon.kind === 'bottle-pass' ? () => setSeason('bottle-pass') : undefined} />)}
+        ) : icon.label === 'Lig' ? <SourceLeagueButton key={icon.label} onClick={() => setSeason('league')} /> : <OriginalIcon key={icon.label} {...icon} onClick={icon.label === 'Ayarlar' ? () => setSettingsOpen(true) : icon.label === 'Rulet' ? () => setSeason('roulette') : icon.kind === 'bottle-pass' ? () => setSeason('bottle-pass') : undefined} />)}
+        <Button variant="ghost" className="original-header-button original-icon-back" aria-label="Ana sayfaya dön" title="Geri" onClick={() => void navigate({ to: "/" })}>
+          <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
+          <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
+          <ArrowLeft className="original-button-icon" aria-hidden="true" />
+        </Button>
       </div>
       {room.roomId !== null && <div className="original-header-table" aria-label={`Masa ${room.roomId}`}>
         <span className="original-header-table-label">{vipAssets ? translate(vipAssets, 'chat:room_title') : ''}</span>
@@ -158,12 +140,12 @@ export function OriginalTableHeader() {
       <Button variant="ghost" aria-label="Masa değiştir" title="Masa değiştir" aria-disabled={changeCount >= 1}
         onClick={() => { if (changeCount < 1) setChangeOpen(true); }}
         className={`original-header-button original-icon-default${changeCount >= 1 ? ' original-change-table--count' : ''}`}>
-        <img src={backgroundUp.url} alt="" className="original-button-background original-button-up" />
-        <img src={backgroundDown.url} alt="" className="original-button-background original-button-down" />
-        {changeCount >= 1 ? <span className="original-change-table-count">{changeCount}</span> : <img src={changeTable.url} alt="" className="original-button-icon" />}
+        <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
+        <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
+        {changeCount >= 1 ? <span className="original-change-table-count">{changeCount}</span> : <img src={changeTable} alt="" className="original-button-icon" />}
       </Button>
       {changeOpen && <SourceChangeTable onClose={() => setChangeOpen(false)} />}
-      {season && <SourceSeasonDialog feature={season} onClose={() => setSeason(null)} />}
+      {season && <SourceSeasonDialog feature={season} onClose={() => setSeason(null)} onSettings={() => { setSeason(null); setSettingsOpen(true); }} />}
       <SettingsDialog open={settingsOpen} onClose={closeSettings} />
       {topsOpen && <SourceTopsDialog onClose={() => setTopsOpen(false)} />}
       <SourceAchievementNotifications />

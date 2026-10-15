@@ -3,6 +3,10 @@ import { buildContactItems, buildSettingsItems, idCopyValue } from "@/components
 const t = (k: string) => k;
 const noop = vi.fn();
 describe("original OK settings", () => {
+  it('offers league participation without inventing league membership', () => {
+    const item = buildSettingsItems(t, { onSfx: noop, onMusic: noop, onInvite: noop, onCommunity: noop, onContacts: noop, league: { enabled: true, busy: false, onChange: noop } })[2];
+    expect(item).toMatchObject({ type: 'checkbox', icon: 'league', enabled: true, name: 'dlg:league:idle:title' });
+  });
   it("lists sounds, music, invite, OK community and contacts in source order", () => {
     expect(buildSettingsItems(t, { onSfx: noop, onMusic: noop, onInvite: noop, onCommunity: noop, onContacts: noop }).map(i => i.icon)).toEqual(["sound", "music", "invite", "ok", "feedback"]);
   });

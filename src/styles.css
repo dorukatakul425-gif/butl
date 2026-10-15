@@ -23,8 +23,10 @@
 @import "./styles/ciliz-vip.css";
 @import "./styles/ciliz-hints.css";
 @import "./styles/ciliz-user-profile.css";
+@import "./styles/ciliz-kickout.css";
 @import "./styles/ciliz-emoji.css";
 @import "./styles/ciliz-chat-action.css";
+@import "./styles/ciliz-chat-controls.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -330,7 +332,12 @@
 
 .original-icon-bottle-pass .original-button-icon { width: 28px; height: 30px; }
 .original-icon-menu .original-button-icon { width: 26px; height: 21px; }
-.original-icon-fullscreen .original-button-icon { width: 23px; height: 23px; }
+.original-icon-back .original-button-icon { width: 23px; height: 23px; color: var(--game-wallet-text); }
+.original-league-position { position: relative; font-size: 18px; font-weight: normal; color: var(--game-wallet-text); }
+.original-league-info { position: absolute; top: calc(50% + 25px); left: 50%; transform: translate(-50%, -50%); display: grid; place-items: center; width: 54px; height: 20px; font-size: 12px; font-weight: bold; color: var(--muted-foreground); pointer-events: none; }
+.original-league-info img { position: absolute; width: 100%; height: 100%; max-width: none; }
+.original-league-info span { position: relative; white-space: nowrap; }
+.original-league-welcome { width: 20px; font-size: 17px; color: var(--destructive); }
 .original-heart-button { width: 57px; }
 .original-heart-image { position: absolute; width: 57px; height: 50px; }
 .original-header-wallet { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -397,11 +404,13 @@
   .original-button-icon { width: 18px; height: 18px; }
   .original-icon-bottle-pass .original-button-icon { width: 17px; height: 18px; }
   .original-icon-menu .original-button-icon { width: 14px; height: 11px; }
-  .original-icon-fullscreen .original-button-icon { width: 14px; height: 14px; }
+  .original-icon-back .original-button-icon { width: 14px; height: 14px; }
+  .original-league-position { font-size: 10px; }
+  .original-league-info { top: calc(50% + 16px); width: 32px; height: 12px; font-size: 7px; }
+  .original-league-welcome { width: 12px; font-size: 9px; }
   .original-heart-button { width: 32px; }
   .original-heart-image { width: 32px; height: 28px; }
   .original-header-balance { font-size: 12px; }
-  .original-header-table-label, .original-header-table-id { font-size: 9px; }
 }
 
 .original-table-seats {
@@ -439,6 +448,9 @@ input, textarea, [contenteditable="true"] {
 /* TableView lblTable/lblTableId: Label (Arial bold white), 14px (9px small), stacked left of change-table, 6px gap. */
 .original-header-table { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 6px; flex-shrink: 0; font-family: Arial, Helvetica, sans-serif; font-weight: bold; color: var(--game-wallet-text); line-height: 1.15; text-align: center; }
 .original-header-table-label, .original-header-table-id { font-size: 14px; }
+@media (max-width: 500px), (max-height: 500px) {
+  .original-header-table-label, .original-header-table-id { font-size: 9px; }
+}
 
 /* ChangeTableButton.setCountdown: Label fontWeight normal, 19px (12px small), icon hidden while counting. */
 .original-change-table-count { position: relative; z-index: 1; font-family: Arial, Helvetica, sans-serif; font-weight: normal; font-size: 19px; color: var(--game-wallet-text); }

@@ -68,6 +68,16 @@ export function TableSeats() {
   }, []);
   const [profileSeat, setProfileSeat] = useState<number | null>(null);
   const [ownProfileOpen, setOwnProfileOpen] = useState(false);
+  useEffect(() => {
+    const open = (event: Event) => {
+      const id = (event as CustomEvent<string>).detail;
+      const seat = playersRef.current.findIndex(player => player?.id === id);
+      if (seat === VIEWER_SEAT) setOwnProfileOpen(true);
+      else if (seat >= 0) setProfileSeat(seat);
+    };
+    window.addEventListener('source:open-profile', open);
+    return () => window.removeEventListener('source:open-profile', open);
+  }, []);
   const [lockedGift, setLockedGift] = useState<GiftStoreItem | null>(null);
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: progress.kisses, vip: progress.vip }) : []), [assets, progress.kisses, progress.vip]);
   const ownTokens = room.players[VIEWER_SEAT]?.tokens;

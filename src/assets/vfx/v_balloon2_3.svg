@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_Слой_2" data-name="Слой 2" xmlns="http://www.w3.org/2000/svg" width="82" height="134.03" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 82 134.03">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #fffdd4;
+        stroke-miterlimit: 10;
+        stroke-width: .5px;
+      }
+
+      .cls-2 {
+        fill: url(#_Безымянный_градиент_118);
+      }
+
+      .cls-3 {
+        fill: url(#_Безымянный_градиент_119);
+      }
+
+      .cls-4 {
+        fill: url(#_Безымянный_градиент_116);
+      }
+
+      .cls-5 {
+        fill: url(#_Безымянный_градиент_97);
+        opacity: .93;
+      }
+
+      .cls-6 {
+        opacity: .5;
+      }
+
+      .cls-7 {
+        fill: #e7a017;
+      }
+    </style>
+    <radialGradient id="_Безымянный_градиент_97" data-name="Безымянный градиент 97" cx="46.86" cy="45.67" fx="46.86" fy="45.67" r="20.74" gradientTransform="translate(0 -15.33) scale(1 1.34)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f0d744"/>
+      <stop offset=".02" stop-color="#f0dc44"/>
+      <stop offset=".03" stop-color="#f0e344"/>
+      <stop offset=".27" stop-color="#efdf41"/>
+      <stop offset=".51" stop-color="#edd339"/>
+      <stop offset=".74" stop-color="#ebc02c"/>
+      <stop offset=".96" stop-color="#e7a51a"/>
+      <stop offset="1" stop-color="#e7a017"/>
+    </radialGradient>
+    <radialGradient id="_Безымянный_градиент_116" data-name="Безымянный градиент 116" cx="35.73" cy="40.23" fx="35.73" fy="40.23" r="26.31" gradientUnits="userSpaceOnUse">
+      <stop offset=".03" stop-color="#807e6a"/>
+      <stop offset=".22" stop-color="#6b6752"/>
+      <stop offset=".75" stop-color="#382f18"/>
+      <stop offset="1" stop-color="#241902"/>
+    </radialGradient>
+    <radialGradient id="_Безымянный_градиент_119" data-name="Безымянный градиент 119" cx="36.84" cy="39.22" fx="36.84" fy="39.22" r="26.31" gradientUnits="userSpaceOnUse">
+      <stop offset=".07" stop-color="#807e6a"/>
+      <stop offset=".18" stop-color="#676555"/>
+      <stop offset=".29" stop-color="#514f42"/>
+      <stop offset="1" stop-color="#241902"/>
+    </radialGradient>
+    <radialGradient id="_Безымянный_градиент_118" data-name="Безымянный градиент 118" cx="37.34" cy="38.93" fx="37.34" fy="38.93" r="26.31" gradientUnits="userSpaceOnUse">
+      <stop offset=".16" stop-color="#807e6a"/>
+      <stop offset=".25" stop-color="#676555"/>
+      <stop offset=".34" stop-color="#514f42"/>
+      <stop offset="1" stop-color="#241902"/>
+    </radialGradient>
+  </defs>
+  <g id="_Слой_2-2" data-name="Слой 2">
+    <g>
+      <path class="cls-1" d="M48.36,134.02s.82-17.84.89-28.68c.08-13.91-2.12-26.79-2.12-26.79"/>
+      <path class="cls-5" d="M64.03,30.93c-2.22-3.09-7.01-7.6-16.31-7.6s-14.09,4.5-16.31,7.6c-2.22,3.09-8.72,12.52-.72,28.87s17.02,16.41,17.02,16.41c0,0,9.15-.26,16.82-16.58,8.15-17.35,1.71-25.61-.51-28.71Z"/>
+      <path class="cls-7" d="M46.91,75.11s-.13,2.74-1.85,3.68c0,0,.82.73,2.51.73,1.97,0,2.31-.58,2.31-.58,0,0-1.39-1.47-1.14-3.97l-1.83.14Z"/>
+      <image width="81" height="84" transform="translate(.53)" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABUCAYAAAARdWCGAAAACXBIWXMAAAsSAAALEgHS3X78AAAB6ElEQVR4nO3Y3WrjMBCG4Tfb0NDSksDCwt7/3S0sdHGIiWnwHkhTK6mbw2oO3geEf5oD92PGkgWSJEmSJEmSJEmSJEmSJCmJTe8HaM3z/ADE2DbnrUsd73G+2Wwu3/mca7a9HyDUEB+BXT225+ECnIGpGed6v6sUQTYhPgNPK8cHSlgTcALG5sg8z92rMkWQlKB2lNBe63hpjjtK5Y3AABxZWj6q1CApoURFvgJ74FDHvt4/UQJ85DrEic/v0W+XJcgtJaAnSgUegJ/NeKGE+MbnSjyR4P/o/gBVtHZUZAT5q44DJcSYeKISR67bvJtMQbYVuWcJ8nc9X5t0Bq5bvZtsQa5VZAQZIcaE80yp4u4hAvzo/QBVtPbt+rE9TxHYV7IEec/HFww3XzTNeXdZWrudgWOxPbBMMBfgb70+1r8N9bcTCcLMFGTMwm2A8V48UoL8U4//6r2RBItxyBnkkRJUvBOnev1GCTEqc6BU7kRp8a4yBRmtHUuauD/W61iQx7C1V7xz3drR0meWBXd8Ig4srR0VaZBVu8huW/pEWf7AsmnRBjoC5947P5AryPPNdbT07QZFu5WWYqKBRDvkze54uwD/anf8Y0M3QzVCoiBDE+g9aQKUJEmSJEmSJEmSJEmSJEmS7voP+Na2FNTsDW0AAAAASUVORK5CYII="/>
+      <g class="cls-6">
+        <image width="82" height="84" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABUCAYAAAARdWCGAAAACXBIWXMAAAsSAAALEgHS3X78AAAB50lEQVR4nO3Y3WrjMBCG4Tfb0NDSksDCQu//7hYWujjExDR4D6SJlTTJ4WoO3geEf5oD92PGkgWSJEmSJEmSJEmSJEmSJCmJVe8HCPM8PwEx1s1561THV5yvVqvT/3zOe9a9HwDOIT4Dm3psz8MJOAJTM471fnfdg2xCfAVebhyfKGFNwAEYmyPzPKeoyu5BUoLaUEJ7r+OtOW4olTcCA7BnafmoUoOkhBIV+Q5sgV0d23r/QAnwmcsQJ76/R7vIEOSaEtALpQJ3wM9mvFFC/OR7JR7I8T+keIho7ajICPJXHTtKiDHxRCWOXLZ5V1mCbCtyyxLkRz2/NekMXLZ6V5mCvFWREWSEGBPOK6WKU4QI8KP3A7C09vX6sT1PE9g9GYJ85PwFw9UXTXOeQobWbmfgWGwPLBPMCfhTr/f1b0P97USSMLMEGbNwG2C8F/eUIH/X4996byTJYhzyBbmnBBXvxKlef1JCjMocKJU7UVq8uyxBRmvHkibuj/U6FuQxbO0bvrhs7WjpI8uCOz4RB5bWjoo0yKpdZLctfaAsf2DZtGgDHYFjhp0fyBPk8eo6Wvp6g6LdSksz0UCSHfJmd7xdgN/bHT9v6GapRkgSZGgCfSRVgJIkSZIkSZIkSZIkSZIkSdJD/wDQQ7YUwP37HwAAAABJRU5ErkJggg=="/>
+      </g>
+      <g>
+        <path class="cls-4" d="M63.26,46.99c-2.68-1.2-3.09-3.72-3.11-3.84-.04-.3-.32-.5-.62-.47-.3.04-.51.32-.47.62.01.08.19,1.2,1,2.4-.05.08-.1.17-.1.27,0,.03-.24,3.26-1.91,6.44-2.2,4.18-5.73,6.3-10.51,6.3s-8.34-2.07-10.57-6.14c-1.69-3.09-1.96-6.24-1.96-6.27,0-.02-.01-.05-.02-.07,1.16-1.38,1.39-2.84,1.4-2.93.04-.3-.17-.58-.47-.62-.29-.04-.58.16-.62.46-.02.11-.42,2.63-3.11,3.84-.28.12-.4.45-.28.73.09.2.29.33.5.33.08,0,.15-.02.22-.05.53-.24.98-.52,1.37-.83.46,2.85,2.83,12.65,13.52,12.65s13.02-10.22,13.43-13.04c.48.46,1.08.88,1.84,1.22.07.03.15.05.22.05.21,0,.41-.12.5-.33.12-.28,0-.6-.28-.73Z"/>
+        <path class="cls-3" d="M42.37,43.02c2.12,0,3.83-2.52,3.83-5.63s-1.72-5.63-3.83-5.63-3.83,2.52-3.83,5.63,1.72,5.63,3.83,5.63ZM43.36,38.68c.55,0,.99.46.99,1.03s-.45,1.03-.99,1.03-.99-.46-.99-1.03.45-1.03.99-1.03Z"/>
+        <path class="cls-2" d="M53.02,43.02c2.12,0,3.83-2.52,3.83-5.63s-1.72-5.63-3.83-5.63-3.83,2.52-3.83,5.63,1.72,5.63,3.83,5.63ZM52.03,38.68c.55,0,.99.46.99,1.03s-.45,1.03-.99,1.03-.99-.46-.99-1.03.45-1.03.99-1.03Z"/>
+      </g>
+    </g>
+  </g>
+</svg>

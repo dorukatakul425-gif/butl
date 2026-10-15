@@ -1,14 +1,21 @@
 export interface VerifiedHeartAward { id: string; viewerId: string; amount: number; lucky: boolean; prepaid?: boolean; from?: { x: number; y: number } }
+import type { VerifiedHaremPurchase } from './source-harem';
 export type GameConnectionState = 'connected' | 'disconnected' | 'reconnecting';
 export interface EffectsSessionAdapter {
  getSnapshot: () => { viewer: { id: string } | null };
  subscribeHeartAwards?: (listener: (award: VerifiedHeartAward) => void) => () => void;
+ subscribeHaremPurchases?: (listener: (purchase: VerifiedHaremPurchase) => void) => () => void;
+ acknowledgeHaremPurchase?: (id: string) => Promise<void>;
  subscribeConnection?: (listener: (state: GameConnectionState) => void) => () => void;
  reconnect?: () => Promise<void>;
 }
 let adapter: EffectsSessionAdapter | null = null;
 let cleanupAwards: (() => void) | undefined;
 let cleanupConnection: (() => void) | undefined;
+let cleanupHarem: (() => void) | undefined;
+const haremListeners = new Set<(p: VerifiedHaremPurchase) => void>();
+export function subscribeHaremPurchases(fn: (p: VerifiedHaremPurchase) => void) { haremListeners.add(fn); return () => { haremListeners.delete(fn); }; }
+export async function acknowledgeHaremPurchase(id: string) { await adapter?.acknowledgeHaremPurchase?.(id); }
 const awardListeners = new Set<(award: VerifiedHeartAward) => void>();
 const connectionListeners = new Set<(state: GameConnectionState) => void>();
 export function subscribeHeartAwards(listener: (award: VerifiedHeartAward) => void) { awardListeners.add(listener); return () => { awardListeners.delete(listener); }; }
@@ -16,7 +23,11 @@ export function subscribeGameConnection(listener: (state: GameConnectionState) =
 export async function reconnectGameSession() { await adapter?.reconnect?.(); }
 /** Install only a verified authenticated game transport; never emit client-invented awards. */
 export function attachGameSession(next: EffectsSessionAdapter | null) {
- cleanupAwards?.(); cleanupConnection?.(); adapter = next;
+ cleanupAwards?.(); cleanupConnection?.(); cleanupHarem?.(); adapter = next;
+ cleanupHarem = next?.subscribeHaremPurchases?.(p => {
+  if (!p.id || p.viewerId !== next.getSnapshot().viewer?.id || !Number.isSafeInteger(p.price) || p.price < 0) return;
+  haremListeners.forEach(fn => fn(p));
+ });
  cleanupAwards = next?.subscribeHeartAwards?.(award => {
   if (award.viewerId !== adapter?.getSnapshot().viewer?.id || !Number.isSafeInteger(award.amount) || award.amount <= 0 || !award.id) return;
   awardListeners.forEach(fn => fn(award));

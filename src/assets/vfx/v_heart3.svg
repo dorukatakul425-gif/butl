@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16.8px" height="13.5px" id="_Слой_2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 16.8 13.5">
+  <!-- Generator: Adobe Illustrator 29.2.1, SVG Export Plug-In . SVG Version: 2.1.0 Build 116)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: url(#_Безымянный_градиент);
+      }
+
+      .st1 {
+        opacity: .9;
+      }
+    </style>
+    <linearGradient id="_Безымянный_градиент" data-name="Безымянный градиент" x1="8.4" y1="-2463.8" x2="8.4" y2="-2450.3" gradientTransform="translate(0 -2450.3) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ee166a"/>
+      <stop offset="1" stop-color="#fb5a91"/>
+    </linearGradient>
+  </defs>
+  <g id="_Слой_2-2" class="st1">
+    <g id="_Слой_1-2">
+      <path class="st0" d="M13,0c-3.6-.2-4.6,2.2-4.6,2.2,0,0-1-2.4-4.6-2.2C.3.2-1.2,4.9,1.1,8.3c2.3,3.4,6.1,5.2,7.3,5.2s5-1.8,7.3-5.2c2.3-3.4.8-8.1-2.7-8.3Z"/>
+    </g>
+  </g>
+</svg>

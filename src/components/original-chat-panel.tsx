@@ -1,8 +1,11 @@
-import { useBlockedUsers } from "@/lib/block-session";
+import { setUserBlocked, useBlockedUsers } from "@/lib/block-session";
+import { MessageActions } from '@/components/chat/message-actions';
+import type { ChatTextLine } from '@/lib/music-session';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { InteractiveHints, HINT_SET_INPUT_EVENT, CHAT_SENT_EVENT } from "@/components/interactive-hints";
-import emojiIcon from "@/assets/original-chat-emoji.svg.asset.json";
-import sendIcon from "@/assets/original-chat-send.svg.asset.json";
+import emojiIcon from "@/assets/original-chat-emoji.svg";
+import sendIcon from "@/assets/original-chat-send.svg";
+import giftIcon from "@/assets/original-chat-gift.svg.asset.json";
 import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
@@ -33,11 +36,19 @@ export function OriginalChatPanel() {
   const session = useMusicSession();
   const blocked = useBlockedUsers();
   const translations = useChatTranslations();
+  const [selected, setSelected] = useState<ChatTextLine | null>(null);
+  const [reportMessage, setReportMessage] = useState<ChatTextLine | null>(null);
+  const [menuBusy, setMenuBusy] = useState(false);
+  const longTap = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const cancelLongTap = () => { clearTimeout(longTap.current); longTap.current = undefined; };
+  useEffect(() => () => clearTimeout(longTap.current), []);
+  useEffect(() => { setSelected(null); setReportMessage(null); }, [session.lines.length === 0]);
+  const selectMessage = (line: ChatTextLine) => { cancelLongTap(); if (!line.sender.isViewer) setSelected(line); };
   const onTranslate = (key: number, original: string) => {
     if (translations[key]?.translated) { toggleTranslation(key); return; }
     const fn = chatTranslator();
     if (!fn) { showSourceToast("Çeviri sunucusu henüz bağlı değil."); return; }
-    void fn(original, key).then(t => applyTranslation(key, t), () => {});
+    void fn(original, key).then(t => applyTranslation(key, t), () => showSourceToast('Çeviri alınamadı.'));
   };
   const [listType, setListType] = useState<"audio" | "video" | null>(null);
   const [preview, setPreview] = useState<{ music: MusicItem; service: MusicService } | null>(null);
@@ -113,7 +124,7 @@ export function OriginalChatPanel() {
     const rSeat = row.receiver_id ? displaySeatOf(row.receiver_id) : -1;
     const rec = rSeat >= 0 ? profileBySeat(rSeat) : null;
     const isViewer = row.user_id === VIEWER.id;
-    pushTextLine({ ...profileUser(sender), ...(isViewer ? { isViewer: true } : {}) }, row.text, rec ? profileUser(rec) : undefined);
+    pushTextLine({ ...profileUser(sender), ...(isViewer ? { isViewer: true } : {}) }, row.text, rec ? { ...profileUser(rec), ...(rec.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, row.id);
   }), []);
 
   useEffect(() => {
@@ -148,7 +159,11 @@ export function OriginalChatPanel() {
           {session.lines.filter(line => line.kind !== "text" || !blocked.has(line.sender.id)).map((line) => line.kind === "text" ? (
             <div key={line.key} className={`chat__message chat__noselect${chatMessageIsBold(line.sender, line.receiver) ? " chat__message--bold" : ""}`}>
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
-              <div className="chat__message-line">
+              <div className={`chat__message-line${selected?.key === line.key ? ' chat__message-line--selected' : ''}`}
+                onContextMenu={e => { e.preventDefault(); selectMessage(line); }} onDoubleClick={() => selectMessage(line)}
+                onTouchStart={e => { cancelLongTap(); if (e.touches.length === 1) longTap.current = setTimeout(() => selectMessage(line), 500); }}
+                onTouchEnd={cancelLongTap} onTouchMove={cancelLongTap} onTouchCancel={cancelLongTap}>
+                {!line.sender.isViewer && <Button variant="ghost" className="chat__report-button" aria-label={`${line.sender.name}: Mesaj seçenekleri`} onClick={() => selectMessage(line)}>!</Button>}
                 <span className={`chat__sender-name ${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
                   onClick={() => { setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
                 <span className={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}>: </span>
@@ -222,15 +237,27 @@ export function OriginalChatPanel() {
         if (emojiSendDecision(text, vip) === "warn") { setEmojiWarning(text); return; }
         doSend(text);
       }}>
-        <input ref={inputRef} className="original-chat-input-field" type="text" placeholder="" aria-label="Mesaj yaz" value={receiver ? `${receiver.name}, ${text}` : text}
+        <input ref={inputRef} className="original-chat-input-field" type="text" maxLength={300} placeholder={assets ? translate(assets, 'chat:input_hint') : 'Mesaj yaz'} aria-label="Mesaj yaz" value={receiver ? `${receiver.name}, ${text}` : text}
           onChange={(e) => {
             const prefix = receiver ? `${receiver.name}, ` : "";
             if (prefix && !e.target.value.startsWith(prefix)) setReceiver(undefined);
             setText(prefix && e.target.value.startsWith(prefix) ? e.target.value.slice(prefix.length) : e.target.value);
           }} />
-        <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji js-emoji" onClick={toggleEmoji} aria-expanded={emojiOpen} style={{ backgroundImage: `url(${emojiIcon.url})` }} aria-label="Emoji" />
-        <Button variant="ghost" type="submit" className="original-chat-round original-chat-send" style={{ backgroundImage: `url(${sendIcon.url})` }} aria-label="Gönder" />
+        <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji js-emoji" onClick={toggleEmoji} aria-expanded={emojiOpen} aria-label="Emoji"><img className="original-chat-control-image" src={emojiIcon} width={26} height={26} alt="" /></Button>
+        <Button variant="ghost" type="button" className="original-chat-round original-chat-gift" aria-label="Hediye" onClick={() => {
+          const seat = receiver ? displaySeatOf(receiver.id) : undefined;
+          if (seat === undefined || seat < 0) { showSourceToast('Hediye göndermek için bir oyuncu seçin.'); return; }
+          window.dispatchEvent(new CustomEvent(OPEN_GIFT_FOR_SEAT_EVENT, { detail: seat }));
+        }}><img className="original-chat-control-image" src={giftIcon.url} width={26} height={26} alt="" /></Button>
+        <Button variant="ghost" type="submit" className="original-chat-round original-chat-send" aria-label="Gönder"><img className="original-chat-control-image" src={sendIcon} width={26} height={26} alt="" /></Button>
       </form>
+      {assets && selected && <MessageActions assets={assets} blocked={blocked.has(selected.sender.id)} translationShown={Boolean(translations[selected.key]?.shown)} canTranslate={needsTranslation(selected.sender, VIEWER_LOCALE)} busy={menuBusy}
+        onClose={() => setSelected(null)} onTranslate={() => { onTranslate(selected.key, selected.text); setSelected(null); }}
+        onReport={() => { setReportMessage(selected); setSelected(null); }}
+        onIgnore={() => { setMenuBusy(true); void setUserBlocked(selected.sender.id, !blocked.has(selected.sender.id)).then(() => setSelected(null), () => showSourceToast('İgnore kaydedilemedi.')).finally(() => setMenuBusy(false)); }} />}
+      {assets && reportMessage && <SourceInfoDialog title={translate(assets, 'dlg:report_issue:title')} context={translate(assets, 'dlg:report_issue:desc', reportMessage.sender.name, reportMessage.text)} onClose={() => setReportMessage(null)}
+        cancel={{ title: translate(assets, 'dlg:report_issue:cancel'), onClick: () => setReportMessage(null) }}
+        confirm={{ title: translate(assets, 'dlg:report_issue:ok'), onClick: () => { setReportMessage(null); showSourceToast('Şikâyet kaydı hizmeti şu anda kullanılamıyor; şikâyet gönderilmedi.'); } }} />}
       {assets && emojiWarning !== null && (
         <SourceInfoDialog title={translate(assets, "dlg:emoji:title")} context={translate(assets, "dlg:emoji:desc2")} onClose={() => setEmojiWarning(null)}
           cancel={{ title: translate(assets, "dlg:emoji:send2"), onClick: () => { const v = emojiWarning; setEmojiWarning(null); doSend(v); } }}

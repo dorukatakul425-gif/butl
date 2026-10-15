@@ -1,4 +1,5 @@
 import defaultBottleUrl from "@/assets/ui_table_default_bottle.svg";
+import autumnCenter from "@/assets/original-table-autumn-center.png.asset.json";
 import { ASSETS_TO_VIRTUAL as ASSETS_K } from "@/lib/ciliz-assets";
 // Browser-only: rendered with PixiJS + Spine 3.8 exactly like TableView/TableUserView in preloader.js.
 import { Application, BaseTexture, Container, MIPMAP_MODES, Rectangle, Sprite, Text, TextStyle, Texture, type DisplayObject } from "pixi.js";
@@ -404,6 +405,10 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
 
   const stage = new Container();
   app.stage.addChild(stage);
+  const centerDecor = new Sprite();
+  centerDecor.anchor.set(0.5);
+  centerDecor.eventMode = "none";
+  stage.addChild(centerDecor);
   const animationLayer = new Container();
   animationLayer.eventMode = "none";
   const bottleLayer = new Container();
@@ -448,6 +453,13 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   type Tick = (elapsed: number) => boolean;
   const ticks = new Set<Tick>();
   let destroyed = false;
+  void loadImage(autumnCenter.url).then(image => {
+    if (destroyed) return;
+    centerDecor.texture = Texture.from(image);
+    const frame = assets.images['td_table_autumn_c']?.size;
+    centerDecor.width = (frame?.[2] ?? 287.4) * ASSETS_K;
+    centerDecor.height = (frame?.[3] ?? 287.5) * ASSETS_K;
+  }).catch(error => console.error('Original table ornament could not be loaded', error));
   app.ticker.add(() => {
     const dt = Math.min(app.ticker.deltaMS / 1000, 0.1);
     for (const tick of ticks) if (!tick(dt)) ticks.delete(tick);
@@ -626,6 +638,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   return {
     /** Cancel the previous room/aborted round without destroying the shared renderer. */
     resetRound(resetKisses = false) {
+      if (destroyed) return;
       motionVersion++;
       bottleLayer.alpha = 1;
       bottleLayer.rotation = 0;
@@ -633,6 +646,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       seats.forEach((seat, index) => { const position = SEATS[index]; if (position) seat.view.position.set(position[0], position[1]); seat.view.scale.set(1); seat.view.rotation = 0; });
     },
     settleRound(from: number, to: number, center: boolean) {
+      if (destroyed) return;
       motionVersion++;
       bottleLayer.rotation = (spinAngle(to, 0) * Math.PI / 180) % (2 * Math.PI);
       bottleLayer.alpha = center ? 0 : 1;
@@ -640,6 +654,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     },
     /** Kisses collected at this table, shown on the seat like TableUserView.setKisses. */
     addKiss(index: number) {
+      if (destroyed) return;
       const next = (seatKisses.get(index) ?? 0) + 1;
       seatKisses.set(index, next);
       seats[index]?.setKisses(next, res());
@@ -718,20 +733,23 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       await movePlayers(from,to,true);
     },
     async returnPlayers(from: number,to: number) {
+      if (destroyed) return;
       const version = ++motionVersion;
       await Promise.all([movePlayers(from,to,false),motionTween(version,1,p=>{bottleLayer.alpha=p;})]);
     },
     setPlayers(next: SeatPlayer[]) {
+      if (destroyed) return;
       players = next.slice(0, seats.length);
       layout();
     },
     setPlayer(index: number, player: SeatPlayer) {
-      if (!players.length) return;
+      if (destroyed || !players.length) return;
       players[index] = player;
       void seats[index]?.set(player, assets, res(), tableSize());
     },
     // TablePresenter isSelective / selectedUsers / toggleHighlightUser.
     setSelection(modes: SeatSelection[]) {
+      if (destroyed) return;
       seats.forEach((seat, i) => seat.setSelection(modes[i] ?? "none", res()));
     },
     sendGift(from: number, to: number, gift: SentGift) {

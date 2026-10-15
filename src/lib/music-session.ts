@@ -14,7 +14,7 @@ export interface PlayingSong {
 export interface ChatMusicLine { kind?: "music"; key: number; sender: MusicSender; artist: string; title: string }
 export interface ChatUser extends ChatProfile { name: string; photoUrl: string }
 export interface ChatGiftLine { kind: "gift"; key: number; sender: ChatUser; receivers: ChatUser[]; giftType: string; image: string; name: string; count: number }
-export interface ChatTextLine { kind: "text"; key: number; sender: ChatUser; receiver?: ChatUser; text: string }
+export interface ChatTextLine { kind: "text"; key: number; sender: ChatUser; receiver?: ChatUser; text: string; messageId?: number }
 export type ChatActionPart = { text: string } | { user: ChatUser };
 /** ChatContent.pushActionLine: newcomer / birthday / vip / rewarded-video widget rows. */
 export interface ChatActionLine { kind: "action"; key: number; style: "newcomer" | "birthday" | "vip" | "rewarded-video"; icon: "gift" | "chat" | "vip" | "rewarded-video"; parts: ChatActionPart[]; sender?: ChatUser; seat?: number }
@@ -27,9 +27,10 @@ const set = (next: Partial<State>) => { state = { ...state, ...next }; listeners
 let seq = 0;
 
 /** Local chat only; real multiplayer transport is not configured. */
-export function pushTextLine(sender: ChatUser, text: string, receiver?: ChatUser) {
+export function pushTextLine(sender: ChatUser, text: string, receiver?: ChatUser, messageId?: number) {
   if (!text.trim()) return false;
-  set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, text, ...(receiver ? { receiver } : {}) }] });
+  if (messageId !== undefined && state.lines.some(line => line.kind === 'text' && line.messageId === messageId)) return false;
+  set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, text, ...(receiver ? { receiver } : {}), ...(messageId !== undefined ? { messageId } : {}) }] });
   return true;
 }
 

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { joinRoom, leaveRoom, leaveRoomNow, useRoom } from "@/lib/room-session";
 import { setViewerProfile } from "@/lib/viewer";
-import woodTable from "@/assets/original-wood-table.png.asset.json";
+import woodTable from "@/assets/original-wood-table.png";
 import { OriginalTableHeader } from "@/components/original-table-header";
 import { OriginalChatPanel } from "@/components/original-chat-panel";
 import { TableSeats } from "@/components/table/table-seats";
@@ -14,6 +14,7 @@ import { SourceHeartBonus } from "@/components/table/source-heart-bonus";
 import { startCloudAchievements } from "@/lib/cloud-achievements";
 import { DailyBonusHost } from "@/components/table/daily-bonus-dialog";
 import { startCloudBlocks } from "@/lib/block-session";
+import { SourceHaremNotice } from '@/components/table/source-harem-notice';
 
 export const Route = createFileRoute("/game")({
   head: () => ({
@@ -58,11 +59,12 @@ function Index() {
       <OriginalLoadingScreen />
       <SourceConnectionScreen />
       <SourceHeartBonus />
+      <SourceHaremNotice />
       {auth.session && <DailyBonusHost viewerId={auth.session.user.id} />}
-      <img className="original-page-wood" src={woodTable.url} alt="" />
+      <img className="original-page-wood" src={woodTable} alt="" />
       <div className="original-game">
         <div className="original-table">
-          <img className="original-table-wood" src={woodTable.url} alt="Oyunun sunucusundan alınan orijinal ahşap masa" />
+          <img className="original-table-wood" src={woodTable} alt="Oyunun sunucusundan alınan orijinal ahşap masa" />
           <TableSeats />
           <OriginalTableHeader />
         </div>

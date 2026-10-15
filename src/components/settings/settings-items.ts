@@ -1,6 +1,7 @@
 // Item lists from SettingsPresenter.show() and FeedbackPresenter.showImpl()
 // for the OK social (OKSocial: no profileUpdatePrice, community item, feedbackOps).
 export type SettingsItem =
+  | { type: "checkbox"; icon: string; name: string; enabled: boolean; busy?: boolean; onChange: (v: boolean) => void }
   | { type: "slider"; icon: "sound" | "music"; name: string; onChange: (v: number) => void }
   | { type: "simple"; icon: string; name: string; action: () => void; border?: "top" }
   | { type: "link"; icon: string; name: string; href: string; border?: "top" };
@@ -14,10 +15,11 @@ export const OK_LEGAL = {
 };
 export const CLIENT_VERSION = "1.6.393";
 
-export function buildSettingsItems(t: T, cb: { onSfx: (v: number) => void; onMusic: (v: number) => void; onInvite: () => void; onCommunity: () => void; onContacts: () => void }): SettingsItem[] {
+export function buildSettingsItems(t: T, cb: { onSfx: (v: number) => void; onMusic: (v: number) => void; onInvite: () => void; onCommunity: () => void; onContacts: () => void; league?: { enabled: boolean; busy: boolean; onChange: (enabled: boolean) => void } }): SettingsItem[] {
   return [
     { type: "slider", icon: "sound", name: t("ios:dlg:settings:sounds"), onChange: cb.onSfx },
     { type: "slider", icon: "music", name: t("ios:dlg:settings:music"), onChange: cb.onMusic },
+    ...(cb.league ? [{ type: 'checkbox' as const, icon: 'league', name: t('dlg:league:idle:title'), ...cb.league }] : []),
     { type: "simple", icon: "invite", name: t("bank:invite:btn"), action: cb.onInvite },
     { type: "simple", icon: "ok", name: t("dlg:settings:community:ok"), action: cb.onCommunity },
     { type: "simple", icon: "feedback", name: t("dlg:settings:contacts"), action: cb.onContacts },

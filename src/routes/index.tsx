@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { signOut, useAuth, refreshProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
-import bottleIcon from "@/assets/original-menu-bottle.svg.asset.json";
+import bottleIcon from "@/assets/original-menu-bottle.svg";
 import datCoin from "@/assets/dat-coin.png";
 
 export const Route = createFileRoute("/")({
@@ -63,7 +63,7 @@ function Home() {
           </div>
         </section>
         <Link to="/game" className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-6" aria-label="Şişe oyununu aç">
-          <img src={bottleIcon.url} alt="" className="h-24 w-24" />
+          <img src={bottleIcon} alt="" className="h-24 w-24" />
           <span className="font-bold">Şişe Oyunu</span>
         </Link>
         <Button variant="outline" className="w-full" onClick={() => void signOut()}>Çıkış yap</Button>

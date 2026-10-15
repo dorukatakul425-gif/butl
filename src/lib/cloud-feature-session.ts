@@ -6,6 +6,16 @@ let snapshot: SourceFeatureSnapshot = { viewerId: null };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 let tableRead = 0;
+let preferenceRevision = 0;
+async function refreshPreference(viewerId: string) {
+  const sb = getSupabase();
+  if (!sb) return;
+  const revision = ++preferenceRevision;
+  const { data, error } = await sb.auth.getUser();
+  if (error || snapshot.viewerId !== viewerId || revision !== preferenceRevision) return;
+  snapshot = { ...snapshot, leagueParticipation: data.user?.user_metadata['league_participation'] === true };
+  emit();
+}
 
 async function refreshTables() {
   const sb = getSupabase();
@@ -21,6 +31,7 @@ async function refreshTables() {
 }
 
 export function installCloudFeatureSession(viewerId: string, rejoin: (membership: { room_id: number; seat: number }) => Promise<unknown>) {
+  preferenceRevision++;
   snapshot = { viewerId, tables: { friends: [], history: [], canViewById: true } };
   attachSourceFeatureSession({
     getSnapshot: () => snapshot,
@@ -28,6 +39,15 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
     execute: async (action, input) => {
       const sb = getSupabase();
       if (!sb) return { confirmed: false, message: 'Server bağlantısı yoxdur.' };
+      if (action === 'league-settings') {
+        if (input?.['enabled'] !== 0 && input?.['enabled'] !== 1) return { confirmed: false };
+        const revision = ++preferenceRevision;
+        const { data, error } = await sb.auth.updateUser({ data: { league_participation: input['enabled'] === 1 } });
+        if (error) return { confirmed: false, message: 'Lig seçimi kaydedilemedi.' };
+        if (snapshot.viewerId === viewerId && revision === preferenceRevision) { snapshot = { ...snapshot, leagueParticipation: data.user?.user_metadata['league_participation'] === true }; emit(); }
+        return { confirmed: true };
+      }
+      if (action === 'user-kick' || action === 'user-save') return { confirmed: false, message: 'Şutla ve Koru hizmeti bağlı değil.' };
       if (action !== 'change-table') return { confirmed: false };
       const tableId = input?.['tableId'];
       if (tableId !== undefined && snapshot.tables?.history.find((h) => h.id === String(tableId))?.current) return { confirmed: true };
@@ -41,6 +61,7 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
     },
   });
   void refreshTables();
+  void refreshPreference(viewerId);
   // Live men/women counts: any seat change anywhere refreshes the list.
   const sb = getSupabase();
   if (sb && !liveChannel) {

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_Слой_2" data-name="Слой 2" xmlns="http://www.w3.org/2000/svg" width="62.01" height="58.85" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 62.01 58.85">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#_Безымянный_градиент_337);
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6, .cls-7, .cls-8, .cls-9, .cls-10, .cls-11 {
+        stroke: #ff7e1d;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6, .cls-7, .cls-8, .cls-9, .cls-10, .cls-11, .cls-12 {
+        stroke-miterlimit: 10;
+        stroke-width: .7px;
+      }
+
+      .cls-2 {
+        fill: url(#_Безымянный_градиент_336);
+      }
+
+      .cls-3 {
+        fill: url(#_Безымянный_градиент_335);
+      }
+
+      .cls-4 {
+        fill: url(#_Безымянный_градиент_334);
+      }
+
+      .cls-13 {
+        fill: url(#_Безымянный_градиент_343);
+      }
+
+      .cls-14 {
+        fill: url(#_Безымянный_градиент_359);
+      }
+
+      .cls-15 {
+        fill: url(#_Безымянный_градиент_343-2);
+      }
+
+      .cls-16 {
+        fill: url(#_Безымянный_градиент_343-5);
+      }
+
+      .cls-17 {
+        fill: url(#_Безымянный_градиент_343-4);
+      }
+
+      .cls-18 {
+        fill: url(#_Безымянный_градиент_343-3);
+      }
+
+      .cls-5 {
+        fill: url(#_Безымянный_градиент_334-4);
+      }
+
+      .cls-6 {
+        fill: url(#_Безымянный_градиент_334-2);
+      }
+
+      .cls-7 {
+        fill: url(#_Безымянный_градиент_334-3);
+      }
+
+      .cls-8 {
+        fill: url(#_Безымянный_градиент_334-5);
+      }
+
+      .cls-9 {
+        fill: url(#_Безымянный_градиент_336-4);
+      }
+
+      .cls-10 {
+        fill: url(#_Безымянный_градиент_336-3);
+      }
+
+      .cls-11 {
+        fill: url(#_Безымянный_градиент_336-2);
+      }
+
+      .cls-12 {
+        fill: #ffe840;
+        stroke: #ff941f;
+      }
+    </style>
+    <linearGradient id="_Безымянный_градиент_343" data-name="Безымянный градиент 343" x1="-4.46" y1="377.15" x2="13.92" y2="364.64" gradientTransform="translate(-161.72 362.66) rotate(-148.29)" gradientUnits="userSpaceOnUse">
+      <stop offset=".06" stop-color="#e91332"/>
+      <stop offset=".15" stop-color="#ec213e"/>
+      <stop offset=".37" stop-color="#f3405a"/>
+      <stop offset=".58" stop-color="#f8576d"/>
+      <stop offset=".78" stop-color="#fb6579"/>
+      <stop offset=".96" stop-color="#fd6a7e"/>
+    </linearGradient>
+    <linearGradient id="_Безымянный_градиент_343-2" data-name="Безымянный градиент 343" x1="-189.24" y1="285.06" x2="-170.85" y2="272.55" gradientTransform="translate(15.39 365.1) rotate(152.53)" xlink:href="#_Безымянный_градиент_343"/>
+    <linearGradient id="_Безымянный_градиент_343-3" data-name="Безымянный градиент 343" x1="-133.89" y1="10.24" x2="-115.51" y2="-2.26" gradientTransform="translate(118.2 115.1) rotate(55.02)" xlink:href="#_Безымянный_градиент_343"/>
+    <linearGradient id="_Безымянный_градиент_343-4" data-name="Безымянный градиент 343" x1="14.98" y1="19.79" x2="32.75" y2="7.7" gradientTransform="matrix(1,0,0,1,0,0)" xlink:href="#_Безымянный_градиент_343"/>
+    <linearGradient id="_Безымянный_градиент_343-5" data-name="Безымянный градиент 343" x1="6.38" y1="37.98" x2="25.75" y2="24.81" gradientTransform="matrix(1,0,0,1,0,0)" xlink:href="#_Безымянный_градиент_343"/>
+    <radialGradient id="_Безымянный_градиент_359" data-name="Безымянный градиент 359" cx="29.6" cy="27.94" fx="29.6" fy="27.94" r="12.77" gradientUnits="userSpaceOnUse">
+      <stop offset=".06" stop-color="#98132f"/>
+      <stop offset=".2" stop-color="#98132f" stop-opacity=".75"/>
+      <stop offset=".37" stop-color="#98132f" stop-opacity=".48"/>
+      <stop offset=".54" stop-color="#98132f" stop-opacity=".27"/>
+      <stop offset=".71" stop-color="#98132f" stop-opacity=".12"/>
+      <stop offset=".86" stop-color="#98132f" stop-opacity=".03"/>
+      <stop offset="1" stop-color="#98132f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="_Безымянный_градиент_334" data-name="Безымянный градиент 334" x1="30.19" y1="27.31" x2="26.67" y2="20.98" gradientUnits="userSpaceOnUse">
+      <stop offset=".48" stop-color="#fdd813"/>
+      <stop offset=".6" stop-color="#f8c510"/>
+      <stop offset=".81" stop-color="#f2ad0c"/>
+      <stop offset=".94" stop-color="#f0a40b"/>
+    </linearGradient>
+    <linearGradient id="_Безымянный_градиент_334-2" data-name="Безымянный градиент 334" x1="28.44" y1="27.57" x2="21.68" y2="26.73" xlink:href="#_Безымянный_градиент_334"/>
+    <linearGradient id="_Безымянный_градиент_334-3" data-name="Безымянный градиент 334" x1="30.9" y1="30.03" x2="34.19" y2="35.07" xlink:href="#_Безымянный_градиент_334"/>
+    <linearGradient id="_Безымянный_градиент_334-4" data-name="Безымянный градиент 334" x1="31.58" y1="28.06" x2="37.74" y2="28.06" xlink:href="#_Безымянный_градиент_334"/>
+    <linearGradient id="_Безымянный_градиент_335" data-name="Безымянный градиент 335" x1="31.78" y1="25.6" x2="34.14" y2="20.68" gradientUnits="userSpaceOnUse">
+      <stop offset=".34" stop-color="#fdd813"/>
+      <stop offset=".51" stop-color="#f8c510"/>
+      <stop offset=".77" stop-color="#f2ad0c"/>
+      <stop offset=".94" stop-color="#f0a40b"/>
+    </linearGradient>
+    <linearGradient id="_Безымянный_градиент_334-5" data-name="Безымянный градиент 334" x1="27.85" y1="30" x2="26.13" y2="35.09" xlink:href="#_Безымянный_градиент_334"/>
+    <linearGradient id="_Безымянный_градиент_337" data-name="Безымянный градиент 337" x1="29.64" y1="27.31" x2="26.07" y2="22.59" gradientUnits="userSpaceOnUse">
+      <stop offset=".3" stop-color="#fdd813"/>
+      <stop offset=".6" stop-color="#f7c20f"/>
+      <stop offset=".94" stop-color="#f0a40b"/>
+    </linearGradient>
+    <linearGradient id="_Безымянный_градиент_336" data-name="Безымянный градиент 336" x1="30.81" y1="26.78" x2="33.21" y2="23.75" gradientUnits="userSpaceOnUse">
+      <stop offset=".18" stop-color="#fdd813"/>
+      <stop offset=".53" stop-color="#f7c20f"/>
+      <stop offset=".94" stop-color="#f0a40b"/>
+    </linearGradient>
+    <linearGradient id="_Безымянный_градиент_336-2" data-name="Безымянный градиент 336" x1="32.25" y1="28.01" x2="35.13" y2="30.53" xlink:href="#_Безымянный_градиент_336"/>
+    <linearGradient id="_Безымянный_градиент_336-3" data-name="Безымянный градиент 336" x1="30.04" y1="29.99" x2="30.04" y2="33.5" xlink:href="#_Безымянный_градиент_336"/>
+    <linearGradient id="_Безымянный_градиент_336-4" data-name="Безымянный градиент 336" x1="28.39" y1="28.61" x2="24.28" y2="28.46" xlink:href="#_Безымянный_градиент_336"/>
+  </defs>
+  <g id="_Слой_2-2" data-name="Слой 2">
+    <g>
+      <g>
+        <path class="cls-13" d="M26.74,30.4s-11.67,8.85-8.66,18.89,16.6,12.54,23.01,5.75c7.07-7.48,2.86-21.38,2.86-21.38l-17.21-3.26Z"/>
+        <path class="cls-15" d="M33.06,29.47s1.62,14.56,11.79,17.12,19.27-7.83,16.72-16.81c-2.81-9.9-16.89-13.42-16.89-13.42l-11.62,13.11Z"/>
+        <path class="cls-18" d="M40.04,29.25s14.22-3.51,15.43-13.92c1.21-10.42-10.28-18.08-18.85-14.38-9.45,4.08-11.09,18.5-11.09,18.5l14.51,9.8Z"/>
+        <path class="cls-17" d="M33.17,24.91s5.28-13.66-2.56-20.63S9.03,2.2,8.01,11.48c-1.02,9.28,5.47,13.26,5.47,13.26l19.69.16Z"/>
+        <path class="cls-16" d="M26.74,30.56l.29.05-1.01-6.39s-12.27-8.01-20.71-1.79c-8.44,6.22-6.21,19.85,2.34,23.6,3.24,1.42,6.74,1.33,9.94.6-.42-8.83,9.14-16.08,9.14-16.08Z"/>
+      </g>
+      <circle class="cls-14" cx="29.6" cy="27.94" r="12.77"/>
+      <g>
+        <circle class="cls-4" cx="28.3" cy="23.9" r="3.08"/>
+        <circle class="cls-6" cx="25.66" cy="27.22" r="3.08"/>
+        <circle class="cls-7" cx="32.14" cy="31.93" r="3.08"/>
+        <circle class="cls-5" cx="34.66" cy="28.06" r="3.08"/>
+        <circle class="cls-3" cx="32.68" cy="23.72" r="3.08"/>
+        <circle class="cls-8" cx="27.24" cy="31.81" r="3.08"/>
+        <circle class="cls-1" cx="28.26" cy="25.48" r="1.93"/>
+        <circle class="cls-2" cx="31.84" cy="25.48" r="1.93"/>
+        <circle class="cls-11" cx="33.12" cy="28.77" r="1.93"/>
+        <circle class="cls-10" cx="30.04" cy="31.14" r="1.93"/>
+        <circle class="cls-9" cx="27.24" cy="28.56" r="1.93"/>
+        <circle class="cls-12" cx="30.04" cy="27.94" r="1.93"/>
+      </g>
+    </g>
+  </g>
+</svg>
