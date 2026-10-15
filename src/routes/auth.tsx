@@ -9,11 +9,16 @@ import bottle from "@/assets/ui_table_default_bottle.svg";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" },
+    ],
     meta: [
-      { title: "Giriş və qeydiyyat — BUTL" },
-      { name: "description", content: "BUTL hesabına istifadəçi adı və şifrənlə daxil ol və ya yeni hesab yarat." },
-      { property: "og:title", content: "Giriş və qeydiyyat — BUTL" },
-      { property: "og:description", content: "BUTL dünyasına qoşul. Hesabına daxil ol və ya qeydiyyatdan keç." },
+      { title: "Giriş və qeydiyyat — Deltagame.az" },
+      { name: "description", content: "Deltagame.az hesabına istifadəçi adı və şifrənlə daxil ol və ya yeni hesab yarat." },
+      { property: "og:title", content: "Giriş və qeydiyyat — Deltagame.az" },
+      { property: "og:description", content: "Deltagame.az dünyasına qoşul. Hesabına daxil ol və ya qeydiyyatdan keç." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -24,7 +29,17 @@ export const Route = createFileRoute("/auth")({
 // Scoped design tokens keep the rest of the game and its global theme unchanged.
 const authStyles = `
 .butl-auth {
-  --auth-bg: oklch(0.17 0.008 175);
+  --auth-bg: oklch(0.16 0.014 175);
+  --auth-grid: oklch(0.78 0.11 175 / 0.07);
+  --auth-graphic: oklch(0.78 0.11 175 / 0.16);
+  --auth-highlight: oklch(0.86 0.16 155);
+  --auth-cyan: oklch(0.82 0.12 205);
+  --auth-gold: oklch(0.89 0.14 90);
+  --auth-headline: linear-gradient(110deg, var(--auth-highlight) 0%, var(--auth-cyan) 52%, var(--auth-gold) 100%);
+  --auth-flag-blue: oklch(0.65 0.14 233);
+  --auth-flag-red: oklch(0.59 0.22 25);
+  --auth-flag-green: oklch(0.58 0.16 150);
+  --auth-flag-white: oklch(1 0 0);
   --auth-text: oklch(0.98 0.003 175);
   --auth-muted: oklch(0.7 0.012 175);
   --auth-surface: oklch(0.225 0.009 175);
@@ -43,9 +58,13 @@ const authStyles = `
   --accent-foreground: var(--auth-text);
   --input: var(--auth-border);
   --ring: var(--auth-brand);
-  --auth-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --auth-font: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   box-sizing: border-box; width: 100%; min-height: 100svh; min-height: 100dvh;
-  background: var(--auth-bg); color: var(--auth-text); font-family: var(--auth-font);
+  position: relative;
+  background-color: var(--auth-bg);
+  background-image: linear-gradient(var(--auth-grid) 1px, transparent 1px), linear-gradient(90deg, var(--auth-grid) 1px, transparent 1px);
+  background-size: 56px 56px;
+  color: var(--auth-text); font-family: var(--auth-font);
   letter-spacing: 0; overflow-x: clip; isolation: isolate;
   display: flex; flex-direction: column; align-items: center;
   padding: max(22px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
@@ -53,13 +72,23 @@ const authStyles = `
 }
 .butl-auth *, .butl-auth *::before, .butl-auth *::after { box-sizing: border-box; letter-spacing: 0; }
 .butl-auth .auth-top { width: 100%; max-width: 1040px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; }
-.butl-auth .auth-wordmark { margin: 0; font-size: 19px; font-weight: 800; }
-.butl-auth .auth-locale { color: var(--auth-muted); font-size: 12px; font-weight: 600; display: flex; gap: 7px; align-items: center; }
-.butl-auth .auth-locale-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--auth-brand); }
+.butl-auth::before, .butl-auth::after { content: ""; position: absolute; z-index: -1; pointer-events: none; width: 340px; height: 440px; border: 1px solid var(--auth-graphic); transform: rotate(-32deg); }
+.butl-auth::before { left: -230px; top: 17%; box-shadow: 24px 24px 0 -1px var(--auth-bg), 24px 24px 0 0 var(--auth-graphic), 48px 48px 0 -1px var(--auth-bg), 48px 48px 0 0 var(--auth-graphic); }
+.butl-auth::after { right: -260px; bottom: 10%; transform: rotate(32deg); box-shadow: -24px -24px 0 -1px var(--auth-bg), -24px -24px 0 0 var(--auth-graphic); }
+.butl-auth .auth-wordmark { margin: 0; font-size: 23px; line-height: 1.3; font-weight: 300; white-space: nowrap; }
+.butl-auth .auth-wordmark span { color: var(--auth-brand); font-weight: 500; }
+.butl-auth .auth-locale { color: var(--auth-text); font-size: 12px; font-weight: 700; display: inline-flex; gap: 8px; align-items: center; padding: 9px 11px; border: 1px solid var(--auth-border); border-radius: 8px; background: var(--auth-surface); box-shadow: var(--auth-shadow); }
+.butl-auth .auth-flag { width: 25px; height: 15px; display: block; border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.butl-auth .auth-flag-blue { fill: var(--auth-flag-blue); }
+.butl-auth .auth-flag-red { fill: var(--auth-flag-red); }
+.butl-auth .auth-flag-green { fill: var(--auth-flag-green); }
+.butl-auth .auth-flag-white { fill: var(--auth-flag-white); }
+.butl-auth .auth-locale-chevron { width: 7px; height: 7px; border-right: 1px solid var(--auth-muted); border-bottom: 1px solid var(--auth-muted); transform: rotate(45deg); margin: -3px 1px 0 3px; }
 .butl-auth .auth-content { width: 100%; min-width: 0; max-width: 400px; margin: auto 0; padding: 30px 0; }
 .butl-auth .auth-intro { text-align: center; margin-bottom: 28px; }
 .butl-auth .auth-mark { width: 64px; height: 76px; object-fit: contain; display: block; margin: 0 auto 20px; transform: rotate(-16deg); filter: drop-shadow(var(--auth-shadow)); }
-.butl-auth h1 { font-size: 32px; line-height: 1.18; font-weight: 750; margin: 0 0 12px; overflow-wrap: anywhere; }
+.butl-auth h1 { font-size: 30px; line-height: 1.35; font-weight: 700; margin: 0 0 14px; overflow-wrap: break-word; text-wrap: balance; color: var(--auth-highlight); }
+@supports (background-clip: text) { .butl-auth h1 { background: var(--auth-headline); background-clip: text; -webkit-background-clip: text; color: transparent; } }
 .butl-auth .auth-subtitle { margin: 0; font-size: 14px; line-height: 1.6; color: var(--auth-muted); }
 .butl-auth .auth-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; background: var(--auth-surface); border: 1px solid var(--auth-border); border-radius: 8px; margin-bottom: 26px; }
 .butl-auth .auth-tab { border: 0; height: 44px; min-width: 0; border-radius: 5px; background: transparent; color: var(--auth-muted); font-size: 14px; font-weight: 600; box-shadow: none; white-space: normal; }
@@ -158,13 +187,22 @@ function AuthPage() {
     <main className="butl-auth" lang="az">
       <style>{authStyles}</style>
       <header className="auth-top">
-        <p className="auth-wordmark">BUTL<span aria-hidden="true">.</span></p>
-        <span className="auth-locale"><span className="auth-locale-dot" aria-hidden="true" />AZ</span>
+        <p className="auth-wordmark">Deltagame<span>.az</span></p>
+        <span className="auth-locale" aria-label="Azərbaycan dili">
+          <svg className="auth-flag" viewBox="0 0 60 30" role="img" aria-label="Azərbaycan bayrağı">
+            <path className="auth-flag-blue" d="M0 0h60v10H0z" />
+            <path className="auth-flag-red" d="M0 10h60v10H0z" />
+            <path className="auth-flag-green" d="M0 20h60v10H0z" />
+            <path className="auth-flag-white" d="M32 10.5a4.5 4.5 0 1 0 0 9 3.75 3.75 0 1 1 0-9Z" />
+            <path className="auth-flag-white" d="m36 11 .77 2.15 2.06-.98-.98 2.06L40 15l-2.15.77.98 2.06-2.06-.98L36 19l-.77-2.15-2.06.98.98-2.06L32 15l2.15-.77-.98-2.06 2.06.98Z" />
+          </svg>
+          AZ<span className="auth-locale-chevron" aria-hidden="true" />
+        </span>
       </header>
       <section className="auth-content" aria-labelledby="auth-heading">
         <div className="auth-intro">
           <img src={bottle} alt="" className="auth-mark" width="64" height="76" aria-hidden="true" />
-          <h1 id="auth-heading">{login ? "Yenidən xoş gəldin!" : "Tanışlıq buradan başlayır"}</h1>
+          <h1 id="auth-heading">{login ? "Əyləncənin dadını çıxarmağa hazırsan?" : "Tanışlıq buradan başlayır"}</h1>
           <p className="auth-subtitle">{login ? "Söhbətə qaldığın yerdən davam et." : "Öz hesabını yarat, yeni insanlarla tanış ol."}</p>
         </div>
         <div className="auth-tabs" role="group" aria-label="Hesaba giriş üsulu">
