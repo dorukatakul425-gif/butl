@@ -1,6 +1,6 @@
 # Tasks
 - [x] Verify departure/rejoin and ignore using two real accounts, retained chat and a second live view; 116 tests passed.
-- [ ] Replace the old export with a private-data-free Cloud setup and transfer all current source/SQL to butl/main.
+- [x] Replace old exports with application-only Cloud bootstrap and setup instructions; all 360 source files matched butl/main on verification. New-account activation requires the destination owner's Cloud/auth/storage setup; not tested in a second workspace.
 - [x] Fix ignore across live messages and existing chat; two real accounts verified block, reload persistence, original ignore photo and unblock.
 - [x] Correct upper trophy idle cup and ladder presentation; verified in browser. Operational league seasons require a verified league service (not available).
 - [x] Refresh verified achievements from realtime; 25 real gifts earned a badge, Continue acknowledged it, unlocked detail displayed the next target.
