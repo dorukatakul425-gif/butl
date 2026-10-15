@@ -1,5 +1,6 @@
 import defaultBottleUrl from "@/assets/ui_table_default_bottle.svg";
-import autumnCenter from "@/assets/original-table-autumn-center.png.asset.json";
+import autumnCenterUrl from "@/assets/original-table-autumn-center.png";
+const autumnCenter = { url: autumnCenterUrl };
 import { ASSETS_TO_VIRTUAL as ASSETS_K } from "@/lib/ciliz-assets";
 // Browser-only: rendered with PixiJS + Spine 3.8 exactly like TableView/TableUserView in preloader.js.
 import { Application, BaseTexture, Container, MIPMAP_MODES, Rectangle, Sprite, Text, TextStyle, Texture, type DisplayObject } from "pixi.js";
