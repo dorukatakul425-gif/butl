@@ -78,6 +78,34 @@
       "when": 1792019327083,
       "tag": "0010_dat_wallet",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792040007460,
+      "tag": "0011_premium_pass",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792045954856,
+      "tag": "0012_profile_stats_achievements",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792047643832,
+      "tag": "0013_harem_and_blocks",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792049779386,
+      "tag": "0014_live_departure_sync",
+      "breakpoints": true
     }
   ]
 }

@@ -1,45 +1,76 @@
 import { useSyncExternalStore } from "react";
+import { getSupabase } from "@/lib/supabase";
 
 /**
- * Local stand-in for the viewer's session counters (totalKisses, vip) until the
- * game backend exists. VIP is never granted here; kisses grow only from real
- * mutual kisses in rounds, so kiss-locked gifts unlock like the original.
+ * Viewer session counters. Kisses come from the server profile; VIP and Premium
+ * come from the server's vip_until / premium_until and switch off by themselves
+ * the moment the paid period ends (the server enforces the same expiry).
  */
-export interface ViewerProgress { kisses: number; vip: false }
+export interface ViewerProgress { kisses: number; vip: boolean; vipUntil: number | null; premium: boolean; premiumUntil: number | null }
 /** Hearts balance: unknown until the game backend exists, so paid items need hearts (0). */
 export const VIEWER_GOLD = 0;
+export const VIEWER_STATUS_CHANGED = "viewer:status-changed";
 const KEY = "bottle:viewer-progress";
 const listeners = new Set<() => void>();
-let state: ViewerProgress = { kisses: 0, vip: false };
+let state: ViewerProgress = { kisses: 0, vip: false, vipUntil: null, premium: false, premiumUntil: null };
 let loaded = false;
+let watching = false;
+let expiryTimer: number | undefined;
+
+const emit = () => listeners.forEach(l => l());
+const set = (patch: Partial<ViewerProgress>) => { state = { ...state, ...patch }; emit(); };
 
 function load() {
   if (loaded || typeof window === "undefined") return;
   loaded = true;
   try {
     const kisses = Number(JSON.parse(window.localStorage.getItem(KEY) ?? "{}").kisses);
-    if (Number.isFinite(kisses) && kisses > 0) state = { kisses: Math.floor(kisses), vip: false };
+    if (Number.isFinite(kisses) && kisses > 0) state = { ...state, kisses: Math.floor(kisses) };
   } catch { /* ignore corrupt storage */ }
+}
+
+function applyTimes(vipUntil: number | null, premiumUntil: number | null) {
+  const now = Date.now();
+  set({ vipUntil, premiumUntil, vip: !!vipUntil && vipUntil > now, premium: !!premiumUntil && premiumUntil > now });
+  window.clearTimeout(expiryTimer);
+  const next = [vipUntil, premiumUntil].filter((t): t is number => !!t && t > now).sort((a, b) => a - b)[0];
+  if (next) expiryTimer = window.setTimeout(() => applyTimes(state.vipUntil, state.premiumUntil), Math.min(next - now + 50, 2 ** 31 - 1));
+}
+
+export async function refreshViewerStatus() {
+  const sb = getSupabase();
+  if (!sb) return;
+  const { data: u } = await sb.auth.getUser();
+  if (!u.user) return applyTimes(null, null);
+  const { data } = await sb.from("profiles").select("vip_until, premium_until").eq("id", u.user.id).maybeSingle();
+  const p = data as { vip_until: string | null; premium_until: string | null } | null;
+  applyTimes(p?.vip_until ? Date.parse(p.vip_until) : null, p?.premium_until ? Date.parse(p.premium_until) : null);
+}
+
+function watch() {
+  if (watching || typeof window === "undefined") return;
+  watching = true;
+  void refreshViewerStatus();
+  window.addEventListener(VIEWER_STATUS_CHANGED, () => void refreshViewerStatus());
+  window.setInterval(() => void refreshViewerStatus(), 60_000);
 }
 
 export function getViewerProgress(): ViewerProgress { load(); return state; }
 
 export function addViewerKiss(count = 1) {
   load();
-  state = { kisses: state.kisses + Math.max(0, Math.floor(count)), vip: false };
+  set({ kisses: state.kisses + Math.max(0, Math.floor(count)) });
   try { window.localStorage.setItem(KEY, JSON.stringify({ kisses: state.kisses })); } catch { /* storage full */ }
-  listeners.forEach(l => l());
 }
 
-const SERVER: ViewerProgress = { kisses: 0, vip: false };
+const SERVER: ViewerProgress = { kisses: 0, vip: false, vipUntil: null, premium: false, premiumUntil: null };
 export function useViewerProgress(): ViewerProgress {
-  return useSyncExternalStore(cb => { listeners.add(cb); return () => listeners.delete(cb); }, getViewerProgress, () => SERVER);
+  return useSyncExternalStore(cb => { watch(); listeners.add(cb); return () => listeners.delete(cb); }, getViewerProgress, () => SERVER);
 }
 
 /** Server profile counter is the truth once signed in. */
 export function setViewerKisses(kisses: number) {
   load();
   if (state.kisses === kisses) return;
-  state = { kisses: Math.max(0, Math.floor(kisses)), vip: false };
-  listeners.forEach(l => l());
+  set({ kisses: Math.max(0, Math.floor(kisses)) });
 }

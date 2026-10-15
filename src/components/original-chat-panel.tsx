@@ -1,3 +1,4 @@
+import { useBlockedUsers } from "@/lib/block-session";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { InteractiveHints, HINT_SET_INPUT_EVENT, CHAT_SENT_EVENT } from "@/components/interactive-hints";
 import emojiIcon from "@/assets/original-chat-emoji.svg.asset.json";
@@ -30,6 +31,7 @@ const profileUser = (p: Profile) => ({ id: p.id, name: p.name, photoUrl: p.photo
 export function OriginalChatPanel() {
   const assets = useCilizAssets();
   const session = useMusicSession();
+  const blocked = useBlockedUsers();
   const translations = useChatTranslations();
   const onTranslate = (key: number, original: string) => {
     if (translations[key]?.translated) { toggleTranslation(key); return; }
@@ -143,7 +145,7 @@ export function OriginalChatPanel() {
     <section ref={sectionRef} className="original-chat chat" aria-label="Sohbet">
       <div ref={scrollRef} className="original-chat-scroll chat__scroll">
         <div className={`chat__body${small ? " chat__small" : ""}`}>
-          {session.lines.map((line) => line.kind === "text" ? (
+          {session.lines.filter(line => line.kind !== "text" || !blocked.has(line.sender.id)).map((line) => line.kind === "text" ? (
             <div key={line.key} className={`chat__message chat__noselect${chatMessageIsBold(line.sender, line.receiver) ? " chat__message--bold" : ""}`}>
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
               <div className="chat__message-line">

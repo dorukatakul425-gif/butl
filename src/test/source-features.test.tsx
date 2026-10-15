@@ -50,6 +50,13 @@ describe('original feature windows', () => {
  it('renders all public league cups without inventing a player ranking', () => {
   render(<SourceSeasonDialog feature="league" onClose={vi.fn()} />); fireEvent.click(screen.getByRole('button', { name: 'Ligler listesi' })); expect(screen.getByRole('dialog', { name: 'Ligler listesi' })).toBeVisible(); expect(document.querySelectorAll('.league__user')).toHaveLength(0);
  });
+ it('shows the original large idle cup and closes without a fictitious league transaction', () => {
+  const close = vi.fn(), execute = host({ viewerId: 'me' });
+  render(<SourceSeasonDialog feature="league" onClose={close} />);
+  expect(document.querySelector('.league-move__cups img')).toHaveAttribute('width', '118');
+  fireEvent.click(screen.getByRole('button', { name: 'dlg:harem:btn' }));
+  expect(close).toHaveBeenCalledOnce(); expect(execute).not.toHaveBeenCalled();
+ });
  it('keeps the original frame, left arrow and center for the isolated visual test', () => {
   render(<SourceSeasonDialog feature="roulette" onClose={vi.fn()} />);
   expect(document.querySelector('.roulette__wheel-frame')).not.toBeNull();

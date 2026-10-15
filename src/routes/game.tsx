@@ -13,6 +13,7 @@ import { SourceConnectionScreen } from "@/components/table/source-connection-scr
 import { SourceHeartBonus } from "@/components/table/source-heart-bonus";
 import { startCloudAchievements } from "@/lib/cloud-achievements";
 import { DailyBonusHost } from "@/components/table/daily-bonus-dialog";
+import { startCloudBlocks } from "@/lib/block-session";
 
 export const Route = createFileRoute("/game")({
   head: () => ({
@@ -41,9 +42,10 @@ function Index() {
     void joinRoom().then(() => { if (alive) setJoined(true); }).catch(() => { if (alive) setJoined(false); });
     // Closing the tab frees the seat at once, so others see the player leave immediately.
     const stopAchievements = startCloudAchievements();
+    const stopBlocks = startCloudBlocks(auth.session.user.id);
     const bye = () => leaveRoomNow();
     window.addEventListener("pagehide", bye);
-    return () => { alive = false; stopAchievements(); window.removeEventListener("pagehide", bye); void leaveRoom(); };
+    return () => { alive = false; stopAchievements(); stopBlocks(); window.removeEventListener("pagehide", bye); void leaveRoom(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.ready, auth.session?.user.id, Boolean(auth.profile)]);
   if (!joined || !room.roomId) {

@@ -18,6 +18,8 @@ import { newcomerKey, newcomerKind, newcomersToNotify, widgetParts, OPEN_GIFT_FO
 import { onRoomGift, onRoomGesture, sendGesture, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat } from "@/lib/room-session";
 import type { Profile } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
+import ignoredPhoto from "@/assets/source-ignore-photo.svg";
+import { useBlockedUsers } from "@/lib/block-session";
 import { showSourceToast } from "@/components/source-dialogs";
 import { ProfileDialog } from "@/components/profile/profile-dialog";
 import { SourceGiftLockedDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT } from "@/components/source-dialogs";
@@ -56,6 +58,7 @@ export function TableSeats() {
 
   const progress = useViewerProgress();
   const room = useRoom();
+  const blocked = useBlockedUsers();
   const ownKisses = room.players[VIEWER_SEAT]?.kisses;
   useEffect(() => { if (ownKisses !== undefined) setViewerKisses(ownKisses); }, [ownKisses]);
   useEffect(() => {
@@ -120,20 +123,42 @@ export function TableSeats() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assets]);
 
+  const seatSig = useRef<{ sig: string; table: unknown }>({ sig: "", table: null });
   // Real players from the room; empty seats stay empty.
   useEffect(() => {
     if (!assets || !activeTable) return;
-    playersRef.current = buildPlayers(assets, room.players, decor.frame, decor.stone);
-    activeTable.setPlayers(playersRef.current);
-    notifyNewcomers(assets, playersRef.current);
-  }, [assets, activeTable, room.players, decor.frame, decor.stone]);
+    const next = buildPlayers(assets, room.players, decor.frame, decor.stone);
+    for (const player of next) if (player.id && blocked.has(player.id)) player.photoUrl = ignoredPhoto;
+    playersRef.current = next;
+    // Wallet updates (every gift) must not rebuild seats: only redraw when what is drawn changes.
+    const sig = JSON.stringify(next.map(p => [p.id, p.name, p.photoUrl, p.frame, p.stone, p.male, p.empty, p.age, p.city]));
+    if (sig === seatSig.current.sig && seatSig.current.table === activeTable) return;
+    seatSig.current = { sig, table: activeTable };
+    activeTable.setPlayers(next);
+    notifyNewcomers(assets, next);
+  }, [assets, activeTable, room.players, decor.frame, decor.stone, blocked]);
   // Decor and ownership come from our server profile (set_decor / buy_decor RPCs).
   const ownProfile = room.players[VIEWER_SEAT];
   useEffect(() => { if (ownProfile) syncDecorFromProfile(ownProfile); }, [ownProfile]);
   // Every confirmed gift in the room (ours included) animates for everyone.
   useEffect(() => {
     if (!assets) return;
-    return onRoomGift(row => {
+    // Realtime delivers rows in bursts; replay each sender's gifts at their server-time cadence.
+    const pace = new Map<string, { server: number; local: number }>();
+    const timers = new Set<number>();
+    const off = onRoomGift(row => {
+      const created = Date.parse((row as { created_at?: string }).created_at ?? "") || Date.now();
+      const now = performance.now();
+      let base = pace.get(row.sender_id);
+      let delay = base ? (created - base.server) - (now - base.local) : 0;
+      if (!base || delay < -300 || delay > 3000) { base = { server: created, local: now }; pace.set(row.sender_id, base); delay = 0; }
+      if (delay <= 0) { play(row); return; }
+      const id = window.setTimeout(() => { timers.delete(id); play(row); }, delay);
+      timers.add(id);
+    });
+    return () => { off(); timers.forEach(t => window.clearTimeout(t)); };
+    function play(row: Parameters<Parameters<typeof onRoomGift>[0]>[0]) {
+      if (!assets) return;
       let mine = false;
       // Our own sends already animated instantly on click.
       if (row.sender_id === playersRef.current[VIEWER_SEAT]?.id && localSent.current > 0) { localSent.current--; mine = true; }
@@ -148,7 +173,7 @@ export function TableSeats() {
         { id: row.receiver_id, name: r?.name ?? "", photoUrl: r?.photo_url || DEFAULT_PHOTO },
         { type: row.gift_type, name: item?.name ?? row.gift_type, image: item ? dialogImage(assets, item.image, 28, 28).src : "" },
       );
-    });
+    }
   }, [assets, giftItems]);
 
   useEffect(() => {
@@ -249,14 +274,16 @@ export function TableSeats() {
           multiselect={multiselect}
         />
       )}
-      {assets && profileSeat !== null && playersRef.current[profileSeat] && (
-        <ProfileDialog player={playersRef.current[profileSeat]!} self={false} assets={assets}
+      {assets && profileSeat !== null && playersRef.current[profileSeat] && (() => {
+        const player = playersRef.current[profileSeat];
+        if (!player) return null;
+        return <ProfileDialog player={player} self={false} assets={assets}
           onClose={() => setProfileSeat(null)}
           onGift={() => { const seat = profileSeat; setProfileSeat(null); setTarget(state => openFor(state, seat, VIEWER_SEAT)); }}
-          onDecor={() => setProfileSeat(null)} onMusic={() => setProfileSeat(null)} />
-      )}
+          onDecor={() => setProfileSeat(null)} onMusic={() => setProfileSeat(null)} />;
+      })()}
       {assets && ownProfileOpen && (
-        <ProfileDialog player={{ ...playersRef.current[VIEWER_SEAT]!, age: VIEWER.age }} self assets={assets}
+        <ProfileDialog player={{ ...(playersRef.current[VIEWER_SEAT] ?? { name: VIEWER.name, photoUrl: DEFAULT_PHOTO, frame: '', stone: '', male: VIEWER.male }), age: VIEWER.age }} self assets={assets}
           onClose={() => setOwnProfileOpen(false)} onGift={() => setOwnProfileOpen(false)}
           onDecor={() => { setOwnProfileOpen(false); window.dispatchEvent(new CustomEvent("source:open-decor")); }} onMusic={() => { setOwnProfileOpen(false); window.dispatchEvent(new CustomEvent("source:open-music-list")); }} />
       )}

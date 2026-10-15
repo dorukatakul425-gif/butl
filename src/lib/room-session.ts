@@ -136,6 +136,8 @@ async function loadPlayers(roomId: number, mySeat: number) {
 
 async function teardown() {
   generation++;
+  stopTokenUpdates?.();
+  stopTokenUpdates = null;
   const sb = getSupabase();
   if (heartbeatTimer) clearInterval(heartbeatTimer);
   heartbeatTimer = null;
@@ -161,6 +163,13 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     return;
   }
   await teardown();
+  const { data: sess } = await sb.auth.getSession();
+  accessToken = sess.session?.access_token ?? null;
+  const tokenGeneration = generation;
+  const { data: tokenSubscription } = sb.auth.onAuthStateChange((_event, session) => {
+    if (generation === tokenGeneration) accessToken = session?.access_token ?? null;
+  });
+  stopTokenUpdates = () => tokenSubscription.subscription.unsubscribe();
 
   const t0 = Date.now();
   const { data: nowData } = await sb.rpc("server_now");
@@ -206,9 +215,9 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` },
       (p) => { const old = p.old as { seat?: number; room_id?: number }; const next = p.new as { seat?: number; room_id?: number }; if (current() && (old.seat !== next.seat || old.room_id !== next.room_id)) void loadPlayers(roomId, mySeat); })
     .on("postgres_changes", { event: "DELETE", schema: "public", table: "room_players" },
-      (p) => {
-        const old = p.old as { room_id?: number; seat?: number; user_id?: string };
-        if (current() && (old.room_id === roomId || (old.user_id && [...seatMap.values()].includes(old.user_id)))) { void loadPlayers(roomId, mySeat); nudgeRoom(); }
+      () => {
+        // DELETE cannot be filtered reliably under RLS; old fields can be redacted.
+        if (current()) { void loadPlayers(roomId, mySeat); void refreshRoom(); }
       })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `room_id=eq.${roomId}` },
       (p) => { if (current()) chatListeners.forEach((fn) => fn(p.new as ChatRow)); })
@@ -242,11 +251,10 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
   }, 2000);
   await Promise.all([loadPlayers(roomId, mySeat), refreshRoom()]);
   nudgeRoom();
-  const { data: sess } = await sb.auth.getSession();
-  accessToken = sess.session?.access_token ?? null;
 }
 
 let accessToken: string | null = null;
+let stopTokenUpdates: (() => void) | null = null;
 /** pagehide: a keepalive request survives tab close, so others see the seat free at once. */
 export function leaveRoomNow() {
   const url = import.meta.env["VITE_SUPABASE_URL"] as string | undefined;
@@ -262,7 +270,10 @@ export const leaveRoom = () =>
   serial(async () => {
     const sb = getSupabase();
     await teardown();
-    if (sb) await sb.rpc("leave_room");
+    if (sb) {
+      const { error } = await sb.rpc("leave_room");
+      if (error) { set({ error: error.message, connected: false }); throw error; }
+    }
     resetRoomMusic();
     accessToken = null;
     set(EMPTY);

@@ -1,4 +1,9 @@
 # Tasks
+- [x] Verify departure/rejoin and ignore using two real accounts, retained chat and a second live view; 116 tests passed.
+- [ ] Replace the old export with a private-data-free Cloud setup and transfer all current source/SQL to butl/main.
+- [x] Fix ignore across live messages and existing chat; two real accounts verified block, reload persistence, original ignore photo and unblock.
+- [x] Correct upper trophy idle cup and ladder presentation; verified in browser. Operational league seasons require a verified league service (not available).
+- [x] Refresh verified achievements from realtime; 25 real gifts earned a badge, Continue acknowledged it, unlocked detail displayed the next target.
 - [x] Verify source waiting text/typography and mixed-gender play; two live players reached synchronized spin/choose and opposite turn offers without manual ticks.
 - [x] Correct music autoplay/mute handling; real catalogue audio advanced while mute/unmute applied immediately, with pause regression tests passing.
 - [x] Guard stale table reads and commit complete destination snapshots; live transitions retained the viewer and displayed the destination bottle/waiting hint. All 110 tests passed.

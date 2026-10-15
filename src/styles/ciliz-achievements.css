@@ -319,3 +319,4 @@
 }
 .achievements-layer .popup__buttons { padding:15px; display:flex; justify-content:center; flex-shrink:0; }
 .achievements-layer .achievement-continue { background:var(--source-tops-confirm); color:var(--source-tops-color-0); height:30px; min-width:80px; border-radius:7px; font:14px Arial,sans-serif; padding:0 14px; }
+.profile-layer ~ .achievements-layer { z-index: 1001; }

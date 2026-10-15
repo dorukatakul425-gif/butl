@@ -1,18 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { getSupabase } from "@/lib/supabase";
+import { setUserBlocked, useBlockedUsers } from "@/lib/block-session";
+import { SourceAchievementsDialog } from "@/components/table/source-achievements-dialog";
 import type React from "react";
 import { createPortal } from "react-dom";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
 import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceProfileSettings } from "@/components/profile/source-own-profile";
-import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast } from "@/components/source-dialogs";
+import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast, OPEN_BANK_EVENT } from "@/components/source-dialogs";
 import { formatHarem, formatStats, okProfileUrl, type ServerUserProfile } from "@/lib/user-profile";
 import { OK_SUPPORT_EMAIL as SUPPORT_EMAIL, CLIENT_VERSION } from "@/components/settings/settings-items";
 
 const Div = (p: React.HTMLAttributes<HTMLDivElement>) => <div role={p.onClick ? "button" : undefined} {...p} />;
 
 /** Port of UserProfileDialog + UserProfilePresenter (OK.ru client 1.6.393). */
-export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, onMusic, profile = null }: {
+export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, onMusic, profile: profileProp = null }: {
   player: SeatPlayer; self: boolean; assets: CilizAssets; onClose: () => void;
   onGift: () => void; onDecor: () => void; onMusic: () => void;
   /** queryUserProfile result; null until the game session adapter provides it. */
@@ -20,13 +23,59 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
 }) {
   const t = (key: string, ...a: string[]) => translate(assets, key, ...a);
   const [statsState, setStatsState] = useState<"narrowed" | "expanded">("narrowed");
-  const [popup, setPopup] = useState<"settings" | "claims" | "report-photo" | "report-user" | null>(null);
+  const [popup, setPopup] = useState<"settings" | "claims" | "report-photo" | "report-user" | "achievements" | null>(null);
+  const [loaded, setLoaded] = useState<ServerUserProfile | null>(null);
+  const profile = profileProp ?? loaded;
+  const sectionRef = useRef<HTMLElement>(null);
+  const [infoSize, setInfoSize] = useState(0);
   const [report, setReport] = useState("");
   const feature = useSourceFeatureSession();
+  const blockedUsers = useBlockedUsers();
+  const blocked = Boolean(player.id && blockedUsers.has(player.id));
+  const [blocking, setBlocking] = useState(false);
   const stats = profile ? formatStats(profile) : null;
   const userId = self ? feature.viewerId ?? undefined : player.id;
   const harem = formatHarem(self, userId ?? "", profile);
   const socialHref = okProfileUrl(userId);
+  // Source useResizeSensor: the photo is a square of min(popup width, popup height).
+  useLayoutEffect(() => {
+    const el = sectionRef.current; if (!el) return;
+    const measure = () => {
+      const portrait = window.innerHeight >= window.innerWidth;
+      const maxH = Math.round(window.innerHeight * 0.94) - 140;
+      setInfoSize(Math.max(0, Math.floor(portrait ? Math.min(el.clientWidth, maxH) : Math.min(window.innerHeight * 0.8, 400))));
+    };
+    measure();
+    const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure); ro?.observe(el);
+    window.addEventListener("resize", measure);
+    return () => { ro?.disconnect(); window.removeEventListener("resize", measure); };
+  }, []);
+
+  // queryUserProfile: server-counted stats, refreshed while the dialog is open.
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!sb || !userId || profileProp) return;
+    let alive = true;
+    const load = async () => {
+      const { data, error } = await sb.rpc("user_profile_stats", { p_user: userId });
+      if (!alive || error || !data) return;
+      const raw = data as unknown as ServerUserProfile & { owner?: { id: string; name: string; male: boolean; photo_url: string | null } | null };
+      const o = raw.owner;
+      const owner = o ? { id: o.id, name: o.name, male: o.male, photoUrl: o.photo_url || player.photoUrl, color: o.male ? "3b7dd8" : "e0458c", viewer: o.id === feature.viewerId } : undefined;
+      setLoaded({ ...raw, ...(owner ? { owner } : { owner: undefined }) } as ServerUserProfile);
+    };
+    void load();
+    loadRef.current = load;
+    // Live: any change to this player's profile (purchase, kisses) refreshes at once.
+    const ch = sb.channel(`profile-${userId}-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${userId}` }, () => void load())
+      .subscribe();
+    const timer = window.setInterval(() => void load(), 5000);
+    return () => { alive = false; window.clearInterval(timer); void sb.removeChannel(ch); };
+  }, [userId, profileProp]);
+
+  const loadRef = useRef<() => Promise<void>>(async () => {});
+  const [buying, setBuying] = useState(false);
   const noServer = () => showSourceToast("Oyuncu hesabı bağlı değil; bu işlem sunucuda gerçekleştirilemiyor.");
 
   useEffect(() => {
@@ -42,7 +91,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       {sub && <div className="user-profile__stats-item-subtitle">{sub} {t("dlg:profile:rank")}</div>}
     </div>
   );
-  const big = !!(stats && profile!.total_kisses && profile!.dj_score && profile!.gestures);
+  const big = Boolean(stats && profile?.total_kisses && profile?.dj_score && profile?.gestures);
 
   const onSendMessage = () => {
     if (self) { showSourceToast(t("warning:self_chat:desc")); return; }
@@ -53,18 +102,40 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   const onHarem = () => {
     if (self && harem.noOwner) { showSourceToast(t("dlg:profile:harem:tooltip")); return; }
     if (harem.owner?.viewer) { showSourceToast(t("dlg:profile:harem:purchased", player.name)); return; }
-    noServer();
+    const sb = getSupabase();
+    if (!sb || !userId || buying) { if (!userId) noServer(); return; }
+    setBuying(true);
+    void sb.rpc("harem_purchase", { p_target: userId }).then(({ error }) => {
+      setBuying(false);
+      if (error) {
+        if (error.message.includes("not_enough_gold")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
+        else showSourceToast("Satın alınamadı.");
+        return;
+      }
+      showSourceToast(t("dlg:profile:harem:purchased", player.name));
+      void loadRef.current();
+    });
+  };
+  const onBlock = () => {
+    if (!player.id || self || blocking) return;
+    setBlocking(true);
+    void setUserBlocked(player.id, !blocked)
+      .then(() => showSourceToast(t(blocked ? "dlg:unblock:title" : "dlg:block:title")))
+      .catch(() => showSourceToast("İşlem yapılamadı."))
+      .finally(() => setBlocking(false));
   };
 
   return createPortal(<div className="profile-layer portrait">
     <div className="popup-shade" onClick={onClose} />
-    <section role="dialog" aria-modal="true" aria-label={player.name} className="popup popup--center popup--show user-profile__x_popup">
+    <section ref={sectionRef} role="dialog" aria-modal="true" aria-label={player.name} className="popup popup--center popup--show user-profile__x_popup">
       <Div className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Div>
       <div className="user-profile">
-        <div className="user-profile__info">
-          {self
-            ? <Div className="user-profile__photo-controls" aria-label={t("dlg:profile_info:title")} onClick={() => setPopup("settings")}><img className="user-profile__photo" src={player.photoUrl} alt={player.name} /></Div>
-            : <img className="user-profile__photo" src={player.photoUrl} alt={player.name} />}
+        <div className="user-profile__info" style={infoSize ? { width: `${infoSize}px`, height: `${infoSize}px` } : undefined}>
+          <Div className="user-profile__photos" aria-label={self ? t("dlg:profile_info:title") : undefined} onClick={self ? () => setPopup("settings") : undefined}>
+            <div className="user-profile__swiper">
+              <div className="user-profile__photo" role="img" aria-label={player.name} style={{ backgroundImage: `url('${player.photoUrl}')` }} />
+            </div>
+          </Div>
           <div className="user-profile__shadow" />
           <div className="user-profile__title">
             <div className="user-profile__name">{player.name}{player.age ? `, ${player.age}` : ""}</div>
@@ -116,7 +187,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
             {self
               ? <Div className="user-profile__action user-profile__action--music" aria-label="Müzik" onClick={onMusic} />
               : <Div className="user-profile__action user-profile__action--gift" aria-label="Hediye" onClick={onGift} />}
-            <Div className="user-profile__action user-profile__action--achievements" aria-label="Başarılar" onClick={noServer} />
+            <Div className="user-profile__action user-profile__action--achievements" aria-label="Başarılar" onClick={() => { if (userId) setPopup("achievements"); else noServer(); }} />
             <Div className="user-profile__action user-profile__action--message" aria-label="Mesaj" onClick={onSendMessage} />
           </div>
         </div>
@@ -127,7 +198,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       <div className="popup-shade" onClick={() => setPopup(null)} />
       <section role="dialog" aria-modal="true" className="popup popup--center popup--show message-actions__x_popup">
         {[
-          { key: "dlg:block:title", icon: "ignore", action: () => { setPopup(null); noServer(); } },
+          { key: blocked ? "dlg:unblock:title" : "dlg:block:title", icon: "ignore", action: () => { setPopup(null); onBlock(); } },
           { key: "hint:report_photo", icon: "adult", action: () => setPopup("report-photo") },
           { key: "dlg:report_user:title", icon: "report", action: () => setPopup("report-user") },
         ].map(i => <div key={i.key} role="button" className="settings__item settings__item--selectable" onClick={i.action}><div className={`settings__icon settings__icon--${i.icon}`} />{t(i.key)}</div>)}
@@ -149,6 +220,8 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
           setPopup(null);
         } }} />
     </SourceDialogLayer>}
+
+    {popup === "achievements" && userId && <SourceAchievementsDialog male={player.male} user={self ? undefined : { id: userId, name: player.name, male: player.male }} onClose={() => setPopup(null)} />}
 
     {popup === "settings" && <SourceProfileSettings assets={assets} name={player.name} photo={player.photoUrl} onClose={() => setPopup(null)} />}
   </div>, document.body);

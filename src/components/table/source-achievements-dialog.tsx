@@ -5,6 +5,7 @@ import { dialogImage, type CilizAchievement, type CilizAssets } from '@/lib/cili
 import { Button } from '@/components/ui/button';
 import { acknowledgeAchievement, useAchievementSession, type CompletedAchievement } from '@/lib/achievement-session';
 import { toast } from 'sonner';
+import { getSupabase } from '@/lib/supabase';
 
 /** Source TranslatorTemplate: %N args, %b(male|female), %N`d(...)` treated as plain arg. */
 function tr(assets: CilizAssets, key: string, ...args: Array<string | number | boolean>) {
@@ -32,7 +33,7 @@ function select(v: CilizAchievement['image'], male: boolean, a: CilizAchievement
 export function buildItems(assets: CilizAssets, male: boolean, completed: CompletedAchievement[] = []): ViewItem[] {
   const now = Date.now();
   return Object.entries(assets.achievements ?? {})
-    .filter(([, a]) => a.since_ms === undefined || a.since_ms <= now)
+    .filter(([id, a]) => a.since_ms === undefined || a.since_ms <= now || completed.some(row => row.achievement_id === id))
     .map(([id, a]) => {
       const verifiedLevel = completed.filter(row => row.achievement_id === id).reduce((max, row) => Math.max(max, row.level), -1);
       const maxLevel = a.counters?.length ?? 1;
@@ -60,17 +61,22 @@ function useEscape(onClose: () => void, enabled = true) {
   }, [onClose, enabled]);
 }
 
-function Detail({ assets, item, onClose, completion = false, pending = false }: { assets: CilizAssets; item: ViewItem; onClose: () => void; completion?: boolean; pending?: boolean }) {
+function Detail({ assets, item, onClose, completion = false, pending = false, owner }: { assets: CilizAssets; item: ViewItem; onClose: () => void; completion?: boolean; pending?: boolean; owner?: { name: string; male: boolean } | undefined }) {
   useEscape(onClose);
   const img = dialogImage(assets, item.image, 103, 103);
   const termDisabled = !completion && (item.disabled || item.level < item.maxLevel - 1);
+  const done = !item.disabled && item.level === item.maxLevel - 1;
+  const subtitle = completion ? tr(assets, 'achievement:congratulation2')
+    : !owner ? tr(assets, done ? 'achievement:term:completed:host' : 'achievement:info2')
+    : item.disabled ? tr(assets, 'achievement:term:locked', owner.male)
+    : done ? tr(assets, 'achievement:term:completed', owner.male) : tr(assets, 'achievement:term:progress');
   return <div className="achievement-detail-layer">
     <div className="popup-shade" onClick={onClose} />
     <section role="dialog" aria-modal="true" aria-label={tr(assets, completion ? 'dlg:kiss_bonus:title' : 'dlg:achievement:info_title')} className="popup popup--center">
       {!completion && <Button variant="ghost" type="button" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>}
       <header className="popup__header"><div className="popup__title">{tr(assets, completion ? 'dlg:kiss_bonus:title' : 'dlg:achievement:info_title')}</div></header>
       <div className="popup__content"><div className="achievement">
-        <div className="achievement__subtitle">{tr(assets, completion ? 'achievement:congratulation2' : 'achievement:info2')}</div>
+        <div className="achievement__subtitle">{owner && !completion && <span className="achievement__username">{owner.name}</span>}{subtitle}</div>
         <div className="achievement-item achievement-item--big">
           <Stars item={item} />
           <div className="achievement-item__icons">
@@ -87,15 +93,39 @@ function Detail({ assets, item, onClose, completion = false, pending = false }: 
 }
 
 /** Source AchievementsListDialog + AchievementPresenter.showList for the viewer. */
-export function SourceAchievementsDialog({ onClose, male = true }: { onClose: () => void; male?: boolean }) {
+export function SourceAchievementsDialog({ onClose, male = true, user }: { onClose: () => void; male?: boolean; user?: { id: string; name: string; male: boolean } | undefined }) {
   const assets = useCilizAssets();
-  const session = useAchievementSession();
+  const own = useAchievementSession();
+  const [other, setOther] = useState<CompletedAchievement[]>([]);
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!user || !sb) return;
+    let alive = true;
+    let request = 0;
+    let debounce: ReturnType<typeof setTimeout> | undefined;
+    setOther([]);
+    const load = async () => {
+      const version = ++request;
+      const { data, error } = await sb.rpc('user_achievements', { p_user: user.id });
+      if (alive && version === request && !error) setOther(((data ?? []) as Array<{ achievement_id: string; level: number }>).map(r => ({ achievement_id: r.achievement_id, level: r.level, acknowledged_at: null })));
+    };
+    void load();
+    const refresh = () => { clearTimeout(debounce); debounce = setTimeout(() => void load(), 120); };
+    const channel = sb.channel(`other-achievements-${user.id}-${Math.random().toString(36).slice(2)}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, refresh)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'gift_events' }, refresh)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'gesture_events' }, refresh)
+      .subscribe();
+    const timer = window.setInterval(() => void load(), 10000);
+    return () => { alive = false; clearTimeout(debounce); window.clearInterval(timer); void sb.removeChannel(channel); };
+  }, [user?.id]);
+  const session = user ? { completed: other } : own;
+  if (user) male = user.male;
   const [tab, setTab] = useState<'enabled' | 'disabled'>('enabled');
   const [open, setOpen] = useState<ViewItem | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const items = useMemo(() => assets ? buildItems(assets, male, session.completed) : [], [assets, male, session.completed]);
-  const total = useMemo(() => Object.values(assets?.achievements ?? {}).reduce((acc, a) =>
-    a.since_ms && a.since_ms > Date.now() ? acc : acc + (a.counters ? a.counters.length : 1), 0), [assets]);
+  const total = useMemo(() => items.reduce((acc, item) => acc + item.maxLevel, 0), [items]);
   const ordered = useMemo(() => {
     const done = items.filter(f => !f.disabled && f.level === f.maxLevel - 1);
     const progress = items.filter(f => !f.disabled && f.level < f.maxLevel - 1);
@@ -106,13 +136,14 @@ export function SourceAchievementsDialog({ onClose, male = true }: { onClose: ()
   useEscape(onClose, !open);
   if (!assets) return null;
   const current = items.reduce((acc, a) => acc + (a.disabled ? 0 : Math.max(0, a.level) + 1), 0);
+  const title = user ? tr(assets, 'dlg:finished_achievements:other:title', user.name) : tr(assets, 'dlg:finished_achievements:title');
   const portrait = typeof window === 'undefined' || window.innerHeight >= window.innerWidth;
   return createPortal(<div className={`achievements-layer ${portrait ? 'portrait' : 'landscape'}`}>
     <div className="popup-shade" onClick={onClose} />
-    <section role="dialog" aria-modal={!open} aria-label={tr(assets, 'dlg:finished_achievements:title')} inert={Boolean(open)} className="popup popup--center achievements-list__x_popup">
+    <section role="dialog" aria-modal={!open} aria-label={title} inert={Boolean(open)} className="popup popup--center achievements-list__x_popup">
       <button type="button" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></button>
       <header className="popup__header achievements-list__x_popup__header">
-        <div className="popup__title achievements-list__x_popup__title">{tr(assets, 'dlg:finished_achievements:title')}<div className="achievements-list__title-star" />{current}/{total}</div>
+        <div className="popup__title achievements-list__x_popup__title">{title}<div className="achievements-list__title-star" />{current}/{total}</div>
         <div className="achievements-list__sort">
           <div className="achievements-list__tabs-title">{tr(assets, 'dlg:achievements:sort_title')}</div>
           <div className="achievements-list__tabs">
@@ -132,7 +163,7 @@ export function SourceAchievementsDialog({ onClose, male = true }: { onClose: ()
         })}
       </div></div>
     </section>
-    {open && <Detail assets={assets} item={open} onClose={() => setOpen(null)} />}
+    {open && <Detail assets={assets} item={items.find(item => item.id === open.id) ?? open} owner={user} onClose={() => setOpen(null)} />}
   </div>, document.body);
 }
 

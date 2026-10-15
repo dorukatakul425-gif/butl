@@ -7,6 +7,60 @@ import { getSupabase } from "@/lib/supabase";
 import { emitServerHeartAward, setPendingGold } from "@/lib/game-session";
 import { showSourceToast } from "@/components/source-dialogs";
 import { ReceivedGoldDialog } from "@/components/bank/received-gold-dialog";
+import { useViewerProgress, VIEWER_STATUS_CHANGED } from "@/lib/viewer-progress";
+
+const PREMIUM_PRICE = 499; // BankPresenter.premiumOption(): 499, season pass (30 days here).
+function leftText(ms: number) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return d > 0 ? `${d} g. ${h} sa.` : h > 0 ? `${h} sa. ${m} dk.` : `${m} dk. ${sec} sn.`;
+}
+function useNow(on: boolean) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { if (!on) return; const id = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(id); }, [on]);
+  return now;
+}
+
+function PremiumPassDialog({ t, onClose }: { t: (k: string) => string; onClose: () => void }) {
+  const { premium, premiumUntil } = useViewerProgress();
+  const now = useNow(premium);
+  const busy = useRef(false);
+  const [done, setDone] = useState(false);
+  const buy = async () => {
+    const sb = getSupabase();
+    if (!sb || busy.current) return;
+    busy.current = true;
+    const { error } = await sb.rpc("buy_premium", { p_option: "pass30" });
+    busy.current = false;
+    if (error) { showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return; }
+    window.dispatchEvent(new Event(VIEWER_STATUS_CHANGED));
+    setDone(true);
+  };
+  return createPortal(
+    <div style={{ position: "fixed", inset: 0, zIndex: 1100, fontFamily: "Arial, Helvetica, sans-serif" }}>
+      <div className="popup__dialog-manager">
+        <div className="popup-shade" onClick={onClose} />
+        <div role="dialog" aria-modal="true" aria-label={t("dlg:bottle_pass:premium_pass")} className="popup popup--center popup--show info__x_popup">
+          <div className="popup__header">
+            <div className="popup__title">{t("dlg:bottle_pass:premium_pass")}</div>
+            <div className="popup__close popup__close--dlg" role="button" aria-label="Kapat" onClick={onClose}><div className="popup__close-icon" /></div>
+          </div>
+          <div className="popup__content" style={{ textAlign: "center", padding: "12px 16px" }}>
+            <div className="bank__opt-icon bank__opt-icon--premium-pass" style={{ position: "relative", margin: "0 auto 10px", left: "auto", top: "auto" }} />
+            <div style={{ fontSize: 14, lineHeight: 1.35 }}>{done ? t("dlg:premium_pass:purchased") : t("dlg:bottle_pass_info:desc2")}</div>
+            <div style={{ fontSize: 13, marginTop: 8, opacity: 0.85 }}>{t("ok:premium:hint")}</div>
+            {premium && premiumUntil && <div className="bank__premium-pass-timer" style={{ position: "static", marginTop: 10 }}>{leftText(premiumUntil - now)}</div>}
+          </div>
+          <div className="popup__buttons" style={{ display: "flex", justifyContent: "center", padding: "0 0 14px" }}>
+            {done ? <div role="button" className="button button--confirm" onClick={onClose}>{t("dlg:navigate_vip:btn")}</div>
+              : <div role="button" className="button button--confirm" onClick={() => void buy()}>{premium ? "+30 g. " : ""}<DatPrice text={`${PREMIUM_PRICE} OK`} /></div>}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
 
 // Markup and class names ported from BankDialog.tsx, Dialog.Header/Content/Button and BankPresenter.
 const bem = (block: string) => (element = "", mods: Array<string | false | undefined> = []) => {
@@ -56,6 +110,9 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
   }, [open, onClose]);
   const [received, setReceived] = useState<{ gold: number; position: number } | null>(null);
   const busy = useRef(false);
+  const [premiumOpen, setPremiumOpen] = useState(false);
+  const viewer = useViewerProgress();
+  const now = useNow(open && viewer.premium);
   // BankPresenter purchase -> _recv_gold_bought -> showReceivedGold(gold, 'html:dlg:gold:purchased2:v2', true).
   const buy = async (real: number, position: number) => {
     const sb = getSupabase();
@@ -74,13 +131,14 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
     const { data } = await getSupabase()!.auth.getUser();
     emitServerHeartAward({ id: `buy:${Date.now()}:${Math.random()}`, viewerId: data.user?.id ?? "", amount: r.gold, lucky: false, prepaid: true, from: pt });
   }} /> : null;
-  if (!mounted || !assets) return receivedDialog;
+  const premiumDialog = premiumOpen && assets ? <PremiumPassDialog t={(k) => translate(assets, k)} onClose={() => setPremiumOpen(false)} /> : null;
+  if (!mounted || !assets) return <>{receivedDialog}{premiumDialog}</>;
   const t = (key: string) => translate(assets, key);
   const options = bankOptions(assets);
   const bonusDesc = t("bank:bonus:big");
-  const itemsNum = options.length + (isVip ? 1 : 0);
+  const itemsNum = options.length + (isVip ? 1 : 0) + 1;
 
-  return <>{receivedDialog}{createPortal(
+  return <>{receivedDialog}{premiumDialog}{createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif" }}>
       <div className="popup__dialog-manager">
         <div className="popup-shade" onClick={onClose} />
@@ -95,6 +153,14 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
           </div>
           <div className={`${popup("content")} ${cls("x_popup__content")}`}>
             <div className={cls("items-container", [itemsNum > 8 && "many-items"])}>
+              {/* BankDialog PremiumPass: shown before VIP; timer + purchased mark while active. */}
+              <div className={cls("item")}>
+                <div className={cls("item-bg", ["gold"])} />
+                <div className={cls("desc")}><span className={cls("premium-pass")}>{t("dlg:bottle_pass:premium_pass").toLocaleUpperCase("tr-TR")}</span></div>
+                <div className={cls("opt-icon", ["premium-pass"])} />
+                {viewer.premium && viewer.premiumUntil && <><div className={cls("premium-pass-timer")}>{leftText(viewer.premiumUntil - now)}</div><div className={cls("purchased")} /></>}
+                <DialogButton title={t("mobile:vip:know")} mods={["vip"]} onClick={() => setPremiumOpen(true)} />
+              </div>
               {isVip && (
                 <div className={cls("item")}>
                   <div className={cls("item-bg", ["gold"])} />
@@ -103,7 +169,7 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
                     <span className={cls("bonus", ["vip"])}>{t("bank:vip:status")}</span>
                   </div>
                   <div className={cls("opt-icon", ["vip"])} />
-                  {vipPurchased && <div className={cls("purchased")} />}
+                  {(vipPurchased || viewer.vip) && <div className={cls("purchased")} />}
                   <DialogButton title={t("mobile:vip:know")} mods={["vip"]} onClick={onVip ?? onClose} />
                 </div>
               )}

@@ -50,7 +50,7 @@ function AuthPage() {
         options: { data: { username: uname, name: name.trim() || uname, male, age: age || null } },
       });
       if (error) setError(error.message.includes("registered") ? "Bu kullanıcı adı alınmış." : error.message);
-      else if (!data.session) setError("Supabase'de 'Confirm email' kapalı olmalı.");
+      else if (!data.session) setError("Hesap oluşturuldu; giriş için hesabın doğrulanması gerekiyor.");
       else await refreshProfile();
     }
     setBusy(false);

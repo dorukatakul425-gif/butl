@@ -1111,3 +1111,6 @@ a.user-profile__action { display: block; }
 
 /* DAT replaces the OK brand on the profile social button. */
 .user-profile .user-profile__action--ok{background:url("../assets/dat-coin.png") center/100% no-repeat !important}
+/* Expanded hidden stats must not overlap neighbours when rows carry rank subtitles. */
+.user-profile__hidden-stats-items--expanded{ height: auto; margin-top: 0; }
+.user-profile__counters > *{ flex-shrink: 0; }

@@ -1,29 +1,35 @@
-# Welcome to your Lovable project
+# Butl — Şişe Oyunu
 
-This project was built with [Lovable](https://lovable.dev).
+TanStack Start / React oyun istemcisi ve Lovable Cloud oyun kuralları.
+Masalar, sohbet, hediyeler, jestler ve engelleme Cloud Realtime'ın WebSocket bağlantısıyla güncellenir; Socket.IO sunucusu gerekmez.
 
-## Build with Lovable
+## Başka bir Lovable hesabında kurulum
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+GitHub dosyaları tek başına çalışan bir Cloud hesabı oluşturmaz. Lovable mevcut GitHub reposunu doğrudan içe aktarmayı desteklemeyebilir: yeni bir TanStack Start projesi oluşturup kaynakları aktarın ve **o projenin Lovable Cloud bağlantısını açın**.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+1. Yeni projenin oluşturduğu Cloud istemci/ortam dosyalarını koruyun. `.env`, `supabase/config.toml`, `.lovable/project.json` ve eski projenin anahtarlarını kopyalamayın. `VITE_SUPABASE_URL` ve `VITE_SUPABASE_PUBLISHABLE_KEY` yeni Cloud tarafından sağlanır.
+2. Cloud'da **avatars** adlı özel (public=false) fotoğraf alanı oluşturun.
+3. **Boş veritabanında**, `supabase/migrations/20261015073400_cloud_bootstrap.sql` dosyasını Lovable'a uygulatın. Bu normal SQL'dir; tüm uygulama tablolarını, güvenli işlem fonksiyonlarını, erişim kurallarını, fiyat listelerini ve canlı yayın ayarlarını içerir. Mevcut oyun veritabanında çalıştırmayın.
+4. Bu birleşik kurulumu uyguladıysanız `drizzle/migrations` dosyalarını ayrıca tekrar uygulamayın. Bu dizin sürüm geçmişidir; birleşik dosya `python3 scripts/create-cloud-bootstrap.py` ile yeniden üretilir.
+5. Mevcut kullanıcı adı/şifre girişi için Cloud e-posta/şifre girişini açın. Oyun kullanıcı adını dahili bir adrese çevirir; bu giriş akışında e-posta doğrulamasını kapatma kararı yeni proje sahibine aittir. Bu ayar SQL ile taşınmaz. Doğrulama açık kalırsa mevcut kullanıcı adı akışından hemen giriş yapılamaz.
+6. İki yeni oyuncuyla giriş/çıkış, masa değiştirme, engelleme/engeli kaldırma, sohbet, kalp/jeton/VIP/Premium satın alma ve süre kontrolünü önizlemede test edin; ardından yayınlayın.
 
-## Development
+Yeni hesaplar 10.000 kalp, 10.000 test DAT ve 50 jest jetonuyla başlar. Kullanıcılar, parolalar, eski bakiyeler, mesajlar ve fotoğraflar **aktarılmaz**. Fiyat listeleri ve oyun kuralları aktarılır.
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## Sınırlar
+
+- Orijinal görsel/ses kaynakları ve müzik/video katalogları dış hizmetlerden gelir; bu hizmetlerin erişilebilirliği ve tarayıcının ses izni gerekir.
+- Lig, sezon ödülleri ve bazı kaynakta bulunan puan/booster alanları için doğrulanmış hizmet yoktur; kurulum bunları uydurmaz.
+- Telefon performansı ve orijinal sohbet saklama süresi henüz tamamen doğrulanmamıştır.
+- Bu repo kopyası yeni Lovable hesabını veya workspace bağlantılarını otomatik eşitlemez.
+- Eski export kaldırıldı: oyuncu kayıtları ve imzalı fotoğraf bağlantıları kaynak reposunda bulunmamalıdır. Önceki Git geçmişinde kalan kişisel veriler ayrıca değerlendirilmelidir; bu aktarım geçmişi yeniden yazmaz.
+
+## Yerel geliştirme
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev
+bunx vitest run
 ```
 
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+Cloud bağlantısı olmayan bir önizleme gerçek oyun işlemlerini yapamaz; proje sırlarını kaynak koduna eklemeyin.

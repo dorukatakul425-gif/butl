@@ -283,6 +283,24 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_packages: {
+        Row: {
+          days: number
+          id: string
+          price: number
+        }
+        Insert: {
+          days: number
+          id: string
+          price: number
+        }
+        Update: {
+          days?: number
+          id?: string
+          price?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
@@ -293,6 +311,8 @@ export type Database = {
           dat: number
           frame: string
           gold: number
+          harem_owner: string | null
+          harem_value: number
           id: string
           kisses: number
           male: boolean
@@ -300,6 +320,7 @@ export type Database = {
           owned_items: string[]
           photo_url: string | null
           player_no: number
+          premium_until: string | null
           stone: string
           tokens: number
           username: string
@@ -315,6 +336,8 @@ export type Database = {
           dat?: number
           frame?: string
           gold?: number
+          harem_owner?: string | null
+          harem_value?: number
           id: string
           kisses?: number
           male?: boolean
@@ -322,6 +345,7 @@ export type Database = {
           owned_items?: string[]
           photo_url?: string | null
           player_no?: never
+          premium_until?: string | null
           stone?: string
           tokens?: number
           username: string
@@ -337,6 +361,8 @@ export type Database = {
           dat?: number
           frame?: string
           gold?: number
+          harem_owner?: string | null
+          harem_value?: number
           id?: string
           kisses?: number
           male?: boolean
@@ -344,13 +370,22 @@ export type Database = {
           owned_items?: string[]
           photo_url?: string | null
           player_no?: never
+          premium_until?: string | null
           stone?: string
           tokens?: number
           username?: string
           vip_until?: string | null
           welcome_gold?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_harem_owner_fkey"
+            columns: ["harem_owner"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       room_players: {
         Row: {
@@ -478,6 +513,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_blocks: {
+        Row: {
+          blocked: string
+          blocker: string
+          created_at: string
+        }
+        Insert: {
+          blocked: string
+          blocker: string
+          created_at?: string
+        }
+        Update: {
+          blocked?: string
+          blocker?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_blocks_blocked_fkey"
+            columns: ["blocked"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_blocks_blocker_fkey"
+            columns: ["blocker"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vip_packages: {
         Row: {
           days: number
@@ -509,9 +577,14 @@ export type Database = {
         Args: { p_id: string; p_level: number }
         Returns: undefined
       }
+      block_user: {
+        Args: { p_block?: boolean; p_user: string }
+        Returns: undefined
+      }
       buy_bottle: { Args: { p_bottle: string }; Returns: number }
       buy_decor: { Args: { p_item: string }; Returns: number }
       buy_gold: { Args: { p_real: number }; Returns: number }
+      buy_premium: { Args: { p_option?: string }; Returns: string }
       buy_tokens: { Args: { p_gold: number }; Returns: number }
       buy_vip: { Args: { p_option: string }; Returns: string }
       change_table: {
@@ -523,6 +596,7 @@ export type Database = {
       }
       claim_daily_bonus: { Args: never; Returns: Json }
       decide: { Args: { p_kiss: boolean }; Returns: undefined }
+      harem_purchase: { Args: { p_target: string }; Returns: Json }
       heartbeat: { Args: never; Returns: undefined }
       join_room: {
         Args: never
@@ -579,6 +653,14 @@ export type Database = {
           score: number
         }[]
       }
+      user_achievements: {
+        Args: { p_user: string }
+        Returns: {
+          achievement_id: string
+          level: number
+        }[]
+      }
+      user_profile_stats: { Args: { p_user: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

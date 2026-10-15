@@ -12,11 +12,11 @@
 - The game lives on /game behind sign-in (/ is the profile home, /auth username sign-in); isolate Pixi/Spine imports behind dynamic browser loading, so the table remains SSR-safe.
 - Load gesture order, images, prices and skeleton timing through the existing public asset manifest; scheduled entries and spending require an authenticated game-session adapter, so previews never grant VIP or spend fictitious currency.
 - Keep source-derived profile presentation separate from account actions; show unknown statistics and a setup-needed state until verified profile/session data exists, while local music, decor and gift navigation remain available.
-- Route chat and moderation through the authenticated session; display the viewer's live room-profile wallet in the header, leaving unknown balances unknown so presentation never grants currency.
+- Share owner-scoped ignore across chat/photos/profiles; serialize mutations and revision-guard reads so stale snapshots cannot undo confirmed changes. Unknown wallets stay unknown.
 - Share gift texture preparation promises but never wait for GPU warm-up to start each click's independent animation, so repeated clicks do not batch.
 - Derive the game shell from the visual viewport and safe-area insets, so mobile keyboard/browser controls do not cover the composer.
 - Lovable Cloud owns accounts and data (browser client from VITE_SUPABASE_URL/PUBLISHABLE_KEY, schema in migrations); live updates use Cloud realtime channels instead of a socket.io server, because Workers cannot host persistent socket servers.
-- Room membership, rounds, chat and gifts are security-definer RPCs with realtime feeds; there are no bots, empty seats stay empty, and clients only render server state and nudge expired phases via room_tick.
+- Membership/rounds/chat/gifts use RPCs and realtime; no bots. Reconcile every DELETE (RLS redacts fields); a departure trigger normalizes rounds even without remaining clients.
 - Item purchases require authenticated server validation against the public source manifest and a service-only atomic wallet/event transaction; clients cannot mint currency, VIP, prices or eligibility.
 - Profile photos use private storage with owner-scoped writes and signed reads; room animation samples server start times and turn counts to synchronize late joins.
 - Normalize username credentials through one deterministic internal address helper; resolve legacy names and numeric player IDs only on the server and never return account addresses, so existing accounts retain access without exposing emails.
@@ -34,4 +34,5 @@
 - Present connection state and deduplicated heart awards through optional authenticated session subscriptions; animation never grants currency or guesses lucky-award probabilities.
 - Keep change-table/settings/league/roulette/pass presentation behind a browser-safe optional feature-session boundary; only confirmed host responses may change membership, inventory or show earned rewards, so adding views never installs a backend or invents player state.
 - Render roulette using the original separate wheel, frame and center artwork; keep operational prize sectors and winner records host-fed; screenshot-derived fallback labels are non-interactive artwork only, never a payout catalogue.
-- Keep the 2,000-spin roulette preview isolated from wallets and inventory; it may exercise source animation, sounds and reward presentation, but only authenticated host results may persist awards.
+- Keep the 2,000-spin preview separate from wallets; only authenticated host results persist awards.
+- Bootstrap from ordered application migrations/catalogues only, never player data, signed URLs, managed-schema dumps or workspace secrets.

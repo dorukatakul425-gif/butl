@@ -1,3 +1,4 @@
+import { VIEWER_STATUS_CHANGED } from "@/lib/viewer-progress";
 import { DatPrice } from "@/components/bank/dat-price";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -96,6 +97,7 @@ export function VipDialog({ assets, onClose, onBought }: { assets: CilizAssets; 
     const { error } = await sb.rpc("buy_vip", { p_option: id });
     busy.current = false;
     if (error) { showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return; }
+    window.dispatchEvent(new Event(VIEWER_STATUS_CHANGED));
     setBought(true);
     onBought?.();
   };
