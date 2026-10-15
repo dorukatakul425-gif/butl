@@ -1,20 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { leftRight, useBottle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, DECISION_SECONDS, type Decision } from "@/lib/bottle-game";
-import { decide as decideRpc, nudgeRoom, spinBottle, toDisplay, useRoom } from "@/lib/room-session";
+import { leftRight, useBottle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, waitingHint, DECISION_SECONDS, type Decision } from "@/lib/bottle-game";
+import { decide as decideRpc, nudgeRoom, serverNow, spinBottle, toDisplay, useRoom } from "@/lib/room-session";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { playSfx, preloadSfx, unlockSfx } from "@/lib/sfx";
 import { BottleIcon, preloadBottleIcon } from "./bottle-icon";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
-import kissUp from "@/assets/ui_arrow_kiss_up.svg.asset.json";
-import kissDown from "@/assets/ui_arrow_kiss_down.svg.asset.json";
-import refuseUp from "@/assets/ui_arrow_refuse_up.svg.asset.json";
-import refuseDown from "@/assets/ui_arrow_refuse_down.svg.asset.json";
-import kissButton from "@/assets/ui_btn_kiss.svg.asset.json";
-import refuseButton from "@/assets/ui_btn_refuse.svg.asset.json";
-import rollBig from "@/assets/ui_game_roll_big_arrow.svg.asset.json";
-import rollSmall from "@/assets/ui_game_roll_small_arrow.svg.asset.json";
 
+import { bottleIconFallbacks as inline } from "@/lib/bottle-icon-fallbacks";
+// Original artwork embedded in the bundle: decision buttons render instantly, no network wait.
+const kissUp = { url: inline["ui_arrow_kiss_up.svg"]! };
+const kissDown = { url: inline["ui_arrow_kiss_down.svg"]! };
+const refuseUp = { url: inline["ui_arrow_refuse_up.svg"]! };
+const refuseDown = { url: inline["ui_arrow_refuse_down.svg"]! };
+const kissButton = { url: inline["ui_btn_kiss.svg"]! };
+const refuseButton = { url: inline["ui_btn_refuse.svg"]! };
+const rollBig = { url: inline["ui_game_roll_big_arrow.svg"]! };
+const rollSmall = { url: inline["ui_game_roll_small_arrow.svg"]! };
 type Table = Awaited<ReturnType<typeof import("./pixi-table").createPixiTable>>;
 type Round = {phase: "offer"|"spin"|"choose"|"result"|"return"; spinner: number; target: number; decisions: Record<number,Decision>};
 const VIEWER = 5;
@@ -27,6 +29,9 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
   const overlay = useRef<HTMLDivElement>(null);
   const live = useRoom();
   const srv = live.room;
+  const waitKey = waitingHint(live.players);
+  const canPlay = live.players.some(p => p?.male === true) && live.players.some(p => p?.male === false);
+  useEffect(() => { table.resetRound(true); return () => table.resetRound(); }, [table]);
   const round: Round = srv ? {
     phase: srv.phase,
     spinner: srv.spinner === null ? -1 : toDisplay(srv.spinner, live.mySeat),
@@ -38,6 +43,7 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
   const targetHere = round.target<0 || Boolean(live.players[round.target]);
   const stale = srv !== null && srv.spinner !== null && (!spinnerHere || !targetHere);
   useEffect(() => { if (stale) nudgeRoom(); }, [stale, srv?.spinner, srv?.target]);
+  useEffect(() => { if (!canPlay || stale) table.resetRound(); }, [canPlay, stale, table]);
   const [remaining,setRemaining] = useState(DECISION_SECONDS);
   const [bottleError,setBottleError] = useState(false);
   const [ready,setReady] = useState(false);
@@ -55,9 +61,9 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     return () => { window.removeEventListener("pointerdown", unlock); window.removeEventListener("keydown", unlock); };
   }, [assets.sfxUrl]);
   useEffect(() => {
-    const sound = turnOfferSound(round.phase, round.spinner, VIEWER, ready);
+    const sound = turnOfferSound(round.phase, round.spinner, VIEWER, ready && canPlay && !stale);
     if (sound) void playSfx(assets.sfxUrl, sound);
-  }, [round.phase, round.spinner, ready, assets.sfxUrl]);
+  }, [round.phase, round.spinner, ready, canPlay, stale, assets.sfxUrl]);
   useEffect(() => {
     let alive = true; setReady(false); setBottleError(false);
     table.setBottle(selected).then(()=>{if(alive){setReady(true);completeLoadingStage("bottle");}},()=>{if(alive){setBottleError(true);failGameLoading();}});
@@ -74,12 +80,22 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     layout(); const ro = new ResizeObserver(layout); ro.observe(host); return ()=>ro.disconnect();
   },[]);
   const roundNo = srv?.round ?? 0;
+  // Joining mid-round: do not replay the old spin, just rest the bottle on the chosen seat.
+  const placed = useRef(false);
+  useEffect(() => {
+    if (placed.current || !srv || !ready || !canPlay || stale) return;
+    placed.current = true;
+    if (round.phase !== "offer" && round.phase !== "spin" && round.target >= 0) { table.settleRound(round.spinner, round.target, round.phase === "choose" || round.phase === "result"); animated.current.spun = roundNo; animated.current.returned = round.phase === "return" ? roundNo : -1; animated.current.from = round.spinner; animated.current.to = round.target; }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Boolean(srv), ready, canPlay, stale, table]);
   // Animations follow server phases; a late joiner skips the part already over.
   useEffect(() => {
+    if (!ready || !canPlay || stale) return;
     if (round.phase==="spin" && animated.current.spun!==roundNo && round.spinner>=0 && round.target>=0 && live.players[round.target]) {
       animated.current.spun = roundNo; animated.current.from = round.spinner; animated.current.to = round.target;
       unlockSfx();
-      void table.spinBottle(round.spinner, round.target);
+      // Same turn count on every client: seeded by the server round number.
+      void table.spinBottle(round.spinner, round.target, (roundNo * 0.6180339887) % 1);
     }
     if (round.phase==="result" && animated.current.kissed!==roundNo && round.decisions[round.spinner]==="kiss" && round.decisions[round.target]==="kiss") {
       animated.current.kissed = roundNo;
@@ -90,15 +106,16 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
       void table.returnPlayers(animated.current.from, animated.current.to);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[round.phase, roundNo, table, Boolean(live.players[round.target])]);
+  },[round.phase, roundNo, table, ready, canPlay, stale, Boolean(live.players[round.target])]);
   useEffect(() => {
     if(round.phase!=="choose") return;
-    const tick = () => setRemaining(Math.max(0, DECISION_SECONDS - Math.floor((Date.now()-live.phaseReceivedAt)/1000)));
+    const startedAt = srv ? Date.parse(srv.phase_at) : live.phaseReceivedAt;
+    const tick = () => setRemaining(Math.max(0, Math.min(DECISION_SECONDS, DECISION_SECONDS - Math.floor((serverNow()-startedAt)/1000))));
     tick(); const interval=window.setInterval(tick,250);
     return ()=>window.clearInterval(interval);
-  },[round.phase, live.phaseReceivedAt]);
+  },[round.phase, live.phaseReceivedAt, srv?.phase_at]);
   const spin = () => {
-    if (round.phase!=="offer" || round.spinner!==VIEWER || !ready) return;
+    if (round.phase!=="offer" || round.spinner!==VIEWER || !ready || !canPlay || stale) return;
     unlockSfx();
     void spinBottle();
   };
@@ -110,15 +127,17 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     void decideRpc(decision==="kiss");
   };
   return <div ref={overlay} className="bottle-play-overlay" aria-label="Şişe oyunu" data-phase={round.phase} data-spinner={round.spinner} data-target={round.target}>
-    {!stale && round.phase==="offer" && round.spinner===VIEWER && <>
+    {waitKey && <span className="bottle-turn-status bottle-turn-status--waiting" role="status">{translate(assets, waitKey)}</span>}
+    {canPlay && !stale && round.phase==="offer" && round.spinner<0 && <span className="bottle-turn-status bottle-turn-status--waiting" role="status">{translate(assets,"game:nextturn")}</span>}
+    {canPlay && !stale && round.phase==="offer" && round.spinner===VIEWER && <>
       <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={!ready} onClick={spin} />
       <BottleIcon className="bottle-roll-big" src={rollBig.url} alt="" /><span className="bottle-roll-text">{translate(assets,"game:spin")}</span>
     </>}
-    {!stale && round.phase==="offer" && round.spinner!==VIEWER && spinnerHere && offer && <>
+    {canPlay && !stale && round.phase==="offer" && round.spinner!==VIEWER && spinnerHere && offer && <>
       <BottleIcon className="bottle-roll-small" src={rollSmall.url} alt="" style={{left:offer[0],top:offer[1],transform:`translate(-50%,-50%) rotate(${offer[2]}deg)`}} />
       <span className="bottle-small-text" style={{left:offer[3],top:offer[4]}}>{translate(assets,"game:spins")}</span>
     </>}
-    {decisionArrowsVisible(round.phase) && <>
+    {canPlay && !stale && decisionArrowsVisible(round.phase) && <>
       {round.decisions[left] && <BottleIcon className="bottle-decision-arrow bottle-arrow-up" src={round.decisions[left]==="kiss" ? kissUp.url:refuseUp.url} alt={round.decisions[left]==="kiss" ? "Öptü":"Vazgeçti"} />}
       {round.decisions[right] && <BottleIcon className="bottle-decision-arrow bottle-arrow-down" src={round.decisions[right]==="kiss" ? kissDown.url:refuseDown.url} alt={round.decisions[right]==="kiss" ? "Öptü":"Vazgeçti"} />}
       {decisionTimerVisible(round.phase,participating,Boolean(round.decisions[VIEWER])) && <span className="bottle-countdown" role="timer" aria-label="Karar süresi">{remaining}</span>}

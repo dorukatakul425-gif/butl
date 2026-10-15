@@ -40,6 +40,8 @@ export interface Profile {
   stone: string;
   kisses: number;
   gold: number;
+  tokens?: number;
+  dat?: number;
   vip_until: string | null;
   owned_items?: string[];
   created_at: string;

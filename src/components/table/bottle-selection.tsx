@@ -5,11 +5,15 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { bottleItems, selectBottle, useBottle } from "@/lib/bottle-game";
 import { dialogImage, translate } from "@/lib/ciliz-assets";
 import { VIEWER_STORE } from "@/lib/viewer";
+import { buyBottle, useRoom, VIEWER_DISPLAY_SEAT } from "@/lib/room-session";
+import { OPEN_BANK_EVENT } from "@/components/source-dialogs";
 
 export function BottleSelection({ open, onClose }: { open: boolean; onClose: () => void }) {
   const assets = useCilizAssets();
   const active = useBottle();
   const [notice, setNotice] = useState('');
+  const [buying, setBuying] = useState(false);
+  const room = useRoom();
   const [scrolled, setScrolled] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -80,8 +84,18 @@ export function BottleSelection({ open, onClose }: { open: boolean; onClose: () 
           return <Button variant="ghost" key={item.bottle.type} className="send-gift__item bottle-store-item" aria-label={item.name} title={item.name} aria-pressed={active===item.bottle.type} onClick={()=>{
             if (locked) { setNotice(translate(assets, 'dlg:locked_bottle:vip:desc')); return; }
             if (active === item.bottle.type) { onClose(); return; }
-            if (item.bottle.storePrice > 0) { setNotice('Şişe satın alma henüz hesabınızda kullanıma açık değil. Bakiye değişmedi.'); return; }
-            selectBottle(item.bottle.type); onClose();
+            // Server checks price and balance, then sets the bottle for the whole table.
+            const gold = room.players[VIEWER_DISPLAY_SEAT]?.gold;
+            if (gold !== undefined && gold < item.bottle.storePrice) { onClose(); window.dispatchEvent(new Event(OPEN_BANK_EVENT)); return; }
+            if (buying) return;
+            setBuying(true);
+            void buyBottle(item.bottle.type).then(res => {
+              setBuying(false);
+              if (res.ok) { selectBottle(item.bottle.type); onClose(); return; }
+              if (res.reason.includes('insufficient')) { onClose(); window.dispatchEvent(new Event(OPEN_BANK_EVENT)); }
+              else if (res.reason.includes('vip')) setNotice(translate(assets, 'dlg:locked_bottle:vip:desc'));
+              else setNotice('Şişe değiştirilemedi.');
+            });
           }}>
             <span className="send-gift__image-block"><img className={`send-gift__image${locked ? ' send-gift__image--locked' : ''}`} src={image.src} width={image.width} height={image.height} alt="" /></span>
             {locked ? <span className="send-gift__icon send-gift__icon--viplock" /> : <span className={`send-gift__subitem${item.bottle.storePrice ? '' : ' send-gift__subitem--invisible'}`}><span className="send-gift__icon send-gift__icon--heart" /><span className="send-gift__price">{item.bottle.storePrice}</span></span>}

@@ -42,8 +42,21 @@ export function pushActionLine(line: Omit<ChatActionLine, "kind" | "key">) {
 // audio element is started synchronously from the confirm click.
 let sharedAudio: HTMLAudioElement | null = null;
 export function getSharedAudio() {
-  if (!sharedAudio && typeof Audio !== "undefined") { sharedAudio = new Audio(); sharedAudio.preload = "auto"; (sharedAudio as HTMLAudioElement & { playsInline?: boolean }).playsInline = true; }
+  if (!sharedAudio && typeof Audio !== "undefined") { sharedAudio = new Audio(); sharedAudio.preload = "auto"; sharedAudio.muted = state.muted; sharedAudio.volume = state.volume; (sharedAudio as HTMLAudioElement & { playsInline?: boolean }).playsInline = true; }
   return sharedAudio;
+}
+/** Prepare playback in the actual tap, without overriding the viewer's sound settings. */
+export function resumeMusicAudio() {
+  const audio = getSharedAudio();
+  if (!audio) return;
+  audio.muted = state.muted;
+  audio.volume = state.volume;
+  if (audio.src && audio.paused && !audio.ended) void audio.play().catch(() => {});
+}
+/** Table-scoped media and chat must not follow the viewer to another room. */
+export function resetRoomMusic() {
+  sharedAudio?.pause();
+  set({ song: null, lines: [] });
 }
 /** Server-confirmed table song (rooms.music). */
 export interface RoomMusic { service: "cz" | "yt"; item: MusicItem; sender: string; started_at: string; key: number }
@@ -56,7 +69,7 @@ const stubService = (id: "cz" | "yt"): MusicService => ({ id, musicPrice: id ===
 export async function sendMusic(music: MusicItem, service: MusicService): Promise<{ ok: true } | { ok: false; reason: string }> {
   const audio = getSharedAudio();
   // Unlock audio inside the tap (iOS); the feed then sets the real start position.
-  if (audio && service.id !== "yt") { audio.src = music.url; audio.currentTime = 0; void audio.play().catch(() => {}); }
+  if (audio && service.id !== "yt") { audio.src = music.url; audio.currentTime = 0; resumeMusicAudio(); }
   const { getSupabase } = await import("@/lib/supabase");
   const sb = getSupabase();
   if (!sb) { audio?.pause(); return { ok: false, reason: "offline" }; }
@@ -95,8 +108,16 @@ export function pushGiftLine(sender: ChatUser, receiver: ChatUser, gift: { type:
   set({ lines });
 }
 export const finishMusic = (key: number) => { if (state.song?.key === key) { sharedAudio?.pause(); set({ song: null }); } };
-export const setMusicMuted = (muted: boolean) => set({ muted });
-export const setMusicVolume = (volume: number) => set({ volume, muted: volume === 0 ? state.muted : false });
+export const setMusicMuted = (muted: boolean) => {
+  set({ muted });
+  if (sharedAudio) sharedAudio.muted = muted;
+};
+export const setMusicVolume = (value: number) => {
+  const volume = Math.max(0, Math.min(1, value));
+  const muted = volume === 0;
+  set({ volume, muted });
+  if (sharedAudio) { sharedAudio.volume = volume; sharedAudio.muted = muted; }
+};
 
 const serverSnapshot: State = state;
 export function useMusicSession() {

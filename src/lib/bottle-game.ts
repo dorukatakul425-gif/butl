@@ -13,6 +13,14 @@ export const CENTER_PLAYER_SCALE = 69 / 64;
 export const DECISION_SECONDS = 9;
 /** When the viewer does not tap, the bottle spins itself after this many seconds. */
 export const AUTO_SPIN_SECONDS = 9;
+/** TablePresenter.turnWait uses actual player genders, not rotated display-seat parity. */
+export function waitingHint(players: Array<{ male: boolean } | null>): "hint:no_men" | "hint:no_women" | null {
+  const present = players.filter((player): player is { male: boolean } => player !== null);
+  if (!present.length) return null;
+  if (present.every(player => !player.male)) return "hint:no_men";
+  if (present.every(player => player.male)) return "hint:no_women";
+  return null;
+}
 export function spinDelayMs(spinner: number, viewer: number, random = Math.random()) {
   return spinner === viewer ? AUTO_SPIN_SECONDS * 1000 : 1400 + random * 1400;
 }

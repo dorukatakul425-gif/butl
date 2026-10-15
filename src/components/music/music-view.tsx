@@ -22,29 +22,41 @@ function backgroundImageSector(deg: number, bg: string, fg: string) {
 function HtmlAudio({ url, startPosition, muted, volume, onReady, onProgress, onComplete }: { url: string; startPosition: number; muted: boolean; volume: number; onReady: () => void; onProgress: (s: number) => void; onComplete: () => void }) {
   const [playing,setPlaying] = useState(false);
   const [failed,setFailed] = useState(false);
-  const cb = useRef({ onReady, onProgress, onComplete });
-  cb.current = { onReady, onProgress, onComplete };
+  const cb = useRef({ onReady, onProgress, onComplete, muted, volume });
+  cb.current = { onReady, onProgress, onComplete, muted, volume };
   useEffect(() => {
     const a = getSharedAudio();
     if (!a) return;
+    let blocked = false;
+    let manuallyPaused = false;
+    const applySound = () => { a.muted = cb.current.muted; a.volume = cb.current.volume; };
+    applySound();
     if (a.src !== url) a.src = url;
     const ready = () => { try { if (startPosition > 1) a.currentTime = startPosition; } catch { /* ignore */ } cb.current.onReady(); };
     const time = () => cb.current.onProgress(a.currentTime);
     const ended = () => cb.current.onComplete();
-    const onPlay = () => { setPlaying(true); setFailed(false); };
+    const onPlay = () => { blocked = false; setPlaying(true); setFailed(false); };
     const onPause = () => setPlaying(false);
     const onError = () => setFailed(true);
     if (a.readyState >= 1) ready(); else a.addEventListener("loadedmetadata", ready, { once: true });
     a.addEventListener("timeupdate", time); a.addEventListener("ended", ended);
     a.addEventListener("play", onPlay); a.addEventListener("pause", onPause); a.addEventListener("error", onError);
     setPlaying(!a.paused);
-    if (a.paused) void a.play().catch(() => setPlaying(false));
-    // If the browser still blocked playback, the first tap anywhere starts it.
-    const resume = () => { if (a.paused && !a.ended) void a.play().catch(() => {}); };
-    document.addEventListener("pointerdown", resume, true);
+    if (a.paused) void a.play().catch(() => { blocked = true; setPlaying(false); });
+    // Only recover blocked autoplay; never restart a deliberately paused track.
+    const resume = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest('.player-controls, .music-play-toggle, .music-stop-button')) return;
+      if (blocked && !manuallyPaused && a.paused && !a.ended) { applySound(); void a.play().catch(() => {}); }
+    };
+    const pauseIntent = () => { manuallyPaused = true; };
+    a.addEventListener("music:pause-intent", pauseIntent);
+    document.addEventListener("pointerdown", resume);
+    document.addEventListener("keydown", resume);
     return () => {
       a.pause();
-      document.removeEventListener("pointerdown", resume, true);
+      document.removeEventListener("pointerdown", resume);
+      document.removeEventListener("keydown", resume);
+      a.removeEventListener("music:pause-intent", pauseIntent);
       a.removeEventListener("loadedmetadata", ready); a.removeEventListener("timeupdate", time); a.removeEventListener("ended", ended);
       a.removeEventListener("play", onPlay); a.removeEventListener("pause", onPause); a.removeEventListener("error", onError);
     };
@@ -54,7 +66,7 @@ function HtmlAudio({ url, startPosition, muted, volume, onReady, onProgress, onC
   return <>
     <Button variant="ghost" className="music-play-toggle" aria-label={playing ? "Müziği duraklat" : failed ? "Müziği yeniden dene" : "Müziği oynat"} title={playing ? "Duraklat" : "Oynat"} onClick={()=>{
       const audio=getSharedAudio(); if(!audio)return;
-      if(playing)audio.pause();else {if(failed){audio.load();setFailed(false);}void audio.play().catch(()=>setPlaying(false));}
+      if(!audio.paused){audio.dispatchEvent(new Event('music:pause-intent'));audio.pause();}else {if(failed){audio.load();setFailed(false);}audio.muted=muted;audio.volume=volume;void audio.play().catch(()=>setPlaying(false));}
     }}>{playing ? <Pause size={18}/> : <Play size={18}/>}</Button>
   </>;
 }
@@ -103,7 +115,7 @@ export function MusicView({ song, muted, volume }: { song: PlayingSong; muted: b
         </div>
       </div>
       <div className={pcCls("", [position, size, volumeClass])}>
-        <div role="button" aria-label={muted ? "Sesi aç" : "Sesi kapat"} onClick={() => setMusicMuted(!muted)} className={pcCls("mute", [position, size, volumeClass, muteMode, media])} />
+        <button type="button" aria-label={muted ? "Sesi aç" : "Sesi kapat"} onClick={() => setMusicMuted(!muted)} className={pcCls("mute", [position, size, volumeClass, muteMode, media])} style={{ border: 0, padding: 0, backgroundColor: "transparent", backgroundRepeat: "no-repeat", backgroundPosition: "center", backgroundSize: "contain" }} />
         <input type="range" aria-label="Ses" value={rangeValue} onChange={(e) => setMusicVolume(Number(e.target.value) / 100)}
           className={pcCls("slider", [size, supportVolume ? undefined : "disabled", position])}
           style={{ background: `linear-gradient(to right, #9dc93b ${rangeValue}%, #ccc ${rangeValue}%)` }} />

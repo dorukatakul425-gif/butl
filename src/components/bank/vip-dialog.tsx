@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { showSourceToast } from "@/components/source-dialogs";
+import { getSupabase } from "@/lib/supabase";
+import { VipBoughtDialog } from "@/components/bank/received-gold-dialog";
 
 // Port of VipDialog.tsx + VipPresenter (OK social bank.vipOptions), Pager and
 // PageScroller Controls. Purchases need the OK payment session (backend later).
@@ -75,7 +77,7 @@ function Controls({ numItems, selected, onSelect }: { numItems: number; selected
   </div>;
 }
 
-export function VipDialog({ assets, onClose }: { assets: CilizAssets; onClose: () => void }) {
+export function VipDialog({ assets, onClose, onBought }: { assets: CilizAssets; onClose: () => void; onBought?: () => void }) {
   const t = (k: string) => translate(assets, k);
   const descriptions = vipDescriptions(t);
   const options = vipOptions(t);
@@ -84,6 +86,19 @@ export function VipDialog({ assets, onClose }: { assets: CilizAssets; onClose: (
   const page = useRef(0);
   const bank = useRef<HTMLDivElement>(null);
   const [buttonWidth, setButtonWidth] = useState(0);
+  const [bought, setBought] = useState(false);
+  const busy = useRef(false);
+  // VipPresenter purchase -> server extends vip_until -> showVipBought().
+  const buy = async (id: string) => {
+    const sb = getSupabase();
+    if (!sb || busy.current) return;
+    busy.current = true;
+    const { error } = await sb.rpc("buy_vip", { p_option: id });
+    busy.current = false;
+    if (error) { showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return; }
+    setBought(true);
+    onBought?.();
+  };
   useEffect(() => {
     const id = window.setInterval(() => { page.current = (page.current + 1) % pages.length; onSelect(page.current); }, SCROLL_INTERVAL);
     return () => window.clearInterval(id);
@@ -98,6 +113,7 @@ export function VipDialog({ assets, onClose }: { assets: CilizAssets; onClose: (
     document.addEventListener("keydown", key, true);
     return () => document.removeEventListener("keydown", key, true);
   }, [onClose]);
+  if (bought) return <VipBoughtDialog assets={assets} onClose={onClose} />;
   return createPortal(
     <div className="source-feature-layer" style={{ fontFamily: "Arial, Helvetica, sans-serif" }}>
       <div className="popup-shade" onClick={onClose} />
@@ -123,7 +139,7 @@ export function VipDialog({ assets, onClose }: { assets: CilizAssets; onClose: (
                   {o.isPopular && <div className="vip__popular">{t("bank:popular")}</div>}
                 </div>
                 <div role="button" className="button button--confirm vip__x_button" style={buttonWidth > 0 ? { width: buttonWidth } : undefined}
-                  onClick={() => showSourceToast("Ödeme sistemi henüz bağlı değil.")}><DatPrice text={`${o.price}/${o.term}`} /></div>
+                  onClick={() => void buy(o.id)}><DatPrice text={`${o.price}/${o.term}`} /></div>
               </div>)}
             </div>
           </div>

@@ -1,4 +1,8 @@
 # Tasks
+- [x] Verify source waiting text/typography and mixed-gender play; two live players reached synchronized spin/choose and opposite turn offers without manual ticks.
+- [x] Correct music autoplay/mute handling; real catalogue audio advanced while mute/unmute applied immediately, with pause regression tests passing.
+- [x] Guard stale table reads and commit complete destination snapshots; live transitions retained the viewer and displayed the destination bottle/waiting hint. All 110 tests passed.
+- [x] Set current and new player balances to 10,000; authenticated new-account and reload checks show the original top-left balance on desktop and phone without icon overlap.
 - [x] Match original kiss/refuse labels and decision countdown placement.
 - [x] Fix startup logo visibility using original artwork; verified with forced hosted-image failures.
 - [x] Remove decision arrows when players return to their seats; verified during return phase on phone and desktop.
@@ -27,3 +31,13 @@
 - [x] Verify complete bottle flow: select a live bottle, spin, kiss/refuse, arrows and subsequent bot rounds; 38 tests passed.
 - [x] Correct music autoplay recovery and add stop control; live audio time advanced, video view and two chat lines verified.
 - [x] Transfer verified bottle and music corrections to butl/main: 23a4b5359a38b8db55421824cbe1e659084a2d54; GitHub branch update returned success.
+- [x] Gestures: server token balance, server-validated price/locks, live broadcast to the whole table.
+- [x] Music mute button rendered as plain original icon.
+- [ ] Gift sending stutter on phones (needs profiling on device).
+- [x] Kiss/refuse buttons render instantly from embedded original artwork.
+- [ ] Chat history retention rule from the original (needs the exact rule).
+- [x] Original token shop (Jeton dükkanı) opens from the token balance and when tokens run out; server-priced purchase with hearts.
+- [x] Original daily/first-entry bonus popup (DailyBonusDialog), server-awarded hearts (day 1-5), heart flight from bottle to header with drop sound and balance bump. Not live-tested (no preview account).
+- [x] Menu: Tops (kisses lifetime, gestures with daily/weekly/monthly) ranked by server, live refresh; Achievements levels from server counters (celebrity, heartofgold, courtesies, pantomime, guru) with acknowledgements. Not live-tested.
+- [ ] Menu: Tops DJ/price/harem and Boosters inventory need original server data that does not exist yet.
+- [x] DAT wallet (10,000 test balance) on home page; heart packages and VIP bought with DAT on the server; original Tebrikler popups, heart flight and delayed balance rise verified in browser.

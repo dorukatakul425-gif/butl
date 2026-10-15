@@ -48,15 +48,17 @@ export function YouTubeFrame({ videoId, preview = false, startPosition = 0, mute
     let destroyed = false;
     let ready = false;
     let autoplayCheck: number | undefined;
-    const resume = () => {
+    const resume = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest('.player-controls, .music-stop-button')) return;
       const q = playerRef.current;
       if (!q || !ready || destroyed) return;
       try {
         if (q.getPlayerState() !== 1) { q.playVideo(); q.seekTo(currentTimeSec(), true); }
-        if (!cb.current.muted && q.isMuted()) { q.setVolume(Math.round(cb.current.volume * 100)); q.unMute(); }
+        q.setVolume(Math.round(cb.current.volume * 100));
+        if (cb.current.muted || cb.current.volume === 0) q.mute(); else if (q.isMuted()) q.unMute();
       } catch { /* not ready */ }
     };
-    if (!preview) document.addEventListener("pointerdown", resume, true);
+    if (!preview) document.addEventListener("pointerdown", resume);
     const startTs = Date.now() - 1000 * startPosition;
     const currentTimeSec = () => (Date.now() - startTs) / 1000;
     const target = document.createElement("div");
@@ -76,7 +78,8 @@ export function YouTubeFrame({ videoId, preview = false, startPosition = 0, mute
             if (!p || destroyed) return;
             cb.current.onReady?.();
             if (!preview) {
-              if (cb.current.muted) p.mute();
+              p.setVolume(Math.max(0, Math.min(100, Math.round(cb.current.volume * 100))));
+              if (cb.current.muted || cb.current.volume === 0) p.mute();
               else { p.setVolume(Math.max(0, Math.min(100, Math.round(cb.current.volume * 100)))); p.unMute(); }
               p.playVideo();
               p.seekTo(currentTimeSec(), true);
@@ -96,7 +99,7 @@ export function YouTubeFrame({ videoId, preview = false, startPosition = 0, mute
       destroyed = true;
       window.clearInterval(interval);
       window.clearTimeout(autoplayCheck);
-      document.removeEventListener("pointerdown", resume, true);
+      document.removeEventListener("pointerdown", resume);
       if (ready) playerRef.current?.destroy();
       playerRef.current = null;
       host.innerHTML = "";
@@ -108,8 +111,9 @@ export function YouTubeFrame({ videoId, preview = false, startPosition = 0, mute
     const p = playerRef.current;
     if (!p) return;
     try {
-      if (muted) p.mute();
-      else { if (volume) p.setVolume(volume * 100); p.unMute(); }
+      p.setVolume(volume * 100);
+      if (muted || volume === 0) p.mute();
+      else p.unMute();
     } catch { /* player not ready yet */ }
   }, [muted, volume]);
 

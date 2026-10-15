@@ -10,7 +10,7 @@ export interface SourceFeatureSnapshot {
   roulette?: { freeSpins: number; price: number; prizes: SourceReward[]; winner?: { id: string; name: string; photo?: string; amount: number } };
   pass?: { points: number; premium: boolean; endsAt: number; levels: Array<{ points: number; free: SourceReward[]; premium: SourceReward[]; claimed: boolean }> };
 }
-export interface SourceTableEntry { id: string; name?: string; photo?: string; bottle: string; men: number; women: number; blockedUntil?: number }
+export interface SourceTableEntry { id: string; name?: string; photo?: string; bottle: string; men: number; women: number; blockedUntil?: number; current?: boolean }
 export type SourceFeatureAction = 'change-table' | 'invite' | 'save-profile' | 'feedback' | 'roulette-spin' | 'pass-claim' | 'pass-buy' | 'league-join' | 'league-settings' | 'roulette-buy-chances';
 export interface SourceFeatureResult { confirmed: boolean; rewards?: SourceReward[]; message?: string; rewardIndex?: number; inviteUrl?: string; testOnly?: boolean }
 export interface SourceFeatureAdapter {

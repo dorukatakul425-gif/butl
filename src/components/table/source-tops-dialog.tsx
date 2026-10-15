@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { useCilizAssets } from '@/components/decor/decor-selection';
 import { translate } from '@/lib/ciliz-assets';
 import { SourceTopsHelp } from './source-tops-help';
+import { getSupabase } from '@/lib/supabase';
+import { DEFAULT_PHOTO } from '@/lib/ciliz-default-photo';
 
 const sections = [
   { id: 'total_kisses', title: 'dlg:top:title', statistic: 'kisses' },
@@ -16,11 +18,30 @@ type Row = { id: string; name: string; photo: string; kisses: number; gestures: 
 
 export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
   const assets = useCilizAssets();
-  const viewerId: string | undefined = undefined;
+  const [viewerId, setViewerId] = useState<string | undefined>();
   const [section, setSection] = useState<(typeof sections)[number]>(sections[0]);
   const [period, setPeriod] = useState('');
-  const rows: Row[] = [];
-  const notice = 'Puanlar henüz bağlı değil.';
+  const [rows, setRows] = useState<Row[]>([]);
+  const [notice, setNotice] = useState<string | null>('Yükleniyor…');
+  // Server-ranked, refreshed live while the dialog is open.
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!sb || section.statistic === null) return;
+    if (section.statistic === 'kisses' && period) return;
+    let alive = true;
+    const load = async () => {
+      const [{ data: u }, { data, error }] = await Promise.all([sb.auth.getUser(), sb.rpc('top_players', { p_section: section.id, p_period: period })]);
+      if (!alive) return;
+      setViewerId(u.user?.id);
+      if (error) { setNotice('Puanlar yüklenemedi.'); return; }
+      const stat = section.statistic;
+      setRows((data ?? []).map((r: { id: string; name: string; photo_url: string | null; score: number }) => ({ id: r.id, name: r.name, photo: r.photo_url || DEFAULT_PHOTO, kisses: stat === 'kisses' ? Number(r.score) : 0, gestures: stat === 'gestures' ? Number(r.score) : 0 })));
+      setNotice((data ?? []).length ? null : 'Henüz kayıt yok.');
+    };
+    setNotice('Yükleniyor…'); void load();
+    const id = window.setInterval(() => void load(), 5000);
+    return () => { alive = false; window.clearInterval(id); };
+  }, [section, period]);
   const [help, setHelp] = useState(false);
   const closeRef = useRef(onClose);
   useEffect(() => { closeRef.current = onClose; }, [onClose]);
@@ -30,7 +51,7 @@ export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
     return () => { document.removeEventListener('keydown', key); };
   }, []);
   if (!assets) return null;
-  const supported = section.statistic !== null && !period;
+  const supported = section.statistic === 'gestures' || (section.statistic === 'kisses' && !period);
   const statistic = section.statistic ?? 'kisses';
   const ranked = [...rows].sort((a, b) => b[statistic] - a[statistic] || a.id.localeCompare(b.id));
   const visible = ranked.slice(0, 50);

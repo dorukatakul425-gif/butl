@@ -29,7 +29,9 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
   const ref = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
   const img = dialogImage(assets, item.image, 60, 60);
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const hold = useRef<{ delay?: number; repeat?: number; fired: boolean }>({ fired: false });
+  const stopHold = () => { window.clearTimeout(hold.current.delay); window.clearInterval(hold.current.repeat); };
+  useEffect(() => () => { window.clearTimeout(timer.current); stopHold(); }, []);
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
@@ -53,7 +55,7 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
     timer.current = window.setTimeout(() => el.classList.remove("send-gift__item--active"), 500);
   };
   return (
-    <div ref={ref} className={`${cls("item")} touch-manipulation`} data-code={item.type} title={item.name} onClick={activate} onPointerEnter={() => onPreload(item)} onPointerDown={() => onPreload(item)} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
+    <div ref={ref} className={`${cls("item")} touch-manipulation`} data-code={item.type} title={item.name} onClick={() => { if (hold.current.fired) { hold.current.fired = false; return; } activate(); }} onPointerEnter={() => onPreload(item)} onPointerDown={() => { onPreload(item); stopHold(); hold.current.fired = false; if (item.lock) return; hold.current.delay = window.setTimeout(() => { hold.current.fired = true; activate(); hold.current.repeat = window.setInterval(activate, 120); }, 350); }} onPointerUp={stopHold} onPointerLeave={stopHold} onPointerCancel={stopHold} onContextMenu={e => e.preventDefault()} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
       <div className={cls("image-block")}>
         <img className={cls("image", [item.lock && "locked"])} draggable={false} src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" loading="lazy" decoding="async" />
       </div>

@@ -6,6 +6,9 @@
 @import "./styles/ciliz-music.css";
 @import "./styles/ciliz-chat-gift.css";
 @import "./styles/ciliz-bank.css";
+@import "./styles/ciliz-tokens-bank.css";
+@import "./styles/ciliz-daily-bonus.css";
+@import "./styles/ciliz-received-gold.css";
 @import "./styles/ciliz-bottle.css";
 @import "./styles/ciliz-tops.css";
 @import "./styles/ciliz-achievements.css";
@@ -82,6 +85,7 @@
 }
 
 :root {
+  --game-wallet-text: #ffffff;
   --game-menu-surface: #ffffff;
   --game-menu-text: #000000;
   --game-menu-hover: rgba(0, 0, 0, 0.04);
@@ -328,6 +332,8 @@
 .original-icon-fullscreen .original-button-icon { width: 23px; height: 23px; }
 .original-heart-button { width: 57px; }
 .original-heart-image { position: absolute; width: 57px; height: 50px; }
+.original-header-wallet { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.original-header-balance { text-align: left; font-family: Arial, Helvetica, sans-serif; font-size: 19px; font-weight: bold; font-variant-numeric: tabular-nums; line-height: 1; letter-spacing: 0; text-align: center; color: var(--game-wallet-text); }
 
 /* MiscMenuDialog: original intrinsic width, 40px rows and opacity-only animation. */
 .original-misc-menu {
@@ -393,6 +399,8 @@
   .original-icon-fullscreen .original-button-icon { width: 14px; height: 14px; }
   .original-heart-button { width: 32px; }
   .original-heart-image { width: 32px; height: 28px; }
+  .original-header-balance { font-size: 12px; }
+  .original-header-table-label, .original-header-table-id { font-size: 9px; }
 }
 
 .original-table-seats {
@@ -426,3 +434,12 @@ input, textarea, [contenteditable="true"] {
   -webkit-user-select: text;
   user-select: text;
 }
+
+/* TableView lblTable/lblTableId: Label (Arial bold white), 14px (9px small), stacked left of change-table, 6px gap. */
+.original-header-table { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 6px; flex-shrink: 0; font-family: Arial, Helvetica, sans-serif; font-weight: bold; color: var(--game-wallet-text); line-height: 1.15; text-align: center; }
+.original-header-table-label, .original-header-table-id { font-size: 14px; }
+
+/* ChangeTableButton.setCountdown: Label fontWeight normal, 19px (12px small), icon hidden while counting. */
+.original-change-table-count { position: relative; z-index: 1; font-family: Arial, Helvetica, sans-serif; font-weight: normal; font-size: 19px; color: var(--game-wallet-text); }
+.original-change-table--count { cursor: auto; }
+@media (max-width: 500px), (max-height: 500px) { .original-change-table-count { font-size: 12px; } }

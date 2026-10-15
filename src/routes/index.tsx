@@ -5,6 +5,7 @@ import { signOut, useAuth, refreshProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import bottleIcon from "@/assets/original-menu-bottle.svg.asset.json";
+import datCoin from "@/assets/dat-coin.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,7 +37,8 @@ function Home() {
     const path = `${p.id}/${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
     const { error } = await sb.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
     if (!error) {
-      const url = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+      const { data: signed } = await sb.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
+      const url = signed?.signedUrl ?? null;
       await sb.from("profiles").update({ photo_url: url }).eq("id", p.id);
       await refreshProfile();
     }
@@ -57,6 +59,7 @@ function Home() {
             <p className="text-sm text-muted-foreground">@{p.username}</p>
             <p className="text-sm text-muted-foreground">ID: {p.player_no}</p>
             <p className="text-sm">💋 {p.kisses} · ❤ {p.gold}</p>
+            <p className="flex items-center gap-1 text-sm font-bold" aria-label="DAT bakiyesi"><img src={datCoin} alt="DAT" width={18} height={18} />{(p.dat ?? 0).toLocaleString("tr-TR")} DAT</p>
           </div>
         </section>
         <Link to="/game" className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-6" aria-label="Şişe oyununu aç">

@@ -1,8 +1,12 @@
 import { DatPrice } from "@/components/bank/dat-price";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { loadCilizAssets, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { bankOptions, bonusPercent } from "@/lib/bank";
+import { getSupabase } from "@/lib/supabase";
+import { emitServerHeartAward, setPendingGold } from "@/lib/game-session";
+import { showSourceToast } from "@/components/source-dialogs";
+import { ReceivedGoldDialog } from "@/components/bank/received-gold-dialog";
 
 // Markup and class names ported from BankDialog.tsx, Dialog.Header/Content/Button and BankPresenter.
 const bem = (block: string) => (element = "", mods: Array<string | false | undefined> = []) => {
@@ -50,13 +54,33 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
     document.addEventListener("keydown", key);
     return () => document.removeEventListener("keydown", key);
   }, [open, onClose]);
-  if (!mounted || !assets) return null;
+  const [received, setReceived] = useState<{ gold: number; position: number } | null>(null);
+  const busy = useRef(false);
+  // BankPresenter purchase -> _recv_gold_bought -> showReceivedGold(gold, 'html:dlg:gold:purchased2:v2', true).
+  const buy = async (real: number, position: number) => {
+    const sb = getSupabase();
+    if (!sb || busy.current) return;
+    busy.current = true;
+    const { data, error } = await sb.rpc("buy_gold", { p_real: real });
+    busy.current = false;
+    if (error) { showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return; }
+    const got = Number(data);
+    setPendingGold(got);
+    onClose();
+    setReceived({ gold: got, position });
+  };
+  const receivedDialog = received && assets ? <ReceivedGoldDialog assets={assets} gold={received.gold} position={received.position} onContinue={async (pt) => {
+    const r = received; setReceived(null);
+    const { data } = await getSupabase()!.auth.getUser();
+    emitServerHeartAward({ id: `buy:${Date.now()}:${Math.random()}`, viewerId: data.user?.id ?? "", amount: r.gold, lucky: false, prepaid: true, from: pt });
+  }} /> : null;
+  if (!mounted || !assets) return receivedDialog;
   const t = (key: string) => translate(assets, key);
   const options = bankOptions(assets);
   const bonusDesc = t("bank:bonus:big");
   const itemsNum = options.length + (isVip ? 1 : 0);
 
-  return createPortal(
+  return <>{receivedDialog}{createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif" }}>
       <div className="popup__dialog-manager">
         <div className="popup-shade" onClick={onClose} />
@@ -101,7 +125,7 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
                       {[1, 2, 3, 4].map((n) => <div key={n} className={cls("blick", [String(n)])} />)}
                     </div>
                   </div>
-                  <DialogButton title={<DatPrice text={opt.price} />} onClick={onClose} />
+                  <DialogButton title={<DatPrice text={opt.price} />} onClick={() => void buy(opt.real, opt.idx - 1)} />
                 </div>
               ))}
             </div>
@@ -111,5 +135,5 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
       </div>
     </div>,
     document.body,
-  );
+  )}</>;
 }

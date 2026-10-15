@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCilizAssets } from "@/components/decor/decor-selection";
 import { SendGiftDialog } from "@/components/gifts/send-gift-dialog";
+import { OPEN_TOKENS_BANK_EVENT, TokensBankHost } from "@/components/bank/tokens-bank-dialog";
 import { GestureDialog } from "@/components/gestures/gesture-dialog";
 import { syncDecorFromProfile, useDecorState } from "@/lib/decor-store";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
@@ -14,7 +15,7 @@ import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
 import { setViewerKisses, useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-progress";
 import { GIFT_SENT_EVENT, setSeatLocator } from "@/lib/interactive-hint-flags";
 import { newcomerKey, newcomerKind, newcomersToNotify, widgetParts, OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
-import { onRoomGift, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat } from "@/lib/room-session";
+import { onRoomGift, onRoomGesture, sendGesture, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat } from "@/lib/room-session";
 import type { Profile } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import { showSourceToast } from "@/components/source-dialogs";
@@ -66,7 +67,19 @@ export function TableSeats() {
   const [ownProfileOpen, setOwnProfileOpen] = useState(false);
   const [lockedGift, setLockedGift] = useState<GiftStoreItem | null>(null);
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: progress.kisses, vip: progress.vip }) : []), [assets, progress.kisses, progress.vip]);
-  const gestureAccount = useMemo(() => ({ userId: "viewer", kisses: progress.kisses, vip: progress.vip, tokens: 0, social: VIEWER_STORE.social, platform: "web", scheduled: [] }), [progress.kisses, progress.vip]);
+  const ownTokens = room.players[VIEWER_SEAT]?.tokens;
+  const ownId = room.players[VIEWER_SEAT]?.id;
+  const gestureAccount = useMemo(() => ownId && ownTokens !== undefined ? ({ userId: ownId, kisses: progress.kisses, vip: progress.vip, tokens: ownTokens, social: VIEWER_STORE.social, platform: "web", scheduled: [] }) : null, [ownId, ownTokens, progress.kisses, progress.vip]);
+  const localGestures = useRef(0);
+  // Everyone at the table sees every confirmed gesture (ours already played on click).
+  useEffect(() => {
+    if (!assets) return;
+    return onRoomGesture(row => {
+      if (row.sender_id === playersRef.current[VIEWER_SEAT]?.id && localGestures.current > 0) { localGestures.current--; return; }
+      const seat = displaySeatOf(row.sender_id), g = assets.gestures?.[row.gesture];
+      if (seat >= 0 && g) void tableRef.current?.playGesture(seat, g).catch(() => {});
+    });
+  }, [assets]);
   // GiftLockedPresenter.showKiss: the open dialog follows totalKisses and closes once reached.
   useEffect(() => {
     if (lockedGift?.lock?.kind === "kisses" && progress.kisses >= lockedGift.lock.need) setLockedGift(null);
@@ -121,10 +134,13 @@ export function TableSeats() {
   useEffect(() => {
     if (!assets) return;
     return onRoomGift(row => {
+      let mine = false;
+      // Our own sends already animated instantly on click.
+      if (row.sender_id === playersRef.current[VIEWER_SEAT]?.id && localSent.current > 0) { localSent.current--; mine = true; }
       const from = displaySeatOf(row.sender_id), to = displaySeatOf(row.receiver_id);
       const meta = assets.gifts[row.gift_type];
       if (from < 0 || to < 0 || !meta) return;
-      void tableRef.current?.sendGift(from, to, createSentGift(assets, meta, row.seed));
+      if (!mine) void tableRef.current?.sendGift(from, to, createSentGift(assets, meta, row.seed));
       const s = profileBySeat(from), r = profileBySeat(to);
       const item = giftItems.find(i => i.type === row.gift_type);
       pushGiftLine(
@@ -147,6 +163,7 @@ export function TableSeats() {
     ids.forEach((id) => preloadSfx(assets.sfxUrl, id));
   }, [giftSeat, assets, giftItems]);
 
+  const spent = useRef(0), localSent = useRef(0);
   const send = useCallback(
     (item: GiftStoreItem) => {
       if (!assets) return;
@@ -154,10 +171,22 @@ export function TableSeats() {
       // Viewer.decGold: not enough hearts for every receiver -> onGoldNeeded -> bank.
       const receivers = giftReceivers(target).map(seat => playersRef.current[seat]?.id).filter((id): id is string => Boolean(id));
       if (!receivers.length) return;
-      const gold = room.players[VIEWER_SEAT]?.gold ?? VIEWER_GOLD;
+      const serverGold = room.players[VIEWER_SEAT]?.gold ?? VIEWER_GOLD;
+      const gold = serverGold - spent.current;
       if (item.price * receivers.length > gold) { window.dispatchEvent(new Event(OPEN_BANK_EVENT)); return; }
+      const cost = item.price * receivers.length;
+      spent.current += cost;
+      const seed = Math.floor(Math.random() * RAND_MOD);
+      // Every click animates on its own at once; the server transaction confirms independently.
+      const meta = assets.gifts[item.type];
+      if (meta) for (const id of receivers) {
+        const to = displaySeatOf(id);
+        if (to >= 0) { localSent.current++; void tableRef.current?.sendGift(VIEWER_SEAT, to, createSentGift(assets, meta, seed)); }
+      }
       // Server checks price, locks and balance in one transaction; the room feed animates it.
-      void sendGiftRpc(item.type, receivers, Math.floor(Math.random() * RAND_MOD)).then(res => {
+      void sendGiftRpc(item.type, receivers, seed).then(res => {
+        spent.current = Math.max(0, spent.current - cost);
+        if (!res.ok && meta) localSent.current = Math.max(0, localSent.current - receivers.length);
         if (res.ok) { window.dispatchEvent(new CustomEvent(GIFT_SENT_EVENT, { detail: item.type })); return; }
         if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
         else showSourceToast("Hediye gönderilemedi.");
@@ -179,8 +208,9 @@ export function TableSeats() {
   return (
     <>
       <div ref={hostRef} className="original-table-seats" aria-label="Masadaki oyuncular">
-        {activeTable && assets && <BottlePlay table={activeTable} assets={assets} />}
+        {activeTable && assets && <BottlePlay key={room.roomId} table={activeTable} assets={assets} />}
       </div>
+      <TokensBankHost />
       {assets && (
         <GestureDialog
           open={gesturesOpen}
@@ -192,6 +222,15 @@ export function TableSeats() {
             const table = tableRef.current;
             if (!table) throw new Error("Table unavailable");
             await table.playGesture(VIEWER_SEAT, item.gesture);
+          }}
+          onSend={async item => {
+            localGestures.current++;
+            void tableRef.current?.playGesture(VIEWER_SEAT, item.gesture).catch(() => {});
+            const res = await sendGesture(item.gesture.type);
+            if (!res.ok) {
+              localGestures.current = Math.max(0, localGestures.current - 1);
+              if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_TOKENS_BANK_EVENT)); else showSourceToast("Jest gönderilemedi.");
+            }
           }}
         />
       )}

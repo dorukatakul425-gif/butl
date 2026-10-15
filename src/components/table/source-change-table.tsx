@@ -22,7 +22,7 @@ function Stats({ men, women, timer }: { men: number; women: number; timer?: stri
     {timer !== undefined && <div className={cls('kickout-timer', [timerSub])}>{timer}</div>}
     <div className={cls('stats-players', [playersSub])}>
       <div className={cls('men')}><div className={cls('stats-icon', ['men'])} />{men}</div>
-      <div className={cls('women')}><div className={cls( stats-icon', ['women'])} />{women}</div>
+      <div className={cls('women')}><div className={cls('stats-icon', ['women'])} />{women}</div>
     </div>
   </div>;
 }

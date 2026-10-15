@@ -1,4 +1,4 @@
-export interface VerifiedHeartAward { id: string; viewerId: string; amount: number; lucky: boolean }
+export interface VerifiedHeartAward { id: string; viewerId: string; amount: number; lucky: boolean; prepaid?: boolean; from?: { x: number; y: number } }
 export type GameConnectionState = 'connected' | 'disconnected' | 'reconnecting';
 export interface EffectsSessionAdapter {
  getSnapshot: () => { viewer: { id: string } | null };
@@ -23,3 +23,12 @@ export function attachGameSession(next: EffectsSessionAdapter | null) {
  });
  cleanupConnection = next?.subscribeConnection?.(state => connectionListeners.forEach(fn => fn(state)));
 }
+
+/** Hearts already credited by the server but still flying toward the header (addViewerGold timeline). */
+let pendingGold = 0;
+const pendingListeners = new Set<() => void>();
+export const getPendingGold = () => pendingGold;
+export function subscribePendingGold(fn: () => void) { pendingListeners.add(fn); return () => { pendingListeners.delete(fn); }; }
+export function setPendingGold(delta: number) { pendingGold = Math.max(0, pendingGold + delta); pendingListeners.forEach(fn => fn()); }
+/** Emit only awards confirmed by an authenticated server RPC response. */
+export function emitServerHeartAward(award: VerifiedHeartAward) { awardListeners.forEach(fn => fn(award)); }

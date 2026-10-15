@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE, SPIN_SECONDS, TABLE_SEATS, eligibleTargets, leftRight, pickTarget, spinAngle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, spinDelayMs } from "@/lib/bottle-game";
+import { CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE, SPIN_SECONDS, TABLE_SEATS, eligibleTargets, leftRight, pickTarget, spinAngle, turnOfferSound, decisionArrowsVisible, decisionTimerVisible, spinDelayMs, waitingHint } from "@/lib/bottle-game";
 
 describe("source-derived bottle game geometry", () => {
+  it("shows source waiting keys for single-gender tables using profile genders", () => {
+    expect(waitingHint([null, { male: true }, null])).toBe('hint:no_women');
+    expect(waitingHint([{ male: true }, null, { male: true }])).toBe('hint:no_women');
+    expect(waitingHint([null, { male: false }])).toBe('hint:no_men');
+    expect(waitingHint([{ male: false }, null, { male: false }])).toBe('hint:no_men');
+    expect(waitingHint([{ male: true }, { male: false }])).toBeNull();
+    expect(waitingHint([null, null])).toBeNull();
+  });
   it("spins the bottle automatically 9 seconds into the viewer's turn", () => {
     expect(spinDelayMs(5,5)).toBe(9000);
     expect(spinDelayMs(4,5,0)).toBe(1400);

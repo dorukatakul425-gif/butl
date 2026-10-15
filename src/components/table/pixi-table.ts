@@ -1,3 +1,5 @@
+import defaultBottleUrl from "@/assets/ui_table_default_bottle.svg";
+import { ASSETS_TO_VIRTUAL as ASSETS_K } from "@/lib/ciliz-assets";
 // Browser-only: rendered with PixiJS + Spine 3.8 exactly like TableView/TableUserView in preloader.js.
 import { Application, BaseTexture, Container, MIPMAP_MODES, Rectangle, Sprite, Text, TextStyle, Texture, type DisplayObject } from "pixi.js";
 import { TextureAtlas, TextureFilter } from "@pixi-spine/base";
@@ -580,8 +582,11 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
 
   const preloadJobs = new Map<string, Promise<void>>();
   let bottleVersion = 0;
+  let motionVersion = 0;
   const tween = (duration: number, step: (p: number) => void) => new Promise<void>(resolve => run(duration, step, resolve));
+  const motionTween = (version: number, duration: number, step: (p: number) => void) => tween(duration, p => { if (!destroyed && version === motionVersion) step(p); });
   const movePlayers = async (a: number, b: number, center: boolean) => {
+    const version = motionVersion;
     const [left, right] = leftRight(a,b);
     const moving = [left,right].map((index,i) => ({
       view: seats[index]?.view,
@@ -589,7 +594,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       fromScale: seats[index]?.view.scale.x ?? 1,
       to: center ? [i===0 ? -46 : 46,-5] : SEATS[index] ?? [0,0],
     }));
-    await tween(center ? CENTER_SECONDS : RETURN_SECONDS,p => moving.forEach(m => {
+    await motionTween(version, center ? CENTER_SECONDS : RETURN_SECONDS,p => moving.forEach(m => {
       if (!m.view) return;
       const ease = 1-Math.pow(1-p,3);
       m.view.x=m.from.x+((m.to[0] ?? 0)-m.from.x)*ease;
@@ -619,6 +624,20 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
 
   const seatKisses = new Map<number, number>();
   return {
+    /** Cancel the previous room/aborted round without destroying the shared renderer. */
+    resetRound(resetKisses = false) {
+      motionVersion++;
+      bottleLayer.alpha = 1;
+      bottleLayer.rotation = 0;
+      if (resetKisses) { seatKisses.clear(); seats.forEach(seat => seat.setKisses(0, res())); }
+      seats.forEach((seat, index) => { const position = SEATS[index]; if (position) seat.view.position.set(position[0], position[1]); seat.view.scale.set(1); seat.view.rotation = 0; });
+    },
+    settleRound(from: number, to: number, center: boolean) {
+      motionVersion++;
+      bottleLayer.rotation = (spinAngle(to, 0) * Math.PI / 180) % (2 * Math.PI);
+      bottleLayer.alpha = center ? 0 : 1;
+      if (center) leftRight(from, to).forEach((index, i) => { const seat = seats[index]; if (seat) { seat.view.position.set(i === 0 ? -46 : 46, -5); seat.view.scale.set(CENTER_PLAYER_SCALE); } });
+    },
     /** Kisses collected at this table, shown on the seat like TableUserView.setKisses. */
     addKiss(index: number) {
       const next = (seatKisses.get(index) ?? 0) + 1;
@@ -633,7 +652,12 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     },
     async setBottle(type: string) {
       const version = ++bottleVersion;
-      const view = await originalBottle(assets,type,tableSize(),loadImage,bottleLayer);
+      // TableView.changeBottle: if the bottle artwork fails, show the original ui_table_default_bottle (57x103).
+      const view = await originalBottle(assets,type,tableSize(),loadImage,bottleLayer).catch(async () => {
+        const sprite = Sprite.from(await loadImage(defaultBottleUrl));
+        sprite.anchor.set(0.5); sprite.width = 57 * ASSETS_K; sprite.height = 103 * ASSETS_K;
+        return sprite;
+      });
       if (destroyed || version!==bottleVersion) { destroyView(view); return; }
       bottleLayer.removeChildren().forEach(destroyView);
       bottleLayer.addChild(view);
@@ -664,29 +688,38 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
         seat.setGestureShade(0); destroyView(view); gestureViews.delete(index);
       });
     },
-    async spinBottle(from: number, to: number) {
+    /** Late joiners: bottle already rests pointing at the last chosen seat. */
+    pointBottle(to: number) {
+      if (destroyed || to < 0) return;
+      bottleLayer.rotation = (spinAngle(to, 0) * Math.PI / 180) % (2 * Math.PI);
+    },
+    async spinBottle(from: number, to: number, seed = Math.random()) {
       if (destroyed) return;
+      const version = ++motionVersion;
       bottleLayer.alpha=1;
       const start=bottleLayer.rotation%(2*Math.PI);
-      const end=spinAngle(to)*Math.PI/180;
+      const end=spinAngle(to, seed)*Math.PI/180;
       // GameAnimations.toCenter(): spinner photo tweens to -10deg in 0.1s, then back to 0 in 0.1s (EASE_OUT).
       const spinnerView=seats[from]?.view;
       if (spinnerView) {
         const easeOut=(p:number)=>1-Math.pow(1-p,3);
-        void tween(0.1,p=>{spinnerView.rotation=-10*DEG*easeOut(p);})
-          .then(()=>tween(0.1,p=>{spinnerView.rotation=-10*DEG*(1-easeOut(p));}))
-          .then(()=>{spinnerView.rotation=0;});
+        void motionTween(version,0.1,p=>{spinnerView.rotation=-10*DEG*easeOut(p);})
+          .then(()=>motionTween(version,0.1,p=>{spinnerView.rotation=-10*DEG*(1-easeOut(p));}))
+          .then(()=>{if (version === motionVersion && !destroyed) spinnerView.rotation=0;});
       }
       // Bottle kicks back 10deg before the 4.9s spin.
-      await tween(0.1,p => { bottleLayer.rotation=start-(Math.PI/18)*(1-Math.pow(1-p,3)); });
+      await motionTween(version,0.1,p => { bottleLayer.rotation=start-(Math.PI/18)*(1-Math.pow(1-p,3)); });
+      if (version !== motionVersion || destroyed) return;
       const initial=bottleLayer.rotation;
-      await tween(SPIN_SECONDS-0.1,p => { bottleLayer.rotation=initial+(end-initial)*(1-Math.pow(1-p,3)); });
+      await motionTween(version,SPIN_SECONDS-0.1,p => { bottleLayer.rotation=initial+(end-initial)*(1-Math.pow(1-p,3)); });
+      if (version !== motionVersion || destroyed) return;
       bottleLayer.rotation=end%(2*Math.PI);
-      void tween(1,p=>{bottleLayer.alpha=1-p;});
+      void motionTween(version,1,p=>{bottleLayer.alpha=1-p;});
       await movePlayers(from,to,true);
     },
     async returnPlayers(from: number,to: number) {
-      await Promise.all([movePlayers(from,to,false),tween(1,p=>{bottleLayer.alpha=p;})]);
+      const version = ++motionVersion;
+      await Promise.all([movePlayers(from,to,false),motionTween(version,1,p=>{bottleLayer.alpha=p;})]);
     },
     setPlayers(next: SeatPlayer[]) {
       players = next.slice(0, seats.length);

@@ -12,17 +12,18 @@
 - The game lives on /game behind sign-in (/ is the profile home, /auth username sign-in); isolate Pixi/Spine imports behind dynamic browser loading, so the table remains SSR-safe.
 - Load gesture order, images, prices and skeleton timing through the existing public asset manifest; scheduled entries and spending require an authenticated game-session adapter, so previews never grant VIP or spend fictitious currency.
 - Keep source-derived profile presentation separate from account actions; show unknown statistics and a setup-needed state until verified profile/session data exists, while local music, decor and gift navigation remain available.
-- Route chat reads, sends, translations, moderation and balances through the authenticated game-session adapter; presentation must not invent server results.
+- Route chat and moderation through the authenticated session; display the viewer's live room-profile wallet in the header, leaving unknown balances unknown so presentation never grants currency.
 - Share gift texture preparation promises but never wait for GPU warm-up to start each click's independent animation, so repeated clicks do not batch.
 - Derive the game shell from the visual viewport and safe-area insets, so mobile keyboard/browser controls do not cover the composer.
-- The user's own Supabase project owns accounts and data (browser client from VITE_SUPABASE_URL/ANON_KEY, schema in supabase/schema.sql); no server functions are required so the site deploys to Vercel as-is.
+- Lovable Cloud owns accounts and data (browser client from VITE_SUPABASE_URL/PUBLISHABLE_KEY, schema in migrations); live updates use Cloud realtime channels instead of a socket.io server, because Workers cannot host persistent socket servers.
 - Room membership, rounds, chat and gifts are security-definer RPCs with realtime feeds; there are no bots, empty seats stay empty, and clients only render server state and nudge expired phases via room_tick.
 - Item purchases require authenticated server validation against the public source manifest and a service-only atomic wallet/event transaction; clients cannot mint currency, VIP, prices or eligibility.
 - Profile photos use private storage with owner-scoped writes and signed reads; room animation samples server start times and turn counts to synchronize late joins.
 - Normalize username credentials through one deterministic internal address helper; resolve legacy names and numeric player IDs only on the server and never return account addresses, so existing accounts retain access without exposing emails.
 - Complete first-entry profile setup through an owner-scoped RPC before mounting the live room; round RPCs enforce completed opposite-gender participants, so UI hiding cannot bypass eligibility.
 - Apply confirmed round RPC responses and room-state events directly to React state; cache signed avatar URLs until expiry, so round controls do not wait on unrelated photo/chat reads.
-- Change tables through an authenticated transactional RPC and restart the room subscription after confirmation; never navigate icons to their image assets.
+- Consume transactional table-change membership directly; generation-guard reads/feeds and reset cancellable motion/media to prevent stale-room state.
+- Apply sound settings before playback; autoplay recovery must respect mute and explicit pause.
 - Share the pure table-layout calculation between Pixi and bottle overlays to anchor the lowest seat to the chat boundary consistently.
 - Cache only resolved public purchase catalogues briefly on the server; keep every click's authenticated spending transaction independent and never cache user eligibility or results.
 - Keep source Tops presentation isolated from other table dialogs; rank verified account statistics across all readable profiles, and never substitute lifetime scores for unsupported periods or allow cosmetic bottle clicks to bypass paid server transactions.

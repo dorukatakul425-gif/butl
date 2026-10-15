@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="57" height="103" viewBox="0 0 57 103">
+    <defs>
+        <filter id="cywcmjq5xa" width="162.1%" height="128.2%" x="-31.1%" y="-14.1%" filterUnits="objectBoundingBox">
+            <feOffset in="SourceAlpha" result="shadowOffsetOuter1"/>
+            <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="3"/>
+            <feColorMatrix in="shadowBlurOuter1" result="shadowMatrixOuter1" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0"/>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        <path id="i1djxbhthb" d="M0 0L38.114 0 38.114 84.889 0 84.889z"/>
+    </defs>
+    <g fill="none" fill-rule="evenodd" opacity=".75">
+        <g>
+            <g filter="url(#cywcmjq5xa)" transform="translate(-159 -179) translate(168 188)">
+                <mask id="nv2176a2qc" fill="#fff">
+                    <use xlink:href="#i1djxbhthb"/>
+                </mask>
+                <path fill="#FFF" d="M34.441 44.79H3.673v-5.091c0-1.473.574-2.857 1.615-3.899l7.064-7.064c1.319-1.319 2.045-3.072 2.045-4.936v-7.848h9.32V23.8c0 1.865.727 3.618 2.045 4.936l7.065 7.065c1.041 1.041 1.614 2.425 1.614 3.898v5.09zm0 10.014V64.81H3.673V48.463h30.768v6.34zm0 23.839c0 1.419-1.154 2.573-2.573 2.573H6.246c-1.419 0-2.573-1.154-2.573-2.573v-10.16l30.768.001v10.159zM12.156 3.9c.141-.141.335-.228.55-.228H25.41c.28 0 .464.142.549.227.085.085.227.27.227.55v7.053c0 .28-.142.464-.227.55-.073.072-.22.188-.438.218l-.067.004-.069.004H12.733l-.134-.007c-.22-.03-.37-.146-.443-.22-.085-.085-.227-.269-.227-.55V4.45c0-.215.087-.409.227-.55zM28.36 26.139c-.624-.625-.968-1.456-.969-2.34v-8.31c.426-.213.82-.494 1.166-.84.84-.84 1.303-1.958 1.303-3.146V4.45c0-1.189-.463-2.306-1.303-3.147C27.716.463 26.598 0 25.41 0H12.705c-2.453 0-4.45 1.996-4.45 4.45v7.053c0 1.188.463 2.306 1.304 3.146.346.346.74.627 1.165.84v8.31c0 .884-.344 1.715-.969 2.34l-7.064 7.064C.956 34.939 0 37.246 0 39.7v38.944c0 3.444 2.8 6.246 6.245 6.246h25.622c1.722 0 3.283-.7 4.414-1.832 1.132-1.13 1.832-2.692 1.832-4.414V39.699c0-2.454-.955-4.76-2.69-6.495l-7.065-7.065z" mask="url(#nv2176a2qc)"/>
+            </g>
+        </g>
+    </g>
+</svg>

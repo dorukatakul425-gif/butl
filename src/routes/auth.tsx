@@ -58,7 +58,7 @@ function AuthPage() {
 
   if (auth.ready && !auth.configured) {
     return <main className="grid min-h-dvh place-items-center bg-background p-6 text-center text-foreground">
-      <p>Sunucu ayarlanmamış: VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY eklenmeli.</p>
+      <p>Sunucu ayarlanmamış: Lovable Cloud bağlantısı bulunamadı.</p>
     </main>;
   }
 

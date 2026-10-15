@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { joinRoom, leaveRoom, useRoom } from "@/lib/room-session";
+import { joinRoom, leaveRoom, leaveRoomNow, useRoom } from "@/lib/room-session";
 import { setViewerProfile } from "@/lib/viewer";
 import woodTable from "@/assets/original-wood-table.png.asset.json";
 import { OriginalTableHeader } from "@/components/original-table-header";
@@ -11,6 +11,8 @@ import { OriginalLoadingScreen } from "@/components/original-loading-screen";
 
 import { SourceConnectionScreen } from "@/components/table/source-connection-screen";
 import { SourceHeartBonus } from "@/components/table/source-heart-bonus";
+import { startCloudAchievements } from "@/lib/cloud-achievements";
+import { DailyBonusHost } from "@/components/table/daily-bonus-dialog";
 
 export const Route = createFileRoute("/game")({
   head: () => ({
@@ -36,11 +38,12 @@ function Index() {
     if (!auth.session || !auth.profile) { void navigate({ to: "/auth" }); return; }
     setViewerProfile(auth.profile);
     let alive = true;
-    void joinRoom().then(() => { if (alive) setJoined(true); });
+    void joinRoom().then(() => { if (alive) setJoined(true); }).catch(() => { if (alive) setJoined(false); });
     // Closing the tab frees the seat at once, so others see the player leave immediately.
-    const bye = () => void leaveRoom();
+    const stopAchievements = startCloudAchievements();
+    const bye = () => leaveRoomNow();
     window.addEventListener("pagehide", bye);
-    return () => { alive = false; window.removeEventListener("pagehide", bye); void leaveRoom(); };
+    return () => { alive = false; stopAchievements(); window.removeEventListener("pagehide", bye); void leaveRoom(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.ready, auth.session?.user.id, Boolean(auth.profile)]);
   if (!joined || !room.roomId) {
@@ -53,6 +56,7 @@ function Index() {
       <OriginalLoadingScreen />
       <SourceConnectionScreen />
       <SourceHeartBonus />
+      {auth.session && <DailyBonusHost viewerId={auth.session.user.id} />}
       <img className="original-page-wood" src={woodTable.url} alt="" />
       <div className="original-game">
         <div className="original-table">
