@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth, refreshProfile } from "@/lib/auth";
 import { getSupabase, normalizeUsername, usernameEmail } from "@/lib/supabase";
-import bottle from "@/assets/ui_table_default_bottle.svg";
+const bottle = "https://id-preview--296002db-204c-4db3-8856-b7ba5992757d.lovable.app/__l5e/assets-v1/9fe969ab-f2aa-4c5c-a3fc-aa6096e17b94/deltagame-bottle.jpeg";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -15,12 +15,14 @@ export const Route = createFileRoute("/auth")({
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" },
     ],
     meta: [
-      { title: "Giriş və qeydiyyat — Deltagame.az" },
-      { name: "description", content: "Deltagame.az hesabına istifadəçi adı və şifrənlə daxil ol və ya yeni hesab yarat." },
-      { property: "og:title", content: "Giriş və qeydiyyat — Deltagame.az" },
-      { property: "og:description", content: "Deltagame.az dünyasına qoşul. Hesabına daxil ol və ya qeydiyyatdan keç." },
+      { title: "Deltagame.az — Şüşə oyunu" },
+      { name: "description", content: "Deltagame.az-da şüşəni fırlat, yeni insanlarla tanış ol və əyləncənin dadını çıxar." },
+      { property: "og:title", content: "Deltagame.az — Şüşə oyunu" },
+      { property: "og:description", content: "Deltagame.az — hər fırlanış yeni tanışlıq, hər oyun unudulmaz bir an. Şüşəni fırlat və əyləncəyə qoşul!" },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:image", content: bottle },
+      { name: "twitter:image", content: bottle },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,
@@ -86,7 +88,7 @@ const authStyles = `
 .butl-auth .auth-locale-chevron { width: 7px; height: 7px; border-right: 1px solid var(--auth-muted); border-bottom: 1px solid var(--auth-muted); transform: rotate(45deg); margin: -3px 1px 0 3px; }
 .butl-auth .auth-content { width: 100%; min-width: 0; max-width: 400px; margin: auto 0; padding: 30px 0; }
 .butl-auth .auth-intro { text-align: center; margin-bottom: 28px; }
-.butl-auth .auth-mark { width: 64px; height: 76px; object-fit: contain; display: block; margin: 0 auto 20px; transform: rotate(-16deg); filter: drop-shadow(var(--auth-shadow)); }
+.butl-auth .auth-mark { width: 88px; height: 88px; object-fit: contain; display: block; margin: 0 auto 20px; border-radius: 8px; filter: drop-shadow(var(--auth-shadow)); }
 .butl-auth h1 { font-size: 30px; line-height: 1.35; font-weight: 700; margin: 0 0 14px; overflow-wrap: break-word; text-wrap: balance; color: var(--auth-highlight); }
 @supports (background-clip: text) { .butl-auth h1 { background: var(--auth-headline); background-clip: text; -webkit-background-clip: text; color: transparent; } }
 .butl-auth .auth-subtitle { margin: 0; font-size: 14px; line-height: 1.6; color: var(--auth-muted); }
@@ -118,7 +120,9 @@ const authStyles = `
 .butl-auth .auth-error svg { width: 18px; height: 18px; margin-top: 1px; }
 .butl-auth .auth-switch { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; margin: 20px 0 0; font-size: 13px; line-height: 1.5; color: var(--auth-muted); }
 .butl-auth .auth-switch-button { border: 0; background: transparent; min-height: 44px; height: auto; padding: 8px 4px; color: var(--auth-brand); font-size: 13px; font-weight: 600; white-space: normal; }
-.butl-auth .auth-footer { display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--auth-muted); font-size: 11px; line-height: 1.5; text-align: center; width: 100%; }
+.butl-auth .auth-footer { max-width: 400px; flex-wrap: wrap; display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--auth-muted); font-size: 11px; line-height: 1.5; text-align: center; width: 100%; }
+.butl-auth .auth-footer-brand { flex-basis: 100%; margin: 0 0 8px; font-size: 12px; line-height: 1.7; color: var(--auth-muted); }
+.butl-auth .auth-footer-brand strong { color: var(--auth-brand); font-weight: 600; }
 .butl-auth .auth-footer svg { width: 14px; height: 14px; flex-shrink: 0; }
 .butl-auth .auth-spin { animation: auth-spin 0.8s linear infinite; }
 @keyframes auth-spin { to { transform: rotate(360deg); } }
@@ -201,7 +205,7 @@ function AuthPage() {
       </header>
       <section className="auth-content" aria-labelledby="auth-heading">
         <div className="auth-intro">
-          <img src={bottle} alt="" className="auth-mark" width="64" height="76" aria-hidden="true" />
+          <img src={bottle} alt="" className="auth-mark" width="88" height="88" aria-hidden="true" />
           <h1 id="auth-heading">{login ? "Əyləncənin dadını çıxarmağa hazırsan?" : "Tanışlıq buradan başlayır"}</h1>
           <p className="auth-subtitle">{login ? "Söhbətə qaldığın yerdən davam et." : "Öz hesabını yarat, yeni insanlarla tanış ol."}</p>
         </div>
@@ -256,7 +260,7 @@ function AuthPage() {
           <Button type="button" variant="link" className="auth-switch-button" disabled={busy} onClick={() => changeMode(login ? "register" : "login")}>{login ? "Qeydiyyatdan keç" : "Daxil ol"}</Button>
         </div>
       </section>
-      <footer className="auth-footer"><ShieldCheck aria-hidden="true" /><span>Şifrən heç vaxt digər oyunçulara göstərilmir.</span></footer>
+      <footer className="auth-footer"><p className="auth-footer-brand"><strong>Deltagame.az</strong> — hər fırlanış yeni tanışlıq, hər oyun unudulmaz bir an. Şüşəni fırlat və əyləncəyə qoşul!</p><ShieldCheck aria-hidden="true" /><span>Şifrən heç vaxt digər oyunçulara göstərilmir.</span></footer>
     </main>
   );
 }
