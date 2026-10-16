@@ -25,6 +25,7 @@ import {
   type RoomMember,
 } from "@/lib/voice-rtc";
 import { ROOM_COVERS, coverOf, type VoiceRoomRow } from "./live-rooms";
+import roomBg from "@/assets/room-bg-calm.jpg";
 
 const GIFTS = [
   { key: "rose", emoji: "🌹", name: "Qızılgül" },
@@ -201,18 +202,19 @@ export function VoiceRoom({
     });
   };
 
-  const renderSeat = (i: number, pos: string) => {
+  const renderSeat = (i: number) => {
     const m = bySeat.get(i);
     const lvl = m ? (levels[m.id] ?? 0) : 0;
     const speaking = Boolean(m && m.mic && lvl > 0);
     const stream = m ? streams[m.id] : undefined;
+    const camOn = Boolean(m && m.cam && stream);
     return (
       <div
         key={i}
         ref={(el) => {
           seatRefs.current[i] = el;
         }}
-        className={`vr-seat ${pos}${m ? " taken" : ""}${speaking ? " speaking" : ""}${m?.id === me.id ? " me" : ""}`}
+        className={`vr-seat${m ? " taken" : ""}${speaking ? " speaking" : ""}${m?.id === me.id ? " me" : ""}${camOn ? " cam" : ""}`}
         style={{ ["--lvl" as string]: String(lvl) }}
       >
         {m ? (
@@ -221,7 +223,7 @@ export function VoiceRoom({
             <span className="vr-ring r2" />
             <span className="vr-ring r3" />
             <div className="vr-ava">
-              {m.cam && stream ? (
+              {camOn && stream ? (
                 <VideoTile stream={stream} muted />
               ) : (
                 <img src={m.photo || defaultPhoto} alt={m.name} />
@@ -248,17 +250,13 @@ export function VoiceRoom({
             onClick={() => client.current?.setSeat(i)}
             aria-label={`${i + 1}. yerə otur`}
           >
-            +
+            <span className="vr-plus">+</span>
+            <span className="vr-num">{i + 1}</span>
           </button>
         )}
       </div>
     );
   };
-  const tableSpeaking = (t: number) =>
-    [0, 1, 2, 3].some((k) => {
-      const m = bySeat.get(t * 4 + k);
-      return m && m.mic && (levels[m.id] ?? 0) > 0;
-    });
 
   return (
     <div
@@ -266,6 +264,9 @@ export function VoiceRoom({
       role="dialog"
       aria-modal="true"
       aria-label={room.name}
+      style={{
+        backgroundImage: `linear-gradient(oklch(.12 .03 250 / .55), oklch(.12 .03 250 / .75)), url(${roomBg})`,
+      }}
     >
       <style>{VR_STYLES}</style>
       {Object.entries(streams)
@@ -320,18 +321,9 @@ export function VoiceRoom({
       </div>
 
       <main className="vr-stage">
-        {[0, 1].map((t) => (
-          <div key={t} className={`vr-table${tableSpeaking(t) ? " live" : ""}`}>
-            <div className="vr-board">
-              <span className="vr-board-glow" />
-              <span className="vr-board-label">Masa {t + 1}</span>
-            </div>
-            {renderSeat(t * 4, "p-top")}
-            {renderSeat(t * 4 + 1, "p-right")}
-            {renderSeat(t * 4 + 2, "p-bottom")}
-            {renderSeat(t * 4 + 3, "p-left")}
-          </div>
-        ))}
+        <div className="vr-seats">
+          {Array.from({ length: SEAT_COUNT }, (_, i) => renderSeat(i))}
+        </div>
         {listeners.length > 0 && (
           <div className="vr-listeners">
             <span>Dinləyicilər</span>
@@ -601,7 +593,7 @@ function RoomSettings({
 export const VR_STYLES = `
 .vr{--vr-bg:oklch(.17 .03 280);--vr-bg2:oklch(.24 .06 300);--vr-surface:oklch(1 0 0 / .08);--vr-line:oklch(1 0 0 / .12);--vr-ink:oklch(.97 .01 300);--vr-dim:oklch(.78 .03 300);--vr-accent:oklch(.78 .16 70);--vr-accent2:oklch(.68 .22 350);--vr-live:oklch(.75 .18 155);--vr-wood:oklch(.45 .08 50);--vr-wood2:oklch(.32 .06 45);
 position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;color:var(--vr-ink);font-family:'Manrope',system-ui,sans-serif;overflow:hidden;
-background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);padding:max(10px,env(safe-area-inset-top)) 0 max(8px,env(safe-area-inset-bottom));animation:vr-in .3s ease-out;}
+background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);background-size:cover;background-position:center;padding:max(10px,env(safe-area-inset-top)) 0 max(8px,env(safe-area-inset-bottom));animation:vr-in .3s ease-out;}
 .vr *{box-sizing:border-box;}
 .vr button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .vr-top{display:flex;align-items:center;gap:10px;padding:4px 14px 8px;}
@@ -615,18 +607,15 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);pa
 .vr-status{align-self:center;font-size:10px;color:var(--vr-dim);display:flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;background:var(--vr-surface);}
 .vr-status i{width:6px;height:6px;border-radius:50%;background:var(--vr-live);box-shadow:0 0 0 0 var(--vr-live);animation:vr-pulse 1.6s infinite;}
 .vr-status.error{color:var(--vr-accent2);}
-.vr-stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;gap:6px;padding:4px 0;position:relative;}
-.vr-table{position:relative;width:min(70vw,250px);aspect-ratio:1.55/1;}
-.vr-board{position:absolute;inset:22% 18%;border-radius:50%;background:radial-gradient(circle at 50% 35%,var(--vr-wood),var(--vr-wood2));box-shadow:inset 0 -6px 14px oklch(0 0 0 / .4),0 12px 30px oklch(0 0 0 / .4),0 0 0 4px oklch(.55 .09 60 / .5);display:grid;place-items:center;transition:box-shadow .3s;}
-.vr-board-glow{position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle,oklch(.78 .16 70 / .0),transparent 70%);transition:background .3s;}
-.vr-table.live .vr-board{box-shadow:inset 0 -6px 14px oklch(0 0 0 / .4),0 0 34px oklch(.78 .16 70 / .55),0 0 0 4px oklch(.78 .16 70 / .8);}
-.vr-table.live .vr-board-glow{background:radial-gradient(circle,oklch(.78 .16 70 / .35),transparent 70%);animation:vr-breath 1.2s ease-in-out infinite;}
-.vr-board-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:oklch(.92 .05 70 / .75);}
-.vr-seat{position:absolute;width:58px;height:58px;transform:translate(-50%,-50%);display:grid;place-items:center;}
-.p-top{left:50%;top:6%}.p-bottom{left:50%;top:94%}.p-left{left:6%;top:50%}.p-right{left:94%;top:50%}
-.vr-ava{position:relative;z-index:2;width:54px;height:54px;border-radius:50%;overflow:hidden;border:2px solid var(--vr-line);background:var(--vr-bg);transition:transform .15s,border-color .2s;}
+.vr-stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:6px 0;position:relative;}
+.vr-seats{display:grid;grid-template-columns:repeat(4,1fr);gap:26px 14px;width:100%;max-width:420px;padding:0 16px;}
+.vr-seat{position:relative;width:100%;aspect-ratio:1;display:grid;place-items:center;}
+.vr-ava{position:relative;z-index:2;width:100%;height:100%;border-radius:50%;overflow:hidden;border:2px solid var(--vr-line);background:oklch(.2 .03 250 / .6);transition:transform .15s,border-color .2s,border-radius .25s;}
 .vr-ava img,.vr-ava video{width:100%;height:100%;object-fit:cover;display:block;}
 .vr-ava video{transform:scaleX(-1);}
+.vr-seat.cam{grid-column:span 2;}
+.vr-seat.cam .vr-ava{border-radius:18px;border-color:oklch(.78 .16 70 / .6);box-shadow:0 10px 28px oklch(0 0 0 / .45);}
+.vr-seat.cam .vr-ring{border-radius:18px;}
 .vr-seat.me .vr-ava{border-color:oklch(.78 .16 70 / .7);}
 .vr-seat.speaking .vr-ava{border-color:var(--vr-accent);transform:scale(calc(1 + var(--lvl) * .12));box-shadow:0 0 18px oklch(.78 .16 70 / .7);}
 .vr-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--vr-accent);opacity:0;z-index:1;pointer-events:none;}
@@ -641,7 +630,9 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);pa
 .vr-seat.speaking .vr-eq{opacity:1;}
 .vr-seat.speaking .vr-eq i{animation:vr-eq .5s ease-in-out infinite alternate;}
 .vr-seat.speaking .vr-eq i:nth-child(2){animation-delay:.15s}.vr-seat.speaking .vr-eq i:nth-child(3){animation-delay:.3s}.vr-seat.speaking .vr-eq i:nth-child(4){animation-delay:.08s}
-.vr-empty{all:unset;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--vr-dim);border:1.5px dashed var(--vr-line);background:oklch(1 0 0 / .04);cursor:pointer;transition:transform .2s,background .2s;}
+.vr-empty{all:unset;width:100%;height:100%;border-radius:50%;display:grid;place-items:center;color:var(--vr-dim);border:1.5px dashed var(--vr-line);background:oklch(1 0 0 / .05);cursor:pointer;transition:transform .2s,background .2s;}
+.vr-empty .vr-plus{font-size:26px;font-weight:300;line-height:1;}
+.vr-empty .vr-num{position:absolute;top:calc(100% + 4px);font-size:11px;font-weight:600;color:var(--vr-dim);}
 .vr-empty:active{transform:scale(.92);background:var(--vr-surface);}
 .vr-listeners{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--vr-dim);padding:4px 10px;border-radius:20px;background:var(--vr-surface);}
 .vr-listeners span{margin-right:4px}.vr-listeners img{width:22px;height:22px;border-radius:50%;object-fit:cover;margin-left:-6px;border:2px solid var(--vr-bg);}
