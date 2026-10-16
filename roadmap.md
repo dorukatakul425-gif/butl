@@ -1,5 +1,5 @@
 - [x] Add detailed profile view using existing account fields and upload action.
 - [x] Add persistent AZ/TR/RU/EN languages and appearance control; preserve game.
 - [x] Compact and reorder header controls.
+- [x] Translate the existing Messages tab unavailable notice in all four languages.
 - [ ] Verify signed-in profile, upload, and live flows on repository host (needs existing host session).
-- [ ] Existing Messages tab has no messaging implementation; translate its existing unavailable state without inventing conversations.
