@@ -1,6 +1,6 @@
 // Home statuses: WhatsApp-style ring row + TikTok-style vertical viewer with likes/comments.
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Heart, MessageCircle, Plus, X, Trash2, Send, Type, Image as ImageIcon, Video, LoaderCircle, Volume2, VolumeX } from "lucide-react";
+import { Heart, MessageCircle, Plus, X, Trash2, Send, Type, Image as ImageIcon, Video, LoaderCircle, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   STATUS_BGS, statusBg, loadFeed, createStatus, deleteStatus, cleanupOwnExpired, setLike,
   loadComments, addComment, deleteComment, timeAgo, timeLeft, readSeen, markSeen, fileKind,
@@ -14,7 +14,7 @@ export function StatusStrip({ me, defaultPhoto }: { me: Me; defaultPhoto: string
   const [error, setError] = useState("");
   const [seen, setSeen] = useState<Set<string>>(new Set());
   const [composer, setComposer] = useState(false);
-  const [viewerAt, setViewerAt] = useState<number | null>(null);
+  const [viewerAt, setViewerAt] = useState<{ g: number; i: number } | null>(null);
 
   const refresh = useCallback(async () => {
     try { setFeed(await loadFeed()); setError(""); }
@@ -39,10 +39,13 @@ export function StatusStrip({ me, defaultPhoto }: { me: Me; defaultPhoto: string
     return { own, others, flat: [...own, ...others.flat()] };
   }, [feed, me.id]);
 
+  const groups = useMemo(() => [ordered.own, ...ordered.others].filter(g => g.length > 0), [ordered]);
   const openAt = (id: string | undefined) => {
     if (!id) return;
-    const i = ordered.flat.findIndex(s => s.id === id);
-    if (i >= 0) setViewerAt(i);
+    for (let g = 0; g < groups.length; g++) {
+      const i = groups[g]!.findIndex(s => s.id === id);
+      if (i >= 0) { setViewerAt({ g, i }); return; }
+    }
   };
   const firstUnseen = (g: FeedStatus[]) => (g.find(s => !seen.has(s.id)) ?? g[0])?.id;
   const onSeen = useCallback((id: string) => { markSeen(id); setSeen(prev => prev.has(id) ? prev : new Set(prev).add(id)); }, []);
@@ -67,8 +70,8 @@ export function StatusStrip({ me, defaultPhoto }: { me: Me; defaultPhoto: string
     </div>
     {error && <p role="status" className="mh-notice">{error}</p>}
     {composer && <StatusComposer me={me} onClose={() => setComposer(false)} onDone={async () => { setComposer(false); await refresh(); }} />}
-    {viewerAt !== null && ordered.flat.length > 0 && <StatusViewer
-      items={ordered.flat} start={Math.min(viewerAt, ordered.flat.length - 1)} me={me} defaultPhoto={defaultPhoto}
+    {viewerAt !== null && groups.length > 0 && <StatusViewer
+      groups={groups} startGroup={Math.min(viewerAt.g, groups.length - 1)} startIndex={viewerAt.i} me={me} defaultPhoto={defaultPhoto}
       onClose={() => { setViewerAt(null); void refresh(); }} onSeen={onSeen} onPatch={patch}
       onDeleted={id => { setFeed(f => f?.filter(s => s.id !== id) ?? f); }} />}
   </section>;
@@ -156,21 +159,36 @@ function StatusComposer({ me, onClose, onDone }: { me: Me; onClose: () => void; 
 }
 
 /* ---------------- Viewer (TikTok style) ---------------- */
-function StatusViewer({ items, start, me, defaultPhoto, onClose, onSeen, onPatch, onDeleted }: {
-  items: FeedStatus[]; start: number; me: Me; defaultPhoto: string; onClose: () => void;
+function StatusViewer({ groups, startGroup, startIndex, me, defaultPhoto, onClose, onSeen, onPatch, onDeleted }: {
+  groups: FeedStatus[][]; startGroup: number; startIndex: number; me: Me; defaultPhoto: string; onClose: () => void;
   onSeen: (id: string) => void; onPatch: (id: string, p: Partial<FeedStatus>) => void; onDeleted: (id: string) => void;
 }) {
+  // Vertical swipe = next/previous person; horizontal swipe or side taps = that person's other statuses.
   const scroller = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(start);
+  const tracks = useRef(new Map<string, HTMLDivElement>());
+  const [active, setActive] = useState(startGroup);
+  const [sub, setSub] = useState<Record<string, number>>(() => ({ [groups[startGroup]?.[0]?.userId ?? ""]: startIndex }));
   const [muted, setMuted] = useState(true);
   const [commentsFor, setCommentsFor] = useState<FeedStatus | null>(null);
   const videos = useRef(new Map<string, HTMLVideoElement>());
   useBodyLock();
   useEscape(() => { if (commentsFor) setCommentsFor(null); else onClose(); });
 
-  useLayoutEffect(() => { const el = scroller.current; if (el) el.scrollTop = start * el.clientHeight; }, [start]);
-  const onScroll = () => { const el = scroller.current; if (!el) return; const i = Math.round(el.scrollTop / Math.max(1, el.clientHeight)); if (i !== active) setActive(Math.max(0, Math.min(items.length - 1, i))); };
-  const cur = items[active];
+  const keyOf = (g: FeedStatus[] | undefined) => g?.[0]?.userId ?? "";
+  const idxOf = (g: FeedStatus[] | undefined) => Math.min(sub[keyOf(g)] ?? 0, Math.max(0, (g?.length ?? 1) - 1));
+  useLayoutEffect(() => {
+    const el = scroller.current; if (el) el.scrollTop = startGroup * el.clientHeight;
+    const t = tracks.current.get(keyOf(groups[startGroup])); if (t) t.scrollLeft = startIndex * t.clientWidth;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startGroup, startIndex]);
+  const onScroll = () => { const el = scroller.current; if (!el) return; const i = Math.round(el.scrollTop / Math.max(1, el.clientHeight)); if (i !== active) setActive(Math.max(0, Math.min(groups.length - 1, i))); };
+  const onTrackScroll = (key: string, el: HTMLDivElement, n: number) => {
+    const i = Math.max(0, Math.min(n - 1, Math.round(el.scrollLeft / Math.max(1, el.clientWidth))));
+    setSub(prev => prev[key] === i ? prev : { ...prev, [key]: i });
+  };
+  const curGroup = groups[active];
+  const curIdx = idxOf(curGroup);
+  const cur = curGroup?.[curIdx];
   useEffect(() => { if (cur) onSeen(cur.id); }, [cur, onSeen]);
   useEffect(() => {
     videos.current.forEach((v, id) => {
@@ -179,6 +197,17 @@ function StatusViewer({ items, start, me, defaultPhoto, onClose, onSeen, onPatch
     });
   }, [cur?.id, muted]);
 
+  const goGroup = (g: number) => { const el = scroller.current; if (el && g >= 0 && g < groups.length) el.scrollTo({ top: g * el.clientHeight, behavior: "smooth" }); };
+  const step = (dir: 1 | -1) => {
+    if (!curGroup) return;
+    const next = curIdx + dir;
+    if (next < 0) { goGroup(active - 1); return; }
+    if (next >= curGroup.length) { if (active < groups.length - 1) goGroup(active + 1); else onClose(); return; }
+    const t = tracks.current.get(keyOf(curGroup));
+    if (t) t.scrollTo({ left: next * t.clientWidth, behavior: "smooth" });
+    setSub(prev => ({ ...prev, [keyOf(curGroup)]: next }));
+  };
+
   const toggleLike = async (s: FeedStatus, force?: boolean) => {
     const like = force ?? !s.liked;
     if (like === s.liked) return;
@@ -186,30 +215,40 @@ function StatusViewer({ items, start, me, defaultPhoto, onClose, onSeen, onPatch
     try { await setLike(s.id, me.id, like); }
     catch { onPatch(s.id, { liked: s.liked, likeCount: s.likeCount }); }
   };
+  const total = groups.reduce((n, g) => n + g.length, 0);
   const remove = async (s: FeedStatus) => {
     if (!window.confirm("Bu status silinsin?")) return;
-    try { await deleteStatus(s); onDeleted(s.id); if (items.length <= 1) onClose(); } catch { window.alert("Status silinmədi."); }
+    try { await deleteStatus(s); onDeleted(s.id); if (total <= 1) onClose(); } catch { window.alert("Status silinmədi."); }
   };
 
   return <div className="st-full st-viewer" role="dialog" aria-modal="true" aria-label="Statuslar">
     <div ref={scroller} className="st-scroller" onScroll={onScroll}>
-      {items.map((s, i) => <StatusSlide key={s.id} s={s} near={Math.abs(i - active) <= 1} mine={s.userId === me.id} defaultPhoto={defaultPhoto}
-        videoRef={el => { if (el) videos.current.set(s.id, el); else videos.current.delete(s.id); }}
-        muted={muted} onToggleMute={() => setMuted(m => !m)}
-        onLike={force => void toggleLike(s, force)} onComments={() => setCommentsFor(s)} onDelete={() => void remove(s)} />)}
+      {groups.map((g, gi) => { const key = keyOf(g); return <section key={key} className="st-group" aria-label={g[0]?.authorName}>
+        <div className="st-hscroll" ref={el => { if (el) tracks.current.set(key, el); else tracks.current.delete(key); }} onScroll={e => onTrackScroll(key, e.currentTarget, g.length)}>
+          {g.map((s, i) => <StatusSlide key={s.id} s={s} near={Math.abs(gi - active) <= 1 && Math.abs(i - idxOf(g)) <= 1} mine={s.userId === me.id} defaultPhoto={defaultPhoto}
+            videoRef={el => { if (el) videos.current.set(s.id, el); else videos.current.delete(s.id); }}
+            muted={muted} onToggleMute={() => setMuted(m => !m)} onPrev={() => step(-1)} onNext={() => step(1)}
+            onLike={force => void toggleLike(s, force)} onComments={() => setCommentsFor(s)} onDelete={() => void remove(s)} />)}
+        </div>
+      </section>; })}
     </div>
     <div className="st-top st-top-viewer">
       <button type="button" className="st-icon" onClick={onClose} aria-label="Bağla"><X /></button>
-      <div className="st-dots" aria-hidden="true">{items.length <= 30 && items.map((s, i) => <span key={s.id} className={i === active ? "on" : i < active ? "past" : ""} />)}</div>
+      <div className="st-dots" aria-hidden="true">{curGroup && curGroup.length <= 30 && curGroup.map((s, i) => <span key={s.id} className={i === curIdx ? "on" : i < curIdx ? "past" : ""} />)}</div>
+      {curGroup && curGroup.length > 1 && <span className="st-counter">{curIdx + 1}/{curGroup.length}</span>}
       {cur?.kind === "video" ? <button type="button" className="st-icon" onClick={() => setMuted(m => !m)} aria-label={muted ? "Səsi aç" : "Səsi bağla"}>{muted ? <VolumeX /> : <Volume2 />}</button> : <span className="st-top-sp" />}
     </div>
+    {curGroup && curGroup.length > 1 && <>
+      {curIdx > 0 && <button type="button" className="st-nav prev" onClick={() => step(-1)} aria-label="Əvvəlki status"><ChevronLeft /></button>}
+      {curIdx < curGroup.length - 1 && <button type="button" className="st-nav next" onClick={() => step(1)} aria-label="Növbəti status"><ChevronRight /></button>}
+    </>}
     {commentsFor && <CommentsSheet status={commentsFor} me={me} defaultPhoto={defaultPhoto} onClose={() => setCommentsFor(null)} onCount={n => onPatch(commentsFor.id, { commentCount: n })} />}
   </div>;
 }
 
-function StatusSlide({ s, near, mine, defaultPhoto, videoRef, muted, onToggleMute, onLike, onComments, onDelete }: {
+function StatusSlide({ s, near, mine, defaultPhoto, videoRef, muted, onToggleMute, onPrev, onNext, onLike, onComments, onDelete }: {
   s: FeedStatus; near: boolean; mine: boolean; defaultPhoto: string; videoRef: (el: HTMLVideoElement | null) => void;
-  muted: boolean; onToggleMute: () => void; onLike: (force?: boolean) => void; onComments: () => void; onDelete: () => void;
+  muted: boolean; onToggleMute: () => void; onPrev: () => void; onNext: () => void; onLike: (force?: boolean) => void; onComments: () => void; onDelete: () => void;
 }) {
   const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [pop, setPop] = useState(0);
@@ -228,7 +267,11 @@ function StatusSlide({ s, near, mine, defaultPhoto, videoRef, muted, onToggleMut
       lastTap.current = 0;
     } else {
       lastTap.current = now;
-      if (s.kind === "video") single.current = window.setTimeout(onToggleMute, 290);
+      // Single tap: left third = previous, right third = next, middle = mute (video).
+      const r = e.currentTarget.getBoundingClientRect();
+      const x = (e.clientX - r.left) / Math.max(1, r.width);
+      const action = x < 0.3 ? onPrev : x > 0.7 ? onNext : s.kind === "video" ? onToggleMute : null;
+      if (action) single.current = window.setTimeout(action, 290);
     }
   };
   return <article className="st-slide">
@@ -336,6 +379,14 @@ const STATUS_STYLES = `
 .st-dots{flex:1;display:flex;gap:3px;justify-content:center}
 .st-dots span{flex:1;max-width:28px;height:3px;border-radius:3px;background:oklch(1 0 0/.3);transition:background .2s}
 .st-dots span.past{background:oklch(1 0 0/.65)}.st-dots span.on{background:oklch(1 0 0)}
+.st-group{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden}
+.st-hscroll{display:flex;height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
+.st-hscroll::-webkit-scrollbar{display:none}
+.st-hscroll>.st-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;scroll-snap-stop:always}
+.st-counter{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:oklch(0 0 0/.35);font-variant-numeric:tabular-nums}
+.st-nav{position:absolute;top:50%;z-index:4;width:38px;height:38px;margin-top:-19px;border-radius:50%;border:0;display:grid;place-items:center;background:oklch(0 0 0/.35);color:oklch(1 0 0);cursor:pointer;backdrop-filter:blur(4px)}
+.st-nav.prev{left:max(8px,calc(50% - 280px))}.st-nav.next{right:max(8px,calc(50% - 280px))}
+@media(hover:none){.st-nav{display:none}}
 .st-scroller{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
 .st-scroller::-webkit-scrollbar{display:none}
 .st-slide{position:relative;height:100dvh;height:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden}
