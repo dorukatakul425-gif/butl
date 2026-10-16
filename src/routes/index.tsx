@@ -1,4 +1,5 @@
 // Replace your existing src/routes/index.tsx with this file.
+// v5: fixed missing formatBalance helper.
 // v4: bot moved to the right side (under the Sevgilini Tap banner).
 // Existing auth, upload and /game navigation are preserved.
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -115,6 +116,7 @@ const HOME_STYLES = ".mobile-home {\n --background: oklch(.988 .003 165); --fore
 
 type HomeProfile = { name: string; username: string; player_no: string | number; photo_url?: string | null; gold: number; kisses: number; dat?: number | null; age?: number | null };
 type Story = { name: string; image: string; text?: string };
+const formatBalance = (value: number) => String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 type MobileHomeProps = { profile: HomeProfile; defaultPhoto: string; uploading: boolean; notice: string; onPhoto: (file: File) => void; onJoin: () => void; onSignOut: () => void };
 
 export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, onPhoto, onJoin, onSignOut }: MobileHomeProps) {
