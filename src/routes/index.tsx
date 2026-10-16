@@ -23,6 +23,7 @@ import { recommendShopPack } from "@/lib/shop-advisor.functions";
 import { StatusStrip } from "@/components/status/status-strip";
 import { OnlinePlayers } from "@/components/status/online-players";
 import { BottomNav } from "@/components/bottom-nav";
+import { LiveRooms } from "@/components/live/live-rooms";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -273,6 +274,7 @@ export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, on
   const [activeStory, setActiveStory] = useState<Story | null>(null);
   const [walletOpen, setWalletOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
+  const [liveOpen, setLiveOpen] = useState(false);
   const [localNotice, setLocalNotice] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
   const modalOpen = Boolean(activeStory || walletOpen || gameOpen);
@@ -290,7 +292,8 @@ export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, on
     <section className="mh-artwork" aria-label="Şüşə oyunu"><img src={collage} width={700} height={750} alt="Şüşə oyununun rəngarəng oyun masaları" /></section>
     <footer className="mh-footer"><span className="mh-footer-brand">şüşə<span aria-hidden="true">.</span></span><span>Oyunçu #{p.player_no}</span><Button variant="ghost" className="mh-signout" onClick={onSignOut} aria-label="Çıxış et" title="Çıxış et"><LogOut size={16} /></Button></footer>
     {(activeStory || gameOpen) && <div className="mh-overlay" onClick={e => { if(e.target === e.currentTarget) { setActiveStory(null); setWalletOpen(false); setGameOpen(false); } }}><div ref={dialogRef} tabIndex={-1} className={gameOpen ? "mh-dialog mh-dialog-card" : "mh-dialog"} role="dialog" aria-modal="true" aria-labelledby="mh-dialog-title"><Button variant="ghost" className="mh-close" aria-label="Bağla" onClick={() => { setActiveStory(null); setWalletOpen(false); setGameOpen(false); }}><X /></Button><h2 id="mh-dialog-title">{gameOpen ? "Oyuna qoşul" : walletOpen ? "DAT cüzdanı" : activeStory?.name}</h2>{gameOpen && <span className="mh-card-bot"><RobotSvg pulling /></span>}{gameOpen ? <div className="mh-game-content"><Button variant="ghost" className="mh-join" onClick={onJoin} aria-label="Oyuna qoşul" title="Oyuna qoşul"><img src={BOTTLE_IMAGE} alt="Şüşə oyunu" /></Button><Button className="mh-game-action" onClick={onJoin}>Oyuna qoşul</Button><OnlinePlayers open={gameOpen} defaultPhoto={defaultPhoto} /></div> : walletOpen ? <><p>Balansın: <strong>{p.dat == null ? "—" : formatBalance(p.dat)} DAT</strong></p><p>DAT artırılması hələ bu səhifəyə qoşulmayıb.</p></> : activeStory?.text ? <div className="mh-story-view-text">{activeStory.text}</div> : <img className="mh-story-view" src={activeStory?.image} alt="Status şəkli" />}</div></div>}
-    <BottomNav onSelect={t => { if (t === "games") { setGameOpen(true); return; } if (t === "home") { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setLocalNotice(t === "live" ? "Canlı bölməsi tezliklə." : t === "messages" ? "Mesajlar tezliklə." : "Profil səhifəsi tezliklə."); window.setTimeout(() => setLocalNotice(""), 2500); }} />
+    <BottomNav onSelect={t => { if (t === "games") { setGameOpen(true); return; } if (t === "live") { setLiveOpen(true); return; } if (t === "home") { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setLocalNotice(t === "messages" ? "Mesajlar tezliklə." : "Profil səhifəsi tezliklə."); window.setTimeout(() => setLocalNotice(""), 2500); }} />
+    {liveOpen && <LiveRooms me={{ id: p.id, name: p.name, photo: p.photo_url ?? null }} defaultPhoto={defaultPhoto} onClose={() => setLiveOpen(false)} />}
     {walletOpen && <ShopSheet dialogRef={dialogRef} balance={p.dat} onClose={() => setWalletOpen(false)} />}
   </div></main>;
 }

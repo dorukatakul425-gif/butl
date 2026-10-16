@@ -128,3 +128,11 @@ Geri yükleme: `docker compose exec -T db pg_restore -U supabase_admin -d postgr
 - VPS ve Lovable **ayrı veritabanlarıdır**: hesaplar, bakiyeler, mesajlar ve fotoğraflar arasında otomatik aktarılmaz. Fiyat listeleri ve oyun kuralları her ikisinde aynıdır.
 - Orijinal görseller, sesler ve müzik/video katalogları dış hizmetlerden yüklenir; VPS'in internete çıkışı olmalıdır.
 - Lovable'da çalışmak için hiçbir şey değiştirmeyin: Lovable kendi `.env` ve Cloudflare derlemesini kullanır; `.env.production.local` ve `.output/` yalnız VPS'te oluşur ve git'e eklenmez.
+
+## Canlı səsli/görüntülü otaqlar
+
+- `bash deploy/vps/migrate.sh` — `0016_voice_rooms.sql` otaq cədvəlini yaradır.
+- Otaq üzvləri, yerlər, çat, hədiyyələr və WebRTC siqnalları Realtime websocket (`/realtime/v1`) üzərindən gedir; Caddy bunu artıq ötürür.
+- Mikrofon/kamera yalnız **HTTPS** domendə işləyir.
+- Fərqli şəbəkələrdə (mobil internet) səs gəlmirsə TURN server lazımdır (məs. coturn). `.env`-ə əlavə et və yenidən build et:
+  `VITE_TURN_URL=turn:domenin.az:3478`, `VITE_TURN_USERNAME=...`, `VITE_TURN_CREDENTIAL=...`
