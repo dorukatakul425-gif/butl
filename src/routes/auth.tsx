@@ -1,3 +1,5 @@
+import { AppControls } from "@/components/app-controls";
+import { translate, usePreferences } from "@/lib/app-preferences";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, UserRound, LoaderCircle, ShieldCheck, AlertCircle } from "lucide-react";
@@ -136,6 +138,7 @@ const authStyles = `
 `;
 
 function AuthPage() {
+  const preferences = usePreferences();
   const auth = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -165,106 +168,97 @@ function AuthPage() {
     e.preventDefault();
     if (busy) return;
     const sb = getSupabase();
-    if (!sb) { setError("Hazırda xidmətə qoşulmaq mümkün deyil. Bir az sonra yenidən cəhd et."); return; }
+    if (!sb) { setError(translate("Hazırda xidmətə qoşulmaq mümkün deyil. Bir az sonra yenidən cəhd et.")); return; }
     const uname = normalizeUsername(username);
-    if (uname.length < 3) { setError("İstifadəçi adı ən azı 3 hərf və ya rəqəmdən ibarət olmalıdır."); return; }
-    if (password.length < 6) { setError("Şifrə ən azı 6 simvoldan ibarət olmalıdır."); return; }
+    if (uname.length < 3) { setError(translate("İstifadəçi adı ən azı 3 hərf və ya rəqəmdən ibarət olmalıdır.")); return; }
+    if (password.length < 6) { setError(translate("Şifrə ən azı 6 simvoldan ibarət olmalıdır.")); return; }
     setBusy(true);
     setError("");
     try {
       if (mode === "login") {
         const { error } = await sb.auth.signInWithPassword({ email: usernameEmail(uname), password });
-        if (error) setError("İstifadəçi adı və ya şifrə yanlışdır.");
+        if (error) setError(translate("İstifadəçi adı və ya şifrə yanlışdır."));
       } else {
         const { data, error } = await sb.auth.signUp({
           email: usernameEmail(uname), password,
           options: { data: { username: uname, name: name.trim() || uname, male, age: age || null } },
         });
-        if (error) setError(error.message.includes("registered") ? "Bu istifadəçi adı artıq istifadə olunur." : "Qeydiyyat alınmadı. Məlumatlarını yoxlayıb yenidən cəhd et.");
-        else if (!data.session) setError("Hesab yaradıldı. Daxil olmaq üçün hesabın təsdiqlənməlidir.");
+        if (error) setError(error.message.includes("registered") ? translate("Bu istifadəçi adı artıq istifadə olunur.") : translate("Qeydiyyat alınmadı. Məlumatlarını yoxlayıb yenidən cəhd et."));
+        else if (!data.session) setError(translate("Hesab yaradıldı. Daxil olmaq üçün hesabın təsdiqlənməlidir."));
         else await refreshProfile();
       }
     } catch {
-      setError("Bağlantıda problem yarandı. Yenidən cəhd et.");
+      setError(translate("Bağlantıda problem yarandı. Yenidən cəhd et."));
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <main className="butl-auth" lang="az">
+    <main className="butl-auth" lang={preferences.language}>
       <style>{authStyles}</style>
       <header className="auth-top">
         <p className="auth-wordmark">Deltagame<span>.az</span></p>
-        <span className="auth-locale" aria-label="Azərbaycan dili">
-          <svg className="auth-flag" viewBox="0 0 60 30" role="img" aria-label="Azərbaycan bayrağı">
-            <path className="auth-flag-blue" d="M0 0h60v10H0z" />
-            <path className="auth-flag-red" d="M0 10h60v10H0z" />
-            <path className="auth-flag-green" d="M0 20h60v10H0z" />
-            <path className="auth-flag-white" d="M32 10.5a4.5 4.5 0 1 0 0 9 3.75 3.75 0 1 1 0-9Z" />
-            <path className="auth-flag-white" d="m36 11 .77 2.15 2.06-.98-.98 2.06L40 15l-2.15.77.98 2.06-2.06-.98L36 19l-.77-2.15-2.06.98.98-2.06L32 15l2.15-.77-.98-2.06 2.06.98Z" />
-          </svg>
-          AZ<span className="auth-locale-chevron" aria-hidden="true" />
-        </span>
+        <AppControls />
       </header>
       <section className="auth-content" aria-labelledby="auth-heading">
         <div className="auth-intro">
           <img src={bottle} alt="" className="auth-mark" width="88" height="88" aria-hidden="true" />
-          <h1 id="auth-heading">{login ? "Əyləncənin dadını çıxarmağa hazırsan?" : "Tanışlıq buradan başlayır"}</h1>
-          <p className="auth-subtitle">{login ? "Söhbətə qaldığın yerdən davam et." : "Öz hesabını yarat, yeni insanlarla tanış ol."}</p>
+          <h1 id="auth-heading">{login ? translate("Əyləncənin dadını çıxarmağa hazırsan?") : translate("Tanışlıq buradan başlayır")}</h1>
+          <p className="auth-subtitle">{login ? translate("Söhbətə qaldığın yerdən davam et.") : translate("Öz hesabını yarat, yeni insanlarla tanış ol.")}</p>
         </div>
-        <div className="auth-tabs" role="group" aria-label="Hesaba giriş üsulu">
-          <Button type="button" variant="ghost" className="auth-tab" aria-pressed={login} disabled={busy} onClick={() => changeMode("login")}>Giriş</Button>
-          <Button type="button" variant="ghost" className="auth-tab" aria-pressed={!login} disabled={busy} onClick={() => changeMode("register")}>Qeydiyyat</Button>
+        <div className="auth-tabs" role="group" aria-label={translate("Hesaba giriş üsulu")}>
+          <Button type="button" variant="ghost" className="auth-tab" aria-pressed={login} disabled={busy} onClick={() => changeMode("login")}>{translate("Giriş")}</Button>
+          <Button type="button" variant="ghost" className="auth-tab" aria-pressed={!login} disabled={busy} onClick={() => changeMode("register")}>{translate("Qeydiyyat")}</Button>
         </div>
         <form className="auth-form" onSubmit={submit} aria-busy={busy}>
           <div className="auth-field">
-            <label className="auth-label" htmlFor="auth-username">İstifadəçi adı</label>
+            <label className="auth-label" htmlFor="auth-username">{translate("İstifadəçi adı")}</label>
             <div className="auth-input-wrap">
               <UserRound className="auth-field-icon" aria-hidden="true" />
-              <Input id="auth-username" name="username" className="auth-input with-icon" placeholder="İstifadəçi adını yaz" value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={busy} required />
+              <Input id="auth-username" name="username" className="auth-input with-icon" placeholder={translate("İstifadəçi adını yaz")} value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={busy} required />
             </div>
           </div>
           <div className="auth-field">
-            <label className="auth-label" htmlFor="auth-password">Şifrə</label>
+            <label className="auth-label" htmlFor="auth-password">{translate("Şifrə")}</label>
             <div className="auth-input-wrap">
               <LockKeyhole className="auth-field-icon" aria-hidden="true" />
-              <Input id="auth-password" name="password" className="auth-input with-icon password" placeholder="Şifrəni yaz" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} autoComplete={login ? "current-password" : "new-password"} autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={busy} required />
-              <Button type="button" variant="ghost" className="auth-eye" aria-label={showPassword ? "Şifrəni gizlət" : "Şifrəni göstər"} title={showPassword ? "Şifrəni gizlət" : "Şifrəni göstər"} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)} disabled={busy}>{showPassword ? <EyeOff /> : <Eye />}</Button>
+              <Input id="auth-password" name="password" className="auth-input with-icon password" placeholder={translate("Şifrəni yaz")} type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} autoComplete={login ? "current-password" : "new-password"} autoCapitalize="none" autoCorrect="off" spellCheck={false} disabled={busy} required />
+              <Button type="button" variant="ghost" className="auth-eye" aria-label={showPassword ? translate("Şifrəni gizlət") : translate("Şifrəni göstər")} title={showPassword ? translate("Şifrəni gizlət") : translate("Şifrəni göstər")} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)} disabled={busy}>{showPassword ? <EyeOff /> : <Eye />}</Button>
             </div>
           </div>
           {!login && <>
             <div className="auth-field">
-              <label className="auth-label" htmlFor="auth-name">Oyunda görünən ad</label>
-              <Input id="auth-name" name="name" className="auth-input" placeholder="Sənə necə müraciət edək?" value={name} onChange={e => setName(e.target.value)} maxLength={20} autoComplete="nickname" disabled={busy} />
+              <label className="auth-label" htmlFor="auth-name">{translate("Oyunda görünən ad")}</label>
+              <Input id="auth-name" name="name" className="auth-input" placeholder={translate("Sənə necə müraciət edək?")} value={name} onChange={e => setName(e.target.value)} maxLength={20} autoComplete="nickname" disabled={busy} />
             </div>
             <div className="auth-row">
               <div className="auth-field">
-                <label className="auth-label" htmlFor="auth-age">Yaş</label>
-                <Input id="auth-age" name="age" className="auth-input" placeholder="Yaşın" type="number" inputMode="numeric" min={14} max={99} value={age} onChange={e => setAge(e.target.value)} disabled={busy} />
+                <label className="auth-label" htmlFor="auth-age">{translate("Yaş")}</label>
+                <Input id="auth-age" name="age" className="auth-input" placeholder={translate("Yaşın")} type="number" inputMode="numeric" min={14} max={99} value={age} onChange={e => setAge(e.target.value)} disabled={busy} />
               </div>
               <div className="auth-field" role="group" aria-labelledby="auth-gender-label">
-                <span id="auth-gender-label" className="auth-label">Cins</span>
+                <span id="auth-gender-label" className="auth-label">{translate("Cins")}</span>
                 <div className="auth-gender">
-                  <Button type="button" variant="outline" className="auth-gender-button" aria-pressed={male} disabled={busy} onClick={() => setMale(true)}>Kişi</Button>
-                  <Button type="button" variant="outline" className="auth-gender-button" aria-pressed={!male} disabled={busy} onClick={() => setMale(false)}>Qadın</Button>
+                  <Button type="button" variant="outline" className="auth-gender-button" aria-pressed={male} disabled={busy} onClick={() => setMale(true)}>{translate("Kişi")}</Button>
+                  <Button type="button" variant="outline" className="auth-gender-button" aria-pressed={!male} disabled={busy} onClick={() => setMale(false)}>{translate("Qadın")}</Button>
                 </div>
               </div>
             </div>
           </>}
-          {(error || unavailable) && <div className="auth-error" role="alert"><AlertCircle aria-hidden="true" /><span>{error || "Hazırda xidmətə qoşulmaq mümkün deyil. Bir az sonra yenidən cəhd et."}</span></div>}
+          {(error || unavailable) && <div className="auth-error" role="alert"><AlertCircle aria-hidden="true" /><span>{error || translate("Hazırda xidmətə qoşulmaq mümkün deyil. Bir az sonra yenidən cəhd et.")}</span></div>}
           <Button type="submit" className="auth-submit" disabled={busy || unavailable}>
             <span aria-hidden="true" />
-            <span>{busy ? "Bir az gözlə…" : login ? "Daxil ol" : "Hesab yarat"}</span>
+            <span>{busy ? translate("Bir az gözlə…") : login ? translate("Daxil ol") : translate("Hesab yarat")}</span>
             {busy ? <LoaderCircle className="auth-spin" aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
           </Button>
         </form>
         <div className="auth-switch">
-          <span>{login ? "Hələ hesabın yoxdur?" : "Artıq hesabın var?"}</span>
-          <Button type="button" variant="link" className="auth-switch-button" disabled={busy} onClick={() => changeMode(login ? "register" : "login")}>{login ? "Qeydiyyatdan keç" : "Daxil ol"}</Button>
+          <span>{login ? translate("Hələ hesabın yoxdur?") : translate("Artıq hesabın var?")}</span>
+          <Button type="button" variant="link" className="auth-switch-button" disabled={busy} onClick={() => changeMode(login ? "register" : "login")}>{login ? translate("Qeydiyyatdan keç") : translate("Daxil ol")}</Button>
         </div>
       </section>
-      <footer className="auth-footer"><p className="auth-footer-brand"><strong>Deltagame.az</strong> — hər fırlanış yeni tanışlıq, hər oyun unudulmaz bir an. Şüşəni fırlat və əyləncəyə qoşul!</p><ShieldCheck aria-hidden="true" /><span>Şifrən heç vaxt digər oyunçulara göstərilmir.</span></footer>
+      <footer className="auth-footer"><p className="auth-footer-brand"><strong>Deltagame.az</strong> — hər fırlanış yeni tanışlıq, hər oyun unudulmaz bir an. Şüşəni fırlat və əyləncəyə qoşul!</p><ShieldCheck aria-hidden="true" /><span>{translate("Şifrən heç vaxt digər oyunçulara göstərilmir.")}</span></footer>
     </main>
   );
 }

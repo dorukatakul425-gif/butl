@@ -41,3 +41,6 @@
 
 - Live voice rooms join with presence only; acquire microphone on seating and camera on explicit seated action, reusing sendrecv transceivers so listener promotion requires no schema change.
 - Live gifts use acknowledged room broadcasts with IDs/start timestamps; only catalogued media is rendered, and VPS media references resolve to the confirmed hosted asset origin.
+
+- Keep browser language/appearance preferences in the versioned app-preferences store, with SSR-safe Azerbaijani/light defaults and storage-event synchronization; exclude /game from appearance and translations to preserve the existing game.
+- Keep the mobile profile as an authenticated home subview using the existing verified profile and photo-upload callback; wallet navigation must reuse the existing shop without fabricated balances.

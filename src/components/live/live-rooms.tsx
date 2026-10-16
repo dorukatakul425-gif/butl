@@ -1,3 +1,4 @@
+import { translate, usePreferences } from "@/lib/app-preferences";
 // "Canlı" lobby: active voice/video rooms with live member counts (Realtime presence),
 // room creation and join-by-ID. Opening a room mounts the full-screen VoiceRoom.
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -45,6 +46,7 @@ export function LiveRooms({
   defaultPhoto: string;
   onClose: () => void;
 }) {
+  usePreferences();
   const [rooms, setRooms] = useState<VoiceRoomRow[] | null>(null);
   const [inside, setInside] = useState<Record<string, LobbyEntry[]>>({});
   const [active, setActive] = useState<VoiceRoomRow | null>(null);
@@ -148,7 +150,7 @@ export function LiveRooms({
     if (!sb) return;
     const { data } = await sb.from("voice_rooms").select(COLS).eq("code", code).maybeSingle();
     if (data) setActive(data as VoiceRoomRow);
-    else setErr("Bu ID ilə otaq tapılmadı");
+    else setErr(translate("Bu ID ilə otaq tapılmadı"));
   };
 
   const list = (rooms ?? [])
@@ -177,21 +179,20 @@ export function LiveRooms({
     );
 
   return (
-    <div className="lr vr" role="dialog" aria-modal="true" aria-label="Canlı otaqlar">
+    <div className="lr vr" role="dialog" aria-modal="true" aria-label={translate("Canlı otaqlar")}>
       <style>
         {VR_STYLES}
         {LR_STYLES}
       </style>
       <header className="lr-top">
-        <button type="button" className="vr-icon" onClick={onClose} aria-label="Geri">
+        <button type="button" className="vr-icon" onClick={onClose} aria-label={translate("Geri")}>
           <ArrowLeft size={18} />
         </button>
         <div>
-          <h2>Canlı otaqlar</h2>
+          <h2>{translate("Canlı otaqlar")}</h2>
           <p>
             <i />
-            {Object.values(inside).reduce((n, a) => n + a.length, 0)} nəfər danışır
-          </p>
+            {Object.values(inside).reduce((n, a) => n + a.length, 0)} {translate("nəfər danışır")}</p>
         </div>
         <button type="button" className="lr-new" onClick={() => {
             if (mine) {
@@ -202,7 +203,7 @@ export function LiveRooms({
             setCreating(true);
           }}>
           <Plus size={16} />
-          {mine ? "Otağım" : "Yarat"}
+          {mine ? translate("Otağım") : "Yarat"}
         </button>
       </header>
       <div className="lr-search">
@@ -216,13 +217,12 @@ export function LiveRooms({
           onKeyDown={(e) => {
             if (e.key === "Enter") void joinById();
           }}
-          placeholder="Otaq adı və ya ID"
+          placeholder={translate("Otaq adı və ya ID")}
           inputMode="search"
         />
         {/^\d{4,}$/.test(query.trim()) && (
           <button type="button" onClick={() => void joinById()}>
-            Qoşul
-          </button>
+            {translate("Qoşul")}</button>
         )}
       </div>
       {err && <p className="vr-err lr-pad">{err}</p>}
@@ -235,10 +235,8 @@ export function LiveRooms({
           <div className="lr-empty">
             <span>🎙️</span>
             <p>
-              Hələ aktiv otaq yoxdur.
-              <br />
-              İlk otağı sən yarat!
-            </p>
+              {translate("Hələ aktiv otaq yoxdur.")}<br />
+              {translate("İlk otağı sən yarat!")}</p>
           </div>
         ) : (
           list.map((r, i) => {
@@ -259,14 +257,14 @@ export function LiveRooms({
                 <span className="lr-info">
                   <strong>{roomTitle(r.name)}</strong>
                   <small>
-                    {roomKind(r.name) === "video" ? "🎥 Görüntülü" : "🎙️ Səsli"} · ID: {r.code}
+                    {roomKind(r.name) === "video" ? translate("🎥 Görüntülü") : translate("🎙️ Səsli")} · ID: {r.code}
                     {r.owner_id === me.id ? " · sənin otağın" : ""}
                   </small>
                   <span className="lr-faces">
                     {people.slice(0, 4).map((p, k) => (
                       <img key={k} src={p.photo || defaultPhoto} alt={p.name} />
                     ))}
-                    {people.length === 0 && <em>Boşdur — ilk sən qoşul</em>}
+                    {people.length === 0 && <em>{translate("Boşdur — ilk sən qoşul")}</em>}
                   </span>
                 </span>
                 <span className="lr-count">
@@ -293,36 +291,35 @@ export function LiveRooms({
         >
           <div className="vr-sheet">
             <div className="vr-sheet-head">
-              <h3>{mine ? "Otağını aç" : "Yeni otaq yarat"}</h3>
+              <h3>{mine ? translate("Otağını aç") : "Yeni otaq yarat"}</h3>
             </div>
             <div className={`lr-preview vr-cover-${cover}`}>
               <span>{coverOf(cover).emoji}</span>
               <div>
-                <strong>{roomTitle(name) || "Otaq adı"}</strong>
+                <strong>{roomTitle(name) || translate("Otaq adı")}</strong>
                 <small>
                   {kind === "video" ? <Video size={11} /> : <Mic size={11} />}{" "}
-                  {kind === "video" ? "Görüntülü otaq" : "Səsli otaq"}
+                  {kind === "video" ? translate("Görüntülü otaq") : translate("Səsli otaq")}
                 </small>
               </div>
             </div>
-            <span className="vr-field">Otaq növü</span>
+            <span className="vr-field">{translate("Otaq növü")}</span>
             <div className="lr-kinds">
               <button type="button" className={kind === "voice" ? "on" : ""} onClick={() => setKind("voice")}>
                 <Mic size={18} />
-                <b>Səsli otaq</b>
-                <small>Yuvarlaq yerlər, səs</small>
+                <b>{translate("Səsli otaq")}</b>
+                <small>{translate("Yuvarlaq yerlər, səs")}</small>
               </button>
               <button type="button" className={kind === "video" ? "on" : ""} onClick={() => setKind("video")}>
                 <Video size={18} />
-                <b>Görüntülü otaq</b>
-                <small>Böyük kamera pəncərələri</small>
+                <b>{translate("Görüntülü otaq")}</b>
+                <small>{translate("Böyük kamera pəncərələri")}</small>
               </button>
             </div>
             <label className="vr-field">
-              Otaq adı
-              <input value={roomTitle(name)} onChange={(e) => setName(e.target.value)} maxLength={39} />
+              {translate("Otaq adı")}<input value={roomTitle(name)} onChange={(e) => setName(e.target.value)} maxLength={39} />
             </label>
-            <span className="vr-field">Otaq şəkli</span>
+            <span className="vr-field">{translate("Otaq şəkli")}</span>
             <div className="vr-covers">
               {ROOM_COVERS.map((c) => (
                 <button
@@ -342,7 +339,7 @@ export function LiveRooms({
               disabled={busy || !name.trim()}
               onClick={() => void create()}
             >
-              {busy ? "Yaradılır…" : mine ? "Otağa gir" : "Yarat və gir"}
+              {busy ? translate("Yaradılır…") : mine ? translate("Otağa gir") : translate("Yarat və gir")}
             </button>
           </div>
         </div>

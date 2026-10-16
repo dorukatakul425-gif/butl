@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { translate, usePreferences } from "@/lib/app-preferences";
 // Mobile app style bottom tab bar for the home page; "Oyunlar" is the raised round centre button.
 import { useState } from "react";
 import { House, Radio, MessageCircle, UserRound } from "lucide-react";
@@ -6,23 +8,24 @@ import gamesIcon from "@/assets/nav-games.webp";
 export type NavTab = "home" | "live" | "games" | "messages" | "profile";
 
 export function BottomNav({ active = "home", onSelect }: { active?: NavTab; onSelect: (tab: NavTab) => void }) {
+  usePreferences();
   const [tapped, setTapped] = useState<NavTab | null>(null);
   const tap = (t: NavTab) => { setTapped(t); window.setTimeout(() => setTapped(null), 380); onSelect(t); };
   const item = (t: NavTab, label: string, Icon: typeof House) =>
-    <button type="button" className={"bn-item" + (active === t ? " on" : "") + (tapped === t ? " tap" : "")} onClick={() => tap(t)} aria-current={active === t ? "page" : undefined}>
+    <Button variant="ghost" type="button" className={"bn-item" + (active === t ? " on" : "") + (tapped === t ? " tap" : "")} onClick={() => tap(t)} aria-current={active === t ? "page" : undefined}>
       <span className="bn-ico"><Icon size={22} strokeWidth={active === t ? 2.4 : 1.9} /></span><span className="bn-label">{label}</span>
-    </button>;
-  return <nav className="bn" aria-label="Əsas menyu">
+    </Button>;
+  return <nav className="bn" aria-label={translate("Əsas menyu")}>
     <style>{BN_STYLES}</style>
     <div className="bn-bar">
-      {item("home", "Əsas", House)}
-      {item("live", "Canlı", Radio)}
-      <button type="button" className={"bn-games" + (tapped === "games" ? " tap" : "")} onClick={() => tap("games")} aria-label="Oyunlar">
+      {item("home", translate("Əsas"), House)}
+      {item("live", translate("Canlı"), Radio)}
+      <Button variant="ghost" type="button" className={"bn-games" + (tapped === "games" ? " tap" : "")} onClick={() => tap("games")} aria-label={translate("Oyunlar")}>
         <span className="bn-games-ring"><img src={gamesIcon} alt="" width={64} height={64} /></span>
-        <span className="bn-label">Oyunlar</span>
-      </button>
-      {item("messages", "Mesajlar", MessageCircle)}
-      {item("profile", "Profil", UserRound)}
+        <span className="bn-label">{translate("Oyunlar")}</span>
+      </Button>
+      {item("messages", translate("Mesajlar"), MessageCircle)}
+      {item("profile", translate("Profil"), UserRound)}
     </div>
   </nav>;
 }

@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { PreferencesProvider } from "@/lib/app-preferences";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { showInspectorNotice } from "../lib/inspector-notice";
@@ -104,7 +105,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="tr">
+    <html lang="az">
       <head>
         <HeadContent />
       </head>
@@ -138,8 +139,8 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      {/* Required: nested routes render here. Removing <PreferencesProvider><Outlet /></PreferencesProvider> breaks all child routes. */}
+      <PreferencesProvider><Outlet /></PreferencesProvider>
     </QueryClientProvider>
   );
 }
