@@ -18,6 +18,7 @@ import {
   LogOut,
   LoaderCircle,
   Sparkles,
+  Bell,
 } from "lucide-react";
 import { recommendShopPack } from "@/lib/shop-advisor.functions";
 import { StatusStrip } from "@/components/status/status-strip";
@@ -98,7 +99,7 @@ function Home() {
 
   return (
     <>
-      <style>{HOME_STYLES}</style>
+      <style>{HOME_STYLES + HOME_STYLES_EXTRA}</style>
       <MobileHomeView
         profile={p}
         defaultPhoto={DEFAULT_PHOTO}
@@ -269,6 +270,33 @@ type Story = { name: string; image: string; text?: string };
 const formatBalance = (value: number) => String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 type MobileHomeProps = { profile: HomeProfile; defaultPhoto: string; uploading: boolean; notice: string; onPhoto: (file: File) => void; onJoin: () => void; onSignOut: () => void };
 
+type UserRow = { id: string; name: string; username: string; photo_url: string | null };
+function UsersRow({ me, defaultPhoto, onNotice }: { me: string; defaultPhoto: string; onNotice: (t: string) => void }) {
+  const [users, setUsers] = useState<UserRow[]>([]);
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!sb) return;
+    let on = true;
+    void sb.from("profiles").select("id,name,username,photo_url").order("created_at", { ascending: false }).limit(40).then(({ data }) => {
+      if (on && data) setUsers((data as UserRow[]).filter(u => u.id !== me));
+    });
+    return () => { on = false; };
+  }, [me]);
+  if (!users.length) return null;
+  return <section className="mh-users" aria-label="İstifadəçilər">
+    <div className="mh-status-heading"><h2>İstifadəçilər</h2></div>
+    <div className="mh-users-list">{users.map(u => (
+      <div key={u.id} className="mh-user">
+        <img src={u.photo_url || defaultPhoto} alt={u.name} loading="lazy" />
+        <span className="mh-user-name">{u.name}</span>
+        <button type="button" className="mh-follow" onClick={() => onNotice("Yaxında əlavə olunacaq")}>izlə</button>
+      </div>
+    ))}</div>
+  </section>;
+}
+
+const HOME_STYLES_EXTRA = ".mh-id{display:flex;align-items:center;gap:12px;min-width:0;}\n.mh-id-text{display:flex;flex-direction:column;min-width:0;}\n.mh-id-text strong{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}\n.mh-id-text span{font-size:11px;color:var(--muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}\n.mobile-home .mh-bell{width:43px;height:43px;border-radius:50%;padding:0;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);color:var(--foreground);position:relative;flex-shrink:0;}\n.mh-bell i{position:absolute;top:10px;right:11px;width:7px;height:7px;border-radius:50%;background:var(--heart);border:2px solid var(--surface);}\n.mh-tanis{margin:36px 0 0;text-align:center;}\n.mh-tanis h2{margin:0;font-size:34px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(120deg,var(--primary),var(--heart));-webkit-background-clip:text;background-clip:text;color:transparent;}\n.mh-tanis p{margin:6px 0 0;font-size:12px;color:var(--muted-foreground);}\n.mh-users{margin-top:22px;}\n.mh-users-list{display:flex;gap:14px;overflow-x:auto;padding:2px 0 9px;scrollbar-width:none;}\n.mh-users-list::-webkit-scrollbar{display:none;}\n.mh-user{flex:0 0 76px;text-align:center;}\n.mh-user img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border);background:var(--surface);}\n.mh-user-name{display:block;margin-top:6px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n.mh-user .mh-follow{margin-top:5px;height:24px;padding:0 14px;border-radius:20px;font-size:10px;font-weight:700;background:var(--primary);color:var(--primary-foreground);border:none;cursor:pointer;}\n";
+
 export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, onPhoto, onJoin, onSignOut }: MobileHomeProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
@@ -277,19 +305,21 @@ export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, on
   const [liveOpen, setLiveOpen] = useState(false);
   const [localNotice, setLocalNotice] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
+  const flash = (t: string) => { setLocalNotice(t); window.setTimeout(() => setLocalNotice(""), 2500); };
   const modalOpen = Boolean(activeStory || walletOpen || gameOpen);
   useEffect(() => { if (!modalOpen) return; const previous = document.activeElement; const overflow = document.body.style.overflow; document.body.style.overflow = "hidden"; dialogRef.current?.focus(); const close = (e: KeyboardEvent) => { if (e.key === "Escape") { setActiveStory(null); setWalletOpen(false); setGameOpen(false); } if(e.key === "Tab" && dialogRef.current) { const items = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button, [href], [tabindex="0"]')); const first = items[0]; const last = items[items.length - 1]; if(e.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { e.preventDefault(); last?.focus(); } else if(!e.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current)) { e.preventDefault(); first?.focus(); } } }; document.addEventListener("keydown",close); return () => { document.body.style.overflow = overflow; document.removeEventListener("keydown",close); if(previous instanceof HTMLElement) previous.focus(); }; }, [modalOpen]);
   return <main className="mobile-home"><div className="mh-shell">
     <header className="mh-top">
-      <Button variant="ghost" className="mh-avatar" disabled={uploading} onClick={() => fileRef.current?.click()} aria-label="Şəkli dəyiş" title="Şəkli dəyiş"><img src={p.photo_url || defaultPhoto} alt={p.name} /><span className="mh-online">{uploading && <LoaderCircle size={12} className="animate-spin" />}</span></Button>
-      <div className="mh-wallet"><span className="mh-coin" aria-hidden="true">D</span><strong aria-label="DAT balansı">{p.dat == null ? "—" : formatBalance(p.dat)}<small>DAT</small></strong><Button variant="ghost" className="mh-wallet-add" aria-label="DAT əlavə et" title="DAT əlavə et" onClick={() => setWalletOpen(true)}><Plus size={16} /></Button></div>
+      <div className="mh-id"><Button variant="ghost" className="mh-avatar" disabled={uploading} onClick={() => fileRef.current?.click()} aria-label="Şəkli dəyiş" title="Şəkli dəyiş"><img src={p.photo_url || defaultPhoto} alt={p.name} /><span className="mh-online">{uploading && <LoaderCircle size={12} className="animate-spin" />}</span></Button><div className="mh-id-text"><strong>{p.name}</strong><span>@{p.username}</span></div></div>
+      <div className="mh-wallet"><span className="mh-coin" aria-hidden="true">D</span><strong aria-label="DAT balansı">{p.dat == null ? "—" : formatBalance(p.dat)}<small>DAT</small></strong><Button variant="ghost" className="mh-wallet-add" aria-label="DAT əlavə et" title="DAT əlavə et" onClick={() => setWalletOpen(true)}><Plus size={16} /></Button></div><Button variant="ghost" className="mh-bell" aria-label="Bildirişlər" title="Bildirişlər" onClick={() => flash("Bildirişlər yaxında əlavə olunacaq")}><Bell size={18} /><i aria-hidden="true" /></Button>
     </header>
     <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if(f) onPhoto(f); }} />
     {(notice || localNotice) && <p role="status" className="mh-notice">{notice || localNotice}</p>}
     <section className="mh-banner" aria-label="Sevgilini Tap"><img src={banner} alt="Sevgilini Tap — Şüşə oyunu" /></section>
     <StatusStrip me={{ id: p.id, name: p.name, photo_url: p.photo_url }} defaultPhoto={defaultPhoto} />
     <div className="mh-bot-row"><img className="mh-promo" src={PROMO_IMAGE} width={640} height={357} alt="Spin the Bottle — Öp və tanış ol, sevgini tap" /><Button variant="ghost" className="mh-bot" onClick={() => setGameOpen(true)} aria-label="Oyuna qoşulmaq üçün klikləyin" title="Oyuna qoşul"><span className="mh-bot-bubble">Oyuna qoşulmaq üçün <strong>klikləyin</strong></span><RobotSvg /></Button></div>
-    <section className="mh-artwork" aria-label="Şüşə oyunu"><img src={collage} width={700} height={750} alt="Şüşə oyununun rəngarəng oyun masaları" /></section>
+    <section className="mh-tanis" aria-label="Tanış ol"><h2>Tanış ol</h2><p>Yeni insanlarla tanış ol, söhbətə başla.</p></section>
+    <UsersRow me={p.id} defaultPhoto={defaultPhoto} onNotice={flash} />
     <footer className="mh-footer"><span className="mh-footer-brand">şüşə<span aria-hidden="true">.</span></span><span>Oyunçu #{p.player_no}</span><Button variant="ghost" className="mh-signout" onClick={onSignOut} aria-label="Çıxış et" title="Çıxış et"><LogOut size={16} /></Button></footer>
     {(activeStory || gameOpen) && <div className="mh-overlay" onClick={e => { if(e.target === e.currentTarget) { setActiveStory(null); setWalletOpen(false); setGameOpen(false); } }}><div ref={dialogRef} tabIndex={-1} className={gameOpen ? "mh-dialog mh-dialog-card" : "mh-dialog"} role="dialog" aria-modal="true" aria-labelledby="mh-dialog-title"><Button variant="ghost" className="mh-close" aria-label="Bağla" onClick={() => { setActiveStory(null); setWalletOpen(false); setGameOpen(false); }}><X /></Button><h2 id="mh-dialog-title">{gameOpen ? "Oyuna qoşul" : walletOpen ? "DAT cüzdanı" : activeStory?.name}</h2>{gameOpen && <span className="mh-card-bot"><RobotSvg pulling /></span>}{gameOpen ? <div className="mh-game-content"><Button variant="ghost" className="mh-join" onClick={onJoin} aria-label="Oyuna qoşul" title="Oyuna qoşul"><img src={BOTTLE_IMAGE} alt="Şüşə oyunu" /></Button><Button className="mh-game-action" onClick={onJoin}>Oyuna qoşul</Button><OnlinePlayers open={gameOpen} defaultPhoto={defaultPhoto} /></div> : walletOpen ? <><p>Balansın: <strong>{p.dat == null ? "—" : formatBalance(p.dat)} DAT</strong></p><p>DAT artırılması hələ bu səhifəyə qoşulmayıb.</p></> : activeStory?.text ? <div className="mh-story-view-text">{activeStory.text}</div> : <img className="mh-story-view" src={activeStory?.image} alt="Status şəkli" />}</div></div>}
     <BottomNav onSelect={t => { if (t === "games") { setGameOpen(true); return; } if (t === "live") { setLiveOpen(true); return; } if (t === "home") { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setLocalNotice(t === "messages" ? "Mesajlar tezliklə." : "Profil səhifəsi tezliklə."); window.setTimeout(() => setLocalNotice(""), 2500); }} />
