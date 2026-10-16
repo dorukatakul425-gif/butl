@@ -42,7 +42,7 @@ public.play_music(text,jsonb), public.buy_tokens(integer), public.claim_daily_bo
 public.buy_gold(integer), public.buy_vip(text), public.buy_premium(text),
 public.top_players(text,text), public.my_achievements(), public.ack_achievement(text,integer),
 public.user_achievements(uuid), public.user_profile_stats(uuid),
-public.block_user(uuid,boolean), public.harem_purchase(uuid) TO authenticated;
+public.block_user(uuid,boolean), public.harem_purchase(uuid), public.status_feed() TO authenticated;
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
 """)

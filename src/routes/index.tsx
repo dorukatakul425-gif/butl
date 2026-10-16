@@ -1,4 +1,5 @@
 // Replace your existing src/routes/index.tsx with this file.
+// v9: real statuses (text/image/video, 24h, likes, comments) via StatusStrip.
 // v8: Azerbaijani Spin the Bottle promo image placed left of the bot.
 // v7: animated SVG bot with moving arms; join card slides in right-to-left pulled by the bot.
 // v6: status row moved directly under the Sevgilini Tap image.
@@ -19,6 +20,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { recommendShopPack } from "@/lib/shop-advisor.functions";
+import { StatusStrip } from "@/components/status/status-strip";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -259,15 +261,13 @@ function ShopSheet({ dialogRef, balance, onClose }: { dialogRef: React.RefObject
   </div>;
 }
 
-type HomeProfile = { name: string; username: string; player_no: string | number; photo_url?: string | null; gold: number; kisses: number; dat?: number | null; age?: number | null };
+type HomeProfile = { id: string; name: string; username: string; player_no: string | number; photo_url?: string | null; gold: number; kisses: number; dat?: number | null; age?: number | null };
 type Story = { name: string; image: string; text?: string };
 const formatBalance = (value: number) => String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 type MobileHomeProps = { profile: HomeProfile; defaultPhoto: string; uploading: boolean; notice: string; onPhoto: (file: File) => void; onJoin: () => void; onSignOut: () => void };
 
 export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, onPhoto, onJoin, onSignOut }: MobileHomeProps) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const statusRef = useRef<HTMLInputElement>(null);
-  const [ownStory, setOwnStory] = useState<Story | null>(null);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
   const [walletOpen, setWalletOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
@@ -275,8 +275,6 @@ export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, on
   const dialogRef = useRef<HTMLDivElement>(null);
   const modalOpen = Boolean(activeStory || walletOpen || gameOpen);
   useEffect(() => { if (!modalOpen) return; const previous = document.activeElement; const overflow = document.body.style.overflow; document.body.style.overflow = "hidden"; dialogRef.current?.focus(); const close = (e: KeyboardEvent) => { if (e.key === "Escape") { setActiveStory(null); setWalletOpen(false); setGameOpen(false); } if(e.key === "Tab" && dialogRef.current) { const items = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button, [href], [tabindex="0"]')); const first = items[0]; const last = items[items.length - 1]; if(e.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { e.preventDefault(); last?.focus(); } else if(!e.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current)) { e.preventDefault(); first?.focus(); } } }; document.addEventListener("keydown",close); return () => { document.body.style.overflow = overflow; document.removeEventListener("keydown",close); if(previous instanceof HTMLElement) previous.focus(); }; }, [modalOpen]);
-  useEffect(() => () => { if (ownStory?.image.startsWith("blob:")) URL.revokeObjectURL(ownStory.image); }, [ownStory]);
-  const stories: Story[] = [{ name: "Zeynəb", image: DEMO_PHOTOS[0], text: "Yaxşı ki buradayıq ✨" }, { name: "Əmir", image: DEMO_PHOTOS[1], text: "Bir dövr də? 🎲" }, { name: "Elif", image: DEMO_PHOTOS[2], text: "Günün enerjisi 💚" }];
   return <main className="mobile-home"><div className="mh-shell">
     <header className="mh-top">
       <Button variant="ghost" className="mh-avatar" disabled={uploading} onClick={() => fileRef.current?.click()} aria-label="Şəkli dəyiş" title="Şəkli dəyiş"><img src={p.photo_url || defaultPhoto} alt={p.name} /><span className="mh-online">{uploading && <LoaderCircle size={12} className="animate-spin" />}</span></Button>
@@ -285,11 +283,7 @@ export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, on
     <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if(f) onPhoto(f); }} />
     {(notice || localNotice) && <p role="status" className="mh-notice">{notice || localNotice}</p>}
     <section className="mh-banner" aria-label="Sevgilini Tap"><img src={banner} alt="Sevgilini Tap — Şüşə oyunu" /></section>
-    <section aria-label="Statuslar"><div className="mh-status-heading"><h2>Statuslar</h2><span className="mh-demo">Demo</span></div><div className="mh-status-list">
-      <div className="mh-story"><Button variant="ghost" className="mh-story-button mh-story-new" aria-label="Yeni status əlavə et" title="Yeni status əlavə et" onClick={() => statusRef.current?.click()}><Plus /></Button><span className="mh-story-label">Status əlavə et</span></div>
-      {ownStory && <div className="mh-story"><Button variant="ghost" className="mh-story-button" onClick={() => setActiveStory(ownStory)} aria-label="Statusum"><img src={ownStory.image} alt="Statusum" /></Button><span className="mh-story-label">Statusum</span></div>}
-      {stories.map(story => <div className="mh-story" key={story.name}><Button variant="ghost" className="mh-story-button" onClick={() => setActiveStory(story)} aria-label={`${story.name} statusunu aç`}><img src={story.image} alt={story.name} /></Button><span className="mh-story-label">{story.name}</span></div>)}
-    </div><input ref={statusRef} type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if(!f) return; if(!f.type.startsWith("image/") || f.size > 5*1024*1024) { setLocalNotice("5 MB-dan kiçik şəkil seçin."); return; } setLocalNotice(""); const story = { name: "Statusum", image: URL.createObjectURL(f) }; setOwnStory(story); setActiveStory(story); }} /></section>
+    <StatusStrip me={{ id: p.id, name: p.name, photo_url: p.photo_url }} defaultPhoto={defaultPhoto} />
     <div className="mh-bot-row"><img className="mh-promo" src={PROMO_IMAGE} width={640} height={357} alt="Spin the Bottle — Öp və tanış ol, sevgini tap" /><Button variant="ghost" className="mh-bot" onClick={() => setGameOpen(true)} aria-label="Oyuna qoşulmaq üçün klikləyin" title="Oyuna qoşul"><span className="mh-bot-bubble">Oyuna qoşulmaq üçün <strong>klikləyin</strong></span><RobotSvg /></Button></div>
     <section className="mh-artwork" aria-label="Şüşə oyunu"><img src={collage} width={700} height={750} alt="Şüşə oyununun rəngarəng oyun masaları" /></section>
     <footer className="mh-footer"><span className="mh-footer-brand">şüşə<span aria-hidden="true">.</span></span><span>Oyunçu #{p.player_no}</span><Button variant="ghost" className="mh-signout" onClick={onSignOut} aria-label="Çıxış et" title="Çıxış et"><LogOut size={16} /></Button></footer>
