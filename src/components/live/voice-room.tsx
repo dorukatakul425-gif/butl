@@ -1,3 +1,4 @@
+import { translate, usePreferences } from "@/lib/app-preferences";
 // Full-screen live voice/video room: header (cover, ID, settings, exit), tables with seats and
 // speaking animations in the middle, chat + gift/send controls at the bottom.
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -59,6 +60,7 @@ const GIFTS = [{ key: "video", name: "Peqas", artwork: VIDEO_GIFT_ARTWORK, sound
 const giftEmoji = (_k?: string) => "🎁";
 
 function GiftPlayback({ gift, muted, onDone }: { gift: RoomGift; muted: boolean; onDone: () => void }) {
+  usePreferences();
   const ref = useRef<HTMLVideoElement>(null);
   const [soundBlocked, setSoundBlocked] = useState(false);
   useEffect(() => {
@@ -84,14 +86,14 @@ function GiftPlayback({ gift, muted, onDone }: { gift: RoomGift; muted: boolean;
       <source src={VIDEO_GIFT_URL} type='video/mp4; codecs="avc1.640028, mp4a.40.2"' />
       <source src={VIDEO_GIFT_FALLBACK} type="video/webm" />
     </video>
-    <div className="vr-vgift-tag"><img src={VIDEO_GIFT_ARTWORK} alt="" /><b>{gift.name ?? "Oyunçu"}</b> hədiyyə göndərdi</div>
-    {soundBlocked && !muted && <Button variant="ghost" className="vr-sound-recover" aria-label="Hədiyyənin səsini aç" onClick={() => {
+    <div className="vr-vgift-tag"><img src={VIDEO_GIFT_ARTWORK} alt="" /><b>{gift.name ?? translate("Oyunçu")}</b> {translate("hədiyyə göndərdi")}</div>
+    {soundBlocked && !muted && <Button variant="ghost" className="vr-sound-recover" aria-label={translate("Hədiyyənin səsini aç")} onClick={() => {
       const video = ref.current;
       if (!video) return;
       video.muted = false;
       void video.play().then(() => setSoundBlocked(false)).catch(() => setSoundBlocked(true));
     }}><Volume2 size={20} /></Button>}
-    <Button variant="ghost" className="vr-icon vr-vgift-x" aria-label="Hədiyyəni bağla" onClick={onDone}><X size={18} /></Button>
+    <Button variant="ghost" className="vr-icon vr-vgift-x" aria-label={translate("Hədiyyəni bağla")} onClick={onDone}><X size={18} /></Button>
   </div>;
 }
 
@@ -99,6 +101,7 @@ type Me = { id: string; name: string; photo: string | null };
 type Flying = RoomGift & { x: number; y: number };
 
 function VideoTile({ stream, muted }: { stream: MediaStream; muted: boolean }) {
+  usePreferences();
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (ref.current && ref.current.srcObject !== stream) ref.current.srcObject = stream;
@@ -106,6 +109,7 @@ function VideoTile({ stream, muted }: { stream: MediaStream; muted: boolean }) {
   return <video ref={ref} autoPlay playsInline muted={muted} />;
 }
 function RemoteAudio({ stream, muted }: { stream: MediaStream; muted: boolean }) {
+  usePreferences();
   const ref = useRef<HTMLAudioElement>(null);
   useEffect(() => {
     if (ref.current && ref.current.srcObject !== stream) {
@@ -129,6 +133,7 @@ export function VoiceRoom({
   onLeave: () => void;
   onPresence: (inRoom: boolean) => void;
 }) {
+  usePreferences();
   const [room, setRoom] = useState(initial);
   const [members, setMembers] = useState<RoomMember[]>([]);
   const [streams, setStreams] = useState<Record<string, MediaStream>>({});
@@ -139,7 +144,7 @@ export function VoiceRoom({
       from: "",
       name: "",
       photo: null,
-      text: "Otağa xoş gəldin! Hörmətli ünsiyyət qaydalarına əməl et.",
+      text: translate("Otağa xoş gəldin! Hörmətli ünsiyyət qaydalarına əməl et."),
       at: Date.now(),
       kind: "system",
     },
@@ -192,7 +197,7 @@ export function VoiceRoom({
       onGift: (g) => launchGift(g),
       onRoom: (type) => {
         if (type === "closed") {
-          flash("Otaq sahibi otağı bağladı");
+          flash(translate("Otaq sahibi otağı bağladı"));
           window.setTimeout(() => onLeave(), 1200);
         } else
           void sb
@@ -257,20 +262,20 @@ export function VoiceRoom({
   };
   const toggleMic = () => {
     const c = client.current;
-    if (!c || c.me.seat === null) { flash("Əvvəlcə masaya otur"); return; }
-    if (!c.toggleMic()) flash("Mikrofona icazə verilməyib");
+    if (!c || c.me.seat === null) { flash(translate("Əvvəlcə masaya otur")); return; }
+    if (!c.toggleMic()) flash(translate("Mikrofona icazə verilməyib"));
   };
   const toggleCam = async () => {
     const c = client.current;
-    if (!c || c.me.seat === null) { flash("Əvvəlcə masaya otur"); return; }
-    if (!await c.toggleCam()) flash("Kameraya icazə verilməyib");
+    if (!c || c.me.seat === null) { flash(translate("Əvvəlcə masaya otur")); return; }
+    if (!await c.toggleCam()) flash(translate("Kameraya icazə verilməyib"));
   };
   const sit = async (seat: number) => {
     if (seatBusy) return;
     const c = client.current;
     if (!c) return;
     setSeatBusy(true);
-    try { if (!await c.setSeat(seat)) flash("Yer tutulub və ya mikrofon icazəsi verilməyib"); }
+    try { if (!await c.setSeat(seat)) flash(translate("Yer tutulub və ya mikrofon icazəsi verilməyib")); }
     finally { setSeatBusy(false); }
   };
   const copyId = () => {
@@ -313,7 +318,7 @@ export function VoiceRoom({
               </span>
             )}
             {m.id === room.owner_id && <span className="vr-crown">👑</span>}
-            <span className="vr-name">{m.id === me.id ? "Sən" : m.name}</span>
+            <span className="vr-name">{m.id === me.id ? translate("Sən") : m.name}</span>
             <span className="vr-eq" aria-hidden="true">
               <i />
               <i />
@@ -356,7 +361,7 @@ export function VoiceRoom({
           <RemoteAudio key={id} stream={s} muted={speakerOff} />
         ))}
       <header className="vr-top">
-        <button type="button" className="vr-back" onClick={onLeave} aria-label="Otaqdan çıx">
+        <button type="button" className="vr-back" onClick={onLeave} aria-label={translate("Otaqdan çıx")}>
           <ChevronLeft size={26} />
         </button>
         <div className="vr-plate">
@@ -388,7 +393,7 @@ export function VoiceRoom({
       {status !== "live" && (
         <div className="vr-subrow">
           <span className={`vr-status ${status}`}>
-            {status === "connecting" ? "Qoşulur…" : "Bağlantı xətası"}
+            {status === "connecting" ? translate("Qoşulur…") : translate("Bağlantı xətası")}
           </span>
         </div>
       )}
@@ -399,15 +404,14 @@ export function VoiceRoom({
         </div>
         <div className="vr-tools">
           <div className="vr-pill">
-            <button type="button" onClick={() => setChatHidden((v) => !v)} aria-label="Söhbəti gizlət">
+            <button type="button" onClick={() => setChatHidden((v) => !v)} aria-label={translate("Söhbəti gizlət")}>
               {chatHidden ? <Maximize2 size={17} /> : <Minimize2 size={17} />}
             </button>
             <span className="vr-all">ALL</span>
           </div>
           {meMember?.seat !== null && meMember && (
             <button type="button" className="vr-pill vr-stand" onClick={() => client.current?.setSeat(null)}>
-              Yerdən qalx
-            </button>
+              {translate("Yerdən qalx")}</button>
           )}
           <span className="vr-pill">
             <UserRound size={16} />
@@ -429,15 +433,14 @@ export function VoiceRoom({
             <div key={m.id} className="vr-msg gift">
               <span className="vr-msg-ico">{giftEmoji(m.gift)}</span>
               <p>
-                <b>{m.from === me.id ? "Sən" : m.name}</b> →{" "}
-                <b>{m.to === me.id ? "sənə" : m.toName}</b> hədiyyə göndərdi
-              </p>
+                <b>{m.from === me.id ? translate("Sən") : m.name}</b> →{" "}
+                <b>{m.to === me.id ? translate("sənə") : m.toName}</b> {translate("hədiyyə göndərdi")}</p>
             </div>
           ) : (
             <div key={m.id} className="vr-msg">
               <img className="vr-msg-ico" src={m.photo || defaultPhoto} alt="" />
               <p>
-                <b>{m.from === me.id ? "Sən" : m.name}</b>
+                <b>{m.from === me.id ? translate("Sən") : m.name}</b>
                 {m.text}
               </p>
             </div>
@@ -466,7 +469,7 @@ export function VoiceRoom({
           type="button"
           className={`vr-tool${speakerOff ? " off" : ""}`}
           onClick={() => setSpeakerOff((v) => !v)}
-          aria-label="Səs"
+          aria-label={translate("Səs")}
         >
           {speakerOff ? <VolumeX size={24} /> : <Volume2 size={24} />}
         </button>
@@ -496,17 +499,17 @@ export function VoiceRoom({
             onKeyDown={(e) => {
               if (e.key === "Enter") send();
             }}
-            placeholder="Bir şey söylə…"
+            placeholder={translate("Bir şey söylə…")}
             maxLength={300}
             aria-label="Mesaj"
           />
           {text.trim() && (
-            <button type="button" className="vr-send" onClick={send} aria-label="Göndər">
+            <button type="button" className="vr-send" onClick={send} aria-label={translate("Göndər")}>
               <Send size={16} />
             </button>
           )}
         </div>
-        <button type="button" className="vr-tool vr-gift" onClick={() => setGiftOpen(true)} aria-label="Hədiyyə göndər">
+        <button type="button" className="vr-tool vr-gift" onClick={() => setGiftOpen(true)} aria-label={translate("Hədiyyə göndər")}>
           <Gift size={25} />
         </button>
       </footer>
@@ -537,12 +540,12 @@ export function VoiceRoom({
         >
           <div className="vr-sheet vr-gift-sheet">
             <div className="vr-sheet-head">
-              <h3><Gift size={18} /> Hədiyyələr</h3>
+              <h3><Gift size={18} /> {translate("Hədiyyələr")}</h3>
               <button
                 type="button"
                 className="vr-icon"
                 onClick={() => setGiftOpen(false)}
-                aria-label="Bağla"
+                aria-label={translate("Bağla")}
               >
                 <X size={18} />
               </button>
@@ -553,8 +556,7 @@ export function VoiceRoom({
                 className={giftTo === null ? "on" : ""}
                 onClick={() => setGiftTo(null)}
               >
-                <span className="vr-all">🎉</span>Hamıya
-              </button>
+                <span className="vr-all">🎉</span>{translate("Hamıya")}</button>
               {members
                 .filter((m) => m.id !== me.id)
                 .map((m) => (
@@ -569,10 +571,10 @@ export function VoiceRoom({
                   </button>
                 ))}
             </div>
-            <div className="vr-gift-tabs"><span>SƏSLİ</span></div>
+            <div className="vr-gift-tabs"><span>{translate("SƏSLİ")}</span></div>
             <div className="vr-gifts">
               {GIFTS.map(g => <div key={g.key} className="vr-gift-item">
-                <div className="vr-gift-art"><img src={g.artwork} alt={g.name} /><span className="vr-gift-sound" title="Səsli hədiyyə"><Music2 size={14} /></span></div>
+                <div className="vr-gift-art"><img src={g.artwork} alt={g.name} /><span className="vr-gift-sound" title={translate("Səsli hədiyyə")}><Music2 size={14} /></span></div>
                 <strong>{g.name}</strong>
                 <Button variant="ghost" className="vr-gift-send" disabled={giftBusy || status !== "live"} onClick={async () => {
                   const c = client.current;
@@ -581,9 +583,9 @@ export function VoiceRoom({
                   try {
                     const sent = await c.sendGift(members.find(m => m.id === giftTo) ?? null, g.key);
                     if (sent) setGiftOpen(false);
-                    else flash("Hədiyyə göndərilmədi. Bağlantını yoxla.");
+                    else flash(translate("Hədiyyə göndərilmədi. Bağlantını yoxla."));
                   } finally { setGiftBusy(false); }
-                }}>{giftBusy ? "Göndərilir…" : "Göndər"}</Button>
+                }}>{giftBusy ? translate("Göndərilir…") : translate("Göndər")}</Button>
               </div>)}
             </div>
           </div>
@@ -606,8 +608,7 @@ export function VoiceRoom({
                   setSettingsOpen(true);
                 }}
               >
-                <Settings size={18} /> Otaq ayarları
-              </button>
+                <Settings size={18} /> {translate("Otaq ayarları")}</button>
             )}
             <button
               type="button"
@@ -619,8 +620,7 @@ export function VoiceRoom({
               <Copy size={18} /> ID-ni kopyala
             </button>
             <button type="button" className="danger" onClick={onLeave}>
-              <LogOut size={18} /> Otaqdan çıx
-            </button>
+              <LogOut size={18} /> {translate("Otaqdan çıx")}</button>
           </div>
         </div>
       )}
@@ -632,7 +632,7 @@ export function VoiceRoom({
             setRoom(r);
             client.current?.notifyRoom("updated");
             setSettingsOpen(false);
-            flash("Otaq yeniləndi");
+            flash(translate("Otaq yeniləndi"));
           }}
           onDeleted={() => {
             client.current?.notifyRoom("closed");
@@ -655,6 +655,7 @@ function RoomSettings({
   onSaved: (r: VoiceRoomRow) => void;
   onDeleted: () => void;
 }) {
+  usePreferences();
   const [name, setName] = useState(roomTitle(room.name));
   const [cover, setCover] = useState(room.cover);
   const [kind, setKind] = useState<RoomKind>(roomKind(room.name));
@@ -693,25 +694,22 @@ function RoomSettings({
     >
       <div className="vr-sheet">
         <div className="vr-sheet-head">
-          <h3>Otaq ayarları</h3>
-          <button type="button" className="vr-icon" onClick={onClose} aria-label="Bağla">
+          <h3>{translate("Otaq ayarları")}</h3>
+          <button type="button" className="vr-icon" onClick={onClose} aria-label={translate("Bağla")}>
             <X size={18} />
           </button>
         </div>
         <label className="vr-field">
-          Otaq adı
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={39} />
+          {translate("Otaq adı")}<input value={name} onChange={(e) => setName(e.target.value)} maxLength={39} />
         </label>
-        <span className="vr-field">Otaq növü</span>
+        <span className="vr-field">{translate("Otaq növü")}</span>
         <div className="vr-kinds">
           <button type="button" className={kind === "voice" ? "on" : ""} onClick={() => setKind("voice")}>
-            <Mic size={16} /> Səsli
-          </button>
+            <Mic size={16} /> {translate("Səsli")}</button>
           <button type="button" className={kind === "video" ? "on" : ""} onClick={() => setKind("video")}>
-            <Video size={16} /> Görüntülü
-          </button>
+            <Video size={16} /> {translate("Görüntülü")}</button>
         </div>
-        <span className="vr-field">Otaq şəkli</span>
+        <span className="vr-field">{translate("Otaq şəkli")}</span>
         <div className="vr-covers">
           {ROOM_COVERS.map((c) => (
             <button
@@ -731,8 +729,7 @@ function RoomSettings({
         </button>
         <button type="button" className="vr-danger" disabled={busy} onClick={remove}>
           <Trash2 size={15} />
-          Otağı bağla və sil
-        </button>
+          {translate("Otağı bağla və sil")}</button>
       </div>
     </div>
   );

@@ -1,14 +1,18 @@
+import { translate, usePreferences } from "@/lib/app-preferences";
 // Live player counter shown under the join button in the robot popup.
 import { useOnlinePlayers } from "@/lib/online-players";
 
 function BoyIcon() {
+  usePreferences();
   return <svg viewBox="0 0 24 24" aria-hidden="true" className="op-ico"><circle cx="12" cy="8" r="4.2" fill="currentColor" /><path d="M7.6 6.4c.8-2.6 3-3.6 4.6-3.6 2.4 0 4.2 1.4 4.4 3.8-1.4-.9-3.4-1.2-5-.6-1.4.5-2.8.6-4 .4z" fill="var(--op-hair)" /><path d="M4.5 21c.4-4.2 3.6-6.8 7.5-6.8s7.1 2.6 7.5 6.8z" fill="currentColor" /></svg>;
 }
 function GirlIcon() {
+  usePreferences();
   return <svg viewBox="0 0 24 24" aria-hidden="true" className="op-ico"><path d="M6.6 13.4C5.6 6.6 8 2.8 12 2.8s6.4 3.8 5.4 10.6c-1.4-.6-2.4-2.4-2.6-4.4-1.6.8-4 1-6 .2-.2 2-1 3.6-2.2 4.2z" fill="var(--op-hair)" /><circle cx="12" cy="8.6" r="4" fill="currentColor" /><path d="M4.5 21c.6-4.4 3.6-6.6 7.5-6.6s6.9 2.2 7.5 6.6z" fill="currentColor" /></svg>;
 }
 
 export function OnlinePlayers({ open, defaultPhoto }: { open: boolean; defaultPhoto: string }) {
+  usePreferences();
   const { summary, live } = useOnlinePlayers(open);
   const faces = summary?.players.slice(0, 5) ?? [];
   return <div className="op-box" aria-live="polite">
@@ -16,11 +20,11 @@ export function OnlinePlayers({ open, defaultPhoto }: { open: boolean; defaultPh
     <div className="op-head">
       <span className={"op-dot" + (live ? " live" : "")} aria-hidden="true" />
       <strong>{summary ? summary.total : "—"}</strong>
-      <span>{summary?.total === 0 ? "hələ heç kim oynamır" : "nəfər indi oynayır"}</span>
+      <span>{summary?.total === 0 ? translate("hələ heç kim oynamır") : translate("nəfər indi oynayır")}</span>
     </div>
     <div className="op-genders">
-      <span className="op-g boy" title="Oğlan"><BoyIcon /><b>{summary ? summary.boys : "—"}</b><small>oğlan</small></span>
-      <span className="op-g girl" title="Qız"><GirlIcon /><b>{summary ? summary.girls : "—"}</b><small>qız</small></span>
+      <span className="op-g boy" title={translate("Oğlan")}><BoyIcon /><b>{summary ? summary.boys : "—"}</b><small>{translate("oğlan")}</small></span>
+      <span className="op-g girl" title={translate("Qız")}><GirlIcon /><b>{summary ? summary.girls : "—"}</b><small>{translate("qız")}</small></span>
     </div>
     {faces.length > 0 && <div className="op-faces">
       {faces.map(p => <span key={p.userId} className={"op-face " + (p.male ? "boy" : "girl")} title={p.name}><img src={p.photo || defaultPhoto} alt={p.name} loading="lazy" /></span>)}

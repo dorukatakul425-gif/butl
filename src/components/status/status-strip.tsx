@@ -1,3 +1,4 @@
+import { translate, usePreferences } from "@/lib/app-preferences";
 // Home statuses: WhatsApp-style ring row + TikTok-style vertical viewer with likes/comments.
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Heart, MessageCircle, Plus, X, Trash2, Send, Type, Image as ImageIcon, Video, LoaderCircle, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react";
@@ -10,6 +11,7 @@ import {
 type Me = { id: string; name: string; photo_url?: string | null | undefined };
 
 export function StatusStrip({ me, defaultPhoto }: { me: Me; defaultPhoto: string }) {
+  usePreferences();
   const [feed, setFeed] = useState<FeedStatus[] | null>(null);
   const [error, setError] = useState("");
   const [seen, setSeen] = useState<Set<string>>(new Set());
@@ -18,7 +20,7 @@ export function StatusStrip({ me, defaultPhoto }: { me: Me; defaultPhoto: string
 
   const refresh = useCallback(async () => {
     try { setFeed(await loadFeed()); setError(""); }
-    catch (e) { setError(e instanceof Error ? e.message : "Statuslar yüklənmədi."); setFeed(f => f ?? []); }
+    catch (e) { setError(e instanceof Error ? e.message : translate("Statuslar yüklənmədi.")); setFeed(f => f ?? []); }
   }, []);
   useEffect(() => {
     setSeen(readSeen());
@@ -56,17 +58,17 @@ export function StatusStrip({ me, defaultPhoto }: { me: Me; defaultPhoto: string
     <div className="mh-status-heading"><h2>Statuslar</h2>{feed && <span className="st-count">{ordered.flat.length ? `${ordered.flat.length} aktiv` : "24 saat"}</span>}</div>
     <div className="mh-status-list">
       <div className="mh-story">
-        <button type="button" className="st-add" onClick={() => setComposer(true)} aria-label="Status əlavə et">
+        <button type="button" className="st-add" onClick={() => setComposer(true)} aria-label={translate("Status əlavə et")}>
           <span className="st-add-ring" aria-hidden="true" />
           <img src={me.photo_url || defaultPhoto} alt="" />
           <span className="st-add-plus" aria-hidden="true"><Plus size={14} strokeWidth={3} /></span>
         </button>
-        <span className="mh-story-label st-add-label">Status əlavə et</span>
+        <span className="mh-story-label st-add-label">{translate("Status əlavə et")}</span>
       </div>
       {ordered.own.length > 0 && <StoryBubble group={ordered.own} label="Statusum" seen={seen} onOpen={() => openAt(ordered.own[0]?.id)} defaultPhoto={defaultPhoto} />}
       {ordered.others.map(g => <StoryBubble key={g[0]!.userId} group={g} label={g[0]!.authorName} seen={seen} onOpen={() => openAt(firstUnseen(g))} defaultPhoto={defaultPhoto} />)}
       {feed === null && [0, 1, 2].map(i => <div className="mh-story" key={i}><span className="st-skeleton" /><span className="mh-story-label">&nbsp;</span></div>)}
-      {feed && !ordered.flat.length && <p className="st-empty">Hələ status yoxdur — ilk sən paylaş ✨</p>}
+      {feed && !ordered.flat.length && <p className="st-empty">{translate("Hələ status yoxdur — ilk sən paylaş ✨")}</p>}
     </div>
     {error && <p role="status" className="mh-notice">{error}</p>}
     {composer && <StatusComposer me={me} onClose={() => setComposer(false)} onDone={async () => { setComposer(false); await refresh(); }} />}
@@ -78,6 +80,7 @@ export function StatusStrip({ me, defaultPhoto }: { me: Me; defaultPhoto: string
 }
 
 function StoryBubble({ group, label, seen, onOpen, defaultPhoto }: { group: FeedStatus[]; label: string; seen: Set<string>; onOpen: () => void; defaultPhoto: string }) {
+  usePreferences();
   const n = group.length;
   const unseen = group.some(s => !seen.has(s.id));
   const last = group[n - 1]!;
@@ -103,6 +106,7 @@ function StoryBubble({ group, label, seen, onOpen, defaultPhoto }: { group: Feed
 
 /* ---------------- Composer ---------------- */
 function StatusComposer({ me, onClose, onDone }: { me: Me; onClose: () => void; onDone: () => Promise<void> }) {
+  usePreferences();
   const [kind, setKind] = useState<StatusKind>("text");
   const [text, setText] = useState("");
   const [bg, setBg] = useState("emerald");
@@ -119,14 +123,14 @@ function StatusComposer({ me, onClose, onDone }: { me: Me; onClose: () => void; 
   const onFile = (f: File | undefined) => {
     if (!f) return;
     const k = fileKind(f);
-    if (!k || (kind !== "text" && k !== kind)) { setMsg(kind === "video" ? "Video faylı seçin." : "Şəkil faylı seçin."); return; }
-    if (f.size > (k === "video" ? VIDEO_LIMIT : IMAGE_LIMIT)) { setMsg(k === "video" ? "Video 50 MB-dan kiçik olmalıdır." : "Şəkil 10 MB-dan kiçik olmalıdır."); return; }
+    if (!k || (kind !== "text" && k !== kind)) { setMsg(kind === "video" ? translate("Video faylı seçin.") : translate("Şəkil faylı seçin.")); return; }
+    if (f.size > (k === "video" ? VIDEO_LIMIT : IMAGE_LIMIT)) { setMsg(k === "video" ? translate("Video 50 MB-dan kiçik olmalıdır.") : translate("Şəkil 10 MB-dan kiçik olmalıdır.")); return; }
     setMsg(""); setKind(k); setFile(f); setPreview(URL.createObjectURL(f));
   };
   const share = async () => {
     setBusy(true); setMsg("");
     try { await createStatus(me.id, { kind, body: text, bg, file }); await onDone(); }
-    catch (e) { setMsg(e instanceof Error ? e.message : "Status paylaşılmadı."); }
+    catch (e) { setMsg(e instanceof Error ? e.message : translate("Status paylaşılmadı.")); }
     finally { setBusy(false); }
   };
   const canShare = !busy && (kind === "text" ? text.trim().length > 0 : Boolean(file));
@@ -136,22 +140,22 @@ function StatusComposer({ me, onClose, onDone }: { me: Me; onClose: () => void; 
       {kind === "text" && <textarea autoFocus className="st-text-input" placeholder="Status yaz…" maxLength={700} value={text} onChange={e => setText(e.target.value)} />}
       {kind !== "text" && preview && (kind === "video"
         ? <video className="st-media" src={preview} autoPlay muted loop playsInline />
-        : <img className="st-media" src={preview} alt="Önizləmə" />)}
+        : <img className="st-media" src={preview} alt={translate("Önizləmə")} />)}
       {kind !== "text" && !preview && <button type="button" className="st-pick" onClick={() => pick.current?.click()}>
-        {kind === "video" ? <Video size={38} /> : <ImageIcon size={38} />}<span>{kind === "video" ? "Video seç (max 50 MB)" : "Şəkil seç (max 10 MB)"}</span></button>}
+        {kind === "video" ? <Video size={38} /> : <ImageIcon size={38} />}<span>{kind === "video" ? translate("Video seç (max 50 MB)") : translate("Şəkil seç (max 10 MB)")}</span></button>}
     </div>
-    <div className="st-top"><button type="button" className="st-icon" onClick={onClose} aria-label="Bağla"><X /></button><strong>Yeni status</strong><span className="st-top-sp" /></div>
+    <div className="st-top"><button type="button" className="st-icon" onClick={onClose} aria-label={translate("Bağla")}><X /></button><strong>Yeni status</strong><span className="st-top-sp" /></div>
     <div className="st-composer-bottom">
       {kind === "text" && <div className="st-colors">{Object.keys(STATUS_BGS).map(k => <button key={k} type="button" aria-label={k} className={"st-color" + (bg === k ? " on" : "")} style={{ background: statusBg(k) }} onClick={() => setBg(k)} />)}</div>}
-      {kind !== "text" && file && <input className="st-caption" placeholder="Açıqlama əlavə et…" maxLength={700} value={text} onChange={e => setText(e.target.value)} />}
+      {kind !== "text" && file && <input className="st-caption" placeholder={translate("Açıqlama əlavə et…")} maxLength={700} value={text} onChange={e => setText(e.target.value)} />}
       {msg && <p className="st-msg" role="status">{msg}</p>}
       <div className="st-composer-row">
         <div className="st-tabs" role="tablist">
-          <button type="button" role="tab" aria-selected={kind === "text"} className={kind === "text" ? "on" : ""} onClick={() => choose("text")}><Type size={16} />Yazı</button>
-          <button type="button" role="tab" aria-selected={kind === "image"} className={kind === "image" ? "on" : ""} onClick={() => choose("image")}><ImageIcon size={16} />Şəkil</button>
-          <button type="button" role="tab" aria-selected={kind === "video"} className={kind === "video" ? "on" : ""} onClick={() => choose("video")}><Video size={16} />Video</button>
+          <button type="button" role="tab" aria-selected={kind === "text"} className={kind === "text" ? "on" : ""} onClick={() => choose("text")}><Type size={16} />{translate("Yazı")}</button>
+          <button type="button" role="tab" aria-selected={kind === "image"} className={kind === "image" ? "on" : ""} onClick={() => choose("image")}><ImageIcon size={16} />{translate("Şəkil")}</button>
+          <button type="button" role="tab" aria-selected={kind === "video"} className={kind === "video" ? "on" : ""} onClick={() => choose("video")}><Video size={16} />{translate("Video")}</button>
         </div>
-        <button type="button" className="st-send" disabled={!canShare} onClick={() => void share()} aria-label="Paylaş">{busy ? <LoaderCircle className="st-spin" /> : <Send />}</button>
+        <button type="button" className="st-send" disabled={!canShare} onClick={() => void share()} aria-label={translate("Paylaş")}>{busy ? <LoaderCircle className="st-spin" /> : <Send />}</button>
       </div>
     </div>
     <input ref={pick} type="file" hidden accept={kind === "video" ? "video/mp4,video/webm,video/quicktime,video/*" : "image/*"} onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; onFile(f); }} />
@@ -163,6 +167,7 @@ function StatusViewer({ groups, startGroup, startIndex, me, defaultPhoto, onClos
   groups: FeedStatus[][]; startGroup: number; startIndex: number; me: Me; defaultPhoto: string; onClose: () => void;
   onSeen: (id: string) => void; onPatch: (id: string, p: Partial<FeedStatus>) => void; onDeleted: (id: string) => void;
 }) {
+  usePreferences();
   // Vertical swipe = next/previous person; horizontal swipe or side taps = that person's other statuses.
   const scroller = useRef<HTMLDivElement>(null);
   const tracks = useRef(new Map<string, HTMLDivElement>());
@@ -218,7 +223,7 @@ function StatusViewer({ groups, startGroup, startIndex, me, defaultPhoto, onClos
   const total = groups.reduce((n, g) => n + g.length, 0);
   const remove = async (s: FeedStatus) => {
     if (!window.confirm("Bu status silinsin?")) return;
-    try { await deleteStatus(s); onDeleted(s.id); if (total <= 1) onClose(); } catch { window.alert("Status silinmədi."); }
+    try { await deleteStatus(s); onDeleted(s.id); if (total <= 1) onClose(); } catch { window.alert(translate("Status silinmədi.")); }
   };
 
   return <div className="st-full st-viewer" role="dialog" aria-modal="true" aria-label="Statuslar">
@@ -233,14 +238,14 @@ function StatusViewer({ groups, startGroup, startIndex, me, defaultPhoto, onClos
       </section>; })}
     </div>
     <div className="st-top st-top-viewer">
-      <button type="button" className="st-icon" onClick={onClose} aria-label="Bağla"><X /></button>
+      <button type="button" className="st-icon" onClick={onClose} aria-label={translate("Bağla")}><X /></button>
       <div className="st-dots" aria-hidden="true">{curGroup && curGroup.length <= 30 && curGroup.map((s, i) => <span key={s.id} className={i === curIdx ? "on" : i < curIdx ? "past" : ""} />)}</div>
       {curGroup && curGroup.length > 1 && <span className="st-counter">{curIdx + 1}/{curGroup.length}</span>}
-      {cur?.kind === "video" ? <button type="button" className="st-icon" onClick={() => setMuted(m => !m)} aria-label={muted ? "Səsi aç" : "Səsi bağla"}>{muted ? <VolumeX /> : <Volume2 />}</button> : <span className="st-top-sp" />}
+      {cur?.kind === "video" ? <button type="button" className="st-icon" onClick={() => setMuted(m => !m)} aria-label={muted ? translate("Səsi aç") : translate("Səsi bağla")}>{muted ? <VolumeX /> : <Volume2 />}</button> : <span className="st-top-sp" />}
     </div>
     {curGroup && curGroup.length > 1 && <>
-      {curIdx > 0 && <button type="button" className="st-nav prev" onClick={() => step(-1)} aria-label="Əvvəlki status"><ChevronLeft /></button>}
-      {curIdx < curGroup.length - 1 && <button type="button" className="st-nav next" onClick={() => step(1)} aria-label="Növbəti status"><ChevronRight /></button>}
+      {curIdx > 0 && <button type="button" className="st-nav prev" onClick={() => step(-1)} aria-label={translate("Əvvəlki status")}><ChevronLeft /></button>}
+      {curIdx < curGroup.length - 1 && <button type="button" className="st-nav next" onClick={() => step(1)} aria-label={translate("Növbəti status")}><ChevronRight /></button>}
     </>}
     {commentsFor && <CommentsSheet status={commentsFor} me={me} defaultPhoto={defaultPhoto} onClose={() => setCommentsFor(null)} onCount={n => onPatch(commentsFor.id, { commentCount: n })} />}
   </div>;
@@ -250,6 +255,7 @@ function StatusSlide({ s, near, mine, defaultPhoto, videoRef, muted, onToggleMut
   s: FeedStatus; near: boolean; mine: boolean; defaultPhoto: string; videoRef: (el: HTMLVideoElement | null) => void;
   muted: boolean; onToggleMute: () => void; onPrev: () => void; onNext: () => void; onLike: (force?: boolean) => void; onComments: () => void; onDelete: () => void;
 }) {
+  usePreferences();
   const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [pop, setPop] = useState(0);
   const lastTap = useRef(0);
@@ -284,18 +290,19 @@ function StatusSlide({ s, near, mine, defaultPhoto, videoRef, muted, onToggleMut
     <div className="st-shade" aria-hidden="true" />
     <aside className="st-rail">
       <img className="st-rail-avatar" src={s.authorPhoto || defaultPhoto} alt={s.authorName} />
-      <button type="button" key={pop} className={"st-rail-btn" + (s.liked ? " liked" : "")} onClick={() => onLike()} aria-pressed={s.liked} aria-label="Bəyən"><Heart fill={s.liked ? "currentColor" : "none"} /><span>{s.likeCount}</span></button>
-      <button type="button" className="st-rail-btn" onClick={onComments} aria-label="Şərhlər"><MessageCircle /><span>{s.commentCount}</span></button>
+      <button type="button" key={pop} className={"st-rail-btn" + (s.liked ? " liked" : "")} onClick={() => onLike()} aria-pressed={s.liked} aria-label={translate("Bəyən")}><Heart fill={s.liked ? "currentColor" : "none"} /><span>{s.likeCount}</span></button>
+      <button type="button" className="st-rail-btn" onClick={onComments} aria-label={translate("Şərhlər")}><MessageCircle /><span>{s.commentCount}</span></button>
       {mine && <button type="button" className="st-rail-btn" onClick={onDelete} aria-label="Sil"><Trash2 /><span>Sil</span></button>}
     </aside>
     <div className="st-info">
-      <strong>{mine ? "Sən" : s.authorName}</strong> <small>· {timeAgo(s.createdAt)} · {timeLeft(s.expiresAt)}</small>
+      <strong>{mine ? translate("Sən") : s.authorName}</strong> <small>· {timeAgo(s.createdAt)} · {timeLeft(s.expiresAt)}</small>
       {s.kind !== "text" && s.body && <p>{s.body}</p>}
     </div>
   </article>;
 }
 
 function CommentsSheet({ status, me, defaultPhoto, onClose, onCount }: { status: FeedStatus; me: Me; defaultPhoto: string; onClose: () => void; onCount: (n: number) => void }) {
+  usePreferences();
   const [list, setList] = useState<StatusComment[] | null>(null);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -304,7 +311,7 @@ function CommentsSheet({ status, me, defaultPhoto, onClose, onCount }: { status:
   const countRef = useRef(onCount); countRef.current = onCount;
   const load = useCallback(async () => {
     try { const c = await loadComments(status.id); setList(c); countRef.current(c.length); }
-    catch (e) { setMsg(e instanceof Error ? e.message : "Şərhlər yüklənmədi."); setList(l => l ?? []); }
+    catch (e) { setMsg(e instanceof Error ? e.message : translate("Şərhlər yüklənmədi.")); setList(l => l ?? []); }
   }, [status.id]);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [list?.length]);
@@ -312,28 +319,28 @@ function CommentsSheet({ status, me, defaultPhoto, onClose, onCount }: { status:
     if (!text.trim() || busy) return;
     setBusy(true); setMsg("");
     try { await addComment(status.id, me.id, text); setText(""); await load(); }
-    catch (e) { setMsg(e instanceof Error ? e.message : "Şərh göndərilmədi."); }
+    catch (e) { setMsg(e instanceof Error ? e.message : translate("Şərh göndərilmədi.")); }
     finally { setBusy(false); }
   };
   const canDelete = (c: StatusComment) => c.userId === me.id || status.userId === me.id;
   return <div className="st-sheet-wrap" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-    <div className="st-sheet" role="dialog" aria-label="Şərhlər">
+    <div className="st-sheet" role="dialog" aria-label={translate("Şərhlər")}>
       <span className="st-grip" aria-hidden="true" />
-      <div className="st-sheet-head"><strong>{list ? `${list.length} şərh` : "Şərhlər"}</strong><button type="button" className="st-icon dark" onClick={onClose} aria-label="Bağla"><X size={18} /></button></div>
+      <div className="st-sheet-head"><strong>{list ? `${list.length} şərh` : translate("Şərhlər")}</strong><button type="button" className="st-icon dark" onClick={onClose} aria-label={translate("Bağla")}><X size={18} /></button></div>
       <div className="st-comments">
-        {list === null && <p className="st-muted"><LoaderCircle className="st-spin" size={16} /> Yüklənir…</p>}
-        {list?.length === 0 && <p className="st-muted">İlk şərhi sən yaz 💬</p>}
+        {list === null && <p className="st-muted"><LoaderCircle className="st-spin" size={16} /> {translate("Yüklənir…")}</p>}
+        {list?.length === 0 && <p className="st-muted">{translate("İlk şərhi sən yaz 💬")}</p>}
         {list?.map(c => <div className="st-comment" key={c.id}>
           <img src={c.photo || defaultPhoto} alt="" />
-          <div><b>{c.userId === me.id ? "Sən" : c.name}</b> <small>{timeAgo(c.createdAt)}</small><p>{c.body}</p></div>
-          {canDelete(c) && <button type="button" className="st-comment-del" aria-label="Şərhi sil" onClick={() => void deleteComment(c.id).then(load).catch(() => setMsg("Şərh silinmədi."))}><Trash2 size={14} /></button>}
+          <div><b>{c.userId === me.id ? translate("Sən") : c.name}</b> <small>{timeAgo(c.createdAt)}</small><p>{c.body}</p></div>
+          {canDelete(c) && <button type="button" className="st-comment-del" aria-label={translate("Şərhi sil")} onClick={() => void deleteComment(c.id).then(load).catch(() => setMsg(translate("Şərh silinmədi.")))}><Trash2 size={14} /></button>}
         </div>)}
         <div ref={end} />
       </div>
       {msg && <p className="st-msg dark" role="status">{msg}</p>}
       <form className="st-comment-form" onSubmit={e => { e.preventDefault(); void send(); }}>
-        <input value={text} onChange={e => setText(e.target.value)} maxLength={300} placeholder="Şərh yaz…" aria-label="Şərh yaz" />
-        <button type="submit" disabled={busy || !text.trim()} aria-label="Göndər">{busy ? <LoaderCircle className="st-spin" size={18} /> : <Send size={18} />}</button>
+        <input value={text} onChange={e => setText(e.target.value)} maxLength={300} placeholder={translate("Şərh yaz…")} aria-label={translate("Şərh yaz")} />
+        <button type="submit" disabled={busy || !text.trim()} aria-label={translate("Göndər")}>{busy ? <LoaderCircle className="st-spin" size={18} /> : <Send size={18} />}</button>
       </form>
     </div>
   </div>;
