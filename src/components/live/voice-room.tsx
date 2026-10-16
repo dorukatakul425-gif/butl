@@ -311,7 +311,7 @@ export function VoiceRoom({
         {status === "live" ? (
           <>
             <i />
-            Canlı · websocket qoşulub
+            Canlı
           </>
         ) : status === "connecting" ? (
           "Qoşulur…"
