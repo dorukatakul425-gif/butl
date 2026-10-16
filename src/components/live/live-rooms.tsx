@@ -2,7 +2,7 @@
 // room creation and join-by-ID. Opening a room mounts the full-screen VoiceRoom.
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { ArrowLeft, Plus, Search, Users, Mic, LoaderCircle } from "lucide-react";
+import { ArrowLeft, Plus, Search, Users, Mic, Video, LoaderCircle } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 import { VoiceRoom, VR_STYLES } from "./voice-room";
 
@@ -23,6 +23,14 @@ export const ROOM_COVERS = [
   { key: "ocean", emoji: "🌊" },
 ] as const;
 export const coverOf = (k: string) => ROOM_COVERS.find((c) => c.key === k) ?? ROOM_COVERS[0];
+// Room kind is carried by an invisible trailing marker in the name, so no schema change is needed
+// (works on Lovable Cloud and the VPS database as-is).
+export type RoomKind = "voice" | "video";
+const VIDEO_MARK = "\u2060";
+export const roomKind = (name: string): RoomKind => (name.endsWith(VIDEO_MARK) ? "video" : "voice");
+export const roomTitle = (name: string) => name.replaceAll(VIDEO_MARK, "");
+export const withKind = (title: string, kind: RoomKind) =>
+  kind === "video" ? `${roomTitle(title).slice(0, 39)}${VIDEO_MARK}` : roomTitle(title).slice(0, 40);
 
 type Me = { id: string; name: string; photo: string | null };
 type LobbyEntry = { room: string; name: string; photo: string | null };
@@ -43,6 +51,7 @@ export function LiveRooms({
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState(`${me.name} otağı`.slice(0, 40));
   const [cover, setCover] = useState<string>("emerald");
+  const [kind, setKind] = useState<RoomKind>("voice");
   const [query, setQuery] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -112,13 +121,13 @@ export function LiveRooms({
     const res = mine
       ? await sb
           .from("voice_rooms")
-          .update({ name: name.trim(), cover })
+          .update({ name: withKind(name.trim(), kind), cover })
           .eq("id", mine.id)
           .select(COLS)
           .single()
       : await sb
           .from("voice_rooms")
-          .insert({ owner_id: me.id, name: name.trim(), cover })
+          .insert({ owner_id: me.id, name: withKind(name.trim(), kind), cover })
           .select(COLS)
           .single();
     setBusy(false);
@@ -146,7 +155,7 @@ export function LiveRooms({
     .filter(
       (r) =>
         !query ||
-        r.name.toLowerCase().includes(query.toLowerCase()) ||
+        roomTitle(r.name).toLowerCase().includes(query.toLowerCase()) ||
         String(r.code).includes(query.replace(/\D/g, "") || "~"),
     )
     .sort((a, b) => (inside[b.id]?.length ?? 0) - (inside[a.id]?.length ?? 0));
@@ -184,7 +193,14 @@ export function LiveRooms({
             {Object.values(inside).reduce((n, a) => n + a.length, 0)} nəfər danışır
           </p>
         </div>
-        <button type="button" className="lr-new" onClick={() => setCreating(true)}>
+        <button type="button" className="lr-new" onClick={() => {
+            if (mine) {
+              setKind(roomKind(mine.name));
+              setName(roomTitle(mine.name));
+              setCover(mine.cover);
+            }
+            setCreating(true);
+          }}>
           <Plus size={16} />
           {mine ? "Otağım" : "Yarat"}
         </button>
@@ -241,9 +257,9 @@ export function LiveRooms({
                   {people.length > 0 && <span className="lr-live">CANLI</span>}
                 </span>
                 <span className="lr-info">
-                  <strong>{r.name}</strong>
+                  <strong>{roomTitle(r.name)}</strong>
                   <small>
-                    ID: {r.code}
+                    {roomKind(r.name) === "video" ? "🎥 Görüntülü" : "🎙️ Səsli"} · ID: {r.code}
                     {r.owner_id === me.id ? " · sənin otağın" : ""}
                   </small>
                   <span className="lr-faces">
@@ -282,15 +298,29 @@ export function LiveRooms({
             <div className={`lr-preview vr-cover-${cover}`}>
               <span>{coverOf(cover).emoji}</span>
               <div>
-                <strong>{name || "Otaq adı"}</strong>
+                <strong>{roomTitle(name) || "Otaq adı"}</strong>
                 <small>
-                  <Mic size={11} /> Səsli və görüntülü
+                  {kind === "video" ? <Video size={11} /> : <Mic size={11} />}{" "}
+                  {kind === "video" ? "Görüntülü otaq" : "Səsli otaq"}
                 </small>
               </div>
             </div>
+            <span className="vr-field">Otaq növü</span>
+            <div className="lr-kinds">
+              <button type="button" className={kind === "voice" ? "on" : ""} onClick={() => setKind("voice")}>
+                <Mic size={18} />
+                <b>Səsli otaq</b>
+                <small>Yuvarlaq yerlər, səs</small>
+              </button>
+              <button type="button" className={kind === "video" ? "on" : ""} onClick={() => setKind("video")}>
+                <Video size={18} />
+                <b>Görüntülü otaq</b>
+                <small>Böyük kamera pəncərələri</small>
+              </button>
+            </div>
             <label className="vr-field">
               Otaq adı
-              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
+              <input value={roomTitle(name)} onChange={(e) => setName(e.target.value)} maxLength={39} />
             </label>
             <span className="vr-field">Otaq şəkli</span>
             <div className="vr-covers">
@@ -352,5 +382,9 @@ const LR_STYLES = `
 .lr-empty span{font-size:44px;}
 .lr-preview{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--vr-surface);}
 .lr-preview>span{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:26px;background:var(--cover);}
+.lr-kinds{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.lr-kinds button{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:3px;padding:12px;border-radius:16px;background:var(--vr-surface);border:1.5px solid var(--vr-line);transition:border-color .2s,background .2s;}
+.lr-kinds button.on{border-color:var(--vr-accent);background:oklch(.78 .16 70 / .14);}
+.lr-kinds b{font-size:13px}.lr-kinds small{font-size:10.5px;color:var(--vr-dim);}
 .lr-preview strong{display:block;font-size:15px}.lr-preview small{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--vr-dim);}
 `;
