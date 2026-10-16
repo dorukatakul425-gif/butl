@@ -38,3 +38,6 @@
 
 - Root prints the inspector notice once client-side; no DevTools detection or execution/input blocking, to preserve operation.
 - VPS hosting lives only in deploy/vps (subdirectories have their own AGENTS.md to read first); never change Lovable's .env/vite config for it, so both targets work.
+
+- Live voice rooms join with presence only; acquire microphone on seating and camera on explicit seated action, reusing sendrecv transceivers so listener promotion requires no schema change.
+- Live gifts use acknowledged room broadcasts with IDs/start timestamps; only catalogued media is rendered, and VPS media references resolve to the confirmed hosted asset origin.

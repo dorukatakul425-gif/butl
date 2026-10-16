@@ -25,7 +25,7 @@ export type RoomChat = {
   to?: string | null;
   toName?: string;
 };
-export type RoomGift = { id: string; from: string; to: string | null; gift: string };
+export type RoomGift = { id: string; from: string; to: string | null; gift: string; name?: string; at?: number };
 
 type Handlers = {
   onMembers: (m: RoomMember[]) => void;
@@ -66,13 +66,17 @@ export class VoiceRoomClient {
   local: MediaStream | null = null;
   private ch: RealtimeChannel | null = null;
   private pcs = new Map<string, RTCPeerConnection>();
+  private remoteStreams = new Map<string, MediaStream>();
   private pendingIce = new Map<string, RTCIceCandidateInit[]>();
   private members: RoomMember[] = [];
   private ctx: AudioContext | null = null;
   private meter = 0;
   private lastSpeak = 0;
   private wasSpeaking = false;
-  private autoSeated = false;
+  private mediaBusy = false;
+  private ready = false;
+  private seenGifts = new Set<string>();
+  private departed = new Map<string, number>();
   private closed = false;
 
   constructor(
@@ -86,38 +90,15 @@ export class VoiceRoomClient {
 
   async start() {
     this.h.onStatus("connecting");
-    const audio = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
-    try {
-      this.local = await navigator.mediaDevices.getUserMedia({
-        audio,
-        video: { width: { ideal: 360 }, height: { ideal: 360 }, facingMode: "user" },
-      });
-    } catch {
-      try {
-        this.local = await navigator.mediaDevices.getUserMedia({ audio });
-      } catch {
-        this.local = null;
-      }
-    }
-    if (this.closed) {
-      this.local?.getTracks().forEach((t) => t.stop());
-      return;
-    }
-    this.local?.getVideoTracks().forEach((t) => {
-      t.enabled = false;
-    });
-    this.me.mic = Boolean(this.local?.getAudioTracks().length);
-    this.h.onStream(this.me.id, this.local);
-    this.startMeter();
-
+    if (this.closed) return;
     const ch = this.sb.channel(`vroom:${this.roomId}`, {
-      config: { presence: { key: this.me.id }, broadcast: { self: false } },
+      config: { presence: { key: this.me.id }, broadcast: { self: false, ack: true } },
     });
     this.ch = ch;
     ch.on("presence", { event: "sync" }, () => this.sync());
     ch.on("broadcast", { event: "signal" }, ({ payload }) => void this.onSignal(payload as Signal));
     ch.on("broadcast", { event: "chat" }, ({ payload }) => this.h.onChat(payload as RoomChat));
-    ch.on("broadcast", { event: "gift" }, ({ payload }) => this.h.onGift(payload as RoomGift));
+    ch.on("broadcast", { event: "gift" }, ({ payload }) => this.receiveGift(payload as RoomGift));
     ch.on("broadcast", { event: "speak" }, ({ payload }) => {
       const p = payload as { id: string; level: number };
       this.h.onSpeaking(p.id, p.level);
@@ -125,11 +106,22 @@ export class VoiceRoomClient {
     ch.on("broadcast", { event: "room" }, ({ payload }) =>
       this.h.onRoom((payload as { type: "updated" | "closed" }).type),
     );
+    ch.on("broadcast", { event: "departure" }, ({ payload }) => {
+      const p = payload as { id?: string; joinedAt?: number };
+      if (p.id && p.id !== this.me.id) {
+        const member = this.members.find(m => m.id === p.id);
+        this.departed.set(p.id, p.joinedAt ?? member?.joinedAt ?? 0);
+        this.sync();
+      }
+    });
     ch.subscribe(async (status) => {
+      if (this.closed) return;
       if (status === "SUBSCRIBED") {
-        await ch.track(this.me);
-        this.h.onStatus("live");
-      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") this.h.onStatus("error");
+        const result = await ch.track(this.me);
+        if (this.closed) { await ch.untrack(); return; }
+        this.ready = result === "ok";
+        this.h.onStatus(this.ready ? "live" : "error");
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") { this.ready = false; this.h.onStatus("error"); }
     });
   }
 
@@ -141,31 +133,86 @@ export class VoiceRoomClient {
   }
 
   private retrack() {
+    if (this.closed) return;
     void this.ch?.track(this.me);
     this.sync();
   }
 
   toggleMic() {
     const t = this.local?.getAudioTracks()[0];
-    if (!t) return false;
+    if (!t || this.me.seat === null || this.closed) return false;
     t.enabled = !t.enabled;
     this.me = { ...this.me, mic: t.enabled };
     this.retrack();
     return true;
   }
-  toggleCam() {
-    const t = this.local?.getVideoTracks()[0];
-    if (!t) return false;
-    t.enabled = !t.enabled;
-    this.me = { ...this.me, cam: t.enabled };
-    this.retrack();
-    return true;
+  async toggleCam() {
+    if (this.me.seat === null || this.closed || this.mediaBusy) return false;
+    const existing = this.local?.getVideoTracks()[0];
+    if (existing) {
+      existing.enabled = !existing.enabled;
+      this.me = { ...this.me, cam: existing.enabled };
+      this.retrack();
+      return true;
+    }
+    this.mediaBusy = true;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: "user" }, audio: false });
+      if (this.closed || this.me.seat === null) { stream.getTracks().forEach(t => t.stop()); return false; }
+      const track = stream.getVideoTracks()[0];
+      if (!track || !this.local) { stream.getTracks().forEach(t => t.stop()); return false; }
+      this.local.addTrack(track);
+      this.me = { ...this.me, cam: true };
+      await this.updateSenders();
+      this.h.onStream(this.me.id, this.local);
+      this.retrack();
+      return true;
+    } catch { return false; } finally { this.mediaBusy = false; }
   }
-  setSeat(seat: number | null) {
-    if (seat !== null && this.members.some((m) => m.id !== this.me.id && m.seat === seat)) return;
-    this.me = { ...this.me, seat };
-    this.autoSeated = true;
-    this.retrack();
+  async setSeat(seat: number | null) {
+    if (this.closed || !this.ready) return false;
+    if (seat === null) {
+      this.me = { ...this.me, seat: null, mic: false, cam: false };
+      this.releaseMedia();
+      this.retrack();
+      return true;
+    }
+    if (!Number.isInteger(seat) || seat < 0 || seat >= SEAT_COUNT || this.mediaBusy || this.members.some(m => m.id !== this.me.id && m.seat === seat)) return false;
+    this.mediaBusy = true;
+    try {
+      if (!this.hasAudio()) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
+        if (this.closed || !this.ready || this.members.some(m => m.id !== this.me.id && m.seat === seat)) { stream.getTracks().forEach(t => t.stop()); return false; }
+        this.local = stream;
+      }
+      this.local?.getAudioTracks().forEach(t => { t.enabled = true; });
+      this.me = { ...this.me, seat, mic: true };
+      await this.updateSenders();
+      if (this.closed) return false;
+      this.h.onStream(this.me.id, this.local);
+      this.startMeter();
+      this.retrack();
+      return this.me.seat === seat;
+    } catch { return false; } finally { this.mediaBusy = false; }
+  }
+
+  private async updateSenders() {
+    const local = this.local;
+    await Promise.all([...this.pcs.values()].flatMap(pc => pc.getTransceivers().map(tr => {
+      const track = local?.getTracks().find(t => t.kind === tr.receiver.track.kind) ?? null;
+      return tr.sender.replaceTrack(track).catch(() => undefined);
+    })));
+  }
+  private releaseMedia() {
+    window.clearInterval(this.meter);
+    void this.ctx?.close().catch(() => undefined);
+    this.ctx = null;
+    this.local?.getTracks().forEach(t => t.stop());
+    this.local = null;
+    void this.updateSenders();
+    this.h.onStream(this.me.id, null);
+    this.h.onSpeaking(this.me.id, 0);
+    this.send("speak", { id: this.me.id, level: 0 });
   }
 
   sendChat(text: string) {
@@ -181,24 +228,22 @@ export class VoiceRoomClient {
     this.h.onChat(msg);
     this.send("chat", msg);
   }
-  sendGift(to: RoomMember | null, gift: string) {
-    const g: RoomGift = { id: uid(), from: this.me.id, to: to?.id ?? null, gift };
-    const msg: RoomChat = {
-      id: uid(),
-      from: this.me.id,
-      name: this.me.name,
-      photo: this.me.photo,
-      text: "",
-      at: Date.now(),
-      kind: "gift",
-      gift,
-      to: to?.id ?? null,
-      toName: to?.name ?? "hamıya",
-    };
-    this.h.onGift(g);
+  async sendGift(to: RoomMember | null, gift: string) {
+    if (!this.ready || this.closed || !this.ch || gift !== "video") return false;
+    const g: RoomGift = { id: uid(), from: this.me.id, name: this.me.name, to: to?.id ?? null, gift, at: Date.now() + 700 };
+    const result = await this.ch.send({ type: "broadcast", event: "gift", payload: g });
+    if (result !== "ok" || this.closed) return false;
+    this.receiveGift(g);
+    const msg: RoomChat = { id: g.id, from: this.me.id, name: this.me.name, photo: this.me.photo, text: "", at: g.at ?? Date.now(), kind: "gift", gift, to: g.to, toName: to?.name ?? "hamıya" };
     this.h.onChat(msg);
-    this.send("gift", g);
     this.send("chat", msg);
+    return true;
+  }
+  private receiveGift(g: RoomGift) {
+    if (this.closed || g.gift !== "video" || !g.id || this.seenGifts.has(g.id)) return;
+    this.seenGifts.add(g.id);
+    if (this.seenGifts.size > 200) { const first = this.seenGifts.values().next().value; if (first) this.seenGifts.delete(first); }
+    this.h.onGift(g);
   }
   notifyRoom(type: "updated" | "closed") {
     this.send("room", { type });
@@ -209,11 +254,17 @@ export class VoiceRoomClient {
   }
 
   private sync() {
-    if (!this.ch) return;
+    if (!this.ch || this.closed) return;
     const state = this.ch.presenceState<RoomMember>();
     let list = Object.values(state)
       .map((arr) => arr[arr.length - 1])
-      .filter(Boolean) as RoomMember[];
+      .filter((m) => {
+        if (!m) return false;
+        const left = this.departed.get(m.id);
+        if (left === undefined) return true;
+        if (m.joinedAt > left) { this.departed.delete(m.id); return true; }
+        return false;
+      }) as RoomMember[];
     if (!list.some((m) => m.id === this.me.id)) list.push(this.me);
     list = list.map((m) => (m.id === this.me.id ? this.me : m));
     // Seat conflicts: the earlier joiner keeps the seat.
@@ -227,17 +278,9 @@ export class VoiceRoomClient {
           (m.joinedAt < this.me.joinedAt || (m.joinedAt === this.me.joinedAt && m.id < this.me.id)),
       )
     ) {
-      this.me = { ...this.me, seat: null };
-      this.autoSeated = false;
-    }
-    if (!this.autoSeated && this.me.seat === null) {
-      const taken = new Set(list.filter((m) => m.id !== this.me.id).map((m) => m.seat));
-      const free = Array.from({ length: SEAT_COUNT }, (_, i) => i).find((i) => !taken.has(i));
-      this.autoSeated = true;
-      if (free !== undefined) {
-        this.me = { ...this.me, seat: free };
-        void this.ch.track(this.me);
-      }
+      this.me = { ...this.me, seat: null, mic: false, cam: false };
+      this.releaseMedia();
+      void this.ch.track(this.me);
     }
     list = list
       .map((m) => (m.id === this.me.id ? this.me : m))
@@ -254,7 +297,10 @@ export class VoiceRoomClient {
     this.drop(id);
     const pc = new RTCPeerConnection({ iceServers: iceServers() });
     this.pcs.set(id, pc);
-    this.local?.getTracks().forEach((t) => pc.addTrack(t, this.local!));
+    for (const kind of ["audio", "video"]) {
+      const track = this.local?.getTracks().find(t => t.kind === kind);
+      pc.addTransceiver(track ?? kind, { direction: "sendrecv", ...(track && this.local ? { streams: [this.local] } : {}) });
+    }
     pc.onicecandidate = (e) => {
       if (e.candidate)
         this.send("signal", {
@@ -264,7 +310,12 @@ export class VoiceRoomClient {
           ice: e.candidate.toJSON(),
         } satisfies Signal);
     };
-    pc.ontrack = (e) => this.h.onStream(id, e.streams[0] ?? new MediaStream([e.track]));
+    pc.ontrack = (e) => {
+      const stream = this.remoteStreams.get(id) ?? e.streams[0] ?? new MediaStream();
+      if (!stream.getTracks().some(t => t.id === e.track.id)) stream.addTrack(e.track);
+      this.remoteStreams.set(id, stream);
+      this.h.onStream(id, stream);
+    };
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === "failed" && this.me.id < id && !this.closed) void this.call(id);
     };
@@ -273,15 +324,13 @@ export class VoiceRoomClient {
 
   private async call(id: string) {
     const pc = this.makePc(id);
-    if (!this.hasAudio()) pc.addTransceiver("audio", { direction: "recvonly" });
-    if (!this.hasVideo()) pc.addTransceiver("video", { direction: "recvonly" });
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     this.send("signal", {
       to: id,
       from: this.me.id,
       type: "offer",
-      sdp: pc.localDescription!.toJSON(),
+      sdp: pc.localDescription?.toJSON(),
     } satisfies Signal);
   }
 
@@ -304,7 +353,7 @@ export class VoiceRoomClient {
           to: s.from,
           from: this.me.id,
           type: "answer",
-          sdp: pc.localDescription!.toJSON(),
+          sdp: pc.localDescription?.toJSON(),
         } satisfies Signal);
       } else if (s.type === "answer" && s.sdp) {
         const pc = this.pcs.get(s.from);
@@ -329,10 +378,13 @@ export class VoiceRoomClient {
     pc.onconnectionstatechange = null;
     pc.close();
     this.pcs.delete(id);
+    this.remoteStreams.delete(id);
     this.h.onStream(id, null);
   }
 
   private startMeter() {
+    window.clearInterval(this.meter);
+    void this.ctx?.close().catch(() => undefined);
     const t = this.local?.getAudioTracks()[0];
     if (!t) return;
     try {
@@ -368,12 +420,15 @@ export class VoiceRoomClient {
   }
 
   async leave() {
+    if (this.closed) return;
     this.closed = true;
+    this.ready = false;
     window.clearInterval(this.meter);
     void this.ctx?.close().catch(() => undefined);
     for (const id of [...this.pcs.keys()]) this.drop(id);
     this.local?.getTracks().forEach((t) => t.stop());
     if (this.ch) {
+      await this.ch.send({ type: "broadcast", event: "departure", payload: { id: this.me.id, joinedAt: this.me.joinedAt } }).catch(() => undefined);
       await this.ch.untrack().catch(() => undefined);
       await this.sb.removeChannel(this.ch);
       this.ch = null;

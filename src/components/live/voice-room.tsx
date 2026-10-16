@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Copy,
-  Film,
+  Music2,
   Gift,
   Plus,
   LogOut,
@@ -43,23 +43,57 @@ import {
   type RoomKind,
   type VoiceRoomRow,
 } from "./live-rooms";
+import { Button } from "@/components/ui/button";
+import giftArtwork from "@/assets/gifts/pegasus.jpg.asset.json";
+import giftClip from "@/assets/gifts/pegasus.mp4.asset.json";
+import giftFallback from "@/assets/gifts/pegasus.webm.asset.json";
 import roomBg from "@/assets/room-bg-night.jpg";
 
 const EMOJIS = ["😀", "😂", "😍", "🥰", "😎", "🤩", "😘", "🙏", "👏", "🔥", "❤️", "🌹", "🎉", "💯", "😢", "😡"];
 
-const GIFTS = [
-  { key: "rose", emoji: "🌹", name: "Qızılgül" },
-  { key: "heart", emoji: "💖", name: "Ürək" },
-  { key: "kiss", emoji: "💋", name: "Öpüş" },
-  { key: "bear", emoji: "🧸", name: "Ayıcıq" },
-  { key: "ring", emoji: "💍", name: "Üzük" },
-  { key: "crown", emoji: "👑", name: "Tac" },
-  { key: "rocket", emoji: "🚀", name: "Raket" },
-  { key: "fire", emoji: "🔥", name: "Alov" },
-  { key: "video", emoji: "🎬", name: "Video", video: true },
-];
-const giftEmoji = (k?: string) => GIFTS.find((g) => g.key === k)?.emoji ?? "🎁";
-const VIDEO_GIFT_URL = "/gifts/special.mp4";
+const ASSET_ORIGIN = "https://id-preview--88e024e4-bf42-4edc-bea3-5e35357c10f2.lovable.app";
+const VIDEO_GIFT_URL = new URL(giftClip.url, ASSET_ORIGIN).href;
+const VIDEO_GIFT_FALLBACK = new URL(giftFallback.url, ASSET_ORIGIN).href;
+const VIDEO_GIFT_ARTWORK = new URL(giftArtwork.url, ASSET_ORIGIN).href;
+const GIFTS = [{ key: "video", name: "Peqas", artwork: VIDEO_GIFT_ARTWORK, sound: true }];
+const giftEmoji = (_k?: string) => "🎁";
+
+function GiftPlayback({ gift, muted, onDone }: { gift: RoomGift; muted: boolean; onDone: () => void }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [soundBlocked, setSoundBlocked] = useState(false);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    let disposed = false;
+    const start = async () => {
+      if (disposed) return;
+      video.currentTime = Math.max(0, (Date.now() - (gift.at ?? Date.now())) / 1000);
+      try { await video.play(); }
+      catch {
+        if (disposed) return;
+        video.muted = true;
+        setSoundBlocked(true);
+        void video.play().catch(() => undefined);
+      }
+    };
+    const timer = window.setTimeout(() => void start(), Math.max(0, (gift.at ?? Date.now()) - Date.now()));
+    return () => { disposed = true; window.clearTimeout(timer); video.pause(); };
+  }, [gift.id, gift.at]);
+  return <div className="vr-vgift">
+    <video ref={ref} preload="auto" playsInline muted={muted || soundBlocked} onEnded={onDone} onError={(event) => { if (event.target === event.currentTarget) onDone(); }}>
+      <source src={VIDEO_GIFT_URL} type='video/mp4; codecs="avc1.640028, mp4a.40.2"' />
+      <source src={VIDEO_GIFT_FALLBACK} type="video/webm" />
+    </video>
+    <div className="vr-vgift-tag"><img src={VIDEO_GIFT_ARTWORK} alt="" /><b>{gift.name ?? "Oyunçu"}</b> hədiyyə göndərdi</div>
+    {soundBlocked && !muted && <Button variant="ghost" className="vr-sound-recover" aria-label="Hədiyyənin səsini aç" onClick={() => {
+      const video = ref.current;
+      if (!video) return;
+      video.muted = false;
+      void video.play().then(() => setSoundBlocked(false)).catch(() => setSoundBlocked(true));
+    }}><Volume2 size={20} /></Button>}
+    <Button variant="ghost" className="vr-icon vr-vgift-x" aria-label="Hədiyyəni bağla" onClick={onDone}><X size={18} /></Button>
+  </div>;
+}
 
 type Me = { id: string; name: string; photo: string | null };
 type Flying = RoomGift & { x: number; y: number };
@@ -120,7 +154,10 @@ export function VoiceRoom({
   const [speakerOff, setSpeakerOff] = useState(false);
   const [chatHidden, setChatHidden] = useState(false);
   const [flying, setFlying] = useState<Flying[]>([]);
-  const [videoGift, setVideoGift] = useState<RoomGift | null>(null);
+  const [giftQueue, setGiftQueue] = useState<RoomGift[]>([]);
+  const [giftBusy, setGiftBusy] = useState(false);
+  const [seatBusy, setSeatBusy] = useState(false);
+  const videoGift = giftQueue[0];
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState("");
   const client = useRef<VoiceRoomClient | null>(null);
@@ -167,11 +204,10 @@ export function VoiceRoom({
               if (data) setRoom(data as VoiceRoomRow);
             });
       },
-      onStatus: setStatus,
+      onStatus: (s) => { setStatus(s); onPresence(s === "live"); },
     });
     client.current = c;
     void c.start();
-    onPresence(true);
     return () => {
       onPresence(false);
       client.current = null;
@@ -186,7 +222,7 @@ export function VoiceRoom({
 
   function launchGift(g: RoomGift) {
     if (g.gift === "video") {
-      setVideoGift(g);
+      setGiftQueue(prev => [...prev, g]);
       return;
     }
     window.requestAnimationFrame(() => {
@@ -220,12 +256,22 @@ export function VoiceRoom({
     setText("");
   };
   const toggleMic = () => {
-    if (!client.current?.toggleMic()) flash("Mikrofona icazə verilməyib");
-    else setMembers((ms) => ms.map((m) => (m.id === me.id ? client.current!.me : m)));
+    const c = client.current;
+    if (!c || c.me.seat === null) { flash("Əvvəlcə masaya otur"); return; }
+    if (!c.toggleMic()) flash("Mikrofona icazə verilməyib");
   };
-  const toggleCam = () => {
-    if (!client.current?.toggleCam()) flash("Kameraya icazə verilməyib");
-    else setMembers((ms) => ms.map((m) => (m.id === me.id ? client.current!.me : m)));
+  const toggleCam = async () => {
+    const c = client.current;
+    if (!c || c.me.seat === null) { flash("Əvvəlcə masaya otur"); return; }
+    if (!await c.toggleCam()) flash("Kameraya icazə verilməyib");
+  };
+  const sit = async (seat: number) => {
+    if (seatBusy) return;
+    const c = client.current;
+    if (!c) return;
+    setSeatBusy(true);
+    try { if (!await c.setSeat(seat)) flash("Yer tutulub və ya mikrofon icazəsi verilməyib"); }
+    finally { setSeatBusy(false); }
   };
   const copyId = () => {
     void navigator.clipboard?.writeText(String(room.code)).then(() => {
@@ -279,7 +325,8 @@ export function VoiceRoom({
           <button
             type="button"
             className="vr-empty"
-            onClick={() => client.current?.setSeat(i)}
+            disabled={seatBusy || status !== "live"}
+            onClick={() => void sit(i)}
             aria-label={`${i + 1}. yerə otur`}
           >
             <span className="vr-plus">
@@ -474,23 +521,7 @@ export function VoiceRoom({
           <i className="vr-burst" />
         </span>
       ))}
-      {videoGift && (
-        <div className="vr-vgift" onClick={() => setVideoGift(null)}>
-          <div className="vr-vgift-tag">
-            <b>{videoGift.from === me.id ? "Sən" : videoGift.from}</b> video hədiyyə göndərdi 🎬
-          </div>
-          <video
-            src={VIDEO_GIFT_URL}
-            autoPlay
-            playsInline
-            onEnded={() => setVideoGift(null)}
-            onError={() => setVideoGift(null)}
-          />
-          <button type="button" className="vr-icon vr-vgift-x" aria-label="Bağla">
-            <X size={18} />
-          </button>
-        </div>
-      )}
+      {videoGift && <GiftPlayback key={videoGift.id} gift={videoGift} muted={speakerOff} onDone={() => setGiftQueue(q => q.slice(1))} />}
       {toast && (
         <div className="vr-toast" role="status">
           {toast}
@@ -504,9 +535,9 @@ export function VoiceRoom({
             if (e.target === e.currentTarget) setGiftOpen(false);
           }}
         >
-          <div className="vr-sheet">
+          <div className="vr-sheet vr-gift-sheet">
             <div className="vr-sheet-head">
-              <h3>Hədiyyə göndər</h3>
+              <h3><Gift size={18} /> Hədiyyələr</h3>
               <button
                 type="button"
                 className="vr-icon"
@@ -538,20 +569,22 @@ export function VoiceRoom({
                   </button>
                 ))}
             </div>
+            <div className="vr-gift-tabs"><span>SƏSLİ</span></div>
             <div className="vr-gifts">
-              {GIFTS.map((g) => (
-                <button
-                  key={g.key}
-                  type="button"
-                  onClick={() => {
-                    client.current?.sendGift(members.find((m) => m.id === giftTo) ?? null, g.key);
-                    setGiftOpen(false);
-                  }}
-                >
-                  <span>{g.video ? <Film size={26} /> : g.emoji}</span>
-                  {g.name}
-                </button>
-              ))}
+              {GIFTS.map(g => <div key={g.key} className="vr-gift-item">
+                <div className="vr-gift-art"><img src={g.artwork} alt={g.name} /><span className="vr-gift-sound" title="Səsli hədiyyə"><Music2 size={14} /></span></div>
+                <strong>{g.name}</strong>
+                <Button variant="ghost" className="vr-gift-send" disabled={giftBusy || status !== "live"} onClick={async () => {
+                  const c = client.current;
+                  if (!c || giftBusy) return;
+                  setGiftBusy(true);
+                  try {
+                    const sent = await c.sendGift(members.find(m => m.id === giftTo) ?? null, g.key);
+                    if (sent) setGiftOpen(false);
+                    else flash("Hədiyyə göndərilmədi. Bağlantını yoxla.");
+                  } finally { setGiftBusy(false); }
+                }}>{giftBusy ? "Göndərilir…" : "Göndər"}</Button>
+              </div>)}
             </div>
           </div>
         </div>
@@ -715,7 +748,7 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 .vr button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .vr-top{display:flex;align-items:center;gap:6px;padding:4px 12px 6px 4px;}
 .vr-back{all:unset;display:grid;place-items:center;width:38px;height:44px;flex-shrink:0;}
-.vr-plate{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 6px 4px 4px;border-radius:16px;background:oklch(.15 .03 230 / .55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--vr-line);}
+.vr-plate{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 6px 4px 4px;border-radius:16px;background:oklch(.15 .03 230 / .55);backdrop-filter:blur(10px);border:1px solid var(--vr-line);}
 .vr-room-ava{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--cover);box-shadow:inset 0 0 0 1px oklch(1 0 0 / .2),0 4px 14px oklch(0 0 0 / .35);flex-shrink:0;}
 .vr-title{min-width:0;display:flex;flex-direction:column;gap:1px;}
 .vr-title strong{font-size:15px;font-weight:800;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
@@ -730,7 +763,7 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 .vr-status{font-size:12px;font-weight:800;display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 8px;border-radius:20px;background:linear-gradient(90deg,oklch(.55 .15 155),oklch(.45 .12 165));box-shadow:inset 0 1px 0 oklch(1 0 0 / .25),0 4px 10px oklch(0 0 0 / .3);}
 .vr-status i{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%,oklch(.95 .08 160),var(--vr-live));animation:vr-pulse 1.6s infinite;}
 .vr-status.connecting{background:var(--vr-glass);}.vr-status.error{background:oklch(.5 .18 25 / .7);}
-.vr-gift-chip{all:unset;cursor:pointer;font-size:13px;font-weight:700;padding:7px 14px;border-radius:20px;background:oklch(.15 .03 230 / .55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--vr-line);}
+.vr-gift-chip{all:unset;cursor:pointer;font-size:13px;font-weight:700;padding:7px 14px;border-radius:20px;background:oklch(.15 .03 230 / .55);backdrop-filter:blur(10px);border:1px solid var(--vr-line);}
 .vr-stage{display:flex;flex-direction:column;align-items:stretch;gap:14px;padding:14px 0 8px;}
 .vr-seats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:30px 0;width:100%;max-width:460px;margin:0 auto;padding:0 10px;justify-items:center;}
 .vr-seat{position:relative;width:min(19vw,72px);aspect-ratio:1;display:grid;place-items:center;}
@@ -755,12 +788,12 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 .vr-seat.speaking .vr-eq{opacity:1;}
 .vr-seat.speaking .vr-eq i{animation:vr-eq .5s ease-in-out infinite alternate;}
 .vr-seat.speaking .vr-eq i:nth-child(2){animation-delay:.15s}.vr-seat.speaking .vr-eq i:nth-child(3){animation-delay:.3s}.vr-seat.speaking .vr-eq i:nth-child(4){animation-delay:.08s}
-.vr-empty{all:unset;width:100%;height:100%;border-radius:50%;display:grid;place-items:center;color:oklch(1 0 0 / .75);background:radial-gradient(circle at 50% 30%,oklch(1 0 0 / .2),oklch(1 0 0 / .1));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 oklch(1 0 0 / .2),0 6px 16px oklch(0 0 0 / .25);cursor:pointer;transition:transform .2s,background .2s;}
+.vr-empty{all:unset;width:100%;height:100%;border-radius:50%;display:grid;place-items:center;color:oklch(1 0 0 / .75);background:radial-gradient(circle at 50% 30%,oklch(1 0 0 / .2),oklch(1 0 0 / .1));backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 oklch(1 0 0 / .2),0 6px 16px oklch(0 0 0 / .25);cursor:pointer;transition:transform .2s,background .2s;}
 .vr-empty .vr-plus{display:grid;place-items:center;}
 .vr-empty .vr-num{position:absolute;top:calc(100% + 6px);font-size:13px;font-weight:600;color:var(--vr-dim);}
 .vr-empty:active{transform:scale(.92);background:oklch(1 0 0 / .22);}
 .vr-tools{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 14px 0;}
-.vr-pill{all:unset;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:20px;font-size:14px;font-weight:700;background:oklch(.15 .03 230 / .55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--vr-line);}
+.vr-pill{all:unset;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:20px;font-size:14px;font-weight:700;background:oklch(.15 .03 230 / .55);backdrop-filter:blur(10px);border:1px solid var(--vr-line);}
 .vr-pill button{all:unset;cursor:pointer;display:grid;place-items:center;}
 .vr-all{font-size:10px;font-weight:900;padding:2px 4px;border-radius:5px;background:var(--vr-ink);color:oklch(.2 .03 230);}
 .vr-stand{cursor:pointer;font-size:12px;}
@@ -769,11 +802,11 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 .vr-chat::-webkit-scrollbar{display:none}
 .vr-msg{display:flex;gap:10px;align-items:flex-start;animation:vr-msg .25s ease-out;max-width:88%;}
 .vr-msg-ico{width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;display:grid;place-items:center;font-size:16px;background:oklch(1 0 0 / .18);}
-.vr-msg p{margin:0;font-size:14.5px;line-height:1.4;padding:9px 13px;border-radius:14px;background:oklch(.32 .06 210 / .6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid oklch(1 0 0 / .06);overflow-wrap:anywhere;}
+.vr-msg p{margin:0;font-size:14.5px;line-height:1.4;padding:9px 13px;border-radius:14px;background:oklch(.32 .06 210 / .6);backdrop-filter:blur(8px);border:1px solid oklch(1 0 0 / .06);overflow-wrap:anywhere;}
 .vr-msg b{display:block;font-size:12px;color:var(--vr-teal);}
 .vr-msg.gift p{background:linear-gradient(90deg,oklch(.6 .2 350 / .55),oklch(.7 .14 70 / .4));}
 .vr-msg.gift b{display:inline;color:var(--vr-ink);}
-.vr-emojis{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:0 12px 6px;padding:8px;border-radius:18px;background:oklch(.18 .03 230 / .85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--vr-line);animation:vr-up .2s ease-out;}
+.vr-emojis{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:0 12px 6px;padding:8px;border-radius:18px;background:oklch(.18 .03 230 / .85);backdrop-filter:blur(12px);border:1px solid var(--vr-line);animation:vr-up .2s ease-out;}
 .vr-emojis button{all:unset;cursor:pointer;font-size:24px;text-align:center;padding:4px 0;border-radius:10px;}
 .vr-emojis button:active{background:var(--vr-surface);}
 .vr-bar{display:flex;align-items:center;gap:4px;padding:8px 8px 2px;}
@@ -782,7 +815,7 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 .vr-tool.on{color:var(--vr-live);}
 .vr-tool.off{color:oklch(.7 .18 25);}
 .vr-gift{color:oklch(.78 .16 355);animation:vr-wiggle 3s ease-in-out infinite;}
-.vr-input{flex:1;min-width:0;display:flex;align-items:center;gap:6px;height:42px;border-radius:21px;background:oklch(.15 .03 230 / .55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--vr-line);padding:0 4px 0 8px;}
+.vr-input{flex:1;min-width:0;display:flex;align-items:center;gap:6px;height:42px;border-radius:21px;background:oklch(.15 .03 230 / .55);backdrop-filter:blur(10px);border:1px solid var(--vr-line);padding:0 4px 0 8px;}
 .vr-emo{all:unset;cursor:pointer;display:grid;place-items:center;color:var(--vr-dim);}
 .vr-input input{all:unset;flex:1;min-width:0;font-size:15px;}
 .vr-input input::placeholder{color:var(--vr-dim);}
@@ -796,11 +829,12 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 .vr-fly{position:fixed;z-index:80;left:0;top:0;font-size:46px;pointer-events:none;animation:vr-fly 2.2s cubic-bezier(.2,.8,.3,1) forwards;}
 .vr-burst{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border-radius:50%;box-shadow:0 0 0 0 var(--vr-accent);opacity:0;animation:vr-burst 2.2s ease-out forwards;}
 .vr-toast{position:fixed;z-index:85;left:50%;top:80px;transform:translateX(-50%);padding:8px 14px;border-radius:20px;font-size:12px;background:oklch(0 0 0 / .7);}
-.vr-vgift{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:oklch(0 0 0 / .92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:vr-in .25s ease-out;cursor:pointer;}
-.vr-vgift video{max-width:100vw;max-height:100dvh;width:auto;height:auto;border-radius:0;box-shadow:0 0 60px oklch(0 0 0 / .8);}
-.vr-vgift-tag{position:absolute;top:max(14px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:2;font-size:13px;padding:8px 16px;border-radius:20px;background:oklch(.15 .03 230 / .7);border:1px solid var(--vr-line);white-space:nowrap;}
+.vr-vgift{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:transparent;pointer-events:none;}
+.vr-vgift video{width:min(100%,560px);height:78dvh;object-fit:cover;opacity:.9;mask-image:linear-gradient(transparent,oklch(0 0 0) 16%,oklch(0 0 0) 80%,transparent);}
+.vr-vgift-tag{position:absolute;top:max(14px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:2;font-size:13px;padding:8px 16px;border-radius:20px;background:oklch(.15 .03 230 / .7);border:1px solid var(--vr-line);max-width:calc(100% - 100px);display:flex;align-items:center;gap:8px;overflow-wrap:anywhere;}
+.vr-vgift-tag img{width:32px;height:32px;object-fit:cover;border-radius:6px;}
 .vr-vgift-tag b{color:var(--vr-accent);}
-.vr-vgift-x{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;z-index:2;}
+.vr-vgift-x{pointer-events:auto;position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;z-index:2;}
 .vr-sheet-wrap{position:fixed;inset:0;z-index:90;background:oklch(0 0 0 / .5);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
 .vr-sheet{width:min(100%,520px);background:oklch(.22 .04 225);border-radius:22px 22px 0 0;padding:16px 16px max(18px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;animation:vr-up .25s ease-out;border-top:1px solid var(--vr-line);}
 .vr-sheet-head{display:flex;justify-content:space-between;align-items:center;}.vr-sheet-head h3{margin:0;font-size:16px;}
@@ -808,9 +842,20 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 .vr-to button{all:unset;cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:6px;font-size:12px;padding:5px 10px 5px 5px;border-radius:20px;background:var(--vr-surface);border:1px solid var(--vr-line);}
 .vr-to button.on{border-color:var(--vr-accent);background:oklch(.78 .16 70 / .18);}
 .vr-to img,.vr-all{width:24px;height:24px;border-radius:50%;object-fit:cover;display:grid;place-items:center;font-size:14px;}
-.vr-gifts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-.vr-gifts button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:14px;background:var(--vr-surface);font-size:11px;transition:transform .15s;}
-.vr-gifts button:active{transform:scale(.92);}.vr-gifts span{font-size:30px;}
+.vr-gift-sheet{--vr-catalog:oklch(.2 .008 280);background:var(--vr-catalog);max-height:70dvh;overflow:auto;border-radius:8px 8px 0 0;}
+.vr-gift-sheet h3{display:flex;align-items:center;gap:8px;}
+.vr-gift-tabs{border-bottom:1px solid var(--vr-line);padding:10px 0;font-size:13px;font-weight:800;}
+.vr-gift-tabs span{border-bottom:2px solid var(--vr-ink);padding-bottom:10px;}
+.vr-gifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-height:160px;}
+.vr-gift-item{min-width:0;text-align:center;border:1px solid var(--vr-line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:6px;}
+.vr-gift-art{position:relative;width:100%;aspect-ratio:1;}
+.vr-gift-art img{width:100%;height:100%;object-fit:cover;display:block;}
+.vr-gift-sound{position:absolute;top:2px;left:2px;border-radius:4px;padding:3px;display:grid;place-items:center;background:var(--vr-glass);}
+.vr-gift-item strong{font-size:12px;font-weight:600;}
+.vr .vr-gift-send{border-radius:0;min-height:36px;width:100%;background:var(--vr-teal);color:var(--vr-bg);font-size:12px;padding:4px 2px;white-space:normal;}
+.vr-sound-recover{position:absolute;bottom:15dvh;right:18px;pointer-events:auto;background:var(--vr-glass);border:1px solid var(--vr-line);}
+.vr button:disabled{opacity:.5;cursor:wait;}
+
 .vr-field{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--vr-dim);}
 .vr-field input{all:unset;height:42px;padding:0 12px;border-radius:12px;background:var(--vr-surface);border:1px solid var(--vr-line);color:var(--vr-ink);font-size:14px;}
 .vr-covers{display:flex;gap:8px;flex-wrap:wrap;}
