@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Copy,
+  Film,
   Gift,
   Plus,
   LogOut,
@@ -55,8 +56,10 @@ const GIFTS = [
   { key: "crown", emoji: "👑", name: "Tac" },
   { key: "rocket", emoji: "🚀", name: "Raket" },
   { key: "fire", emoji: "🔥", name: "Alov" },
+  { key: "video", emoji: "🎬", name: "Video", video: true },
 ];
 const giftEmoji = (k?: string) => GIFTS.find((g) => g.key === k)?.emoji ?? "🎁";
+const VIDEO_GIFT_URL = "/gifts/special.mp4";
 
 type Me = { id: string; name: string; photo: string | null };
 type Flying = RoomGift & { x: number; y: number };
@@ -117,6 +120,7 @@ export function VoiceRoom({
   const [speakerOff, setSpeakerOff] = useState(false);
   const [chatHidden, setChatHidden] = useState(false);
   const [flying, setFlying] = useState<Flying[]>([]);
+  const [videoGift, setVideoGift] = useState<RoomGift | null>(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState("");
   const client = useRef<VoiceRoomClient | null>(null);
@@ -181,6 +185,10 @@ export function VoiceRoom({
   }, [chat.length]);
 
   function launchGift(g: RoomGift) {
+    if (g.gift === "video") {
+      setVideoGift(g);
+      return;
+    }
     window.requestAnimationFrame(() => {
       const ms = membersRef.current.find((m) => m.id === g.to);
       const el = ms?.seat != null ? seatRefs.current[ms.seat] : null;
@@ -330,23 +338,13 @@ export function VoiceRoom({
           </button>
         </div>
       </header>
-      <div className="vr-subrow">
-        <span className={`vr-status ${status}`}>
-          {status === "live" ? (
-            <>
-              <i />
-              Canlı
-            </>
-          ) : status === "connecting" ? (
-            "Qoşulur…"
-          ) : (
-            "Bağlantı xətası"
-          )}
-        </span>
-        <button type="button" className="vr-gift-chip" onClick={() => setGiftOpen(true)}>
-          🌻 Otaq hədiyyəsi
-        </button>
-      </div>
+      {status !== "live" && (
+        <div className="vr-subrow">
+          <span className={`vr-status ${status}`}>
+            {status === "connecting" ? "Qoşulur…" : "Bağlantı xətası"}
+          </span>
+        </div>
+      )}
 
       <main className="vr-stage">
         <div className="vr-seats">
@@ -476,6 +474,23 @@ export function VoiceRoom({
           <i className="vr-burst" />
         </span>
       ))}
+      {videoGift && (
+        <div className="vr-vgift" onClick={() => setVideoGift(null)}>
+          <div className="vr-vgift-tag">
+            <b>{videoGift.from === me.id ? "Sən" : videoGift.from}</b> video hədiyyə göndərdi 🎬
+          </div>
+          <video
+            src={VIDEO_GIFT_URL}
+            autoPlay
+            playsInline
+            onEnded={() => setVideoGift(null)}
+            onError={() => setVideoGift(null)}
+          />
+          <button type="button" className="vr-icon vr-vgift-x" aria-label="Bağla">
+            <X size={18} />
+          </button>
+        </div>
+      )}
       {toast && (
         <div className="vr-toast" role="status">
           {toast}
@@ -533,7 +548,7 @@ export function VoiceRoom({
                     setGiftOpen(false);
                   }}
                 >
-                  <span>{g.emoji}</span>
+                  <span>{g.video ? <Film size={26} /> : g.emoji}</span>
                   {g.name}
                 </button>
               ))}
@@ -781,6 +796,11 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 .vr-fly{position:fixed;z-index:80;left:0;top:0;font-size:46px;pointer-events:none;animation:vr-fly 2.2s cubic-bezier(.2,.8,.3,1) forwards;}
 .vr-burst{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border-radius:50%;box-shadow:0 0 0 0 var(--vr-accent);opacity:0;animation:vr-burst 2.2s ease-out forwards;}
 .vr-toast{position:fixed;z-index:85;left:50%;top:80px;transform:translateX(-50%);padding:8px 14px;border-radius:20px;font-size:12px;background:oklch(0 0 0 / .7);}
+.vr-vgift{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:oklch(0 0 0 / .92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:vr-in .25s ease-out;cursor:pointer;}
+.vr-vgift video{max-width:100vw;max-height:100dvh;width:auto;height:auto;border-radius:0;box-shadow:0 0 60px oklch(0 0 0 / .8);}
+.vr-vgift-tag{position:absolute;top:max(14px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:2;font-size:13px;padding:8px 16px;border-radius:20px;background:oklch(.15 .03 230 / .7);border:1px solid var(--vr-line);white-space:nowrap;}
+.vr-vgift-tag b{color:var(--vr-accent);}
+.vr-vgift-x{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;z-index:2;}
 .vr-sheet-wrap{position:fixed;inset:0;z-index:90;background:oklch(0 0 0 / .5);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
 .vr-sheet{width:min(100%,520px);background:oklch(.22 .04 225);border-radius:22px 22px 0 0;padding:16px 16px max(18px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;animation:vr-up .25s ease-out;border-top:1px solid var(--vr-line);}
 .vr-sheet-head{display:flex;justify-content:space-between;align-items:center;}.vr-sheet-head h3{margin:0;font-size:16px;}
