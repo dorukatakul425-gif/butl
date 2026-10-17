@@ -109,7 +109,8 @@ export function loadCilizAssets(): Promise<CilizAssets> {
         gestures: Object.fromEntries(Object.entries(json.gestures ?? {}).filter(([key]) => !key.startsWith("__"))) as Record<string, CilizGesture>,
         gestureStore: (json.gestures?.__store_v3 ?? []).flat(),
         gifts: json.gifts,
-        giftStore: json.gifts.__store,
+        // Telegram build (preloader.js): json.gifts.__store = json.gifts.__store_v7 — the newest, larger gift list.
+        giftStore: (json.gifts.__store_v7 ?? json.gifts.__store).flat(),
         spines: json.spines,
         sfxUrl: server.assets.sfx_url_v2,
         frames: json.frames,
