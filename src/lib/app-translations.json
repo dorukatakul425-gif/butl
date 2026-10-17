@@ -1156,5 +1156,17 @@
     "tr": "her çevirişte yeni bir tanışma, her oyunda unutulmaz bir an. Şişeyi çevir ve eğlenceye katıl!",
     "ru": "каждый поворот — новое знакомство, каждая игра — незабываемый момент. Крути бутылочку и присоединяйся!",
     "en": "every spin is a new connection, every game an unforgettable moment. Spin the bottle and join the fun!"
+  },
+  "Admin təsdiqi gözləyir": {
+    "az": "Admin təsdiqi gözləyir",
+    "tr": "Admin onayı bekleniyor",
+    "ru": "Ожидает одобрения администратора",
+    "en": "Waiting for admin approval"
+  },
+  "Admin tərəfindən rədd edildi": {
+    "az": "Admin tərəfindən rədd edildi",
+    "tr": "Admin tarafından reddedildi",
+    "ru": "Отклонено администратором",
+    "en": "Rejected by admin"
   }
 }

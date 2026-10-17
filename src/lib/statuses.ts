@@ -18,6 +18,7 @@ export type FeedStatus = {
   likeCount: number;
   commentCount: number;
   liked: boolean;
+  review: "pending" | "approved" | "rejected";
 };
 export type StatusComment = { id: string; userId: string; body: string; createdAt: string; name: string; photo: string | null };
 
@@ -61,7 +62,7 @@ function client() {
 type FeedRow = {
   id: string; user_id: string; kind: StatusKind; body: string | null; media_path: string | null; bg: string;
   created_at: string; expires_at: string; author_name: string; author_photo: string | null;
-  like_count: number | string; comment_count: number | string; liked: boolean;
+  like_count: number | string; comment_count: number | string; liked: boolean; review?: string | null;
 };
 
 export async function loadFeed(): Promise<FeedStatus[]> {
@@ -80,6 +81,7 @@ export async function loadFeed(): Promise<FeedStatus[]> {
     mediaUrl: r.media_path ? urls.get(r.media_path) ?? null : null, bg: r.bg,
     createdAt: r.created_at, expiresAt: r.expires_at, authorName: r.author_name, authorPhoto: r.author_photo,
     likeCount: Number(r.like_count) || 0, commentCount: Number(r.comment_count) || 0, liked: Boolean(r.liked),
+    review: (r.review === "pending" || r.review === "rejected" ? r.review : "approved") as FeedStatus["review"],
   })).filter(s => s.kind === "text" || s.mediaUrl);
 }
 

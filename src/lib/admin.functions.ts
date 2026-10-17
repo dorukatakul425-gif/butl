@@ -144,3 +144,51 @@ export const resolveReport = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+const StatusListInput = z.object({ review: z.enum(["pending", "approved", "rejected"]).default("pending") });
+
+export const listStatusReviews = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => StatusListInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const { data: rows, error } = await admin.from("statuses")
+      .select("id, user_id, kind, body, media_path, bg, created_at, expires_at, review")
+      .eq("review", data.review).gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: data.review === "pending" }).limit(100);
+    if (error) throw new Error(error.message);
+    const list = (rows ?? []) as any[];
+    const ids = [...new Set(list.map((r) => r.user_id))];
+    const { data: people } = ids.length ? await admin.from("profiles").select("id, name, username, player_no").in("id", ids) : { data: [] };
+    const byId = new Map<string, any>((people ?? []).map((p: any) => [p.id, p]));
+    const paths = list.map((r) => r.media_path).filter(Boolean) as string[];
+    const urls = new Map<string, string>();
+    if (paths.length) {
+      const { data: signed } = await admin.storage.from("statuses").createSignedUrls(paths, 60 * 60);
+      for (const s of (signed ?? []) as any[]) if (s.path && s.signedUrl) urls.set(s.path, s.signedUrl);
+    }
+    const { count: pending } = await admin.from("statuses").select("*", { count: "exact", head: true })
+      .eq("review", "pending").gt("expires_at", new Date().toISOString());
+    const statuses = list.map((r) => ({
+      id: r.id as string, kind: r.kind as "text" | "image" | "video", body: (r.body ?? "") as string, bg: r.bg as string,
+      mediaUrl: r.media_path ? urls.get(r.media_path) ?? null : null, createdAt: r.created_at as string, review: r.review as string,
+      author: { name: (byId.get(r.user_id)?.name ?? "?") as string, username: (byId.get(r.user_id)?.username ?? "") as string, playerNo: (byId.get(r.user_id)?.player_no ?? null) as number | null },
+    }));
+    return { statuses, pending: pending ?? 0 };
+  });
+
+const StatusReviewInput = z.object({ id: z.string().uuid(), approve: z.boolean() });
+
+export const reviewStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => StatusReviewInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    // An approved status is visible for a full 24 hours from the moment it is approved.
+    const patch = data.approve
+      ? { review: "approved", expires_at: new Date(Date.now() + 24 * 3600000).toISOString() }
+      : { review: "rejected" };
+    const { error } = await admin.from("statuses").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

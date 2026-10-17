@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
-import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setBan, listReports, resolveReport } from "@/lib/admin.functions";
+import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setBan, listReports, resolveReport, listStatusReviews, reviewStatus } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/sako")({
   head: () => ({
@@ -73,6 +73,7 @@ function Dashboard() {
             </div>
           ))}
         </div>
+        <StatusReviews />
         <Reports />
         <Players />
       </div>
@@ -224,6 +225,61 @@ function Reports() {
               {status !== "reviewed" && <Button size="sm" disabled={m.isPending} onClick={() => m.mutate({ id: x.id, status: "reviewed" })}>İncelendi</Button>}
               {status !== "dismissed" && <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate({ id: x.id, status: "dismissed" })}>Reddet</Button>}
               {status !== "open" && <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate({ id: x.id, status: "open" })}>Yeniden aç</Button>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const STATUS_GRADIENTS: Record<string, string> = {
+  emerald: "linear-gradient(160deg, oklch(.6 .15 165), oklch(.36 .09 195))",
+  sunset: "linear-gradient(160deg, oklch(.72 .17 50), oklch(.55 .21 15))",
+  night: "linear-gradient(160deg, oklch(.35 .08 260), oklch(.18 .04 280))",
+  rose: "linear-gradient(160deg, oklch(.72 .16 0), oklch(.5 .2 340))",
+  ocean: "linear-gradient(160deg, oklch(.7 .13 220), oklch(.42 .14 250))",
+  gold: "linear-gradient(160deg, oklch(.85 .15 90), oklch(.62 .15 60))",
+};
+
+function StatusReviews() {
+  const [review, setReview] = useState<"pending" | "approved" | "rejected">("pending");
+  const list = useServerFn(listStatusReviews);
+  const decide = useServerFn(reviewStatus);
+  const qc = useQueryClient();
+  const r = useQuery({ queryKey: ["admin", "statuses", review], queryFn: () => list({ data: { review } }), refetchInterval: 20000 });
+  const m = useMutation({
+    mutationFn: (v: { id: string; approve: boolean }) => decide({ data: v }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "statuses"] }),
+  });
+  return (
+    <div className="mb-10">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <h2 className="mr-auto text-xl font-bold">Status onayı {r.data?.pending ? <span className="ml-1 rounded bg-destructive px-2 py-0.5 text-sm text-destructive-foreground">{r.data.pending} bekliyor</span> : null}</h2>
+        {(["pending", "approved", "rejected"] as const).map((s) => (
+          <Button key={s} size="sm" variant={review === s ? "default" : "outline"} onClick={() => setReview(s)}>{s === "pending" ? "Bekleyen" : s === "approved" ? "Onaylanan" : "Reddedilen"}</Button>
+        ))}
+      </div>
+      {r.isError && <p className="text-sm text-destructive">{(r.error as Error).message}</p>}
+      {r.isLoading && <p className="text-muted-foreground">Yükleniyor…</p>}
+      {r.data && r.data.statuses.length === 0 && <p className="text-muted-foreground">Status yok.</p>}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {r.data?.statuses.map((x) => (
+          <div key={x.id} className="overflow-hidden rounded-lg border bg-card text-card-foreground">
+            <div className="flex aspect-[9/14] items-center justify-center overflow-hidden bg-muted" style={x.kind === "text" ? { background: STATUS_GRADIENTS[x.bg] ?? STATUS_GRADIENTS["emerald"] } : undefined}>
+              {x.kind === "text" && <p className="whitespace-pre-wrap break-words p-3 text-center text-sm font-semibold text-primary-foreground">{x.body}</p>}
+              {x.kind === "image" && x.mediaUrl && <img src={x.mediaUrl} alt="" className="h-full w-full object-cover" />}
+              {x.kind === "video" && x.mediaUrl && <video src={x.mediaUrl} className="h-full w-full object-cover" controls playsInline preload="metadata" />}
+              {x.kind !== "text" && !x.mediaUrl && <span className="text-xs text-muted-foreground">Dosya yok</span>}
+            </div>
+            <div className="p-2">
+              <div className="truncate text-sm font-semibold">{x.author.name} <span className="font-normal text-muted-foreground">@{x.author.username}</span></div>
+              {x.kind !== "text" && x.body && <p className="mt-1 line-clamp-2 text-xs">{x.body}</p>}
+              <div className="text-xs text-muted-foreground">{new Date(x.createdAt).toLocaleString("tr-TR")}</div>
+              <div className="mt-2 flex gap-2">
+                {review !== "approved" && <Button size="sm" className="flex-1" disabled={m.isPending} onClick={() => m.mutate({ id: x.id, approve: true })}>Onayla</Button>}
+                {review !== "rejected" && <Button size="sm" variant="outline" className="flex-1" disabled={m.isPending} onClick={() => m.mutate({ id: x.id, approve: false })}>Reddet</Button>}
+              </div>
             </div>
           </div>
         ))}

@@ -295,7 +295,7 @@ function StatusSlide({ s, near, mine, defaultPhoto, videoRef, muted, onToggleMut
       {mine && <button type="button" className="st-rail-btn" onClick={onDelete} aria-label="Sil"><Trash2 /><span>Sil</span></button>}
     </aside>
     <div className="st-info">
-      <strong>{mine ? translate("Sən") : s.authorName}</strong> <small>· {timeAgo(s.createdAt)} · {timeLeft(s.expiresAt)}</small>
+      <strong>{mine ? translate("Sən") : s.authorName}</strong>{mine && s.review !== "approved" && <em className="st-review-badge"> · {s.review === "pending" ? translate("Admin təsdiqi gözləyir") : translate("Admin tərəfindən rədd edildi")}</em>} <small>· {timeAgo(s.createdAt)} · {timeLeft(s.expiresAt)}</small>
       {s.kind !== "text" && s.body && <p>{s.body}</p>}
     </div>
   </article>;
