@@ -1,0 +1,222 @@
+/* Telegram build ProfileSettingsDialog (bem "profile-settings"), extracted from preloader.css. */
+.profile-settings__gender-item--female { background-image: url('../assets/source-gender-female.svg'); }
+.profile-settings__gender-item--male { background-image: url('../assets/source-gender-male.svg'); }
+.profile-setup-screen { position: fixed; inset: 0; z-index: 1000; background-color: #759951; font-family: Arial, Helvetica, sans-serif; }
+.profile-settings__selected-icon { width: 14px; height: 14px; }
+.profile-settings__custom-option--selected .profile-settings__selected-icon::after { content: "\2713"; color: #52b043; font-weight: bold; }
+.profile-settings__x_popup {
+  width: 294px;
+}
+
+.profile-settings__x_popup__content {
+  padding: 0 46px;
+  overflow: visible;
+}
+
+.profile-settings__x_button--disabled {
+  -webkit-filter: grayscale(1);
+          filter: grayscale(1);
+}
+
+.profile-settings__description {
+  font-size: 14px;
+  text-align: center;
+  white-space: pre-line;
+  margin: 0 -15px 15px -15px;
+}
+
+.profile-settings__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.profile-settings__item:last-child {
+  margin-bottom: 5px;
+}
+
+.profile-settings__age-title,
+.profile-settings__gender-title {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.profile-settings__gender-items {
+  display: flex;
+  align-items: flex-start;
+}
+
+.profile-settings__gender-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.profile-settings__gender-item--male {
+  background-color: #def3fe;
+  border: solid 2px #3db2fe;
+  background-size: 28px 32px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.profile-settings__gender-item--female {
+  background-color: #fdebf2;
+  border: solid 2px #ff7bac;
+  background-size: 34px 32px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.profile-settings__gender-item--inactive {
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  background-color: transparent;
+  border-width: 0px;
+}
+
+.profile-settings__gender-item:last-child,
+.profile-settings__gender-item:only-child {
+  margin-right: 0;
+}
+
+.profile-settings__custom-select {
+  display: inline-block;
+  position: relative;
+}
+
+.profile-settings__custom-select-trigger {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f2f2f2;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 16px;
+  font-style: italic;
+  font-weight: bold;
+  padding: 5px 8px 6px 8px;
+  position: relative;
+  width: 94px;
+  height: 19px;
+}
+
+.profile-settings__custom-select-trigger:after {
+  border-bottom: 2px solid #c1c1c1;
+  border-right: 2px solid #c1c1c1;
+  content: "";
+  display: block;
+  height: 8px;
+  margin-top: -3px;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  -webkit-transform-origin: 50% 0;
+          transform-origin: 50% 0;
+  -webkit-transform: rotate(45deg) translateY(-50%);
+          transform: rotate(45deg) translateY(-50%);
+  transition: all 0.4s ease-in-out;
+  width: 8px;
+}
+
+.profile-settings__custom-select.opened .profile-settings__custom-select-trigger:after {
+  margin-top: 3px;
+  -webkit-transform: rotate(-135deg) translateY(-50%);
+          transform: rotate(-135deg) translateY(-50%);
+}
+
+.profile-settings__custom-select.opened .profile-settings__custom-options {
+  opacity: 1;
+  pointer-events: all;
+  -webkit-transform: translateY(0);
+          transform: translateY(0);
+  visibility: visible;
+}
+
+.profile-settings__custom-options {
+  background: #f2f2f2;
+  border-radius: 12px;
+  box-shadow: 0 3px 7px 0 rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  display: block;
+  left: 0;
+  margin-top: 3px;
+  min-width: 100%;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  -webkit-transform: translateY(-15px);
+          transform: translateY(-15px);
+  transition: all 0.4s ease-in-out;
+  visibility: hidden;
+  z-index: 1;
+  height: 186px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.profile-settings__custom-options::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-height: 490px) {
+  .profile-settings__custom-options {
+    top: -88px;
+  }
+}
+
+.profile-settings__custom-option {
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  display: flex;
+  font-size: 14px;
+  font-style: italic;
+  height: 30px;
+  position: relative;
+  transition: all 0.4s ease-in-out;
+}
+
+.profile-settings__custom-option--selected {
+  font-weight: bold;
+}
+
+.profile-settings__custom-option:first-of-type {
+  border-radius: 15px 15px 0 0;
+}
+
+.profile-settings__custom-option:last-of-type {
+  border-bottom: 0;
+  border-radius: 0 0 15px 15px;
+}
+
+.profile-settings__custom-option:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.profile-settings__selected-icon {
+  background-size: 14px 14px;
+  height: 14px;
+  width: 14px;
+  display: none;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+}
+
+.profile-settings__custom-option--selected .profile-settings__selected-icon {
+  display: block;
+}
