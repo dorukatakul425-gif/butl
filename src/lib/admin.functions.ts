@@ -51,11 +51,12 @@ export const listPlayers = createServerFn({ method: "POST" })
     if (s) q = /^\d+$/.test(s) ? q.or(`player_no.eq.${s},username.ilike.%${s}%`) : q.or(`username.ilike.%${s}%,name.ilike.%${s}%`);
     const { data: rows, count, error } = await q;
     if (error) throw new Error(error.message);
-    const players = await Promise.all((rows ?? []).map(async (p: any) => {
-      const { data: u } = await admin.auth.admin.getUserById(p.id);
-      const until = u?.user?.banned_until as string | undefined;
-      return { ...p, banned: !!until && new Date(until).getTime() > Date.now() };
-    }));
+    const ids = (rows ?? []).map((p: any) => p.id);
+    const { data: bans } = ids.length
+      ? await admin.from("user_bans").select("user_id, reason, banned_until").in("user_id", ids)
+      : { data: [] };
+    const active = new Map<string, any>((bans ?? []).filter((b: any) => !b.banned_until || new Date(b.banned_until).getTime() > Date.now()).map((b: any) => [b.user_id, b]));
+    const players = (rows ?? []).map((p: any) => ({ ...p, banned: active.has(p.id), banReason: active.get(p.id)?.reason as string | undefined, bannedUntil: active.get(p.id)?.banned_until as string | null | undefined }));
     return { players, total: count ?? 0, pageSize: size };
   });
 
@@ -75,7 +76,12 @@ export const adjustBalance = createServerFn({ method: "POST" })
     return { value: value as number };
   });
 
-const BanInput = z.object({ userId: z.string().uuid(), banned: z.boolean() });
+const BanInput = z.object({
+  userId: z.string().uuid(),
+  banned: z.boolean(),
+  reason: z.string().trim().max(300).default(""),
+  hours: z.number().int().min(1).max(876000).nullable().default(null), // null = permanent
+});
 
 export const setBan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -83,8 +89,20 @@ export const setBan = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     if (data.userId === context.userId) throw new Error("Kendini banlayamazsın");
     const admin = await assertAdmin(context);
-    const { error } = await admin.auth.admin.updateUserById(data.userId, { ban_duration: data.banned ? "876000h" : "none" });
+    if (!data.banned) {
+      await admin.from("user_bans").delete().eq("user_id", data.userId);
+      const { error } = await admin.auth.admin.updateUserById(data.userId, { ban_duration: "none" });
+      if (error) throw new Error(error.message);
+      return { banned: false };
+    }
+    const until = data.hours ? new Date(Date.now() + data.hours * 3600000).toISOString() : null;
+    const { error: e1 } = await admin.from("user_bans").upsert({
+      user_id: data.userId, reason: data.reason, banned_by: context.userId, banned_at: new Date().toISOString(), banned_until: until,
+    });
+    if (e1) throw new Error(e1.message);
+    const { error } = await admin.auth.admin.updateUserById(data.userId, { ban_duration: `${data.hours ?? 876000}h` });
     if (error) throw new Error(error.message);
-    if (data.banned) await admin.from("room_players").delete().eq("user_id", data.userId);
-    return { banned: data.banned };
+    await admin.rpc("admin_revoke_sessions", { _user_id: data.userId });
+    await admin.from("room_players").delete().eq("user_id", data.userId);
+    return { banned: true };
   });

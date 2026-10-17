@@ -123,9 +123,12 @@ function PlayerRow({ p }: { p: Player }) {
     onSuccess: (res) => { setMsg(`Yeni bakiye: ${res.value}`); setAmount(""); void refresh(); },
     onError: (e) => setMsg((e as Error).message),
   });
+  const [banOpen, setBanOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [hours, setHours] = useState<string>("perm");
   const banM = useMutation({
-    mutationFn: () => ban({ data: { userId: p.id, banned: !p.banned } }),
-    onSuccess: () => void refresh(),
+    mutationFn: () => ban({ data: { userId: p.id, banned: !p.banned, reason, hours: hours === "perm" ? null : parseInt(hours, 10) } }),
+    onSuccess: () => { setBanOpen(false); setReason(""); void refresh(); },
     onError: (e) => setMsg((e as Error).message),
   });
   return (
@@ -142,10 +145,28 @@ function PlayerRow({ p }: { p: Player }) {
         </div>
         <Button size="sm" variant="outline" onClick={() => setOpen(!open)}>Bakiye</Button>
         <Button size="sm" variant={p.banned ? "secondary" : "destructive"} disabled={banM.isPending}
-          onClick={() => { if (confirm(p.banned ? "Ban kaldırılsın mı?" : `${p.username} banlansın mı?`)) banM.mutate(); }}>
+          onClick={() => { if (p.banned) { if (confirm("Ban kaldırılsın mı?")) banM.mutate(); } else setBanOpen(!banOpen); }}>
           {p.banned ? "Banı kaldır" : "Banla"}
         </Button>
       </div>
+      {p.banned && (
+        <p className="mt-2 text-xs text-destructive">
+          Sebep: {p.banReason || "—"} · {p.bannedUntil ? `Bitiş: ${new Date(p.bannedUntil).toLocaleString("tr-TR")}` : "Kalıcı"}
+        </p>
+      )}
+      {banOpen && !p.banned && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Input className="min-w-48 flex-1" maxLength={300} placeholder="Ban sebebi (oyuncu görür)" value={reason} onChange={(e) => setReason(e.target.value)} />
+          <select className="h-9 rounded-md border bg-background px-2 text-sm" value={hours} onChange={(e) => setHours(e.target.value)}>
+            <option value="1">1 saat</option>
+            <option value="24">1 gün</option>
+            <option value="168">7 gün</option>
+            <option value="720">30 gün</option>
+            <option value="perm">Kalıcı</option>
+          </select>
+          <Button size="sm" variant="destructive" disabled={banM.isPending} onClick={() => banM.mutate()}>Banla</Button>
+        </div>
+      )}
       {open && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <select className="h-9 rounded-md border bg-background px-2 text-sm" value={field} onChange={(e) => setField(e.target.value as typeof field)}>

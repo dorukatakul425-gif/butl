@@ -2,6 +2,7 @@ import { AppControls } from "@/components/app-controls";
 import { translate, usePreferences } from "@/lib/app-preferences";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
+import { checkBanForUsername, isBanError } from "@/lib/ban";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, UserRound, LoaderCircle, ShieldCheck, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -177,7 +178,7 @@ function AuthPage() {
     try {
       if (mode === "login") {
         const { error } = await sb.auth.signInWithPassword({ email: usernameEmail(uname), password });
-        if (error) setError(translate("İstifadəçi adı və ya şifrə yanlışdır."));
+        if (error && !(await checkBanForUsername(uname)) && !isBanError(error.message)) setError(translate("İstifadəçi adı və ya şifrə yanlışdır."));
       } else {
         const { data, error } = await sb.auth.signUp({
           email: usernameEmail(uname), password,
