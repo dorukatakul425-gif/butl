@@ -15,6 +15,7 @@ import { BanGuard } from "@/components/ban-guard";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { showInspectorNotice } from "../lib/inspector-notice";
+import { startCodeProtection } from "../lib/anti-inspect";
 
 function NotFoundComponent() {
   return (
@@ -129,6 +130,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
     showInspectorNotice();
+    startCodeProtection();
   }, []);
   useEffect(() => {
     const editable = (t: EventTarget | null) => t instanceof HTMLElement && !!t.closest("input, textarea, [contenteditable='true']");
