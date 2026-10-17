@@ -47,3 +47,4 @@
 - Keep the mobile profile as an authenticated home subview using the existing verified profile and photo-upload callback; wallet navigation must reuse the existing shop without fabricated balances.
 - Admin panel lives at /sako; roles are in user_roles via has_role, and every admin server function re-verifies the role before using the service client, so the page itself grants nothing.
 - Bans live in user_bans and are enforced in the database (write triggers, session revocation) plus a root BanGuard screen, so a still-valid token cannot keep playing.
+- Friends and direct messages live in friendships/direct_messages: requests/answers go through owner-checked RPCs, inserts require are_friends, and delivery uses one per-player Cloud realtime channel in src/lib/social.ts, so UI state cannot fake friendship or read others' chats.

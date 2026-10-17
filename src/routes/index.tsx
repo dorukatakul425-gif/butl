@@ -27,6 +27,11 @@ import { StatusStrip } from "@/components/status/status-strip";
 import { OnlinePlayers } from "@/components/status/online-players";
 import { BottomNav } from "@/components/bottom-nav";
 import { LiveRooms } from "@/components/live/live-rooms";
+import { FriendButton } from "@/components/social/friend-button";
+import { FriendRequests } from "@/components/social/friend-requests";
+import { MessagesView } from "@/components/social/messages-view";
+import { SocialBanner } from "@/components/social/social-banner";
+import { onSocialOpen, useSocialSession } from "@/lib/social";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -279,7 +284,7 @@ const formatBalance = (value: number) => String(value).replace(/\B(?=(\d{3})+(?!
 type MobileHomeProps = { profile: HomeProfile; defaultPhoto: string; uploading: boolean; notice: string; onPhoto: (file: File) => void; onJoin: () => void; onSignOut: () => void };
 
 type UserRow = { id: string; name: string; username: string; photo_url: string | null };
-function UsersRow({ me, defaultPhoto, onNotice }: { me: string; defaultPhoto: string; onNotice: (t: string) => void }) {
+function UsersRow({ me, defaultPhoto, onMessage }: { me: string; defaultPhoto: string; onMessage: (userId: string) => void }) {
   usePreferences();
   const [users, setUsers] = useState<UserRow[]>([]);
   useEffect(() => {
@@ -298,7 +303,7 @@ function UsersRow({ me, defaultPhoto, onNotice }: { me: string; defaultPhoto: st
       <div key={u.id} className="mh-user">
         <img src={u.photo_url || defaultPhoto} alt={u.name} loading="lazy" />
         <span className="mh-user-name">{u.name}</span>
-        <button type="button" className="mh-follow" onClick={() => onNotice(translate("Yaxında əlavə olunacaq"))}>{translate("izlə")}</button>
+        <FriendButton me={me} userId={u.id} onMessage={() => onMessage(u.id)} />
       </div>
     ))}</div>
   </section>;
@@ -314,9 +319,12 @@ export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, on
   const [gameOpen, setGameOpen] = useState(false);
   const [liveOpen, setLiveOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [messagesOpen, setMessagesOpen] = useState(false);
+  const [chatWith, setChatWith] = useState<string | null>(null);
+  useSocialSession(p.id);
+  useEffect(() => onSocialOpen(n => { if (n.kind === "message") { setChatWith(n.from); setProfileOpen(false); setMessagesOpen(true); } else { setMessagesOpen(false); setProfileOpen(true); } }), []);
   const [localNotice, setLocalNotice] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
-  const flash = (t: string) => { setLocalNotice(t); window.setTimeout(() => setLocalNotice(""), 2500); };
   const modalOpen = Boolean(activeStory || walletOpen || gameOpen);
   useEffect(() => { if (!modalOpen) return; const previous = document.activeElement; const overflow = document.body.style.overflow; document.body.style.overflow = "hidden"; dialogRef.current?.focus(); const close = (e: KeyboardEvent) => { if (e.key === "Escape") { setActiveStory(null); setWalletOpen(false); setGameOpen(false); } if(e.key === "Tab" && dialogRef.current) { const items = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button, [href], [tabindex="0"]')); const first = items[0]; const last = items[items.length - 1]; if(e.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { e.preventDefault(); last?.focus(); } else if(!e.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current)) { e.preventDefault(); first?.focus(); } } }; document.addEventListener("keydown",close); return () => { document.body.style.overflow = overflow; document.removeEventListener("keydown",close); if(previous instanceof HTMLElement) previous.focus(); }; }, [modalOpen]);
   return <main className="mobile-home"><div className="mh-shell">
@@ -330,11 +338,13 @@ export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, on
     <StatusStrip me={{ id: p.id, name: p.name, photo_url: p.photo_url }} defaultPhoto={defaultPhoto} />
     <div className="mh-bot-row"><img className="mh-promo" src={PROMO_IMAGE} width={640} height={357} alt={translate("Spin the Bottle — Öp və tanış ol, sevgini tap")} /><Button variant="ghost" className="mh-bot" onClick={() => setGameOpen(true)} aria-label={translate("Oyuna qoşulmaq üçün klikləyin")} title={translate("Oyuna qoşul")}><span className="mh-bot-bubble">{translate("Oyuna qoşulmaq üçün")}<strong>{translate("klikləyin")}</strong></span><RobotSvg /></Button></div>
     <section className="mh-tanis" aria-label={translate("Tanış ol")}><h2>{translate("Tanış ol")}</h2><p>{translate("Yeni insanlarla tanış ol, söhbətə başla.")}</p></section>
-    <UsersRow me={p.id} defaultPhoto={defaultPhoto} onNotice={flash} />
+    <UsersRow me={p.id} defaultPhoto={defaultPhoto} onMessage={id => { setChatWith(id); setMessagesOpen(true); }} />
     <footer className="mh-footer"><span className="mh-footer-brand">şüşə<span aria-hidden="true">.</span></span><span>{translate("Oyunçu #")}{p.player_no}</span><Button variant="ghost" className="mh-signout" onClick={onSignOut} aria-label={translate("Çıxış et")} title={translate("Çıxış et")}><LogOut size={16} /></Button></footer>
     {(activeStory || gameOpen) && <div className="mh-overlay" onClick={e => { if(e.target === e.currentTarget) { setActiveStory(null); setWalletOpen(false); setGameOpen(false); } }}><div ref={dialogRef} tabIndex={-1} className={gameOpen ? "mh-dialog mh-dialog-card" : "mh-dialog"} role="dialog" aria-modal="true" aria-labelledby="mh-dialog-title"><Button variant="ghost" className="mh-close" aria-label={translate("Bağla")} onClick={() => { setActiveStory(null); setWalletOpen(false); setGameOpen(false); }}><X /></Button><h2 id="mh-dialog-title">{gameOpen ? translate("Oyuna qoşul") : walletOpen ? "DAT cüzdanı" : activeStory?.name}</h2>{gameOpen && <span className="mh-card-bot"><RobotSvg pulling /></span>}{gameOpen ? <div className="mh-game-content"><Button variant="ghost" className="mh-join" onClick={onJoin} aria-label={translate("Oyuna qoşul")} title={translate("Oyuna qoşul")}><img src={BOTTLE_IMAGE} alt={translate("Şüşə oyunu")} /></Button><Button className="mh-game-action" onClick={onJoin}>{translate("Oyuna qoşul")}</Button><OnlinePlayers open={gameOpen} defaultPhoto={defaultPhoto} /></div> : walletOpen ? <><p>{translate("Balansın:")}<strong>{p.dat == null ? "—" : formatBalance(p.dat)} DAT</strong></p><p>DAT artırılması hələ bu səhifəyə qoşulmayıb.</p></> : activeStory?.text ? <div className="mh-story-view-text">{activeStory.text}</div> : <img className="mh-story-view" src={activeStory?.image} alt="Status şəkli" />}</div></div>}
-    <BottomNav active={profileOpen ? "profile" : liveOpen ? "live" : "home"} onSelect={t => { if (t === "profile") { setProfileOpen(true); return; } if (t === "home") setProfileOpen(false); if (t === "games") { setGameOpen(true); return; } if (t === "live") { setLiveOpen(true); return; } if (t === "home") { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setLocalNotice(t === "messages" ? translate("Mesajlar tezliklə.") : "Profil səhifəsi tezliklə."); window.setTimeout(() => setLocalNotice(""), 2500); }} />
-    {profileOpen && <MobileProfile profile={p} defaultPhoto={defaultPhoto} onBack={() => setProfileOpen(false)} uploading={uploading} notice={notice} onPhoto={onPhoto} onSignOut={onSignOut} onTopUp={() => setWalletOpen(true)} />}
+    <BottomNav active={profileOpen ? "profile" : messagesOpen ? "messages" : liveOpen ? "live" : "home"} onSelect={t => { if (t === "profile") { setMessagesOpen(false); setProfileOpen(true); return; } if (t === "messages") { setProfileOpen(false); setChatWith(null); setMessagesOpen(true); return; } setMessagesOpen(false); if (t === "home") setProfileOpen(false); if (t === "games") { setGameOpen(true); return; } if (t === "live") { setLiveOpen(true); return; } if (t === "home") { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setLocalNotice(t === "messages" ? translate("Mesajlar tezliklə.") : "Profil səhifəsi tezliklə."); window.setTimeout(() => setLocalNotice(""), 2500); }} />
+    {profileOpen && <MobileProfile profile={p} defaultPhoto={defaultPhoto} onBack={() => setProfileOpen(false)} uploading={uploading} notice={notice} onPhoto={onPhoto} onSignOut={onSignOut} onTopUp={() => setWalletOpen(true)} extra={<FriendRequests me={p.id} defaultPhoto={defaultPhoto} onOpenChat={id => { setChatWith(id); setProfileOpen(false); setMessagesOpen(true); }} />} />}
+    {messagesOpen && <MessagesView me={p.id} defaultPhoto={defaultPhoto} initialPeer={chatWith} onClose={() => { setMessagesOpen(false); setChatWith(null); }} />}
+    <SocialBanner defaultPhoto={defaultPhoto} />
     {liveOpen && <LiveRooms me={{ id: p.id, name: p.name, photo: p.photo_url ?? null }} defaultPhoto={defaultPhoto} onClose={() => setLiveOpen(false)} />}
     {walletOpen && <ShopSheet dialogRef={dialogRef} balance={p.dat} onClose={() => setWalletOpen(false)} />}
   </div></main>;
