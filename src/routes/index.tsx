@@ -282,6 +282,24 @@ type Story = { name: string; image: string; text?: string };
 const formatBalance = (value: number) => String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 type MobileHomeProps = { profile: HomeProfile; defaultPhoto: string; uploading: boolean; notice: string; onPhoto: (file: File) => void; onJoin: () => void; onSignOut: () => void };
 
+
+function useAdminIds(ids: string[]) {
+  const [admins, setAdmins] = useState<Set<string>>(new Set());
+  const key = ids.join(",");
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!sb || !ids.length) return;
+    let on = true;
+    void Promise.all(ids.map(id => sb.rpc("has_role", { _user_id: id, _role: "admin" }).then(({ data }) => (data ? id : null)))).then(r => {
+      if (on) setAdmins(new Set(r.filter((x): x is string => !!x)));
+    });
+    return () => { on = false; };
+  }, [key]);
+  return admins;
+}
+function AdminBadge() {
+  return <span className="mh-admin-badge" aria-label="Admin"><svg viewBox="0 0 24 24" width="9" height="9" aria-hidden="true"><path fill="currentColor" d="M12 2l2.6 6.3L21 9l-5 4.4L17.5 20 12 16.6 6.5 20 8 13.4 3 9l6.4-.7z"/></svg>ADMIN</span>;
+}
 type UserRow = { id: string; name: string; username: string; photo_url: string | null };
 function UsersRow({ me, defaultPhoto, onMessage, onOpen }: { me: string; defaultPhoto: string; onMessage: (userId: string) => void; onOpen: (userId: string) => void }) {
   usePreferences();
@@ -295,22 +313,24 @@ function UsersRow({ me, defaultPhoto, onMessage, onOpen }: { me: string; default
     });
     return () => { on = false; };
   }, [me]);
+  const admins = useAdminIds(users.map(u => u.id));
   if (!users.length) return null;
   return <section className="mh-users" aria-label={translate("İstifadəçilər")}>
     <div className="mh-status-heading"><h2>{translate("İstifadəçilər")}</h2></div>
     <div className="mh-users-list">{users.map(u => (
       <div key={u.id} className="mh-user">
         <button type="button" className="mh-user-open" onClick={() => onOpen(u.id)} aria-label={u.name}><img src={u.photo_url || defaultPhoto} alt={u.name} loading="lazy" />
-        <span className="mh-user-name">{u.name}</span></button>
+        <span className="mh-user-name-row"><span className="mh-user-name">{u.name}</span>{admins.has(u.id) && <AdminBadge />}</span></button>
         <FriendButton me={me} userId={u.id} onMessage={() => onMessage(u.id)} />
       </div>
     ))}</div>
   </section>;
 }
 
-const HOME_STYLES_EXTRA = ".mh-id{display:flex;align-items:center;gap:12px;min-width:0;}\n.mh-id-text{display:flex;flex-direction:column;min-width:0;}\n.mh-id-text strong{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}\n.mh-id-text span{font-size:11px;color:var(--muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}\n.mobile-home .mh-bell{width:43px;height:43px;border-radius:50%;padding:0;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);color:var(--foreground);position:relative;flex-shrink:0;}\n.mh-bell i{position:absolute;top:10px;right:11px;width:7px;height:7px;border-radius:50%;background:var(--heart);border:2px solid var(--surface);}\n.mh-tanis{margin:36px 0 0;text-align:center;}\n.mh-tanis h2{margin:0;font-size:34px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(120deg,var(--primary),var(--heart));-webkit-background-clip:text;background-clip:text;color:transparent;}\n.mh-tanis p{margin:6px 0 0;font-size:12px;color:var(--muted-foreground);}\n.mh-users{margin-top:22px;}\n.mh-users-list{display:flex;gap:14px;overflow-x:auto;padding:2px 0 9px;scrollbar-width:none;}\n.mh-users-list::-webkit-scrollbar{display:none;}\n.mh-user{flex:0 0 76px;text-align:center;}\n.mh-user img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border);background:var(--surface);}\n.mh-user-name{display:block;margin-top:6px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n.mh-user .mh-follow{margin-top:5px;height:24px;padding:0 14px;border-radius:20px;font-size:10px;font-weight:700;background:var(--primary);color:var(--primary-foreground);border:none;cursor:pointer;}\n";
+const HOME_STYLES_EXTRA = ".mh-user-name-row{display:flex;margin-top:6px;align-items:center;justify-content:center;gap:4px;min-width:0;max-width:100%;}\n.mh-id-text .mh-user-name-row{justify-content:flex-start;}\n.mh-user-name-row .mh-user-name{min-width:0;margin-top:0;}\n.mh-admin-badge{position:relative;overflow:hidden;flex-shrink:0;display:inline-flex;align-items:center;gap:2px;padding:2px 5px;border-radius:6px;font-size:8px;font-weight:900;letter-spacing:.6px;line-height:1;color:oklch(0.99 0 0);background:linear-gradient(135deg,oklch(0.62 0.24 25),oklch(0.48 0.22 20));box-shadow:0 2px 8px oklch(0.6 0.24 25 / .45);animation:mhAdminPulse 1.8s ease-in-out infinite;}\n.mh-admin-badge::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,oklch(1 0 0 / .55) 50%,transparent 70%);transform:translateX(-120%);animation:mhAdminShine 2.4s ease-in-out infinite;}\n.mh-admin-badge svg{animation:mhAdminSpin 3s linear infinite;}\n@keyframes mhAdminPulse{0%,100%{transform:scale(1);box-shadow:0 2px 8px oklch(0.6 0.24 25 / .45);}50%{transform:scale(1.08);box-shadow:0 2px 14px oklch(0.6 0.24 25 / .8);}}\n@keyframes mhAdminShine{0%{transform:translateX(-120%);}60%,100%{transform:translateX(120%);}}\n@keyframes mhAdminSpin{to{transform:rotate(360deg);}}\n@media(prefers-reduced-motion:reduce){.mh-admin-badge,.mh-admin-badge::after,.mh-admin-badge svg{animation:none;}}\n.mh-id{display:flex;align-items:center;gap:12px;min-width:0;}\n.mh-id-text{display:flex;flex-direction:column;min-width:0;}\n.mh-id-text strong{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}\n.mh-id-text span{font-size:11px;color:var(--muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}\n.mobile-home .mh-bell{width:43px;height:43px;border-radius:50%;padding:0;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);color:var(--foreground);position:relative;flex-shrink:0;}\n.mh-bell i{position:absolute;top:10px;right:11px;width:7px;height:7px;border-radius:50%;background:var(--heart);border:2px solid var(--surface);}\n.mh-tanis{margin:36px 0 0;text-align:center;}\n.mh-tanis h2{margin:0;font-size:34px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(120deg,var(--primary),var(--heart));-webkit-background-clip:text;background-clip:text;color:transparent;}\n.mh-tanis p{margin:6px 0 0;font-size:12px;color:var(--muted-foreground);}\n.mh-users{margin-top:22px;}\n.mh-users-list{display:flex;gap:14px;overflow-x:auto;padding:2px 0 9px;scrollbar-width:none;}\n.mh-users-list::-webkit-scrollbar{display:none;}\n.mh-user{flex:0 0 76px;text-align:center;}\n.mh-user img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border);background:var(--surface);}\n.mh-user-name{display:block;margin-top:6px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n.mh-user .mh-follow{margin-top:5px;height:24px;padding:0 14px;border-radius:20px;font-size:10px;font-weight:700;background:var(--primary);color:var(--primary-foreground);border:none;cursor:pointer;}\n";
 
 export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, onPhoto, onJoin, onSignOut }: MobileHomeProps) {
+  const selfAdmin = useAdminIds([p.id]);
   const preferences = usePreferences();
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
@@ -329,7 +349,7 @@ export function MobileHomeView({ profile: p, defaultPhoto, uploading, notice, on
   useEffect(() => { if (!modalOpen) return; const previous = document.activeElement; const overflow = document.body.style.overflow; document.body.style.overflow = "hidden"; dialogRef.current?.focus(); const close = (e: KeyboardEvent) => { if (e.key === "Escape") { setActiveStory(null); setWalletOpen(false); setGameOpen(false); } if(e.key === "Tab" && dialogRef.current) { const items = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button, [href], [tabindex="0"]')); const first = items[0]; const last = items[items.length - 1]; if(e.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { e.preventDefault(); last?.focus(); } else if(!e.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current)) { e.preventDefault(); first?.focus(); } } }; document.addEventListener("keydown",close); return () => { document.body.style.overflow = overflow; document.removeEventListener("keydown",close); if(previous instanceof HTMLElement) previous.focus(); }; }, [modalOpen]);
   return <main className="mobile-home"><div className="mh-shell">
     <header className="mh-top">
-      <div className="mh-id"><Button variant="ghost" className="mh-avatar" disabled={uploading} onClick={() => fileRef.current?.click()} aria-label={translate("Şəkli dəyiş")} title={translate("Şəkli dəyiş")}><img src={p.photo_url || defaultPhoto} alt={p.name} /><span className="mh-online">{uploading && <LoaderCircle size={12} className="animate-spin" />}</span></Button><div className="mh-id-text"><span className="mh-greeting">{translate("Xoş gəldin")} 👋</span><strong>{p.name}</strong><span>@{p.username}</span></div></div>
+      <div className="mh-id"><Button variant="ghost" className="mh-avatar" disabled={uploading} onClick={() => fileRef.current?.click()} aria-label={translate("Şəkli dəyiş")} title={translate("Şəkli dəyiş")}><img src={p.photo_url || defaultPhoto} alt={p.name} /><span className="mh-online">{uploading && <LoaderCircle size={12} className="animate-spin" />}</span></Button><div className="mh-id-text"><span className="mh-greeting">{translate("Xoş gəldin")} 👋</span><span className="mh-user-name-row"><strong>{p.name}</strong>{selfAdmin.has(p.id) && <AdminBadge />}</span><span>@{p.username}</span></div></div>
       <div className="mh-top-actions"><AppControls /><div className="mh-wallet"><span className="mh-coin" aria-hidden="true">D</span><strong aria-label={translate("DAT balansı")}>{p.dat == null ? "—" : formatBalance(p.dat)}<small>DAT</small></strong><Button variant="ghost" className="mh-wallet-add" aria-label={translate("DAT əlavə et")} title={translate("DAT əlavə et")} onClick={() => setWalletOpen(true)}><Plus size={16} /></Button></div></div>
     </header>
     <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if(f) onPhoto(f); }} />
