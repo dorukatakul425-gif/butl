@@ -43,7 +43,7 @@ describe("live voice room requirements", () => {
     const x = harness(); await connect(x); expect(await x.client.setSeat(2)).toBe(true);
     expect(gum).toHaveBeenCalledTimes(1); expect(gum).toHaveBeenCalledWith({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
     const local = x.client.local; expect(x.client.me).toMatchObject({ seat: 2, mic: true, cam: false });
-    await x.client.setSeat(null); expect(local?.getTracks()[0].stop).toHaveBeenCalled(); expect(x.client.local).toBeNull(); expect(x.client.me.mic).toBe(false); await x.client.leave();
+    await x.client.setSeat(null); expect(local?.getTracks()[0]?.stop).toHaveBeenCalled(); expect(x.client.local).toBeNull(); expect(x.client.me.mic).toBe(false); await x.client.leave();
   });
   it("keeps denied microphone users as listeners", async () => {
     const x = harness(); await connect(x); gum.mockRejectedValueOnce(new Error("denied"));
@@ -61,10 +61,10 @@ describe("live voice room requirements", () => {
   it("sends a single acknowledged gift to sender and all room listeners with same ID/start time", async () => {
     const a = harness(), b = harness("b"); await connect(a); await connect(b);
     expect(await a.client.sendGift(null, "video")).toBe(true);
-    const sent = a.channel.send.mock.calls.map(c => c[0] as any).find(p => p.event === "gift");
+    const sent = a.channel.send.mock.calls.map(c => (c as unknown[])[0] as any).find(p => p?.event === "gift");
     expect(sent.payload.to).toBeNull(); expect(sent.payload.at).toBeGreaterThan(Date.now());
     b.callbacks.get("broadcast:gift")?.({ payload: sent.payload }); b.callbacks.get("broadcast:gift")?.({ payload: sent.payload });
-    expect(a.h.onGift).toHaveBeenCalledTimes(1); expect(b.h.onGift).toHaveBeenCalledTimes(1); expect(b.h.onGift).toHaveBeenCalledWith(a.h.onGift.mock.calls[0][0]); await a.client.leave(); await b.client.leave();
+    expect(a.h.onGift).toHaveBeenCalledTimes(1); expect(b.h.onGift).toHaveBeenCalledTimes(1); expect(b.h.onGift).toHaveBeenCalledWith(a.h.onGift.mock.calls[0]![0]); await a.client.leave(); await b.client.leave();
   });
   it("does not show failed or fake gifts as successfully sent", async () => {
     const x = harness(); await connect(x); expect(await x.client.sendGift(null, "rose")).toBe(false);
@@ -86,6 +86,6 @@ describe("live voice room requirements", () => {
   it("stops permission result arriving after leave without seating or publishing capture", async () => {
     const x = harness(); await connect(x); let resolve: (s: any) => void = () => undefined;
     gum.mockImplementationOnce(() => new Promise(r => { resolve = r; })); const sitting = x.client.setSeat(0);
-    await x.client.leave(); const late = stream(); resolve(late); expect(await sitting).toBe(false); expect(late.getTracks()[0].stop).toHaveBeenCalled(); expect(x.client.me.seat).toBeNull();
+    await x.client.leave(); const late = stream(); resolve(late); expect(await sitting).toBe(false); expect(late.getTracks()[0]!.stop).toHaveBeenCalled(); expect(x.client.me.seat).toBeNull();
   });
 });

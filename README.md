@@ -14,6 +14,15 @@ GitHub dosyaları tek başına çalışan bir Cloud hesabı oluşturmaz. Lovable
 5. Mevcut kullanıcı adı/şifre girişi için Cloud e-posta/şifre girişini açın. Oyun kullanıcı adını dahili bir adrese çevirir; bu giriş akışında e-posta doğrulamasını kapatma kararı yeni proje sahibine aittir. Bu ayar SQL ile taşınmaz. Doğrulama açık kalırsa mevcut kullanıcı adı akışından hemen giriş yapılamaz.
 6. İki yeni oyuncuyla giriş/çıkış, masa değiştirme, engelleme/engeli kaldırma, sohbet, kalp/jeton/VIP/Premium satın alma ve süre kontrolünü önizlemede test edin; ardından yayınlayın.
 
+### Kurulum sırasında doğrulanan ayrıntılar
+
+- Birleşik kurulumu uygulatmadan önce `drizzle/migrations` ve `drizzle.config.ts` dosyalarını projeden kaldırın (ör. `drizzle_history` klasörüne taşıyın). Lovable'ın migration aracı bu Drizzle geçmişiyle çakışır ve aksi halde SQL'i hiç çalıştırmadan durur.
+- **statuses** fotoğraf alanı SQL içindeki `INSERT INTO storage.buckets` satırıyla oluşturulamaz; araç bu yazımı reddeder. Alanı arayüzden **statuses** adıyla, özel (public=false) ve 50 MB sınırında ayrıca oluşturun.
+- Statü temizleme zamanlaması `create extension if not exists pg_cron;` satırıyla birlikte uygulanır; `cron` şeması yoksa zamanlama tek başına reddedilir. Zamanlama yalnızca süresi geçmiş statüleri siler; görünürlüğü zaten erişim kuralları sınırlar.
+- Birleşik kurulumdan sonra aynı dizindeki `20261017001000_leagues.sql` ve `20261017120000_profile_league_cup.sql` dosyalarını bu sırayla uygulayın; lig kademe/ödül kuralları ve profil kupa alanı bu dosyalardadır.
+- E-posta doğrulaması varsayılan olarak açıktır. Oyunu uçtan uca test etmek için geçici kapatılıyorsa test sonrası tekrar açın.
+- `src/lib/voice-rtc.ts` içindeki oturum bildirimleri `localDescription` artık dolu varsayarak okunur; bu olmadan tip denetimi hata verir. `bunx vitest run src/test/voice-rtc.test.ts` ses odası kurallarını doğrular.
+
 Yeni hesaplar 10.000 kalp, 10.000 test DAT ve 50 jest jetonuyla başlar. Kullanıcılar, parolalar, eski bakiyeler, mesajlar ve fotoğraflar **aktarılmaz**. Fiyat listeleri ve oyun kuralları aktarılır.
 
 ## Sınırlar

@@ -330,7 +330,7 @@ export class VoiceRoomClient {
       to: id,
       from: this.me.id,
       type: "offer",
-      sdp: pc.localDescription?.toJSON(),
+      sdp: pc.localDescription!.toJSON(),
     } satisfies Signal);
   }
 
@@ -353,7 +353,7 @@ export class VoiceRoomClient {
           to: s.from,
           from: this.me.id,
           type: "answer",
-          sdp: pc.localDescription?.toJSON(),
+          sdp: pc.localDescription!.toJSON(),
         } satisfies Signal);
       } else if (s.type === "answer" && s.sdp) {
         const pc = this.pcs.get(s.from);
