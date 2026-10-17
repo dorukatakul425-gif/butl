@@ -29,3 +29,12 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.user_profile_stats(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.user_profile_stats(uuid) TO authenticated;
+
+-- League entry: players take part unless they turned participation off in settings
+-- (was opt-in), and need entry_kisses received kisses.
+create or replace function public._league_participates(p_user uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select (raw_user_meta_data->>'league_participation')::boolean from auth.users where id = p_user), true)
+     and coalesce((select kisses from public.profiles where id = p_user), 0) >= (select entry_kisses from public.league_config);
+$$;
+revoke all on function public._league_participates(uuid) from public, anon, authenticated;

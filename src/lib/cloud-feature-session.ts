@@ -14,7 +14,7 @@ async function refreshPreference(viewerId: string) {
   const revision = ++preferenceRevision;
   const { data, error } = await sb.auth.getUser();
   if (error || snapshot.viewerId !== viewerId || revision !== preferenceRevision) return;
-  snapshot = { ...snapshot, leagueParticipation: data.user?.user_metadata['league_participation'] === true };
+  snapshot = { ...snapshot, leagueParticipation: data.user?.user_metadata['league_participation'] !== false };
   emit();
 }
 
@@ -91,7 +91,7 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
         const revision = ++preferenceRevision;
         const { data, error } = await sb.auth.updateUser({ data: { league_participation: input['enabled'] === 1 } });
         if (error) return { confirmed: false, message: 'Lig seçimi kaydedilemedi.' };
-        if (snapshot.viewerId === viewerId && revision === preferenceRevision) { snapshot = { ...snapshot, leagueParticipation: data.user?.user_metadata['league_participation'] === true }; emit(); }
+        if (snapshot.viewerId === viewerId && revision === preferenceRevision) { snapshot = { ...snapshot, leagueParticipation: data.user?.user_metadata['league_participation'] !== false }; emit(); }
         await refreshLeague(viewerId);
         return { confirmed: true };
       }
