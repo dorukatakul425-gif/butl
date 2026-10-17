@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCilizAssets } from "@/components/decor/decor-selection";
 import { SendGiftDialog } from "@/components/gifts/send-gift-dialog";
+import { ResponseGiftPopup } from "@/components/gifts/response-gift-popup";
+import { closeByUser, onGiftToViewer, type ResponseGiftState } from "@/lib/response-gift";
 import { OPEN_TOKENS_BANK_EVENT, TokensBankHost } from "@/components/bank/tokens-bank-dialog";
 import { GestureDialog } from "@/components/gestures/gesture-dialog";
 import { syncDecorFromProfile, useDecorState } from "@/lib/decor-store";
@@ -79,6 +81,16 @@ export function TableSeats() {
     return () => window.removeEventListener('source:open-profile', open);
   }, []);
   const [lockedGift, setLockedGift] = useState<GiftStoreItem | null>(null);
+  // SendGiftPresenter.showResponseGift: a gift to the viewer offers a return gift.
+  const responseRef = useRef<ResponseGiftState>({ type: "ready" });
+  const [response, setResponse] = useState<{ senderId: string; giftType: string } | null>(null);
+  const offerResponse = useCallback((senderId: string, giftType: string) => {
+    const next = onGiftToViewer(responseRef.current, senderId, giftType, Date.now());
+    if (!next) return;
+    responseRef.current = next;
+    setResponse({ senderId, giftType });
+  }, []);
+  const endResponse = useCallback((state: ResponseGiftState) => { responseRef.current = state; setResponse(null); }, []);
   const giftItems = useMemo(() => (assets ? buildGiftItems(assets, VIEWER_STORE.social, { kisses: progress.kisses, vip: progress.vip }) : []), [assets, progress.kisses, progress.vip]);
   const ownTokens = room.players[VIEWER_SEAT]?.tokens;
   const ownId = room.players[VIEWER_SEAT]?.id;
@@ -176,6 +188,7 @@ export function TableSeats() {
       const meta = assets.gifts[row.gift_type];
       if (from < 0 || to < 0 || !meta) return;
       if (!mine) void tableRef.current?.sendGift(from, to, createSentGift(assets, meta, row.seed));
+      if (!mine && to === VIEWER_SEAT && row.sender_id !== playersRef.current[VIEWER_SEAT]?.id) offerResponse(row.sender_id, row.gift_type);
       const s = profileBySeat(from), r = profileBySeat(to);
       const item = giftItems.find(i => i.type === row.gift_type);
       pushGiftLine(
@@ -184,7 +197,7 @@ export function TableSeats() {
         { type: row.gift_type, name: item?.name ?? row.gift_type, image: item ? dialogImage(assets, item.image, 28, 28).src : "" },
       );
     }
-  }, [assets, giftItems]);
+  }, [assets, giftItems, offerResponse]);
 
   useEffect(() => {
     activeTable?.setSelection(Array.from({ length: 12 }, (_, seat) => seatSelection(target, seat, VIEWER_SEAT)));
@@ -284,6 +297,15 @@ export function TableSeats() {
           multiselect={multiselect}
         />
       )}
+      {assets && response && (() => {
+        const seat = displaySeatOf(response.senderId), p = playersRef.current[seat];
+        if (seat < 0 || !p || p.empty) return null;
+        return <ResponseGiftPopup assets={assets} giftType={response.giftType}
+          sender={{ id: response.senderId, name: p.name, photoUrl: p.photoUrl, male: p.male }}
+          onConfirm={() => { endResponse({ type: "ready" }); setGesturesOpen(false); setTarget(state => openFor(state, seat, VIEWER_SEAT)); }}
+          onClose={() => endResponse(closeByUser(Date.now()))}
+          onTimeout={() => endResponse({ type: "ready" })} />;
+      })()}
       {assets && profileSeat !== null && playersRef.current[profileSeat] && (() => {
         const player = playersRef.current[profileSeat];
         if (!player) return null;
