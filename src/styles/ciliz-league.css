@@ -19,12 +19,6 @@
 .source-league-popup .league-ladder__league-title { font-size:14px; white-space:normal; text-align:left; }
 .source-league-popup .league-ladder__icon { width:24px; height:24px; border:1px solid var(--source-league-border); border-radius:50%; flex-shrink:0; }
 .source-league-popup .league-ladder__icon::after { content:'i'; display:block; font:bold 16px Arial,sans-serif; text-align:center; line-height:22px; }
-.source-league-popup .league__list { overflow:auto; }
-.source-league-popup .league__user { display:flex; gap:8px; align-items:center; min-height:58px; }
-.source-league-popup .league__photo { width:48px; height:48px; object-fit:cover; border-radius:5px; }
-.source-league-popup .league__user-info { flex:1; min-width:0; }
-.source-league-popup .league__name { font-size:14px; }
-.source-league-popup .league__stats { font-size:12px; }
 /* Header League Button Styles */
 .original-icon-league .original-league-rank {
   position: absolute;

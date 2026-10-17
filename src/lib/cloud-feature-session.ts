@@ -1,6 +1,7 @@
 // Lovable Cloud adapter for the source feature dialogs (currently: change table).
 import { attachSourceFeatureSession, type SourceFeatureSnapshot, type SourceTableEntry } from './source-feature-session';
 import { getSupabase } from './supabase';
+import { leagueHeader, type LeagueInfo } from './league';
 
 let snapshot: SourceFeatureSnapshot = { viewerId: null };
 const listeners = new Set<() => void>();
@@ -30,6 +31,49 @@ async function refreshTables() {
   emit();
 }
 
+let leagueRead = 0, leagueInfo: LeagueInfo | null = null, leagueChannel: { unsubscribe: () => unknown } | null = null, leagueRound: number | undefined, leagueTimer: ReturnType<typeof setInterval> | undefined;
+function applyLeague(viewerId: string) {
+  const info = leagueInfo;
+  if (!info) return;
+  const running = info.state === 'running' || info.state === 'finished';
+  snapshot = {
+    ...snapshot,
+    leagueHeader: leagueHeader(info, viewerId, Date.now()),
+    league: running ? {
+      level: info.level ?? 0, endsAt: info.finish_ms ?? Date.now(),
+      score: info.users?.find(u => u.id === viewerId)?.score ?? 0,
+      players: (info.users ?? []).map(u => ({ id: u.id, name: u.name, score: u.score, ...(u.photo_url && /^https?:/.test(u.photo_url) ? { photo: u.photo_url } : {}) })),
+      state: info.state as 'running' | 'finished', ...(info.round_id !== undefined ? { roundId: info.round_id } : {}),
+      usersMax: info.users_max ?? 20, moveUp: info.move_up ?? 3, moveDown: info.move_down ?? 3, maxLeague: info.max_league ?? 0,
+      kisses: info.kisses ?? 0, kissesLim: info.kisses_lim ?? 500, limit: info.limit ?? null, gold: info.gold ?? 0, gifts: info.gifts ?? [],
+      finalPos: info.final_pos ?? null, rewardGold: info.reward_gold ?? null, rewardGifts: info.reward_gifts ?? null,
+    } : undefined,
+  } as SourceFeatureSnapshot;
+  emit();
+}
+async function refreshLeague(viewerId: string) {
+  const sb = getSupabase();
+  if (!sb) return;
+  const read = ++leagueRead;
+  const { data, error } = await sb.rpc('get_league' as never);
+  if (error || read !== leagueRead || snapshot.viewerId !== viewerId) return;
+  leagueInfo = data as unknown as LeagueInfo;
+  applyLeague(viewerId);
+  // Live score updates for this round over Realtime websockets (league_score).
+  if (leagueInfo.round_id !== leagueRound) {
+    leagueRound = leagueInfo.round_id;
+    void leagueChannel?.unsubscribe(); leagueChannel = null;
+    if (leagueRound !== undefined) {
+      let t: ReturnType<typeof setTimeout> | undefined;
+      const again = () => { clearTimeout(t); t = setTimeout(() => void refreshLeague(viewerId), 250); };
+      leagueChannel = sb.channel(`league-${leagueRound}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'league_members', filter: `round_id=eq.${leagueRound}` }, again)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'league_rounds', filter: `id=eq.${leagueRound}` }, again)
+        .subscribe();
+    }
+  }
+}
+
 export function installCloudFeatureSession(viewerId: string, rejoin: (membership: { room_id: number; seat: number }) => Promise<unknown>) {
   preferenceRevision++;
   snapshot = { viewerId, tables: { friends: [], history: [], canViewById: true } };
@@ -45,6 +89,15 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
         const { data, error } = await sb.auth.updateUser({ data: { league_participation: input['enabled'] === 1 } });
         if (error) return { confirmed: false, message: 'Lig seçimi kaydedilemedi.' };
         if (snapshot.viewerId === viewerId && revision === preferenceRevision) { snapshot = { ...snapshot, leagueParticipation: data.user?.user_metadata['league_participation'] === true }; emit(); }
+        await refreshLeague(viewerId);
+        return { confirmed: true };
+      }
+      if (action === 'league-seen') {
+        const round = Number(input?.['roundId']);
+        if (!Number.isSafeInteger(round)) return { confirmed: false };
+        const { error } = await sb.rpc('league_seen' as never, { p_round: round } as never);
+        if (error) return { confirmed: false, message: error.message };
+        await refreshLeague(viewerId);
         return { confirmed: true };
       }
       if (action === 'user-kick' || action === 'user-save') return { confirmed: false, message: 'Şutla ve Koru hizmeti bağlı değil.' };
@@ -62,6 +115,17 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
   });
   void refreshTables();
   void refreshPreference(viewerId);
+  leagueInfo = null; leagueRound = undefined; void leagueChannel?.unsubscribe(); leagueChannel = null;
+  void refreshLeague(viewerId);
+  // Header timer, finish detection and joining once the viewer earns points.
+  clearInterval(leagueTimer);
+  let ticks = 0;
+  leagueTimer = setInterval(() => {
+    if (snapshot.viewerId !== viewerId) return;
+    ticks++;
+    const ended = leagueInfo?.state === 'running' && (leagueInfo.finish_ms ?? Infinity) <= Date.now();
+    if (ended || ticks % 6 === 0) void refreshLeague(viewerId); else applyLeague(viewerId);
+  }, 10000);
   // Live men/women counts: any seat change anywhere refreshes the list.
   const sb = getSupabase();
   if (sb && !liveChannel) {
