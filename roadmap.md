@@ -7,3 +7,5 @@
 - [x] Tap other players to open their profile (counts a view).
 - [x] Image and voice messages in chat over realtime.
 - [ ] Apply migration 0024 on the hosting database.
+- [x] Unsend DMs, detailed report popup to admin, app-style live rooms list.
+- [ ] Apply migration 0025 on the hosting database.

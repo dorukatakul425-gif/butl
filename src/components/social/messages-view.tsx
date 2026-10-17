@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Bell, BellOff, Check, CheckCheck, Search, Send } from "lucide-react";
 import { translate, usePreferences } from "@/lib/app-preferences";
 import { MediaComposer, MediaImage, VoiceBubble } from "@/components/social/chat-media";
+import { ReportSheet } from "@/components/social/report-sheet";
+import { IconFlag, IconTrash } from "@/components/ui-icons";
+import { unsendMessage } from "@/lib/social";
 import {
   joinTyping, loadConversation, markConversationRead, MAX_MESSAGE_LENGTH, normalizeMessage, onDirectMessage, otherParty,
   requestNotifyPermission, sendDirectMessage, setActiveChat, setSocialSound, socialSoundEnabled, unlockSocialAudio, upsertMessage,
@@ -86,6 +89,17 @@ function ChatThread({ me, peer, defaultPhoto, onBack, onOpenProfile }: { me: str
   useEffect(() => { const el = listRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: messages.length > 30 ? "auto" : "smooth" }); }, [messages.length, typing]);
   useEffect(() => { const el = inputRef.current; if (!el) return; el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 120) + "px"; }, [text]);
 
+  const [picked, setPicked] = useState<string | null>(null);
+  const [confirmDel, setConfirmDel] = useState<DirectMessage | null>(null);
+  const [reporting, setReporting] = useState(false);
+  const holdRef = useRef<number | null>(null);
+  const unsend = async (m: DirectMessage) => {
+    setConfirmDel(null); setPicked(null); setError("");
+    const before = messages;
+    setMessages(prev => prev.map(x => x.id === m.id ? { ...x, deleted_at: new Date().toISOString(), body: "", media_path: null } : x));
+    const res = await unsendMessage(m);
+    if (res.ok) setMessages(prev => upsertMessage(prev, res.message)); else { setMessages(before); setError(translate(res.error)); }
+  };
   const send = async () => {
     const body = normalizeMessage(text);
     if (!body) return;
@@ -112,7 +126,18 @@ function ChatThread({ me, peer, defaultPhoto, onBack, onOpenProfile }: { me: str
       <button type="button" className="sm-icon" aria-label={translate("Geri")} onClick={onBack}><ArrowLeft size={20} /></button>
       <button type="button" className="sm-peer-btn" onClick={() => onOpenProfile?.(peer)} aria-label={translate("Profilə bax")}><img src={p?.photo_url || defaultPhoto} alt="" />
       <span className="sm-peer"><strong>{p?.name ?? "…"}</strong><small className={typing ? "typing" : ""}>{typing ? translate("yazır…") : "@" + (p?.username ?? "")}</small></span></button>
+      <button type="button" className="sm-icon sm-report" aria-label={translate("Şikayət et")} onClick={() => setReporting(true)}><IconFlag size={19} /></button>
     </header>
+    {reporting && <ReportSheet me={me} target={peer} targetName={p?.name ?? ""} onClose={() => setReporting(false)} />}
+    {confirmDel && <div className="sm-sheet-wrap" onClick={e => { if (e.target === e.currentTarget) setConfirmDel(null); }}>
+      <div className="sm-sheet" role="alertdialog" aria-label={translate("Mesajı geri al")}>
+        <span className="sm-sheet-ico"><IconTrash size={24} /></span>
+        <strong>{translate("Mesaj hamı üçün silinsin?")}</strong>
+        <p>{translate("Mesaj həm səndə, həm də qarşı tərəfdə silinəcək.")}</p>
+        <button type="button" className="sm-sheet-btn danger" onClick={() => void unsend(confirmDel)}>{translate("Hamı üçün sil")}</button>
+        <button type="button" className="sm-sheet-btn" onClick={() => setConfirmDel(null)}>{translate("Ləğv et")}</button>
+      </div>
+    </div>}
     <div className="sm-thread" ref={listRef} aria-live="polite">
       {loading && <div className="sm-loading"><span /><span /><span /></div>}
       {!loading && messages.length === 0 && <div className="sm-empty sm-empty-chat"><img src={p?.photo_url || defaultPhoto} alt="" /><strong>{p?.name}</strong><p>{translate("İlk mesajı sən yaz 👋")}</p></div>}
@@ -124,11 +149,22 @@ function ChatThread({ me, peer, defaultPhoto, onBack, onOpenProfile }: { me: str
         const tail = !next || next.sender_id !== m.sender_id;
         return <div key={m.id} className="sm-msg-wrap">
           {newDay && <div className="sm-day"><span>{dayLabel(m.created_at)}</span></div>}
-          <div className={"sm-msg " + (mine ? "mine" : "theirs") + (tail ? " tail" : "") + (m.pending ? " pending" : "")}>
+          {m.deleted_at ? <div className={"sm-msg sm-deleted " + (mine ? "mine" : "theirs") + (tail ? " tail" : "")}>
+            <span className="sm-body">🚫 {mine ? translate("Bu mesajı geri aldın") : translate("Bu mesaj silindi")}</span>
+            <span className="sm-meta">{clock(m.created_at)}</span>
+          </div> : <div className={"sm-msg " + (mine ? "mine" : "theirs") + (tail ? " tail" : "") + (m.pending ? " pending" : "") + (picked === m.id ? " picked" : "")}
+            onContextMenu={e => { if (mine && !m.pending) { e.preventDefault(); setPicked(m.id); } }}
+            onPointerDown={() => { if (!mine || m.pending) return; holdRef.current = window.setTimeout(() => { setPicked(m.id); navigator.vibrate?.(15); }, 450); }}
+            onPointerUp={() => { if (holdRef.current) window.clearTimeout(holdRef.current); }}
+            onPointerLeave={() => { if (holdRef.current) window.clearTimeout(holdRef.current); }}>
             {m.kind === "image" && m.media_path ? <MediaImage path={m.media_path} /> : m.kind === "audio" && m.media_path ? <VoiceBubble path={m.media_path} durationMs={m.duration_ms ?? null} mine={mine} /> : null}
             {m.body && <span className="sm-body">{m.body}</span>}
             <span className="sm-meta">{clock(m.created_at)}{mine && (m.read_at ? <CheckCheck size={14} className="read" /> : m.pending ? null : <Check size={14} />)}</span>
-          </div>
+          </div>}
+          {picked === m.id && !m.deleted_at && <div className="sm-actions">
+            <button type="button" className="danger" onClick={() => setConfirmDel(m)}><IconTrash size={15} />{translate("Geri al")}</button>
+            <button type="button" onClick={() => setPicked(null)}>{translate("Bağla")}</button>
+          </div>}
         </div>;
       })}
       {typing && <div className="sm-msg theirs tail sm-typing" aria-label={translate("yazır…")}><span /><span /><span /></div>}
@@ -176,6 +212,21 @@ const SM_STYLES = `
 .sm-peer small{font-size:12px;color:var(--muted-foreground);}.sm-peer small.typing{color:var(--primary);font-weight:650;}
 .sm-thread{flex:1;min-height:0;overflow-y:auto;padding:12px 12px 8px;display:flex;flex-direction:column;gap:2px;overscroll-behavior:contain;}
 .sm-msg-wrap{display:flex;flex-direction:column;}
+.sm-msg{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.sm-msg.picked{transform:scale(1.03);box-shadow:0 8px 24px oklch(.2 .05 260 / .25);transition:transform .2s;}
+.sm-deleted{font-style:italic;opacity:.7;background:transparent!important;color:var(--muted-foreground)!important;border:1px dashed var(--border)!important;}
+.sm-actions{align-self:flex-end;display:flex;gap:6px;margin:2px 0 8px;animation:sm-pop .18s ease-out both;}
+.sm-actions button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;border-radius:16px;background:var(--surface);border:1px solid var(--border);font-size:12.5px;font-weight:750;}
+.sm-actions .danger{color:var(--heart);}
+.sm-report{margin-left:auto;color:var(--heart)!important;}
+.sm-sheet-wrap{position:fixed;inset:0;z-index:85;display:flex;align-items:flex-end;justify-content:center;background:oklch(0 0 0 / .45);animation:sm-fade .2s;}
+.sm-sheet{width:100%;max-width:520px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:22px 18px max(18px,env(safe-area-inset-bottom));border-radius:26px 26px 0 0;background:var(--background);animation:sm-up .28s cubic-bezier(.2,.9,.3,1);}
+.sm-sheet-ico{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:color-mix(in oklch,var(--heart) 15%,transparent);color:var(--heart);}
+.sm-sheet strong{font-size:17px;}.sm-sheet p{margin:0 0 8px;font-size:13px;color:var(--muted-foreground);}
+.sm-sheet-btn{all:unset;box-sizing:border-box;cursor:pointer;width:100%;height:48px;display:grid;place-items:center;border-radius:14px;background:var(--surface);font-weight:800;font-size:15px;}
+.sm-sheet-btn.danger{background:var(--heart);color:var(--primary-foreground);}
+@keyframes sm-fade{from{opacity:0;}}
+@keyframes sm-up{from{transform:translateY(100%);}}
 .sm-day{display:flex;justify-content:center;margin:12px 0 8px;}
 .sm-day span{font-size:11px;font-weight:700;color:var(--muted-foreground);padding:4px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--border);}
 .sm-msg{position:relative;max-width:78%;padding:7px 10px 6px 12px;border-radius:18px;font-size:14.5px;line-height:1.35;display:flex;flex-wrap:wrap;align-items:flex-end;gap:2px 8px;animation:sm-pop .22s ease-out both;word-break:break-word;}

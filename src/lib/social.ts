@@ -5,7 +5,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase";
 
 export type Friendship = { id: string; requester_id: string; addressee_id: string; status: "pending" | "accepted"; created_at: string };
-export type DirectMessage = { id: string; sender_id: string; recipient_id: string; body: string; kind?: "text" | "image" | "audio"; media_path?: string | null; duration_ms?: number | null; created_at: string; read_at: string | null; pending?: boolean };
+export type DirectMessage = { id: string; sender_id: string; recipient_id: string; body: string; kind?: "text" | "image" | "audio"; media_path?: string | null; duration_ms?: number | null; deleted_at?: string | null; created_at: string; read_at: string | null; pending?: boolean };
 export type SocialProfile = { id: string; name: string; username: string; photo_url: string | null };
 export type FriendState = "none" | "sent" | "received" | "friends";
 export type SocialNotice = { id: string; kind: "message" | "request" | "accepted"; from: string; title: string; body: string; photo: string | null };
@@ -42,7 +42,7 @@ export function summarizeInbox(me: string, rows: readonly DirectMessage[]) {
     const peer = m.sender_id === me ? m.recipient_id : m.sender_id;
     const prev = last[peer];
     if (!prev || prev.created_at < m.created_at) last[peer] = m;
-    if (m.recipient_id === me && !m.read_at) unread[peer] = (unread[peer] ?? 0) + 1;
+    if (m.recipient_id === me && !m.read_at && !m.deleted_at) unread[peer] = (unread[peer] ?? 0) + 1;
   }
   return { last, unread };
 }
@@ -184,7 +184,7 @@ async function refreshInbox() {
   const sb = getSupabase();
   const me = state.me;
   if (!sb || !me) return;
-  const { data } = await sb.from("direct_messages").select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,created_at,read_at").order("created_at", { ascending: false }).limit(400);
+  const { data } = await sb.from("direct_messages").select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,deleted_at,created_at,read_at").order("created_at", { ascending: false }).limit(400);
   if (!data || state.me !== me) return;
   const { last, unread } = summarizeInbox(me, data as DirectMessage[]);
   if (state.activeChat) unread[state.activeChat] = 0;
@@ -230,7 +230,7 @@ export async function removeFriendship(id: string) {
 export async function loadConversation(me: string, peer: string) {
   const sb = getSupabase();
   if (!sb) return [];
-  const { data } = await sb.from("direct_messages").select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,created_at,read_at")
+  const { data } = await sb.from("direct_messages").select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,deleted_at,created_at,read_at")
     .or(`and(sender_id.eq.${me},recipient_id.eq.${peer}),and(sender_id.eq.${peer},recipient_id.eq.${me})`)
     .order("created_at", { ascending: false }).limit(80);
   return ((data ?? []) as DirectMessage[]).reverse();
@@ -238,7 +238,7 @@ export async function loadConversation(me: string, peer: string) {
 export async function sendDirectMessage(me: string, to: string, body: string) {
   const sb = getSupabase();
   if (!sb) return { ok: false as const, error: "Bağlantı yoxdur" };
-  const { data, error } = await sb.from("direct_messages").insert({ sender_id: me, recipient_id: to, body }).select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,created_at,read_at").single();
+  const { data, error } = await sb.from("direct_messages").insert({ sender_id: me, recipient_id: to, body }).select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,deleted_at,created_at,read_at").single();
   if (error || !data) return { ok: false as const, error: "Mesaj göndərilmədi" };
   const message = data as DirectMessage;
   set({ last: { ...state.last, [to]: message } });
@@ -317,6 +317,12 @@ export function startSocial(me: string) {
       messageListeners.forEach(l => l(m, "update"));
       if (state.last[m.recipient_id]?.id === m.id) set({ last: { ...state.last, [m.recipient_id]: m } });
     })
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "direct_messages", filter: `recipient_id=eq.${me}` }, payload => {
+      if (!live()) return;
+      const m = payload.new as DirectMessage;
+      messageListeners.forEach(l => l(m, "update"));
+      if (state.last[m.sender_id]?.id === m.id) set({ last: { ...state.last, [m.sender_id]: m } });
+    })
     .subscribe(status => { if (status === "SUBSCRIBED" && live()) { void refreshFriendships(); void refreshInbox(); } });
   const unlock = () => { audio(); };
   window.addEventListener("pointerdown", unlock, { once: true });
@@ -340,7 +346,8 @@ export function useSocialSession(me: string | null | undefined) {
 }
 
 /** Short text for lists/notifications; media messages show a label. */
-export function messagePreview(m: Pick<DirectMessage, "body" | "kind">) {
+export function messagePreview(m: Pick<DirectMessage, "body" | "kind" | "deleted_at">) {
+  if (m.deleted_at) return "🚫 Mesaj silindi";
   if (m.kind === "image") return "📷 " + (m.body || "Şəkil");
   if (m.kind === "audio") return "🎤 Səsli mesaj";
   return m.body;
@@ -371,9 +378,30 @@ export async function sendMediaMessage(me: string, to: string, file: Blob, kind:
   if (up.error) return { ok: false as const, error: "Fayl yüklənmədi" };
   const { data, error } = await sb.from("direct_messages")
     .insert({ sender_id: me, recipient_id: to, body: (opts.caption ?? "").slice(0, MAX_MESSAGE_LENGTH), kind, media_path: path, duration_ms: opts.durationMs ?? null })
-    .select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,created_at,read_at").single();
+    .select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,deleted_at,created_at,read_at").single();
   if (error || !data) return { ok: false as const, error: "Mesaj göndərilmədi" };
   const message = data as DirectMessage;
   set({ last: { ...state.last, [to]: message } });
   return { ok: true as const, message };
+}
+
+/** Sender-only unsend: wipes content server-side and both sides receive the UPDATE in realtime. */
+export async function unsendMessage(m: DirectMessage) {
+  const sb = getSupabase();
+  if (!sb) return { ok: false as const, error: "Bağlantı yoxdur" };
+  const { data, error } = await sb.rpc("unsend_message", { _id: m.id });
+  if (error || !data) return { ok: false as const, error: "Mesaj silinmədi" };
+  if (m.media_path) void sb.storage.from("dm-media").remove([m.media_path]);
+  const row = data as DirectMessage;
+  if (state.last[row.recipient_id]?.id === row.id) set({ last: { ...state.last, [row.recipient_id]: row } });
+  return { ok: true as const, message: row };
+}
+
+export type ReportCategory = "spam" | "harassment" | "inappropriate" | "fake" | "scam" | "other";
+/** Files a report for the admin panel. */
+export async function reportUser(me: string, target: string, category: ReportCategory, details: string, context: "chat" | "profile" = "chat") {
+  const sb = getSupabase();
+  if (!sb) return false;
+  const { error } = await sb.from("user_reports").insert({ reporter_id: me, reported_id: target, category, details: details.trim().slice(0, 1000), context });
+  return !error;
 }

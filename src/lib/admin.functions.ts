@@ -106,3 +106,41 @@ export const setBan = createServerFn({ method: "POST" })
     await admin.from("room_players").delete().eq("user_id", data.userId);
     return { banned: true };
   });
+
+const ReportsInput = z.object({ status: z.enum(["open", "reviewed", "dismissed"]).default("open") });
+
+export const listReports = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ReportsInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const { data: rows, error } = await admin.from("user_reports")
+      .select("id, reporter_id, reported_id, category, details, context, status, admin_note, created_at")
+      .eq("status", data.status).order("created_at", { ascending: false }).limit(100);
+    if (error) throw new Error(error.message);
+    const ids = [...new Set((rows ?? []).flatMap((r: any) => [r.reporter_id, r.reported_id]))];
+    const { data: people } = ids.length ? await admin.from("profiles").select("id, name, username, player_no").in("id", ids) : { data: [] };
+    const byId = new Map<string, any>((people ?? []).map((p: any) => [p.id, p]));
+    const { count: open } = await admin.from("user_reports").select("*", { count: "exact", head: true }).eq("status", "open");
+    const reports = (rows ?? []).map((r: any) => ({
+      id: r.id as string, category: r.category as string, details: r.details as string, context: r.context as string, status: r.status as string,
+      adminNote: (r.admin_note ?? "") as string, createdAt: r.created_at as string,
+      reporter: { id: r.reporter_id as string, name: (byId.get(r.reporter_id)?.name ?? "?") as string, username: (byId.get(r.reporter_id)?.username ?? "") as string },
+      reported: { id: r.reported_id as string, name: (byId.get(r.reported_id)?.name ?? "?") as string, username: (byId.get(r.reported_id)?.username ?? "") as string, playerNo: (byId.get(r.reported_id)?.player_no ?? null) as number | null },
+    }));
+    return { reports, open: open ?? 0 };
+  });
+
+const ResolveInput = z.object({ id: z.string().uuid(), status: z.enum(["reviewed", "dismissed", "open"]), note: z.string().trim().max(500).default("") });
+
+export const resolveReport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ResolveInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const { error } = await admin.from("user_reports")
+      .update({ status: data.status, admin_note: data.note || null, reviewed_at: data.status === "open" ? null : new Date().toISOString() })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

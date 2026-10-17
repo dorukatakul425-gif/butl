@@ -28,3 +28,11 @@ export const IconPause = (p: P) => <svg {...base(p)} fill="currentColor" stroke=
 export const IconTrash = (p: P) => <svg {...base(p)}><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5" /></svg>;
 export const IconSend = (p: P) => <svg {...base(p)}><path d="M21 3 10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5Z" /></svg>;
 export const IconUsers = (p: P) => <svg {...base(p)}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 19.5c1-3 3.5-4.5 6.5-4.5s5.5 1.5 6.5 4.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 15.3c1.7.6 2.9 2 3.5 4.2" /></svg>;
+export const IconFlag = (p: P) => <svg {...base(p)}><path d="M5 21V4" /><path d="M5 4.5c4-2 7 2 11 0l2.5-1v9.5l-2.5 1c-4 2-7-2-11 0" /></svg>;
+export const IconPlus = (p: P) => <svg {...base(p)}><path d="M12 5v14M5 12h14" /></svg>;
+export const IconSearch = (p: P) => <svg {...base(p)}><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" /></svg>;
+export const IconVideo = (p: P) => <svg {...base(p)}><rect x="3" y="6" width="12.5" height="12" rx="2.5" /><path d="m15.5 10.5 5-3v9l-5-3" /></svg>;
+export const IconHeadphones = (p: P) => <svg {...base(p)}><path d="M4 15v-3a8 8 0 0 1 16 0v3" /><rect x="3" y="14" width="4.5" height="6.5" rx="1.8" /><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.8" /></svg>;
+export const IconCrown = (p: P) => <svg {...base(p)}><path d="M4 17.5 3 7.5l5 4 4-6 4 6 5-4-1 10Z" /><path d="M5 20.5h14" /></svg>;
+export const IconHash = (p: P) => <svg {...base(p)}><path d="M9 4 7 20M17 4l-2 16M4.5 9h15M3.5 15h15" /></svg>;
+export const IconFlame = (p: P) => <svg {...base(p)}><path d="M12 21c-4 0-6.5-2.7-6.5-6.2 0-3.7 3-5.6 4-9.3 2.3 1.4 3.4 3.4 3.4 5.4 1-.6 1.6-1.6 1.8-2.9 2 1.6 3.8 4 3.8 6.8 0 3.5-2.5 6.2-6.5 6.2Z" /></svg>;

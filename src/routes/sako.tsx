@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
-import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setBan } from "@/lib/admin.functions";
+import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setBan, listReports, resolveReport } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/sako")({
   head: () => ({
@@ -73,6 +73,7 @@ function Dashboard() {
             </div>
           ))}
         </div>
+        <Reports />
         <Players />
       </div>
     </div>
@@ -180,6 +181,53 @@ function PlayerRow({ p }: { p: Player }) {
         </div>
       )}
       {msg && <p className="mt-2 text-xs text-muted-foreground">{msg}</p>}
+    </div>
+  );
+}
+
+const CATEGORY_TR: Record<string, string> = { spam: "Spam", harassment: "Hakaret / taciz", inappropriate: "Uygunsuz içerik", fake: "Sahte profil", scam: "Dolandırıcılık", other: "Diğer" };
+
+function Reports() {
+  const [status, setStatus] = useState<"open" | "reviewed" | "dismissed">("open");
+  const list = useServerFn(listReports);
+  const resolve = useServerFn(resolveReport);
+  const qc = useQueryClient();
+  const r = useQuery({ queryKey: ["admin", "reports", status], queryFn: () => list({ data: { status } }), refetchInterval: 20000 });
+  const m = useMutation({
+    mutationFn: (v: { id: string; status: "reviewed" | "dismissed" | "open" }) => resolve({ data: { ...v, note: "" } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "reports"] }),
+  });
+  return (
+    <div className="mb-10">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <h2 className="mr-auto text-xl font-bold">Şikayetler {r.data?.open ? <span className="ml-1 rounded bg-destructive px-2 py-0.5 text-sm text-destructive-foreground">{r.data.open} yeni</span> : null}</h2>
+        {(["open", "reviewed", "dismissed"] as const).map((s) => (
+          <Button key={s} size="sm" variant={status === s ? "default" : "outline"} onClick={() => setStatus(s)}>{s === "open" ? "Açık" : s === "reviewed" ? "İncelendi" : "Reddedildi"}</Button>
+        ))}
+      </div>
+      {r.isError && <p className="text-sm text-destructive">{(r.error as Error).message}</p>}
+      {r.isLoading && <p className="text-muted-foreground">Yükleniyor…</p>}
+      {r.data && r.data.reports.length === 0 && <p className="text-muted-foreground">Şikayet yok.</p>}
+      <div className="space-y-2">
+        {r.data?.reports.map((x) => (
+          <div key={x.id} className="rounded-lg border bg-card p-3 text-card-foreground">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded bg-destructive/15 px-2 py-0.5 text-xs font-semibold text-destructive">{CATEGORY_TR[x.category] ?? x.category}</span>
+              <span className="text-xs text-muted-foreground">{new Date(x.createdAt).toLocaleString("tr-TR")} · {x.context === "chat" ? "Özel mesaj" : "Profil"}</span>
+            </div>
+            <div className="mt-2 text-sm">
+              <b>Şikayet edilen:</b> {x.reported.name} <span className="text-muted-foreground">@{x.reported.username}{x.reported.playerNo ? ` · #${x.reported.playerNo}` : ""}</span>
+            </div>
+            <div className="text-sm"><b>Şikayet eden:</b> {x.reporter.name} <span className="text-muted-foreground">@{x.reporter.username}</span></div>
+            {x.details && <p className="mt-2 whitespace-pre-wrap rounded bg-muted p-2 text-sm">{x.details}</p>}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {status !== "reviewed" && <Button size="sm" disabled={m.isPending} onClick={() => m.mutate({ id: x.id, status: "reviewed" })}>İncelendi</Button>}
+              {status !== "dismissed" && <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate({ id: x.id, status: "dismissed" })}>Reddet</Button>}
+              {status !== "open" && <Button size="sm" variant="outline" disabled={m.isPending} onClick={() => m.mutate({ id: x.id, status: "open" })}>Yeniden aç</Button>}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

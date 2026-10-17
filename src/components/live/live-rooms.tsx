@@ -3,7 +3,8 @@ import { translate, usePreferences } from "@/lib/app-preferences";
 // room creation and join-by-ID. Opening a room mounts the full-screen VoiceRoom.
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { ArrowLeft, Plus, Search, Users, Mic, Video, LoaderCircle } from "lucide-react";
+import { Mic, Video } from "lucide-react";
+import { IconBack, IconPlus, IconSearch, IconMic, IconVideo, IconUsers, IconHeadphones, IconCrown, IconHash, IconFlame } from "@/components/ui-icons";
 import { getSupabase } from "@/lib/supabase";
 import { VoiceRoom, VR_STYLES } from "./voice-room";
 
@@ -55,6 +56,7 @@ export function LiveRooms({
   const [cover, setCover] = useState<string>("emerald");
   const [kind, setKind] = useState<RoomKind>("voice");
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"all" | RoomKind>("all");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const lobby = useRef<RealtimeChannel | null>(null);
@@ -162,6 +164,7 @@ export function LiveRooms({
     )
     .sort((a, b) => (inside[b.id]?.length ?? 0) - (inside[a.id]?.length ?? 0));
   const mine = rooms?.find((r) => r.owner_id === me.id);
+  const shownRooms = filter === "all" ? list : list.filter((r) => roomKind(r.name) === filter);
 
   if (active)
     return (
@@ -184,97 +187,65 @@ export function LiveRooms({
         {VR_STYLES}
         {LR_STYLES}
       </style>
-      <header className="lr-top">
-        <button type="button" className="vr-icon" onClick={onClose} aria-label={translate("Geri")}>
-          <ArrowLeft size={18} />
-        </button>
-        <div>
+      <header className="lx-top">
+        <button type="button" className="lx-ic" onClick={onClose} aria-label={translate("Geri")}><IconBack size={20} /></button>
+        <div className="lx-title">
           <h2>{translate("Canlı otaqlar")}</h2>
-          <p>
-            <i />
-            {Object.values(inside).reduce((n, a) => n + a.length, 0)} {translate("nəfər danışır")}</p>
+          <p><i />{Object.values(inside).reduce((n, a) => n + a.length, 0)} {translate("nəfər danışır")} · {(rooms ?? []).length} {translate("otaq")}</p>
         </div>
-        <button type="button" className="lr-new" onClick={() => {
-            if (mine) {
-              setKind(roomKind(mine.name));
-              setName(roomTitle(mine.name));
-              setCover(mine.cover);
-            }
+        <button type="button" className="lx-new" onClick={() => {
+            if (mine) { setKind(roomKind(mine.name)); setName(roomTitle(mine.name)); setCover(mine.cover); }
             setCreating(true);
-          }}>
-          <Plus size={16} />
-          {mine ? translate("Otağım") : "Yarat"}
-        </button>
+          }}><IconPlus size={17} />{mine ? translate("Otağım") : translate("Yarat")}</button>
       </header>
-      <div className="lr-search">
-        <Search size={15} />
-        <input
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setErr("");
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") void joinById();
-          }}
-          placeholder={translate("Otaq adı və ya ID")}
-          inputMode="search"
-        />
-        {/^\d{4,}$/.test(query.trim()) && (
-          <button type="button" onClick={() => void joinById()}>
-            {translate("Qoşul")}</button>
-        )}
+      <div className="lx-search">
+        <IconSearch size={17} />
+        <input value={query} onChange={(e) => { setQuery(e.target.value); setErr(""); }} onKeyDown={(e) => { if (e.key === "Enter") void joinById(); }} placeholder={translate("Otaq adı və ya ID")} inputMode="search" />
+        {/^\d{4,}$/.test(query.trim()) && <button type="button" onClick={() => void joinById()}>{translate("Qoşul")}</button>}
+      </div>
+      <div className="lx-filters" role="tablist">
+        {(["all", "voice", "video"] as const).map((f) => (
+          <button key={f} type="button" role="tab" aria-selected={filter === f} className={filter === f ? "on" : ""} onClick={() => setFilter(f)}>
+            {f === "all" ? <IconFlame size={15} /> : f === "voice" ? <IconMic size={15} /> : <IconVideo size={15} />}
+            {f === "all" ? translate("Hamısı") : f === "voice" ? translate("Səsli") : translate("Görüntülü")}
+          </button>
+        ))}
       </div>
       {err && <p className="vr-err lr-pad">{err}</p>}
-      <div className="lr-list">
+      <div className="lx-list">
         {rooms === null ? (
-          <div className="lr-empty">
-            <LoaderCircle className="mh-spin" size={22} />
-          </div>
-        ) : list.length === 0 ? (
-          <div className="lr-empty">
-            <span>🎙️</span>
-            <p>
-              {translate("Hələ aktiv otaq yoxdur.")}<br />
-              {translate("İlk otağı sən yarat!")}</p>
+          Array.from({ length: 5 }, (_, i) => <div key={i} className="lx-card lx-skel" />)
+        ) : shownRooms.length === 0 ? (
+          <div className="lx-empty">
+            <span className="lx-empty-ic"><IconHeadphones size={34} /></span>
+            <strong>{translate("Hələ aktiv otaq yoxdur.")}</strong>
+            <p>{translate("İlk otağı sən yarat!")}</p>
+            <button type="button" className="lx-new" onClick={() => setCreating(true)}><IconPlus size={17} />{translate("Yarat")}</button>
           </div>
         ) : (
-          list.map((r, i) => {
+          shownRooms.map((r, i) => {
             const people = inside[r.id] ?? [];
             const c = coverOf(r.cover);
+            const video = roomKind(r.name) === "video";
+            const live = people.length > 0;
             return (
-              <button
-                key={r.id}
-                type="button"
-                className={`lr-card vr-cover-${c.key}`}
-                style={{ animationDelay: `${i * 35}ms` }}
-                onClick={() => setActive(r)}
-              >
-                <span className="lr-cover">
-                  {c.emoji}
-                  {people.length > 0 && <span className="lr-live">CANLI</span>}
-                </span>
-                <span className="lr-info">
-                  <strong>{roomTitle(r.name)}</strong>
-                  <small>
-                    {roomKind(r.name) === "video" ? translate("🎥 Görüntülü") : translate("🎙️ Səsli")} · ID: {r.code}
-                    {r.owner_id === me.id ? " · sənin otağın" : ""}
-                  </small>
-                  <span className="lr-faces">
-                    {people.slice(0, 4).map((p, k) => (
-                      <img key={k} src={p.photo || defaultPhoto} alt={p.name} />
-                    ))}
-                    {people.length === 0 && <em>{translate("Boşdur — ilk sən qoşul")}</em>}
+              <button key={r.id} type="button" className={`lx-card vr-cover-${c.key}${live ? " live" : ""}`} style={{ animationDelay: `${i * 40}ms` }} onClick={() => setActive(r)}>
+                <span className="lx-cover"><span className="lx-emoji">{c.emoji}</span>{live && <span className="lx-live"><i />{translate("CANLI")}</span>}</span>
+                <span className="lx-info">
+                  <span className="lx-name"><strong>{roomTitle(r.name)}</strong>{r.owner_id === me.id && <IconCrown size={14} className="lx-crown" />}</span>
+                  <span className="lx-meta">
+                    <span className="lx-tag">{video ? <IconVideo size={12} /> : <IconMic size={12} />}{video ? translate("Görüntülü") : translate("Səsli")}</span>
+                    <span className="lx-id"><IconHash size={11} />{r.code}</span>
+                  </span>
+                  <span className="lx-faces">
+                    {people.slice(0, 5).map((p, k) => <img key={k} src={p.photo || defaultPhoto} alt={p.name} />)}
+                    {people.length > 5 && <b>+{people.length - 5}</b>}
+                    {!live && <em>{translate("Boşdur — ilk sən qoşul")}</em>}
                   </span>
                 </span>
-                <span className="lr-count">
-                  <Users size={13} />
-                  {people.length}
-                  <span className="lr-wave">
-                    <i />
-                    <i />
-                    <i />
-                  </span>
+                <span className="lx-side">
+                  <span className="lx-count"><IconUsers size={14} />{people.length}</span>
+                  {live ? <span className="lr-wave"><i /><i /><i /></span> : <span className="lx-join">{translate("Gir")}</span>}
                 </span>
               </button>
             );
@@ -349,6 +320,47 @@ export function LiveRooms({
 }
 
 const LR_STYLES = `
+.lx-top{display:flex;align-items:center;gap:12px;padding:6px 16px 12px;}
+.lx-ic{all:unset;cursor:pointer;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--vr-surface);border:1px solid var(--vr-line);backdrop-filter:blur(10px);flex-shrink:0;}
+.lx-ic:active,.lx-new:active{transform:scale(.92);}
+.lx-title{flex:1;min-width:0;}.lx-title h2{margin:0;font-size:22px;font-weight:850;letter-spacing:-.3px;}
+.lx-title p{margin:2px 0 0;font-size:11.5px;color:var(--vr-dim);display:flex;align-items:center;gap:6px;}
+.lx-title p i{width:7px;height:7px;border-radius:50%;background:var(--vr-live);box-shadow:0 0 0 3px oklch(.75 .18 150 / .25);animation:vr-pulse 1.6s infinite;}
+.lx-new{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:850;height:40px;padding:0 16px;border-radius:20px;background:linear-gradient(135deg,var(--vr-accent),oklch(.7 .2 30));color:oklch(.2 .05 50);box-shadow:0 6px 18px oklch(.7 .18 50 / .35);transition:transform .15s;}
+.lx-search{margin:0 16px 10px;display:flex;align-items:center;gap:10px;height:46px;padding:0 6px 0 16px;border-radius:23px;background:var(--vr-surface);border:1px solid var(--vr-line);color:var(--vr-dim);backdrop-filter:blur(10px);}
+.lx-search input{all:unset;flex:1;font-size:14.5px;color:var(--vr-ink);}
+.lx-search button{all:unset;cursor:pointer;font-size:12.5px;font-weight:850;height:34px;padding:0 14px;border-radius:17px;background:var(--vr-accent);color:oklch(.25 .05 60);}
+.lx-filters{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none;}
+.lx-filters button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:17px;font-size:13px;font-weight:750;color:var(--vr-dim);background:var(--vr-surface);border:1px solid var(--vr-line);white-space:nowrap;transition:all .2s;}
+.lx-filters button.on{background:var(--vr-ink);color:var(--vr-bg);border-color:transparent;}
+.lx-list{flex:1;overflow-y:auto;padding:0 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.lx-card{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;align-items:center;gap:14px;padding:12px;border-radius:22px;background:linear-gradient(135deg,var(--vr-surface),oklch(1 0 0 / .04));border:1px solid var(--vr-line);backdrop-filter:blur(12px);animation:lx-in .4s cubic-bezier(.2,.9,.3,1) both;transition:transform .15s;-webkit-tap-highlight-color:transparent;}
+.lx-card:active{transform:scale(.98);}
+.lx-card.live{border-color:oklch(.75 .18 150 / .45);box-shadow:0 8px 26px oklch(.6 .18 150 / .18);}
+.lx-skel{height:94px;animation:lx-shimmer 1.2s ease-in-out infinite alternate;}
+.lx-cover{position:relative;flex-shrink:0;width:70px;height:70px;border-radius:20px;display:grid;place-items:center;background:var(--cover);box-shadow:inset 0 0 0 1px oklch(1 0 0 / .18);}
+.lx-emoji{font-size:32px;filter:drop-shadow(0 3px 6px oklch(0 0 0 / .3));}
+.lx-live{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:3px;font-size:8.5px;font-weight:900;letter-spacing:.06em;padding:3px 7px;border-radius:8px;background:oklch(.62 .22 25);color:oklch(1 0 0);box-shadow:0 2px 8px oklch(.5 .2 25 / .5);}
+.lx-live i{width:5px;height:5px;border-radius:50%;background:oklch(1 0 0);animation:vr-pulse 1.2s infinite;}
+.lx-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+.lx-name{display:flex;align-items:center;gap:5px;min-width:0;}
+.lx-name strong{font-size:15.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lx-crown{color:var(--vr-accent);flex-shrink:0;}
+.lx-meta{display:flex;align-items:center;gap:6px;}
+.lx-tag,.lx-id{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:750;height:20px;padding:0 8px;border-radius:10px;background:oklch(1 0 0 / .1);color:var(--vr-dim);}
+.lx-faces{display:flex;align-items:center;padding-left:7px;min-height:24px;}
+.lx-faces img{width:24px;height:24px;border-radius:50%;object-fit:cover;margin-left:-7px;border:2px solid var(--vr-bg);}
+.lx-faces b{margin-left:-7px;height:24px;min-width:24px;padding:0 5px;box-sizing:border-box;border-radius:12px;display:grid;place-items:center;font-size:10px;background:var(--vr-accent);color:oklch(.25 .05 60);border:2px solid var(--vr-bg);}
+.lx-faces em{font-size:11px;color:var(--vr-dim);font-style:normal;margin-left:-7px;}
+.lx-side{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;}
+.lx-count{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:850;}
+.lx-join{font-size:11.5px;font-weight:850;height:26px;padding:0 12px;border-radius:13px;display:grid;place-items:center;background:var(--vr-ink);color:var(--vr-bg);}
+.lx-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:60px 20px;color:var(--vr-dim);}
+.lx-empty-ic{display:grid;place-items:center;width:80px;height:80px;border-radius:50%;background:var(--vr-surface);border:1px solid var(--vr-line);color:var(--vr-ink);margin-bottom:6px;}
+.lx-empty strong{color:var(--vr-ink);font-size:16px;}.lx-empty p{margin:0 0 8px;font-size:13px;}
+@keyframes lx-in{from{transform:translateY(14px);opacity:0;}}
+@keyframes lx-shimmer{from{opacity:.45;}to{opacity:.9;}}
+@media(prefers-reduced-motion:reduce){.lx-card{animation:none;}}
 .lr{overflow:hidden;}
 .lr-top{display:flex;align-items:center;gap:12px;padding:6px 16px 12px;}
 .lr-top>div{flex:1}.lr-top h2{margin:0;font-size:20px;font-weight:800;}

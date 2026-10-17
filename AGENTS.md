@@ -50,3 +50,4 @@
 - Friends and direct messages live in friendships/direct_messages: requests/answers go through owner-checked RPCs, inserts require are_friends, and delivery uses one per-player Cloud realtime channel in src/lib/social.ts, so UI state cannot fake friendship or read others' chats.
 - Profile bio lives on profiles.bio; follower/following/view counts come only from get_profile_stats and record_profile_view (unique viewer rows), so clients cannot inflate them.
 - DM images/voice notes upload to the private dm-media bucket at sender/recipient/file (friend-checked policies) and the message row is delivered by Cloud realtime; bubbles read signed URLs.
+- Unsend is a sender-only soft delete (unsend_message RPC wipes body/media); both sides receive it as a realtime UPDATE. User reports go to user_reports and are read/resolved only through admin server functions.
