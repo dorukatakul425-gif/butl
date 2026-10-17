@@ -55,7 +55,7 @@ describe('original feature windows', () => {
   render(<SourceSeasonDialog feature="league" onClose={close} />);
   expect(document.querySelector('.league-move__cups img')).toHaveAttribute('width', '118');
   fireEvent.click(screen.getByRole('button', { name: 'dlg:harem:btn' }));
-  expect(close).toHaveBeenCalledOnce(); expect(execute).not.toHaveBeenCalled();
+  expect(close).toHaveBeenCalledOnce(); expect(execute.mock.calls.filter(c => c[0] !== 'league-refresh')).toHaveLength(0);
  });
  it('keeps the original frame, left arrow and center for the isolated visual test', () => {
   render(<SourceSeasonDialog feature="roulette" onClose={vi.fn()} />);

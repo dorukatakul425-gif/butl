@@ -5,6 +5,8 @@ export interface SourceReward { id: string; image: string; count: number; title?
 export interface SourceFeatureSnapshot {
   viewerId: string | null;
   leagueParticipation?: boolean;
+  /** Last get_league result: server state, 'loading' before the first read, 'error' when the read failed. */
+  leagueState?: string;
   leagueHeader?: { type: 'unknown' | 'welcome' | 'running' | 'finished'; positionText?: string; leftTimeShortText?: string };
   kickout?: { price: number; vip: boolean; freeAt?: number; targets: Record<string, { kickAt?: number }> };
   profile?: { name: string; birthday: string; male: boolean; photo?: string; changePrice?: number };
@@ -17,7 +19,7 @@ export interface SourceFeatureSnapshot {
   pass?: { points: number; premium: boolean; endsAt: number; levels: Array<{ points: number; free: SourceReward[]; premium: SourceReward[]; claimed: boolean }> };
 }
 export interface SourceTableEntry { id: string; name?: string; photo?: string; bottle: string; men: number; women: number; blockedUntil?: number; current?: boolean }
-export type SourceFeatureAction = 'change-table' | 'invite' | 'save-profile' | 'feedback' | 'roulette-spin' | 'pass-claim' | 'pass-buy' | 'league-join' | 'league-settings' | 'league-seen' | 'roulette-buy-chances' | 'user-kick' | 'user-save';
+export type SourceFeatureAction = 'change-table' | 'invite' | 'save-profile' | 'feedback' | 'roulette-spin' | 'pass-claim' | 'pass-buy' | 'league-join' | 'league-settings' | 'league-seen' | 'league-refresh' | 'roulette-buy-chances' | 'user-kick' | 'user-save';
 export interface SourceFeatureResult { confirmed: boolean; rewards?: SourceReward[]; message?: string; rewardIndex?: number; inviteUrl?: string; testOnly?: boolean }
 export interface SourceFeatureAdapter {
   getSnapshot: () => SourceFeatureSnapshot;

@@ -38,6 +38,7 @@ function applyLeague(viewerId: string) {
   const running = info.state === 'running' || info.state === 'finished';
   snapshot = {
     ...snapshot,
+    leagueState: info.state,
     leagueHeader: leagueHeader(info, viewerId, Date.now()),
     league: running ? {
       level: info.level ?? 0, endsAt: info.finish_ms ?? Date.now(),
@@ -56,7 +57,8 @@ async function refreshLeague(viewerId: string) {
   if (!sb) return;
   const read = ++leagueRead;
   const { data, error } = await sb.rpc('get_league' as never);
-  if (error || read !== leagueRead || snapshot.viewerId !== viewerId) return;
+  if (read !== leagueRead || snapshot.viewerId !== viewerId) return;
+  if (error || !data) { console.error('get_league failed', error); if (!leagueInfo) { snapshot = { ...snapshot, leagueState: 'error' }; emit(); } return; }
   leagueInfo = data as unknown as LeagueInfo;
   applyLeague(viewerId);
   // Live score updates for this round over Realtime websockets (league_score).
@@ -76,7 +78,7 @@ async function refreshLeague(viewerId: string) {
 
 export function installCloudFeatureSession(viewerId: string, rejoin: (membership: { room_id: number; seat: number }) => Promise<unknown>) {
   preferenceRevision++;
-  snapshot = { viewerId, tables: { friends: [], history: [], canViewById: true } };
+  snapshot = { viewerId, leagueState: 'loading', tables: { friends: [], history: [], canViewById: true } };
   attachSourceFeatureSession({
     getSnapshot: () => snapshot,
     subscribe: (l) => { listeners.add(l); return () => { listeners.delete(l); }; },
@@ -92,6 +94,7 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
         await refreshLeague(viewerId);
         return { confirmed: true };
       }
+      if (action === 'league-refresh') { await refreshLeague(viewerId); return { confirmed: true }; }
       if (action === 'league-seen') {
         const round = Number(input?.['roundId']);
         if (!Number.isSafeInteger(round)) return { confirmed: false };
