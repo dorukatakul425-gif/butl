@@ -10,6 +10,8 @@ export interface ServerUserProfile {
   gestures: number; gestures_rank?: number;
   price: number; price_rank?: number;
   harem_price: number; harem_price_rank?: number;
+  /** Current league level (0 Wood .. 16 Diamond) from league_players. */
+  league?: number;
   owner?: { id: string; name: string; male: boolean; photoUrl: string; color: string; viewer?: boolean };
 }
 
@@ -54,4 +56,30 @@ export function okXorId(id: number) {
 export function okProfileUrl(userId?: string) {
   if (!userId || !/^\d+$/.test(userId)) return undefined;
   return `https://ok.ru/profile/${okXorId(parseInt(userId, 10))}`;
+}
+
+/** Event the table header listens for to open the league dialog (source: cb.onleague from the profile cup). */
+export const OPEN_LEAGUE_EVENT = "source:open-league";
+
+/** Minimum received kisses before the profile shows a league cup (source formatUser). */
+export const LEAGUE_CUP_MIN_KISSES = 100;
+
+/** Source formatUser: leagueCupImage = total_kisses >= 100 ? leagues[profile.league].image : "". */
+export function leagueCupImage(profile: Pick<ServerUserProfile, "total_kisses" | "league"> | null | undefined, leagues: Array<{ image: string }> | undefined) {
+  if (!profile || !leagues?.length || profile.total_kisses < LEAGUE_CUP_MIN_KISSES) return "";
+  return leagues[profile.league ?? 0]?.image ?? "";
+}
+
+/** Splits a status into plain text and emoji runs (source jsxReplaceRe with EMOJI_RE). */
+export function splitStatusEmoji(text: string): Array<{ text: string; emoji: boolean }> {
+  const re = /(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}|\p{Emoji_Modifier})*)+/gu;
+  const out: Array<{ text: string; emoji: boolean }> = [];
+  let last = 0;
+  for (const m of text.matchAll(re)) {
+    if (m.index! > last) out.push({ text: text.slice(last, m.index), emoji: false });
+    out.push({ text: m[0], emoji: true });
+    last = m.index! + m[0].length;
+  }
+  if (last < text.length) out.push({ text: text.slice(last), emoji: false });
+  return out;
 }

@@ -6,15 +6,39 @@ import { SourceKickoutDialog } from './source-kickout-dialog';
 import { Button } from '@/components/ui/button';
 import type React from "react";
 import { createPortal } from "react-dom";
-import { translate, type CilizAssets } from "@/lib/ciliz-assets";
+import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
 import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceProfileSettings } from "@/components/profile/source-own-profile";
 import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast, OPEN_BANK_EVENT } from "@/components/source-dialogs";
-import { formatHarem, formatStats, okProfileUrl, type ServerUserProfile } from "@/lib/user-profile";
+import { formatHarem, formatStats, leagueCupImage, okProfileUrl, splitStatusEmoji, OPEN_LEAGUE_EVENT, type ServerUserProfile } from "@/lib/user-profile";
 import { OK_SUPPORT_EMAIL as SUPPORT_EMAIL, CLIENT_VERSION } from "@/components/settings/settings-items";
 
 const Div = (p: React.HTMLAttributes<HTMLDivElement>) => <div role={p.onClick ? "button" : undefined} {...p} />;
+
+/** Port of StatusJSX: long statuses collapse to two 16px rows and expand on tap; emoji get their own span. */
+function SourceStatus({ text }: { text: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const initRows = useRef(0);
+  const update = () => {
+    const el = ref.current; if (!el) return;
+    const lineHeight = 16, narrowedRows = 2;
+    const currentRows = Math.floor(el.clientHeight / lineHeight);
+    if (currentRows < narrowedRows) return;
+    if (initRows.current < currentRows) initRows.current = currentRows;
+    const toNarrow = currentRows !== narrowedRows;
+    el.classList.toggle("user-profile__status--narrowed", toNarrow);
+    el.classList.toggle("user-profile__status--pointer", initRows.current > narrowedRows);
+    el.style.height = `${lineHeight * (toNarrow ? narrowedRows : initRows.current)}px`;
+  };
+  useLayoutEffect(update, []);
+  return <>
+    <div ref={ref} className="user-profile__status" onClick={update}>
+      {splitStatusEmoji(text).map((part, i) => part.emoji ? <span key={i} className="user-profile__status-emoji">{part.text}</span> : part.text)}
+    </div>
+    <div className="user-profile__stats-border" />
+  </>;
+}
 
 /** Port of UserProfileDialog + UserProfilePresenter (OK.ru client 1.6.393). */
 export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, onMusic, profile: profileProp = null }: {
@@ -35,6 +59,16 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   const blockedUsers = useBlockedUsers();
   const blocked = Boolean(player.id && blockedUsers.has(player.id));
   const [blocking, setBlocking] = useState(false);
+  const [tooltip, setTooltip] = useState<string | null>(null);
+  const tooltipTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(tooltipTimer.current), []);
+  // Source onTooltip: the hint stays visible for 3 seconds.
+  const showTooltip = (text: string) => {
+    if (!text) return;
+    window.clearTimeout(tooltipTimer.current);
+    setTooltip(text);
+    tooltipTimer.current = window.setTimeout(() => setTooltip(null), 3000);
+  };
   const stats = profile ? formatStats(profile) : null;
   const userId = self ? feature.viewerId ?? undefined : player.id;
   const harem = formatHarem(self, userId ?? "", profile);
@@ -93,6 +127,9 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       {sub && <div className="user-profile__stats-item-subtitle">{sub} {t("dlg:profile:rank")}</div>}
     </div>
   );
+  const cupName = leagueCupImage(profile, assets.leagues);
+  const cup = cupName && assets.images?.[cupName] ? dialogImage(assets, cupName, 46, 48).src : "";
+  const onCup = () => { onClose(); window.dispatchEvent(new CustomEvent(OPEN_LEAGUE_EVENT, { detail: { userId, level: profile?.league ?? 0 } })); };
   const big = Boolean(stats && profile?.total_kisses && profile?.dj_score && profile?.gestures);
 
   const onSendMessage = () => {
@@ -143,13 +180,14 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
             <div className="user-profile__name">{player.name}{player.age ? `, ${player.age}` : ""}</div>
             {player.city && <div className="user-profile__city">{player.city}</div>}
           </div>
-          {player.zodiac !== undefined && <Div className={`user-profile__zodiac user-profile__zodiac--${player.zodiac}`} title={t(`hint:zodiac:${player.zodiac}`)} onClick={() => showSourceToast(t(`hint:zodiac:${player.zodiac}`))} />}
+          {player.zodiac !== undefined && <Div className={`user-profile__zodiac user-profile__zodiac--${player.zodiac}`} onClick={() => showTooltip(t(`hint:zodiac:${player.zodiac}`))} />}
+          <div className="user-profile__tooltip" style={{ display: tooltip ? "block" : "none" }}>{tooltip}</div>
           {self && <Div className="user-profile__decor" aria-label="Süsleme" onClick={onDecor} />}
           {!self && <Div className="user-profile__claim" aria-label="Şikayet" onClick={() => setPopup("claims")} />}
         </div>
         <div className="user-profile__details">
           <div className="user-profile__scrollable">
-            {profile?.status && <><div className="user-profile__status">{profile.status}</div><div className="user-profile__stats-border" /></>}
+            {profile?.status && infoSize > 0 && <SourceStatus text={profile.status} />}
             <div className={`user-profile__stats${big ? " user-profile__stats--big" : ""}`}>
               <div className="user-profile__counters">
                 {statItem("kiss", stats?.totalKisses, stats?.totalKissesRank)}
@@ -160,6 +198,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
                 </div>
                 {statItem("gesture", stats?.gestures, stats?.gesturesRank)}
               </div>
+              {cup && <img src={cup} width={46} height={48} alt={t("dlg:league:title")} role="button" className="user-profile__league" onClick={onCup} />}
             </div>
             <div className="user-profile__stats-border-item">
               <div className="user-profile__stats-border" />
@@ -177,6 +216,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
                 <div className="user-profile__stats-item user-profile__stats-item--harem">
                   <div className="user-profile__stats-icon user-profile__stats-icon--price" />
                   <div className="user-profile__stats-item-title">{harem.price ?? "—"}</div>
+                  {!!harem.priceRank && <div className="user-profile__stats-item-subtitle">{harem.priceRank} {t("dlg:profile:rank")}</div>}
                 </div>
                 <Div className={`button button--confirm user-profile__x_button${harem.btnIsDisabled ? " button--disabled" : ""}`} onClick={onHarem}>{t(harem.btnKey)}</Div>
               </div>

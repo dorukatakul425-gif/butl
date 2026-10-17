@@ -32,6 +32,7 @@ import { SourceSeasonDialog } from '@/components/table/source-season-dialogs';
 import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceChangeTable } from '@/components/table/source-change-table';
 import { SourceLeagueButton } from '@/components/table/source-league-button';
+import { OPEN_LEAGUE_EVENT } from '@/lib/user-profile';
 import { useRoom, VIEWER_DISPLAY_SEAT } from '@/lib/room-session';
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
@@ -78,6 +79,12 @@ export function OriginalTableHeader() {
     return () => window.clearInterval(id);
   }, [room.roomId]);
   const [season, setSeason] = useState<'league' | 'roulette' | 'bottle-pass' | null>(null);
+  // Profile popup league cup (source cb.onleague) opens the same league dialog as the header button.
+  useEffect(() => {
+    const open = () => setSeason('league');
+    window.addEventListener(OPEN_LEAGUE_EVENT, open);
+    return () => window.removeEventListener(OPEN_LEAGUE_EVENT, open);
+  }, []);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
