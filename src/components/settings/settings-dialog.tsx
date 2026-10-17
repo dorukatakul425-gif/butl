@@ -8,6 +8,7 @@ import { executeSourceFeature, useSourceFeatureSession } from '@/lib/source-feat
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { showSourceToast, SourceInfoDialog } from '@/components/source-dialogs';
+import { SourceSettingsChild } from './source-settings-children';
 import { buildContactItems, buildSettingsItems, idCopyValue, type SettingsItem } from './settings-items';
 
 // Markup and class names ported from SettingsDialog.tsx + SettingsPresenter.ts
@@ -114,7 +115,7 @@ function SettingsPopup({ title, items, phase, onClose, info, sliders }: {
   );
 }
 
-type View = "settings" | "contacts" | "report" | null;
+type View = "settings" | "contacts" | "report" | "profile" | null;
 
 export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const session = useSourceFeatureSession();
@@ -140,6 +141,7 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
     return <SettingsPopup title={t("dlg:settings:contacts")} phase="show" onClose={finish}
       items={buildContactItems(t, { social, platform, viewerId, onReport: () => setView("report") })} />;
   }
+  if (view === "profile") return <SourceSettingsChild kind="profile" assets={assets} onClose={finish} />;
   if (view === "report") {
     return <SourceInfoDialog title={t("dlg:settings:console_report:title")} context={t("dlg:settings:console_report:context")} onClose={finish}
       cancel={{ title: t("dlg:report_issue:cancel"), onClick: finish }}
@@ -161,11 +163,15 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
     onSfx: setSfxVolume,
     onMusic: setMusicVolume,
     onInvite: () => {
-      // OKSocial.createInviter: native invite, or a toast when no friends can be invited.
-      executeSourceFeature("invite").then(r => { if (!r.confirmed) showSourceToast(r.message ?? t("dlg:settings:nofriends_toast")); })
-        .catch(() => showSourceToast(t("dlg:settings:nofriends_toast")));
+      // TGSocial.createInviter: native Telegram share sheet (t.me/share/url).
+      executeSourceFeature("invite").then(r => {
+        const url = r.inviteUrl ?? window.location.origin;
+        const share = `https://t.me/share/url?${new URLSearchParams({ url, text: t("dlg:tg:share:text:ab_20240708:c:v2") })}`;
+        const tg = (window as unknown as { Telegram?: { WebApp?: { openTelegramLink?: (u: string) => void } } }).Telegram?.WebApp;
+        if (tg?.openTelegramLink) tg.openTelegramLink(share); else window.open(share, "_blank", "noopener");
+      }).catch(() => showSourceToast(t("dlg:settings:nofriends_toast")));
     },
-    onCommunity: () => window.open("https://ok.ru/group/51270498582711", "_blank", "noopener"),
+    onProfile: () => setView("profile"),
     onContacts: () => setView("contacts"),
   });
   const copyId = async () => {
