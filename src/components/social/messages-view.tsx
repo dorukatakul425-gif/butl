@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Bell, BellOff, Check, CheckCheck, Search, Send } from "lucide-react";
 import { translate, usePreferences } from "@/lib/app-preferences";
+import { MediaComposer, MediaImage, VoiceBubble } from "@/components/social/chat-media";
 import {
   joinTyping, loadConversation, markConversationRead, MAX_MESSAGE_LENGTH, normalizeMessage, onDirectMessage, otherParty,
   requestNotifyPermission, sendDirectMessage, setActiveChat, setSocialSound, socialSoundEnabled, unlockSocialAudio, upsertMessage,
-  useSocial, type DirectMessage,
+  useSocial, type DirectMessage, messagePreview,
 } from "@/lib/social";
 
 // Full-screen messenger: conversation list of friends and a realtime chat thread.
-export function MessagesView({ me, defaultPhoto, initialPeer, onClose }: { me: string; defaultPhoto: string; initialPeer: string | null; onClose: () => void }) {
+export function MessagesView({ me, defaultPhoto, initialPeer, onClose, onOpenProfile }: { me: string; defaultPhoto: string; initialPeer: string | null; onClose: () => void; onOpenProfile?: ((id: string) => void) | undefined }) {
   const { language } = usePreferences();
   const social = useSocial();
   const [peer, setPeer] = useState<string | null>(initialPeer);
@@ -26,7 +27,7 @@ export function MessagesView({ me, defaultPhoto, initialPeer, onClose }: { me: s
 
   return <div className="sm-root" role="dialog" aria-modal="true" aria-label={translate("Mesajlar")}>
     <style>{SM_STYLES}</style>
-    {peer ? <ChatThread me={me} peer={peer} defaultPhoto={defaultPhoto} onBack={() => (initialPeer && peer === initialPeer ? onClose() : setPeer(null))} /> : <>
+    {peer ? <ChatThread me={me} peer={peer} defaultPhoto={defaultPhoto} onOpenProfile={onOpenProfile} onBack={() => (initialPeer && peer === initialPeer ? onClose() : setPeer(null))} /> : <>
       <header className="sm-head">
         <button type="button" className="sm-icon" aria-label={translate("Geri")} onClick={onClose}><ArrowLeft size={20} /></button>
         <h1>{translate("Mesajlar")}</h1>
@@ -38,7 +39,7 @@ export function MessagesView({ me, defaultPhoto, initialPeer, onClose }: { me: s
         {shown.map(id => { const p = social.profiles[id]; const last = social.last[id]; const unread = social.unread[id] ?? 0; return <li key={id}>
           <button type="button" className={"sm-row" + (unread ? " unread" : "")} onClick={() => setPeer(id)}>
             <img src={p?.photo_url || defaultPhoto} alt="" />
-            <span className="sm-row-text"><strong>{p?.name ?? "…"}</strong><span>{last ? (last.sender_id === me ? translate("Sən: ") : "") + last.body : translate("Söhbətə başla 👋")}</span></span>
+            <span className="sm-row-text"><strong>{p?.name ?? "…"}</strong><span>{last ? (last.sender_id === me ? translate("Sən: ") : "") + messagePreview(last) : translate("Söhbətə başla 👋")}</span></span>
             <span className="sm-row-meta">{last && <time>{time(last.created_at)}</time>}{unread > 0 && <b>{unread > 99 ? "99+" : unread}</b>}</span>
           </button>
         </li>; })}
@@ -48,7 +49,7 @@ export function MessagesView({ me, defaultPhoto, initialPeer, onClose }: { me: s
   </div>;
 }
 
-function ChatThread({ me, peer, defaultPhoto, onBack }: { me: string; peer: string; defaultPhoto: string; onBack: () => void }) {
+function ChatThread({ me, peer, defaultPhoto, onBack, onOpenProfile }: { me: string; peer: string; defaultPhoto: string; onBack: () => void; onOpenProfile?: ((id: string) => void) | undefined }) {
   const { language } = usePreferences();
   const social = useSocial();
   const p = social.profiles[peer];
@@ -109,8 +110,8 @@ function ChatThread({ me, peer, defaultPhoto, onBack }: { me: string; peer: stri
   return <div className="sm-chat">
     <header className="sm-head sm-chat-head">
       <button type="button" className="sm-icon" aria-label={translate("Geri")} onClick={onBack}><ArrowLeft size={20} /></button>
-      <img src={p?.photo_url || defaultPhoto} alt="" />
-      <span className="sm-peer"><strong>{p?.name ?? "…"}</strong><small className={typing ? "typing" : ""}>{typing ? translate("yazır…") : "@" + (p?.username ?? "")}</small></span>
+      <button type="button" className="sm-peer-btn" onClick={() => onOpenProfile?.(peer)} aria-label={translate("Profilə bax")}><img src={p?.photo_url || defaultPhoto} alt="" />
+      <span className="sm-peer"><strong>{p?.name ?? "…"}</strong><small className={typing ? "typing" : ""}>{typing ? translate("yazır…") : "@" + (p?.username ?? "")}</small></span></button>
     </header>
     <div className="sm-thread" ref={listRef} aria-live="polite">
       {loading && <div className="sm-loading"><span /><span /><span /></div>}
@@ -124,7 +125,8 @@ function ChatThread({ me, peer, defaultPhoto, onBack }: { me: string; peer: stri
         return <div key={m.id} className="sm-msg-wrap">
           {newDay && <div className="sm-day"><span>{dayLabel(m.created_at)}</span></div>}
           <div className={"sm-msg " + (mine ? "mine" : "theirs") + (tail ? " tail" : "") + (m.pending ? " pending" : "")}>
-            <span className="sm-body">{m.body}</span>
+            {m.kind === "image" && m.media_path ? <MediaImage path={m.media_path} /> : m.kind === "audio" && m.media_path ? <VoiceBubble path={m.media_path} durationMs={m.duration_ms ?? null} mine={mine} /> : null}
+            {m.body && <span className="sm-body">{m.body}</span>}
             <span className="sm-meta">{clock(m.created_at)}{mine && (m.read_at ? <CheckCheck size={14} className="read" /> : m.pending ? null : <Check size={14} />)}</span>
           </div>
         </div>;
@@ -132,12 +134,14 @@ function ChatThread({ me, peer, defaultPhoto, onBack }: { me: string; peer: stri
       {typing && <div className="sm-msg theirs tail sm-typing" aria-label={translate("yazır…")}><span /><span /><span /></div>}
     </div>
     {error && <p className="sm-error" role="alert">{error}</p>}
-    <form className="sm-composer" onSubmit={e => { e.preventDefault(); void send(); }}>
+    <MediaComposer me={me} peer={peer} onSent={m => setMessages(prev => upsertMessage(prev, m))} onError={setError}>
+    <form className="sm-composer-form" onSubmit={e => { e.preventDefault(); void send(); }}>
       <textarea ref={inputRef} rows={1} value={text} maxLength={MAX_MESSAGE_LENGTH} placeholder={translate("Mesaj yaz…")} aria-label={translate("Mesaj yaz…")}
         onChange={e => { setText(e.target.value); if (e.target.value) typingRef.current?.ping(); }}
         onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send(); } }} />
-      <button type="submit" className="sm-send" disabled={!text.trim()} aria-label={translate("Göndər")}><Send size={18} /></button>
+      {text.trim() && <button type="submit" className="sm-send" aria-label={translate("Göndər")}><Send size={18} /></button>}
     </form>
+    </MediaComposer>
   </div>;
 }
 
@@ -165,6 +169,7 @@ const SM_STYLES = `
 .sm-empty>span{font-size:44px;}.sm-empty strong{color:var(--foreground);font-size:16px;}.sm-empty p{margin:0;font-size:13px;max-width:280px;}
 .sm-chat{flex:1;min-height:0;display:flex;flex-direction:column;}
 .sm-chat-head{border-bottom:1px solid var(--border);background:color-mix(in oklch,var(--surface) 85%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.sm-peer-btn{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
 .sm-chat-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
 .sm-peer{display:flex;flex-direction:column;min-width:0;}
 .sm-peer strong{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

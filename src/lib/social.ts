@@ -5,7 +5,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase";
 
 export type Friendship = { id: string; requester_id: string; addressee_id: string; status: "pending" | "accepted"; created_at: string };
-export type DirectMessage = { id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null; pending?: boolean };
+export type DirectMessage = { id: string; sender_id: string; recipient_id: string; body: string; kind?: "text" | "image" | "audio"; media_path?: string | null; duration_ms?: number | null; created_at: string; read_at: string | null; pending?: boolean };
 export type SocialProfile = { id: string; name: string; username: string; photo_url: string | null };
 export type FriendState = "none" | "sent" | "received" | "friends";
 export type SocialNotice = { id: string; kind: "message" | "request" | "accepted"; from: string; title: string; body: string; photo: string | null };
@@ -184,7 +184,7 @@ async function refreshInbox() {
   const sb = getSupabase();
   const me = state.me;
   if (!sb || !me) return;
-  const { data } = await sb.from("direct_messages").select("id,sender_id,recipient_id,body,created_at,read_at").order("created_at", { ascending: false }).limit(400);
+  const { data } = await sb.from("direct_messages").select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,created_at,read_at").order("created_at", { ascending: false }).limit(400);
   if (!data || state.me !== me) return;
   const { last, unread } = summarizeInbox(me, data as DirectMessage[]);
   if (state.activeChat) unread[state.activeChat] = 0;
@@ -203,7 +203,7 @@ async function handleIncoming(m: DirectMessage) {
   if (viewing) return;
   set({ unread: { ...state.unread, [peer]: (state.unread[peer] ?? 0) + 1 } });
   const p = await profileOf(peer);
-  notify({ id: `m-${m.id}`, kind: "message", from: peer, title: p?.name ?? "Yeni mesaj", body: m.body.length > 120 ? m.body.slice(0, 117) + "…" : m.body, photo: p?.photo_url ?? null });
+  notify({ id: `m-${m.id}`, kind: "message", from: peer, title: p?.name ?? "Yeni mesaj", body: messagePreview(m).length > 120 ? messagePreview(m).slice(0, 117) + "…" : messagePreview(m), photo: p?.photo_url ?? null });
 }
 
 export async function sendFriendRequest(to: string) {
@@ -230,7 +230,7 @@ export async function removeFriendship(id: string) {
 export async function loadConversation(me: string, peer: string) {
   const sb = getSupabase();
   if (!sb) return [];
-  const { data } = await sb.from("direct_messages").select("id,sender_id,recipient_id,body,created_at,read_at")
+  const { data } = await sb.from("direct_messages").select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,created_at,read_at")
     .or(`and(sender_id.eq.${me},recipient_id.eq.${peer}),and(sender_id.eq.${peer},recipient_id.eq.${me})`)
     .order("created_at", { ascending: false }).limit(80);
   return ((data ?? []) as DirectMessage[]).reverse();
@@ -238,7 +238,7 @@ export async function loadConversation(me: string, peer: string) {
 export async function sendDirectMessage(me: string, to: string, body: string) {
   const sb = getSupabase();
   if (!sb) return { ok: false as const, error: "Bağlantı yoxdur" };
-  const { data, error } = await sb.from("direct_messages").insert({ sender_id: me, recipient_id: to, body }).select("id,sender_id,recipient_id,body,created_at,read_at").single();
+  const { data, error } = await sb.from("direct_messages").insert({ sender_id: me, recipient_id: to, body }).select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,created_at,read_at").single();
   if (error || !data) return { ok: false as const, error: "Mesaj göndərilmədi" };
   const message = data as DirectMessage;
   set({ last: { ...state.last, [to]: message } });
@@ -337,4 +337,43 @@ export function startSocial(me: string) {
 }
 export function useSocialSession(me: string | null | undefined) {
   useEffect(() => (me ? startSocial(me) : undefined), [me]);
+}
+
+/** Short text for lists/notifications; media messages show a label. */
+export function messagePreview(m: Pick<DirectMessage, "body" | "kind">) {
+  if (m.kind === "image") return "📷 " + (m.body || "Şəkil");
+  if (m.kind === "audio") return "🎤 Səsli mesaj";
+  return m.body;
+}
+
+const mediaUrlCache = new Map<string, { url: string; exp: number }>();
+/** Signed URL for a private dm-media object, cached until shortly before expiry. */
+export async function mediaUrl(path: string) {
+  const hit = mediaUrlCache.get(path);
+  if (hit && hit.exp > Date.now()) return hit.url;
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data } = await sb.storage.from("dm-media").createSignedUrl(path, 3600);
+  if (!data?.signedUrl) return null;
+  mediaUrlCache.set(path, { url: data.signedUrl, exp: Date.now() + 3300_000 });
+  return data.signedUrl;
+}
+
+/** Uploads an image/voice file to private storage, then inserts the message (delivered over realtime). */
+export async function sendMediaMessage(me: string, to: string, file: Blob, kind: "image" | "audio", opts: { caption?: string; durationMs?: number } = {}) {
+  const sb = getSupabase();
+  if (!sb) return { ok: false as const, error: "Bağlantı yoxdur" };
+  if (file.size > 10 * 1024 * 1024) return { ok: false as const, error: "Fayl 10 MB-dan kiçik olmalıdır" };
+  const type = (file.type || (kind === "audio" ? "audio/webm" : "image/jpeg")).split(";")[0] ?? "application/octet-stream";
+  const ext = type.split("/")[1]?.replace("mpeg", "mp3") || "bin";
+  const path = `${me}/${to}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const up = await sb.storage.from("dm-media").upload(path, file, { contentType: type, upsert: false });
+  if (up.error) return { ok: false as const, error: "Fayl yüklənmədi" };
+  const { data, error } = await sb.from("direct_messages")
+    .insert({ sender_id: me, recipient_id: to, body: (opts.caption ?? "").slice(0, MAX_MESSAGE_LENGTH), kind, media_path: path, duration_ms: opts.durationMs ?? null })
+    .select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,created_at,read_at").single();
+  if (error || !data) return { ok: false as const, error: "Mesaj göndərilmədi" };
+  const message = data as DirectMessage;
+  set({ last: { ...state.last, [to]: message } });
+  return { ok: true as const, message };
 }

@@ -3,3 +3,7 @@
 - [x] Compact and reorder header controls.
 - [x] Translate the existing Messages tab unavailable notice in all four languages.
 - [ ] Verify signed-in profile, upload, and live flows on repository host (needs existing host session).
+- [x] App-style profile: no kisses/gold/DAT; followers, following, views; bio/status editing; SVG icons.
+- [x] Tap other players to open their profile (counts a view).
+- [x] Image and voice messages in chat over realtime.
+- [ ] Apply migration 0024 on the hosting database.
