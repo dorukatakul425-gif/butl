@@ -31,18 +31,20 @@ import { LiveRooms } from "@/components/live/live-rooms";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Şüşə Oyunu — Ana Səhifə" },
+      { title: "DeltaGame.az" },
       {
         name: "description",
-        content: "Profilin, oyunçu nömrən və şüşə oyununa giriş.",
+        content: "Şüşəni fırlat, yeni insanlarla tanış ol və canlı oyun masasında əylənin — DeltaGame.az-a indi qoşul!",
       },
-      { property: "og:title", content: "Şüşə Oyunu — Ana Səhifə" },
+      { property: "og:title", content: "DeltaGame.az" },
       {
         property: "og:description",
-        content: "Şüşə oyununa qoşul, digər oyunçularla oyna.",
+        content: "Şüşəni fırlat, yeni insanlarla tanış ol və canlı oyun masasında əylənin — DeltaGame.az-a indi qoşul!",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:image", content: "https://deltagame.az/og-image.jpg" },
+      { name: "twitter:image", content: "https://deltagame.az/og-image.jpg" },
     ],
   }),
   component: Home,
