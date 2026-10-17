@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const PRICES = [1, 2, 5, 10, 20, 30];
 const AMOUNTS = [66, 145, 396, 858, 1800, 2800];
@@ -9,6 +10,7 @@ const Input = z.object({ budget: z.number().min(0).max(10000), wish: z.string().
 export type ShopAdvice = { tab: "dat" | "heart"; tier: number; reason: string };
 
 export const recommendShopPack = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }): Promise<ShopAdvice> => {
     const key = process.env['LOVABLE_API_KEY'];
