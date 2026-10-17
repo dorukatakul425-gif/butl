@@ -19,6 +19,8 @@ source "$CONF"
 # New hashed files are added before old ones are removed, so open pages keep working during updates.
 mkdir -p "$STATIC_DIR"
 cp -a "$APP_DIR/.output/public/." "$STATIC_DIR/"
+# Never publish source maps: they would expose the original source code.
+find "$STATIC_DIR" -type f -name '*.map' -delete 2>/dev/null || true
 find "$STATIC_DIR/assets" -type f -mtime +7 -delete 2>/dev/null || true
 chmod -R a+rX "$STATIC_DIR"
 
@@ -31,6 +33,11 @@ cat > /etc/caddy/Caddyfile <<EOF
 }
 $DOMAIN {
   encode zstd gzip
+  header -Server
+
+  # Hidden files (.git, .env ...), source maps and project docs are never served.
+  @hidden path /.* */.* *.map /deploy/* /drizzle/* /supabase/* /src/* *.md
+  respond @hidden 404
 
   @api path /auth/v1/* /rest/v1/* /realtime/v1/* /storage/v1/* /graphql/v1/*
   handle @api {
