@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { dialogImage, translate, type CilizAssets } from '@/lib/ciliz-assets';
 import { splitLeague } from '@/lib/league';
@@ -13,10 +14,21 @@ function Img({ assets, name, size }: { assets: CilizAssets; name: string; size: 
 }
 
 /** Port of LeagueDialog.tsx: info header, then up / stay / down sections with labels. */
-export function SourceLeagueBody({ assets, league, viewerId, onLadder, onPrize, onLimit, onClaim }: {
+export function SourceLeagueBody({ assets, league, viewerId, onLadder, onPrize, onLimit, onClaim, onHeaderState }: {
   assets: CilizAssets; league: League; viewerId: string | null;
   onLadder: () => void; onPrize: (pos: number) => void; onLimit: () => void; onClaim: () => void;
+  onHeaderState?: (state: 'up' | 'stay' | 'down') => void;
 }) {
+  const root = useRef<HTMLDivElement>(null), upRef = useRef<HTMLDivElement>(null), stayRef = useRef<HTMLDivElement>(null);
+  // LeagueDialog.onContentScroll: header colour follows the section under it.
+  useEffect(() => {
+    const div = root.current?.closest<HTMLElement>('.popup__content');
+    if (!div || !onHeaderState) return;
+    const scroll = () => { const up = upRef.current, stay = stayRef.current; if (!up || !stay) return;
+      onHeaderState(div.scrollTop < up.clientHeight + 1 ? 'up' : div.scrollTop > up.clientHeight + stay.clientHeight ? 'down' : 'stay'); };
+    div.addEventListener('scroll', scroll); scroll();
+    return () => div.removeEventListener('scroll', scroll);
+  }, [onHeaderState]);
   const t = (key: string, ...args: string[]) => translate(assets, key, ...args);
   const finished = league.state === 'finished';
   const usersMax = league.usersMax ?? 20, moveUp = league.moveUp ?? 3, moveDown = league.moveDown ?? 3;
@@ -42,8 +54,8 @@ export function SourceLeagueBody({ assets, league, viewerId, onLadder, onPrize, 
       </div>
     </div>;
   };
-  return <div className="league">
-    <div className="league__section league__section--up">
+  return <div className="league" ref={root}>
+    <div className="league__section league__section--up" ref={upRef}>
       <div className="league__header"><div className="league__info">
         <div className={`league__info-title${finished ? ' league__info-title--no-boosters' : ''}`}>
           <div className="league__description">{finished ? t('dlg:league_finish:desc') : t('dlg:league:desc:boosters')}</div>
@@ -54,7 +66,7 @@ export function SourceLeagueBody({ assets, league, viewerId, onLadder, onPrize, 
       </div></div>
       <div className="league__list">{parts.up.length > 0 && <>{parts.up.map(user)}<div className="league__label league__label--move">{t('dlg:league:desc:up')}</div></>}</div>
     </div>
-    <div className="league__section"><div className="league__list">{parts.stay.length > 0 && <><div className="league__label league__label--stay">{t('dlg:league:desc:stay')}</div>{parts.stay.map(user)}<div className="league__label league__label--stay">{t('dlg:league:desc:stay')}</div></>}</div></div>
+    <div className="league__section" ref={stayRef}><div className="league__list">{parts.stay.length > 0 && <><div className="league__label league__label--stay">{t('dlg:league:desc:stay')}</div>{parts.stay.map(user)}<div className="league__label league__label--stay">{t('dlg:league:desc:stay')}</div></>}</div></div>
     <div className="league__section league__section--down"><div className="league__list">{parts.down.length > 0 && <><div className="league__label league__label--move">{t('dlg:league:desc:down')}</div>{parts.down.map(user)}</>}</div></div>
     {finished && <div className="popup__buttons">
       <div className="source-feature-message">{t('dlg:league:desc:prize_finish', String(league.finalPos ?? '—'))}</div>

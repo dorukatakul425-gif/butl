@@ -39,6 +39,7 @@ function applyLeague(viewerId: string) {
   snapshot = {
     ...snapshot,
     leagueState: info.state,
+    leagueLevel: info.level ?? 0,
     leagueHeader: leagueHeader(info, viewerId, Date.now()),
     league: running ? {
       level: info.level ?? 0, endsAt: info.finish_ms ?? Date.now(),

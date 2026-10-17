@@ -47,8 +47,8 @@ describe('original feature windows', () => {
  it('profile editor opens but cannot save unknown profile state', () => {
   render(<SourceSettingsChild kind="profile" assets={assets} onClose={vi.fn()} />); expect(screen.getByRole('dialog', { name: 'Profil ayarları' })).toBeVisible(); expect(screen.getByRole('button', { name: 'Kaydet' })).toBeDisabled();
  });
- it('renders all public league cups without inventing a player ranking', () => {
-  render(<SourceSeasonDialog feature="league" onClose={vi.fn()} />); fireEvent.click(screen.getByRole('button', { name: 'Ligler listesi' })); expect(screen.getByRole('dialog', { name: 'Ligler listesi' })).toBeVisible(); expect(document.querySelectorAll('.league__user')).toHaveLength(0);
+ it('shows the original LeagueMoveDialog outside a round, without ladder button or invented ranking', () => {
+  render(<SourceSeasonDialog feature="league" onClose={vi.fn()} />); expect(screen.queryByRole('button', { name: 'Ligler listesi' })).toBeNull(); expect(document.querySelector('.league-move__manual')).not.toBeNull(); expect(document.querySelectorAll('.league__user')).toHaveLength(0);
  });
  it('shows the original large idle cup and closes without a fictitious league transaction', () => {
   const close = vi.fn(), execute = host({ viewerId: 'me' });
@@ -82,4 +82,11 @@ describe('original feature windows', () => {
   expect(document.querySelector('.roulette__wheel')).not.toHaveStyle({ transform: 'rotate(1620deg)' });
   expect(screen.queryByText('9')).toBeNull();
  });
+});
+it('opens a running league in the original LeagueDialog frame with coloured header and results timer', () => {
+  host({ viewerId: 'me', leagueState: 'running', league: { level: 0, score: 5, endsAt: Date.now() + 2 * 86400000, state: 'running', roundId: 1, players: [{ id: 'me', name: 'Ben', score: 5 }] } });
+  render(<SourceSeasonDialog feature="league" onClose={vi.fn()} />);
+  expect(document.querySelector('.popup.league__x_popup .league__x_popup__header--up .league__manual')).not.toBeNull();
+  expect(document.querySelector('.league__x_popup__content .league__user')).not.toBeNull();
+  expect(document.querySelector('.toast .toast__icon--timer')).not.toBeNull();
 });

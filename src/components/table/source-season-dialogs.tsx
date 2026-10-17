@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { useCilizAssets } from '@/components/decor/decor-selection';
@@ -27,17 +27,23 @@ function Rewards({ assets, rewards }: { assets: CilizAssets; rewards: SourceRewa
   return <div className="source-feature-rewards">{rewards.map(r => <div key={r.id} className="source-feature-reward">{assets.images[r.image] ? <Image assets={assets} name={r.image} /> : <span aria-hidden className={`roulette__reward-icon roulette__reward-icon--${r.image}`} />}<span>{r.title ? `${r.title} ` : ''}{r.count}</span></div>)}</div>;
 }
 
+/** secondsToShortText from the original client. */
+function shortText(sec: number, t: (key: string) => string) {
+  const d = Math.floor(sec / 86400), h = Math.floor(sec / 3600) % 24, m = Math.floor(sec / 60) % 60;
+  return d ? `${d}\u00A0${t('dlg:top:timer:days')}` : h ? `${h}\u00A0${t('dlg:top:timer:hours')}` : m ? `${m}\u00A0${t('dlg:top:timer:minutes')}` : `${sec % 60}\u00A0${t('dlg:top:timer:seconds')}`;
+}
 /** Public presentation; schedules, prize tables and every transaction remain host-owned. */
 export function SourceSeasonDialog({ feature, onClose, onSettings }: { feature: 'league' | 'roulette' | 'bottle-pass'; onClose: () => void; onSettings?: () => void }) {
   const assets = useCilizAssets(), session = useSourceFeatureSession();
   const [nested, setNested] = useState<'help' | 'chances' | 'ladder' | 'premium' | 'reward-info' | 'reward' | null>(null), [selectedLeague, setSelectedLeague] = useState<number | null>(null), [rewards, setRewards] = useState<SourceReward[]>([]), [message, setMessage] = useState(''), [busy, setBusy] = useState(false), [spinning, setSpinning] = useState(false), [now, setNow] = useState(Date.now()), [testChances, setTestChances] = useState(ROULETTE_TEST_CHANCES), [testSpin, setTestSpin] = useState(false);
+  const [leagueHeaderState, setLeagueHeaderState] = useState<'up' | 'stay' | 'down'>('up'), onLeagueHeader = useCallback((v: 'up' | 'stay' | 'down') => setLeagueHeaderState(v), []);
   const wheel = useRef<HTMLDivElement>(null), rotation = useRef(0), timeout = useRef<number | undefined>(undefined), spinGeneration = useRef(0), pendingRewards = useRef<SourceReward[]>([]), seenRewards = useRef(new Set<string>()), inFlight = useRef(false);
   // Always read the live league round when the cup opens, never a stale/idle snapshot.
   useEffect(() => { if (feature === 'league') void executeSourceFeature('league-refresh').catch(() => undefined); }, [feature]);
   useEffect(() => { const id = window.setInterval(() => setNow(Date.now()), 1000); return () => { window.clearInterval(id); window.clearTimeout(timeout.current); spinGeneration.current++; }; }, []);
   if (!assets) return null;
   const t = (key: string, ...args: string[]) => translate(assets, key, ...args);
-  const title = feature === 'roulette' ? t('roulette:main:panel1:header') : feature === 'bottle-pass' ? t('dlg:bottle_pass:title') : session.league ? t(`dlg:league:${session.league.level}`) : t('dlg:league:idle:title');
+  const title = feature === 'roulette' ? t('roulette:main:panel1:header') : feature === 'bottle-pass' ? t('dlg:bottle_pass:title') : session.league ? t(`dlg:league:${session.league.level}`) : session.leagueState === 'welcome' ? t(`dlg:league:${session.leagueLevel ?? 0}`) : t('dlg:league:idle:title');
   const showEarned = (items: SourceReward[]) => {
     const verified = items.filter(r => r.id && Number.isSafeInteger(r.count) && r.count > 0 && !seenRewards.current.has(r.id));
     if (!verified.length) return;
@@ -70,9 +76,11 @@ export function SourceSeasonDialog({ feature, onClose, onSettings }: { feature: 
   let body: ReactNode;
   if (feature === 'league') {
     const level = session.league?.level, entry = level === undefined ? undefined : assets.leagues?.[level];
-    body = !session.league ? <div className="league-move"><div className="league-move__cups"><Image assets={assets} name={assets.leagues?.[0]?.image ?? ''} size={118} /></div><div className="league-move__description"><Text text={session.leagueState === 'loading' ? 'Yükleniyor…' : session.leagueState === 'error' ? 'Lig bilgisi sunucudan alınamadı. Lütfen sonra tekrar deneyin.' : session.leagueState === 'welcome' ? 'Lig grubunuz hazırlanıyor. İlk öpücük veya hediyenizle sıralamaya katılırsınız.' : t('dlg:league:idle:desc')} /></div><div className="popup__buttons"><Button variant="ghost" className="button button--confirm" onClick={onSettings ?? onClose}>{t(onSettings ? 'dlg:league:idle:settings' : 'dlg:harem:btn')}</Button><Button variant="ghost" aria-label={t('dlg:league:ladder:title')} className="league-move__ladder" onClick={() => setNested('ladder')}><Image assets={assets} name={assets.leagues?.[0]?.image ?? ''} size={40} /></Button></div></div> : <SourceLeagueBody assets={assets} league={session.league} viewerId={session.viewerId} onLadder={() => setNested('ladder')} onPrize={() => info(level ?? 0)}
+    // LeaguePresenter.showWelcome / showLocked: LeagueMoveDialog with the viewer's cup.
+    const cup = assets.leagues?.[session.leagueLevel ?? 0]?.image ?? assets.leagues?.[0]?.image ?? '';
+    body = !session.league ? <div className="league-move"><div className="league-move__cups"><Image assets={assets} name={cup} size={118} /></div><div className="league-move__description"><Text text={session.leagueState === 'loading' ? '…' : session.leagueState === 'welcome' ? t('dlg:league:welcome:desc') : session.leagueState === 'idle' ? t(`dlg:league:${session.leagueLevel ?? 0}`) : session.leagueState === 'error' ? 'Lig bilgisi sunucudan alınamadı. Lütfen sonra tekrar deneyin.' : t('dlg:league:undefined')} /></div></div> : <SourceLeagueBody assets={assets} league={session.league} viewerId={session.viewerId} onLadder={() => setNested('ladder')} onPrize={() => info(level ?? 0)}
       onLimit={() => setMessage(t(session.league?.limit === 'gift' ? 'dlg:league:limit:gift' : 'dlg:league:limit:kiss'))}
-      onClaim={() => { const id = session.league?.roundId; if (id !== undefined) void act('league-seen', { roundId: id }); else onClose(); }} />;
+      onClaim={() => { const id = session.league?.roundId; if (id !== undefined) void act('league-seen', { roundId: id }); else onClose(); }} onHeaderState={onLeagueHeader} />;
   } else if (feature === 'roulette') {
     body = <div className="roulette roulette__x_popup__content">
       <div className="roulette__paper roulette__paper--guide">
@@ -92,7 +100,12 @@ export function SourceSeasonDialog({ feature, onClose, onSettings }: { feature: 
     body = <div className="bottle-pass"><div className="bottle-pass__season-stats"><span className="bottle-pass__season-timer">{t('dlg:bottle_pass:timer').replace('%', remaining(session.pass?.endsAt))}</span><span className="bottle-pass__star" />{session.pass?.points ?? '—'}</div><div className="bottle-pass__header"><Button variant="ghost" onClick={() => setNested('premium')}>{t('dlg:bottle_pass:premium_rewards')}</Button><span>{t('dlg:bottle_pass:level')}</span><span>{t('dlg:bottle_pass:free_rewards')}</span></div><div className="bottle-pass__levels">{session.pass?.levels.map((l, i) => <div key={i} className={`bottle-pass__level${session.pass && session.pass.points >= l.points ? ' bottle-pass__level--active' : ''}`}><Button variant="ghost" disabled={busy} onClick={() => { setRewards(l.premium); setNested('reward-info'); }}><Rewards assets={assets} rewards={l.premium} /></Button><span>{i + 1}</span><div><Rewards assets={assets} rewards={l.free} /><Button variant="ghost" className="button--confirm" disabled={busy || l.claimed || !session.viewerId || (session.pass?.points ?? 0) < l.points} onClick={() => void act('pass-claim', { level: i, track: 'free' })}>{t(l.claimed ? 'dlg:bottle_pass:reward:collected' : 'dlg:bottle_pass:collect')}</Button></div></div>)}</div>{!session.pass && <div className="source-feature-message">{t('dlg:music:unavailable')}</div>}</div>;
   }
   const closeNested = () => { setNested(null); setSelectedLeague(null); };
-  return createPortal(<><SourceFeaturePopup title={title} onClose={onClose} help={feature === 'roulette' ? undefined : () => setNested('help')} inactive={Boolean(nested)} className={feature === 'roulette' ? 'source-roulette-popup roulette__x_popup' : feature === 'league' ? 'source-league-popup league__x_popup' : ''}>{body}{message && <div className="source-feature-message" role="status">{message}</div>}</SourceFeaturePopup>
+  const leagueMain = feature === 'league' && Boolean(session.league), leagueMove = feature === 'league' && !session.league;
+  const leagueLeft = session.league?.state === 'running' ? Math.round(Math.max(0, session.league.endsAt - now) / 1000) : undefined;
+  const leagueFrame = leagueMain ? { className: 'league__x_popup', headerClass: `league__x_popup__header league__x_popup__header--${leagueHeaderState}`, titleClass: 'league__x_popup__title', closeIconClass: 'league__x_popup__close-icon', manualClass: 'league__manual', contentClass: 'popup__content--no-padding popup__content--no-scroll league__x_popup__content' }
+    : leagueMove ? { className: 'source-league-move-popup', manualClass: 'league-move__manual', contentClass: 'popup__content--center', footer: <div className="popup__buttons"><Button variant="ghost" className="button button--confirm" onClick={onClose}>{t('dlg:harem:btn')}</Button></div> } : {};
+  return createPortal(<><SourceFeaturePopup title={title} onClose={onClose} help={feature === 'roulette' ? undefined : () => setNested('help')} inactive={Boolean(nested)} className={feature === 'roulette' ? 'source-roulette-popup roulette__x_popup' : ''} {...leagueFrame}>{body}{message && <div className="source-feature-message" role="status">{message}</div>}</SourceFeaturePopup>
+    {leagueMain && leagueLeft !== undefined && !nested && <div className="source-toast-layer"><div className="toast toast--bottom toast--show toast--icon" role="status"><span aria-hidden className="toast__icon toast__icon--timer" />{leagueLeft <= 0 ? t('dlg:league:processing') : `${t('dlg:top:timer:results_in')}: ${shortText(leagueLeft, t)}`}</div></div>}
     {nested === 'help' && <SourceFeaturePopup title={t(feature === 'league' ? 'dlg:league:manual:title' : feature === 'roulette' ? 'roulette:help:header' : 'dlg:bottle_pass_info:title')} onClose={closeNested} className={feature === 'roulette' ? 'source-roulette-help' : ''}>
       {(feature === 'league' ? ['league:help:page1', 'league:help:page2:text1', 'league:help:page2:text2', 'league:help:page2:text3', 'league:help:page2:text4', 'league:help:page2:text5', 'league:help:page2:text6', 'league:help:page3', 'league:help:page4'] : feature === 'roulette' ? ['roulette:help:desc1', 'roulette:help:desc2', 'roulette:help:desc3'] : ['dlg:bottle_pass_info:desc1', 'dlg:bottle_pass_info:desc2', 'dlg:bottle_pass_info:desc3', 'dlg:bottle_pass_info:desc4', 'dlg:bottle_pass_info:desc5', 'dlg:bottle_pass_info:desc6']).map(key => <div key={key} className={feature === 'roulette' ? 'source-roulette-help-row' : 'source-feature-message'}>{feature === 'roulette' && <span aria-hidden className={`source-roulette-help-art source-roulette-help-art--${key.slice(-1)}`} />}<div><Text text={t(key)} /></div></div>)}<div className="popup__buttons"><Button variant="ghost" className="button--confirm" onClick={closeNested}>{t('roulette:help:btn')}</Button></div>
     </SourceFeaturePopup>}

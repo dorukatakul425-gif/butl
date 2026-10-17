@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 
-export function SourceFeaturePopup({ title, children, onClose, help, inactive = false, className = '', contentClass = '', footer }: { contentClass?: string; footer?: ReactNode; title: string; children: ReactNode; onClose: () => void; help?: (() => void) | undefined; inactive?: boolean; className?: string }) {
+export function SourceFeaturePopup({ title, children, onClose, help, inactive = false, className = '', contentClass = '', footer, headerClass = '', titleClass = '', closeIconClass = '', manualClass }: { contentClass?: string; footer?: ReactNode; headerClass?: string; titleClass?: string; closeIconClass?: string; manualClass?: string | undefined; title: string; children: ReactNode; onClose: () => void; help?: (() => void) | undefined; inactive?: boolean; className?: string }) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     if (inactive) return;
@@ -22,8 +22,10 @@ export function SourceFeaturePopup({ title, children, onClose, help, inactive = 
   }, [inactive, onClose]);
   return <div className="source-feature-layer"><div className="popup-shade" onClick={inactive ? undefined : onClose} />
     <section ref={ref} tabIndex={-1} role="dialog" aria-modal={!inactive} inert={inactive} aria-label={title} className={`popup popup--center source-feature-popup ${className}`}>
-      <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>
-      <header className="popup__header"><div className="popup__title">{title}</div>{help && <Button variant="ghost" className="source-feature-help" aria-label="Yardım" onClick={help}>?</Button>}</header>
+      {/* Dialog.Header (closeBtnMod 'dlg'): title, extra children (manual icon), then the close button inside the header. */}
+      {manualClass !== undefined ? <header className={`popup__header ${headerClass}`}><div className={`popup__title ${titleClass}`}>{title}</div>{help && <div role="button" tabIndex={0} aria-label="Yardım" className={manualClass} onClick={help} onKeyDown={e => { if (e.key === 'Enter') help(); }} />}<Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className={`popup__close-icon ${closeIconClass}`} /></Button></header>
+      : <><Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>
+      <header className="popup__header"><div className="popup__title">{title}</div>{help && <Button variant="ghost" className="source-feature-help" aria-label="Yardım" onClick={help}>?</Button>}</header></>}
       <div className={`popup__content ${contentClass}`}>{children}</div>{footer}
     </section>
   </div>;

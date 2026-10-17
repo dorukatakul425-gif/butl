@@ -7,6 +7,8 @@ export interface SourceFeatureSnapshot {
   leagueParticipation?: boolean;
   /** Last get_league result: server state, 'loading' before the first read, 'error' when the read failed. */
   leagueState?: string;
+  /** Viewer's league level from get_league, also outside a running round (welcome/idle). */
+  leagueLevel?: number;
   leagueHeader?: { type: 'unknown' | 'welcome' | 'running' | 'finished'; positionText?: string; leftTimeShortText?: string };
   kickout?: { price: number; vip: boolean; freeAt?: number; targets: Record<string, { kickAt?: number }> };
   profile?: { name: string; birthday: string; male: boolean; photo?: string; changePrice?: number };
