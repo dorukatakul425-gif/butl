@@ -273,7 +273,6 @@ function ShopSheet({ dialogRef, balance, onClose }: { dialogRef: React.RefObject
         window.open(`https://wa.me/994552172061?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
         onClose();
       }}>{translate("Balansı Artır ·")}{SHOP_PRICES[selected]} AZN</Button>
-      <p className="mh-shop-note">{translate("Ödəniş PAYRIFF ilə təhlükəsiz həyata keçirilir")}</p>
     </div>
   </div>;
 }
