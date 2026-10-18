@@ -1326,3 +1326,26 @@
 
 /* Original media panel icons use content-box sizing (padding-left outside the 28px icon). */
 .media-panel__music, .media-panel__video, .media-panel__button { box-sizing: content-box; }
+
+/* Original chat gesture line: performer's photo followed by the 40x40 gesture image. */
+.chat__gesture-icons {
+  display: inline-block;
+  margin: -3px 0 -6px 5px;
+}
+.chat__gesture {
+  margin: -2px 0;
+  flex-shrink: 0;
+}
+.chat__count {
+  display: flex;
+  align-items: center;
+  margin: 2px 0 0 4px;
+  height: 18px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #72be61;
+}
+.chat__count--gesture {
+  align-self: center;
+  margin: 2px 0 0 0;
+}
