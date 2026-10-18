@@ -13,7 +13,7 @@ import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { closedTarget, giftReceivers, openFor, seatSelection, selectGender, setSelective, type GiftTargetState } from "@/lib/gift-selection";
-import { pushActionLine, pushGiftLine } from "@/lib/music-session";
+import { pushActionLine, pushGestureLine, pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
 import { setViewerKisses, useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-progress";
@@ -45,6 +45,8 @@ export interface SeatPlayer {
   empty?: boolean;
   /** Paid VIP period still running (profiles.vip_until in the future). */
   vipUntil?: number;
+  /** Original game.kisses: kisses collected at this table, badge on the photo's top-right. */
+  kisses?: number;
 }
 
 export const VIEWER_SEAT = 5;
@@ -112,8 +114,20 @@ export function TableSeats() {
   useEffect(() => {
     if (!assets) return;
     return onRoomGesture(row => {
-      if (row.sender_id === playersRef.current[VIEWER_SEAT]?.id && localGestures.current > 0) { localGestures.current--; return; }
       const seat = displaySeatOf(row.sender_id), g = assets.gestures?.[row.gesture];
+      const sender = profileBySeat(seat);
+      // Original ChatView.createGestureLine: everyone sees the performer's photo + gesture image in chat.
+      if (seat >= 0 && g && sender) {
+        const im = dialogImage(assets, g.image, 40, 40);
+        pushGestureLine(
+          { id: row.sender_id, name: sender.name ?? "", photoUrl: sender.photo_url || DEFAULT_PHOTO },
+          row.gesture,
+          translate(assets, `gesture:${row.gesture}`),
+          im?.src ?? g.image,
+          row.id,
+        );
+      }
+      if (row.sender_id === playersRef.current[VIEWER_SEAT]?.id && localGestures.current > 0) { localGestures.current--; return; }
       if (seat >= 0 && g) void tableRef.current?.playGesture(seat, g).catch(() => {});
     });
   }, [assets]);
@@ -165,7 +179,7 @@ export function TableSeats() {
     for (const player of next) if (player.id && blocked.has(player.id)) player.photoUrl = ignoredPhoto;
     playersRef.current = next;
     // Wallet updates (every gift) must not rebuild seats: only redraw when what is drawn changes.
-    const sig = JSON.stringify(next.map(p => [p.id, p.name, p.photoUrl, p.frame, p.stone, p.male, p.empty, p.age, p.city, p.vipUntil]));
+    const sig = JSON.stringify(next.map(p => [p.id, p.name, p.photoUrl, p.frame, p.stone, p.male, p.empty, p.age, p.city, p.vipUntil, p.kisses]));
     if (sig === seatSig.current.sig && seatSig.current.table === activeTable) return;
     seatSig.current = { sig, table: activeTable };
     activeTable.setPlayers(next);
@@ -368,6 +382,7 @@ function buildPlayers(assets: CilizAssets, profiles: Array<Profile | null>, fram
       ...(p.city ? { city: p.city } : {}),
       zodiac: telegramZodiac(p.birthday),
       ...(p.vip_until && Date.parse(p.vip_until) > Date.now() ? { vipUntil: Date.parse(p.vip_until) } : {}),
+      kisses: p.table_kisses ?? 0,
     };
   });
 }
