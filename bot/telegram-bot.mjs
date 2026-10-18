@@ -7,7 +7,9 @@
 //   TELEGRAM_BOT_TOKEN  (zorunlu) BotFather tokenı
 //   GAME_URL            (opsiyonel) Mini App adresi, varsayılan https://deltagame.az/tg
 
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+import { loadBotToken } from './telegram-config.mjs';
+const config = () => loadBotToken({ url: process.env.SUPABASE_URL, key: process.env.SUPABASE_SERVICE_ROLE_KEY, fallback: process.env.TELEGRAM_BOT_TOKEN });
+let TOKEN = await config();
 const GAME_URL = process.env.GAME_URL || "https://deltagame.az/tg";
 
 if (!TOKEN) {
@@ -15,11 +17,10 @@ if (!TOKEN) {
   process.exit(1);
 }
 
-const API = `https://api.telegram.org/bot${TOKEN}`;
 let offset = 0;
 
 async function call(method, body) {
-  const res = await fetch(`${API}/${method}`, {
+  const res = await fetch(`https://api.telegram.org/bot${TOKEN}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -50,13 +51,18 @@ async function handleMessage(message) {
 async function poll() {
   for (;;) {
     try {
+      const next = await config();
+      if (next !== TOKEN) {
+        TOKEN = next; offset = 0;
+        await call('deleteWebhook', { drop_pending_updates: false });
+      }
       const updates = await call("getUpdates", { offset, timeout: 30, allowed_updates: ["message"] });
       for (const update of updates) {
         offset = update.update_id + 1;
-        if (update.message) await handleMessage(update.message).catch((e) => console.error(e));
+        if (update.message) await handleMessage(update.message).catch(() => console.error('Telegram mesajı göndərilmədi.'));
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
+      console.error('Telegram bağlantısı alınmadı; yenidən yoxlanılır.');
       await new Promise((r) => setTimeout(r, 5000));
     }
   }

@@ -10,6 +10,7 @@ interface TelegramWebApp {
   expand?: () => void;
   disableVerticalSwipes?: () => void;
   onEvent?: (event: string, cb: () => void) => void;
+  openTelegramLink?: (url: string) => void;
 }
 
 declare global {
@@ -47,7 +48,8 @@ export function keyboardScrollTarget(
 export function setupTelegramViewport(): () => void {
   if (!isTelegramWebApp()) return () => undefined;
 
-  const webApp = window.Telegram!.WebApp!;
+  const webApp = window.Telegram?.WebApp;
+  if (!webApp) return () => undefined;
   webApp.ready?.();
   webApp.expand?.();
   webApp.disableVerticalSwipes?.();

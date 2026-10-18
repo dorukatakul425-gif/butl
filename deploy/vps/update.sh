@@ -14,6 +14,7 @@ mkdir -p /etc/systemd/system/butl.service.d
 printf '[Service]\nEnvironmentFile=/etc/butl/butl.env\n' > /etc/systemd/system/butl.service.d/telegram.conf
 # Telegram botu: servis dosyasını tazele ve çalıştır (token /etc/butl/butl.env içinde).
 install -m 644 deploy/vps/butl-bot.service /etc/systemd/system/butl-bot.service
+python3 deploy/vps/configure-bot-backend.py
 systemctl daemon-reload
 systemctl enable --now butl-bot >/dev/null 2>&1 || true
 systemctl restart butl-bot || true

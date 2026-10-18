@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { TelegramNotifications } from "@/components/admin/telegram-notifications";
+import { TelegramBotSettings } from '@/components/admin/telegram-bot-settings';
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setKisses, setBan, listReports, resolveReport, listStatusReviews, reviewStatus, sendBroadcast, listRoomsAdmin, viewRoomAdmin } from "@/lib/admin.functions";
@@ -80,7 +81,7 @@ function Dashboard() {
         {tab === "oyuncular" && <Players />}
         {tab === "sikayetler" && <Reports />}
         {tab === "statuslar" && <StatusReviews />}
-        {tab === "telegram" && <TelegramNotifications />}
+        {tab === "telegram" && <><TelegramBotSettings /><TelegramNotifications /></>}
       </div>
     </div>
   );

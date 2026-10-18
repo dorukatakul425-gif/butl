@@ -24,7 +24,8 @@ export async function fetchTelegramProfile(botToken: string, user: TelegramWebAp
   const bio: string | undefined = privateChat ? (typeof privateChat.bio === 'string' ? privateChat.bio : '') : undefined;
   let photo: Uint8Array | null | undefined;
   if (photos?.total_count === 0) photo = null;
-  const fileId = photos?.photos?.[0]?.at(-1)?.file_id;
+  // getChat identifies the currently visible profile picture, including a public fallback photo.
+  const fileId = privateChat?.photo?.big_file_id ?? photos?.photos?.[0]?.at(-1)?.file_id;
   if (fileId) {
     const file = await call('getFile', { file_id: fileId });
     if (file?.file_path) {
@@ -36,6 +37,19 @@ export async function fetchTelegramProfile(botToken: string, user: TelegramWebAp
         }
       } catch { /* Preserve the last working photo on transient failure. */ }
     }
+  }
+  // Mini App's photo_url is signed initData, but never fetch an arbitrary URL from it.
+  if (photo === undefined && user.photo_url) {
+    try {
+      const url = new URL(user.photo_url);
+      if (url.protocol === 'https:' && url.hostname === 't.me' && url.pathname.startsWith('/i/userpic/')) {
+        const response = await fetch(url, { signal: AbortSignal.timeout(8000), redirect: 'error' });
+        if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          if (bytes.byteLength > 0 && bytes.byteLength <= 10 * 1024 * 1024) photo = bytes;
+        }
+      }
+    } catch { /* Keep the last successfully synchronized photo. */ }
   }
   return { ...identity, bio, photo };
 }

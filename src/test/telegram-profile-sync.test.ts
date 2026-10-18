@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fetchTelegramProfile } from '../lib/telegram-profile-sync.server';
-import { telegramIdentity } from '../lib/telegram-profile-sync';
+import { telegramIdentity, telegramPublicPhotoUrl } from '../lib/telegram-profile-sync';
 const user = { id: 42, first_name: 'Old', username: 'old' };
 afterEach(() => vi.unstubAllGlobals());
 function mockApi(chat: object, photos: object, file?: object) {
@@ -40,5 +40,23 @@ describe('Telegram login profile refresh', () => {
   });
   it('uses a stable id when Telegram username is removed', () => {
     expect(telegramIdentity({...user,username:undefined}).username).toBe('tg42');
+  });
+  it('shows the display name, not the Telegram handle', () => {
+    expect(telegramIdentity({ id: 42, first_name: 'Bey', username: 'other_handle' }).name).toBe('Bey');
+  });
+  it('turns loopback signed storage URLs into public player-readable URLs', () => {
+    expect(telegramPublicPhotoUrl('http://127.0.0.1:8000/storage/v1/object/sign/avatars/test.jpg?token=fixture', 'https://deltagame.az'))
+      .toBe('https://deltagame.az/storage/v1/object/sign/avatars/test.jpg?token=fixture');
+  });
+  it('uses the actual currently visible getChat photo before older gallery photos', async () => {
+    const calls: Array<Record<string, unknown>> = [];
+    vi.stubGlobal('fetch', vi.fn(async (url: string, options?: RequestInit) => {
+      if (url.includes('/file/bot')) return new Response(new Uint8Array([8]));
+      if (url.endsWith('/getChat')) return Response.json({ ok: true, result: { id: 42, type: 'private', photo: { big_file_id: 'current' } } });
+      if (url.endsWith('/getFile')) { calls.push(JSON.parse(String(options?.body))); return Response.json({ ok: true, result: { file_path: 'latest.jpg' } }); }
+      return Response.json({ ok: true, result: { total_count: 1, photos: [[{ file_id: 'older' }]] } });
+    }));
+    expect((await fetchTelegramProfile('test-token', user)).photo).toEqual(new Uint8Array([8]));
+    expect(calls).toEqual([{ file_id: 'current' }]);
   });
 });

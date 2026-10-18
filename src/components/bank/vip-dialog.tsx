@@ -7,6 +7,7 @@ import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { showSourceToast } from "@/components/source-dialogs";
 import { getSupabase } from "@/lib/supabase";
 import { VipBoughtDialog } from "@/components/bank/received-gold-dialog";
+import { contactTelegramAdminOnInsufficient } from '@/lib/telegram-topup-client';
 
 // Port of VipDialog.tsx + VipPresenter (OK social bank.vipOptions), Pager and
 // PageScroller Controls. Purchases need the OK payment session (backend later).
@@ -100,7 +101,12 @@ export function VipDialog({ assets, onClose, onBought }: { assets: CilizAssets; 
     busy.current = true;
     const { error } = await sb.rpc("buy_vip", { p_option: id });
     busy.current = false;
-    if (error) { showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return; }
+    if (error) {
+      const selected = options.find(option => option.id === id);
+      const dat = selected ? Number.parseInt(selected.price, 10) : 0;
+      if (dat > 0 && contactTelegramAdminOnInsufficient(error.message, dat)) return;
+      showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return;
+    }
     window.dispatchEvent(new Event(VIEWER_STATUS_CHANGED));
     setBought(true);
     onBought?.();

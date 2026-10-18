@@ -4,14 +4,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { validateInitData, telegramEmail } from "./telegram-auth";
+import { telegramPublicPhotoUrl } from './telegram-profile-sync';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const telegramLogin = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ initData: z.string().min(10).max(4096) }).parse(input))
   .handler(async ({ data }) => {
-    const botToken = process.env["TELEGRAM_BOT_TOKEN"];
-    if (!botToken) throw new Error("Telegram girişi yapılandırılmamış.");
+    const { getTelegramBotToken } = await import('./telegram-config.server');
+    const botToken = await getTelegramBotToken();
 
     const { createHmac } = await import("node:crypto");
     const hmac = (key: string | Buffer, msg: string) => createHmac("sha256", key).update(msg).digest();
@@ -69,7 +70,9 @@ export const telegramLogin = createServerFn({ method: "POST" })
       if (upload.error) throw new Error("Telegram fotoğrafı yenilenemedi.");
       const signed = await admin.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
       if (!signed.data?.signedUrl) throw new Error("Telegram fotoğrafı açılamadı.");
-      patch.photo_url = signed.data.signedUrl;
+      const publicBase = import.meta.env.VITE_SUPABASE_URL;
+      if (!publicBase) throw new Error('Telegram fotoğraf adresi yapılandırılmamış.');
+      patch.photo_url = telegramPublicPhotoUrl(signed.data.signedUrl, publicBase);
     }
     const { error: syncError } = await admin.from("profiles").update(patch).eq("id", userId);
     if (syncError) throw new Error("Telegram profil bilgileri yenilenemedi.");

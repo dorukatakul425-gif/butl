@@ -68,4 +68,6 @@
 
 - Telegram notifications use the configured direct bot token only after per-call admin authorization; bounded keyset batches return actual Bot API successes and failures, while media uploads require the admin’s own Telegram chat.
 - Profile ribbons prefer authenticated current league promotion-band status over active VIP; original source lacks a server TOP definition, so do not claim the local rule is exact source parity.
-- On each verified Telegram login, refresh identity and accessible private-chat bio through server-only Bot API calls; distinguish confirmed removal from API failure and use new avatar object keys so cached photos cannot mask changes.
+- On each verified Telegram login, refresh display identity and accessible private-chat bio through server-only Bot API calls; distinguish confirmed removal from API failure and publish unique signed avatar paths on the browser-visible storage origin so phones never receive loopback URLs.
+- Bot login, notifications and the standalone polling bot share one server-only encrypted token row; verify admin role and getMe before replacement, deny all browser DB grants and never return credentials so rotation cannot expose tokens or diverge across services.
+- Insufficient-DAT contact requires both a Telegram-linked account and current Mini App initData; open a targeted draft using the selected DAT price, never send as the player or change website purchase handling.

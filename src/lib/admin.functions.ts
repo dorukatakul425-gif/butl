@@ -296,8 +296,8 @@ export const sendTelegramNotifications = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => telegramNoticeSchema.parse(d))
   .handler(async ({ data, context }) => {
     const admin = await assertAdmin(context);
-    const token = process.env["TELEGRAM_BOT_TOKEN"];
-    if (!token) throw new Error("Telegram botu konfiqurasiya edilməyib.");
+    const { getTelegramBotToken } = await import('./telegram-config.server');
+    const token = await getTelegramBotToken();
     let query = admin.from("profiles").select("id, telegram_id").not("telegram_id", "is", null).order("id").limit(11);
     if (data.after) query = query.gt("id", data.after);
     const { data: rows, error } = await query;
@@ -318,8 +318,8 @@ export const uploadTelegramMedia = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => { if (!(d instanceof FormData)) throw new Error("Fayl tələb olunur."); return d; })
   .handler(async ({ data, context }) => {
     const admin = await assertAdmin(context);
-    const token = process.env["TELEGRAM_BOT_TOKEN"];
-    if (!token) throw new Error("Telegram botu konfiqurasiya edilməyib.");
+    const { getTelegramBotToken } = await import('./telegram-config.server');
+    const token = await getTelegramBotToken();
     const file = data.get("file"), kind = data.get("kind");
     if (!(file instanceof File) || !["photo", "video"].includes(String(kind))) throw new Error("Etibarsız fayl.");
     const photo = kind === "photo";
@@ -333,4 +333,29 @@ export const uploadTelegramMedia = createServerFn({ method: "POST" })
     const fileId = photo ? result?.photo?.at(-1)?.file_id : result?.video?.file_id;
     if (!fileId) throw new Error("Telegram fayl ID-si alınmadı.");
     return { fileId };
+  });
+
+export const replaceTelegramBotToken = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  // Never let a validator echo input or include the supplied credential in errors.
+  .inputValidator((input: unknown) => {
+    if (!input || typeof input !== 'object' || !('token' in input) || typeof input.token !== 'string'
+      || !/^\d{5,16}:[A-Za-z0-9_-]{20,200}$/.test(input.token)) throw new Error('Etibarsız bot tokeni.');
+    return { token: input.token };
+  })
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${data.token}/getMe`, { method: 'POST', signal: AbortSignal.timeout(8000) });
+      if (!response.ok) throw new Error();
+      const body = await response.json();
+      if (!body.ok || body.result?.is_bot !== true) throw new Error();
+    } catch { throw new Error('Bot tokeni doğrulanmadı.'); }
+    const key = process.env['SUPABASE_SERVICE_ROLE_KEY'];
+    if (!key) throw new Error('Bot ayarları saxlanmadı.');
+    const { encryptBotToken } = await import('../../bot/telegram-config.mjs');
+    const encrypted = await encryptBotToken(data.token, key);
+    const { error } = await admin.from('telegram_bot_settings').upsert({ id: 1, ...encrypted, updated_by: context.userId, updated_at: new Date().toISOString() });
+    if (error) throw new Error('Bot ayarları saxlanmadı.');
+    return { ok: true };
   });

@@ -8,6 +8,7 @@ import { emitServerHeartAward, setPendingGold } from "@/lib/game-session";
 import { showSourceToast } from "@/components/source-dialogs";
 import { ReceivedGoldDialog } from "@/components/bank/received-gold-dialog";
 import { useViewerProgress, VIEWER_STATUS_CHANGED } from "@/lib/viewer-progress";
+import { contactTelegramAdminOnInsufficient } from '@/lib/telegram-topup-client';
 
 const PREMIUM_PRICE = 499; // BankPresenter.premiumOption(): 499, season pass (30 days here).
 function leftText(ms: number) {
@@ -32,7 +33,10 @@ function PremiumPassDialog({ t, onClose }: { t: (k: string) => string; onClose: 
     busy.current = true;
     const { error } = await sb.rpc("buy_premium", { p_option: "pass30" });
     busy.current = false;
-    if (error) { showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return; }
+    if (error) {
+      if (contactTelegramAdminOnInsufficient(error.message, PREMIUM_PRICE)) return;
+      showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return;
+    }
     window.dispatchEvent(new Event(VIEWER_STATUS_CHANGED));
     setDone(true);
   };
@@ -120,7 +124,10 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
     busy.current = true;
     const { data, error } = await sb.rpc("buy_gold", { p_real: real });
     busy.current = false;
-    if (error) { showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return; }
+    if (error) {
+      if (contactTelegramAdminOnInsufficient(error.message, real)) return;
+      showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return;
+    }
     const got = Number(data);
     setPendingGold(got);
     onClose();
@@ -128,7 +135,9 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
   };
   const receivedDialog = received && assets ? <ReceivedGoldDialog assets={assets} gold={received.gold} position={received.position} onContinue={async (pt) => {
     const r = received; setReceived(null);
-    const { data } = await getSupabase()!.auth.getUser();
+    const sb = getSupabase();
+    if (!sb) return;
+    const { data } = await sb.auth.getUser();
     emitServerHeartAward({ id: `buy:${Date.now()}:${Math.random()}`, viewerId: data.user?.id ?? "", amount: r.gold, lucky: false, prepaid: true, from: pt });
   }} /> : null;
   const premiumDialog = premiumOpen && assets ? <PremiumPassDialog t={(k) => translate(assets, k)} onClose={() => setPremiumOpen(false)} /> : null;

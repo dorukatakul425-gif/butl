@@ -3,12 +3,7 @@ import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { refreshProfile } from "@/lib/auth";
 import { telegramLogin } from "@/lib/telegram-auth.functions";
-
-declare global {
-  interface Window {
-    Telegram?: { WebApp?: { initData?: string; ready?: () => void; expand?: () => void } };
-  }
-}
+import { useServerFn } from '@tanstack/react-start';
 
 export const Route = createFileRoute("/tg")({
   head: () => ({
@@ -27,6 +22,7 @@ export const Route = createFileRoute("/tg")({
 
 function TelegramEntry() {
   const navigate = useNavigate();
+  const login = useServerFn(telegramLogin);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -43,7 +39,7 @@ function TelegramEntry() {
       const sb = getSupabase();
       if (!sb) { setError("Xidmətə qoşulmaq mümkün deyil."); return; }
       try {
-        const { tokenHash } = await telegramLogin({ data: { initData } });
+        const { tokenHash } = await login({ data: { initData } });
         const { error: otpError } = await sb.auth.verifyOtp({ token_hash: tokenHash, type: "magiclink" });
         if (otpError) throw otpError;
         await refreshProfile();
@@ -55,7 +51,7 @@ function TelegramEntry() {
     // The Telegram script loads async; wait a tick for it when needed.
     const timer = window.setTimeout(() => void run(), 300);
     return () => { alive = false; window.clearTimeout(timer); };
-  }, [navigate]);
+  }, [navigate, login]);
 
   return (
     <main className="grid min-h-dvh place-items-center bg-background p-6 text-center text-foreground">
