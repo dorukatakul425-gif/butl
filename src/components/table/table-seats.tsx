@@ -19,7 +19,7 @@ import { setViewerKisses, useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-pr
 import { GIFT_SENT_EVENT, setSeatLocator } from "@/lib/interactive-hint-flags";
 import { newcomerKey, newcomerKind, newcomersToNotify, widgetParts, OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
 import { onRoomGift, onRoomGesture, sendGesture, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat } from "@/lib/room-session";
-import type { Profile } from "@/lib/supabase";
+import { getSupabase, type Profile } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import ignoredPhoto from "@/assets/source-ignore-photo.svg";
 import { useBlockedUsers } from "@/lib/block-session";
@@ -73,12 +73,20 @@ export function TableSeats() {
   }, []);
   const [profileSeat, setProfileSeat] = useState<number | null>(null);
   const [ownProfileOpen, setOwnProfileOpen] = useState(false);
+  const [offTable, setOffTable] = useState<SeatPlayer | null>(null);
+  const assetsRef = useRef<CilizAssets | null>(null);
+  assetsRef.current = assets ?? null;
   useEffect(() => {
     const open = (event: Event) => {
       const id = (event as CustomEvent<string>).detail;
       const seat = playersRef.current.findIndex(player => player?.id === id);
       if (seat === VIEWER_SEAT) setOwnProfileOpen(true);
       else if (seat >= 0) setProfileSeat(seat);
+      else if (id) void getSupabase()?.from("profiles").select("*").eq("id", id).maybeSingle().then(({ data }) => {
+        if (!data) return;
+        const p = data as Profile;
+        if (assetsRef.current) setOffTable(buildPlayers(assetsRef.current, [p], p.frame, p.stone)[0] ?? null);
+      });
     };
     window.addEventListener('source:open-profile', open);
     return () => window.removeEventListener('source:open-profile', open);
@@ -319,6 +327,8 @@ export function TableSeats() {
           onGift={() => { const seat = profileSeat; setProfileSeat(null); setTarget(state => openFor(state, seat, VIEWER_SEAT)); }}
           onDecor={() => setProfileSeat(null)} onMusic={() => setProfileSeat(null)} />;
       })()}
+      {assets && offTable && <ProfileDialog player={offTable} self={false} assets={assets}
+        onClose={() => setOffTable(null)} onGift={() => setOffTable(null)} onDecor={() => setOffTable(null)} onMusic={() => setOffTable(null)} />}
       {assets && ownProfileOpen && (
         <ProfileDialog player={{ ...(playersRef.current[VIEWER_SEAT] ?? { name: VIEWER.name, photoUrl: DEFAULT_PHOTO, frame: '', stone: '', male: VIEWER.male }), age: VIEWER.age }} self assets={assets}
           onClose={() => setOwnProfileOpen(false)} onGift={() => setOwnProfileOpen(false)}

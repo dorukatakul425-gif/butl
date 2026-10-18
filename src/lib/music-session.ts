@@ -20,7 +20,12 @@ export interface ChatKickoutLine { kind: "kickout"; key: number; icon: "kick" | 
 export type ChatActionPart = { text: string } | { user: ChatUser };
 /** ChatContent.pushActionLine: newcomer / birthday / vip / rewarded-video widget rows. */
 export interface ChatActionLine { kind: "action"; key: number; style: "newcomer" | "birthday" | "vip" | "rewarded-video"; icon: "gift" | "chat" | "vip" | "rewarded-video"; parts: ChatActionPart[]; sender?: ChatUser; seat?: number }
-export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine | ChatKickoutLine;
+/** ChatView.createHaremLine: sender photo, harem icon, grey text with <heart>price, receiver photo. */
+export interface ChatHaremLine { kind: "harem"; key: number; icon: "harem_free" | "harem_busy"; sender: ChatUser; receiver: ChatUser; text: string; price: number }
+export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine | ChatKickoutLine | ChatHaremLine;
+export function pushHaremLine(line: Omit<ChatHaremLine, "kind" | "key">) {
+  set({ lines: [...state.lines, { kind: "harem", key: ++seq, ...line }] });
+}
 
 interface State { song: PlayingSong | null; lines: ChatLine[]; muted: boolean; volume: number }
 const MUSIC_KEY = "deltagame.music.volume";

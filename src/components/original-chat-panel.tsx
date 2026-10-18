@@ -11,12 +11,12 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
 import { CilizMusicService, YTVideoService, type MusicItem, type MusicService } from "@/lib/music";
-import { pushActionLine, pushKickoutLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
+import { pushActionLine, pushHaremLine, pushKickoutLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
-import { deleteChatMessage, displaySeatOf, loadRoomChatHistory, onRoomChatDelete, onRoomKickout, useIsChatAdmin, onRoomChat, profileBySeat, sendChat, useRoom } from "@/lib/room-session";
-import type { Profile } from "@/lib/supabase";
+import { deleteChatMessage, displaySeatOf, loadRoomChatHistory, onRoomChatDelete, onRoomKickout, onRoomHarem, useIsChatAdmin, onRoomChat, profileBySeat, sendChat, useRoom } from "@/lib/room-session";
+import { getSupabase, type Profile } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import { translate } from "@/lib/ciliz-assets";
 import { EmojiPicker } from "@/components/chat/emoji-picker";
@@ -144,6 +144,33 @@ export function OriginalChatPanel() {
     pushKickoutLine(ev.kind, u(actor), u(target), ev.id);
   }), []);
 
+  // ChatPresenter.harem: line for everyone at the table, Telegram branch rules.
+  useEffect(() => onRoomHarem(ev => {
+    if (!assets) return;
+    const find = async (id: string | null) => {
+      if (!id) return null;
+      const seat = displaySeatOf(id); const p = seat >= 0 ? profileBySeat(seat) : null;
+      if (p) return p;
+      const { data } = await (getSupabase()?.from("profiles").select("*").eq("id", id).maybeSingle() ?? Promise.resolve({ data: null }));
+      return (data as Profile | null) ?? null;
+    };
+    void (async () => {
+      const [target, newOwner, oldOwner] = await Promise.all([find(ev.targetId), find(ev.newOwnerId), find(ev.oldOwnerId)]);
+      if (!target || !newOwner) return;
+      const u = (p: Profile) => ({ ...profileUser(p), ...(p.id === VIEWER.id ? { isViewer: true } : {}) });
+      const icon = newOwner.id === target.id ? "harem_free" as const : "harem_busy" as const;
+      const seated = (p: Profile | null) => !!p && displaySeatOf(p.id) >= 0;
+      const forText = translate(assets, "chat:harem:for:new_chat");
+      if (newOwner.id === target.id && oldOwner && (seated(target) || seated(oldOwner)))
+        pushHaremLine({ icon, sender: u(target), receiver: u(oldOwner), text: `${trG("chat:harem:target:target:new_chat", target.male)} ${forText}`, price: ev.price });
+      else if (!seated(newOwner) && oldOwner && seated(oldOwner) && target.id !== VIEWER.id && target.id !== oldOwner.id)
+        pushHaremLine({ icon, sender: u(target), receiver: u(oldOwner), text: `${trG("chat:harem:target:old:new_chat", target.male)} ${forText}`, price: ev.price });
+      else
+        pushHaremLine({ icon, sender: u(newOwner), receiver: u(target), text: `${trG("chat:harem:new:target:new_chat", newOwner.male)} ${forText}`, price: ev.price });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [assets]);
+
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
@@ -266,6 +293,13 @@ export function OriginalChatPanel() {
                   </div>
                 ))}
               </div>
+            </div>
+          ) : line.kind === "harem" ? (
+            <div key={line.key} className="chat__info chat__info--multiline chat__noselect">
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
+              <div className={`chat__icon chat__icon--${line.icon}`} />
+              <div className="chat__info-line chat__info-line--harem"><span style={{ color: "#878787" }}>{line.text}<div className="chat__icon chat__icon--heart" />{line.price}</span></div>
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.receiver.photoUrl}')` }} title={line.receiver.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.receiver.id }))} />
             </div>
           ) : line.kind === "kickout" ? (
             <div key={line.key} className="chat__info chat__noselect">

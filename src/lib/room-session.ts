@@ -32,6 +32,10 @@ export interface ChatRow {
 export interface KickoutEventRow { id: number; room_id: number; actor_id: string | null; target_id: string; kind: 'kick' | 'save' | 'kicked'; kick_at: string | null; created_at: string }
 const kickoutListeners = new Set<(row: KickoutEventRow) => void>();
 /** Telegram user_kickout / user_save / user_kicked, shared with every player at the table. */
+export type RoomHaremEvent = { targetId: string; newOwnerId: string; oldOwnerId: string | null; price: number };
+const haremListeners = new Set<(ev: RoomHaremEvent) => void>();
+/** ChatPresenter.harem: a seated player's admirer changed (realtime profiles update). */
+export const onRoomHarem = (fn: (ev: RoomHaremEvent) => void) => { haremListeners.add(fn); return () => { haremListeners.delete(fn); }; };
 export const onRoomKickout = (fn: (row: KickoutEventRow) => void) => { kickoutListeners.add(fn); return () => { kickoutListeners.delete(fn); }; };
 export interface GiftRow {
   id: number;
@@ -285,6 +289,10 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
         const prof = p.new as Profile;
         const i = state.players.findIndex((x) => x?.id === prof.id);
         if (i >= 0) {
+          const before = state.players[i] as (Profile & { harem_owner?: string | null }) | null;
+          const after = prof as Profile & { harem_owner?: string | null; harem_value?: number };
+          if (before && after.harem_owner && after.harem_owner !== before.harem_owner)
+            haremListeners.forEach((fn) => fn({ targetId: prof.id, newOwnerId: after.harem_owner!, oldOwnerId: before.harem_owner ?? null, price: Number(after.harem_value ?? 0) }));
           const players = [...state.players];
           players[i] = prof;
           set({ players });

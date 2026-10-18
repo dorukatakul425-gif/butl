@@ -67,7 +67,7 @@ export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
       </header>
       <div className="top-dlg__content top-dlg__bg">
         {notice ? <p className="source-tops-notice" role="status">{notice}</p> : visible.map(row => <div key={row.id} className={`top-dlg__item${row.id === viewerId ? ' top-dlg__item--sticked' : ''}`}>
-          <img className="top-dlg__photo" src={row.photo} alt={row.name} />
+          <img className="top-dlg__photo" src={row.photo} alt={row.name} style={{ cursor: "pointer" }} onClick={() => { onClose(); window.dispatchEvent(new CustomEvent("source:open-profile", { detail: row.id })); }} />
           <div className={`top-dlg__user-info${row.id === viewerId ? ' top-dlg__user-info--viewer' : ''}`}><span className="top-dlg__rank">{ranked.indexOf(row) + 1}. </span><span className="top-dlg__name">{row.name}</span><span className={`top-dlg__icon top-dlg__icon--${section.id}`} /><span className={`top-dlg__score top-dlg__score--${section.id}`}>{row.score.toLocaleString('tr-TR')}</span></div>
         </div>)}
       </div>
