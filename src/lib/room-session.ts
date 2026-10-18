@@ -142,13 +142,14 @@ let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 let seatMap = new Map<number, string>(); // server seat -> user id
 let generation = 0;
 let playerRead = 0;
-type PlayerRow = { seat: number; user_id: string; profiles: Profile | null };
+type PlayerRow = { seat: number; user_id: string; kisses?: number; profiles: Profile | null };
 function mapPlayers(rows: PlayerRow[], mySeat: number) {
   const players: Array<Profile | null> = Array(12).fill(null);
   seatMap = new Map();
   for (const row of rows) {
     seatMap.set(row.seat, row.user_id);
-    if (row.profiles) players[toDisplay(row.seat, mySeat)] = row.profiles;
+    // Original game_join: the seat's kiss counter comes from the server with the player.
+    if (row.profiles) players[toDisplay(row.seat, mySeat)] = { ...row.profiles, table_kisses: row.kisses ?? 0 };
   }
   return players;
 }
@@ -178,7 +179,7 @@ async function loadPlayers(roomId: number, mySeat: number) {
   const version = generation, read = ++playerRead;
   const { data, error } = await sb
     .from("room_players")
-    .select("seat, user_id, profiles(*)")
+    .select("seat, user_id, kisses, profiles(*)")
     .eq("room_id", roomId);
   if (error || version !== generation || read !== playerRead || state.roomId !== roomId) return;
   const viewerId = state.players[VIEWER_DISPLAY_SEAT]?.id;
@@ -245,7 +246,7 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
   // Keep the previous rendered table until the destination snapshot is complete.
   const [initialRoom, initialPlayers] = await Promise.all([
     sb.from("rooms").select("*").eq("id", roomId).single(),
-    sb.from("room_players").select("seat, user_id, profiles(*)").eq("room_id", roomId),
+    sb.from("room_players").select("seat, user_id, kisses, profiles(*)").eq("room_id", roomId),
   ]);
   if (initialRoom.error || initialPlayers.error || !initialRoom.data) {
     const message = initialRoom.error?.message ?? initialPlayers.error?.message ?? "Masaya qoşulmaq olmadı.";
