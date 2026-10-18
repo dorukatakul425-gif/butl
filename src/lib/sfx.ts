@@ -3,10 +3,11 @@ import { useSyncExternalStore } from "react";
 // Decoded once with Web Audio so repeated gifts never stall the page.
 let ctx: AudioContext | null = null;
 const buffers = new Map<string, Promise<AudioBuffer | null>>();
-let volume = 1;
+const SFX_KEY = "deltagame.sfx.volume";
+let volume = (() => { try { const v = Number(typeof window !== "undefined" ? window.localStorage.getItem(SFX_KEY) ?? 1 : 1); return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1; } catch { return 1; } })();
 const volumeListeners = new Set<() => void>();
 /** SettingsPresenter sounds slider: preferences.sfxVolume. */
-export function setSfxVolume(v: number) { volume = v; volumeListeners.forEach((l) => l()); }
+export function setSfxVolume(v: number) { volume = Math.max(0, Math.min(1, v)); try { window.localStorage.setItem(SFX_KEY, String(volume)); } catch { /* ignore */ } volumeListeners.forEach((l) => l()); }
 export function useSfxVolume() {
   return useSyncExternalStore((l) => { volumeListeners.add(l); return () => volumeListeners.delete(l); }, () => volume, () => 1);
 }

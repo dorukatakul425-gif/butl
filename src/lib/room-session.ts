@@ -86,6 +86,30 @@ export async function loadRoomChatHistory(roomId: number, now = Date.now()) {
   const byId = new Map(((profs ?? []) as unknown as Profile[]).map(p => [p.id, p]));
   return rows.flatMap(row => { const sender = byId.get(row.user_id); if (!sender) return []; const receiver = row.receiver_id ? byId.get(row.receiver_id) : undefined; return [{ row, sender, ...(receiver ? { receiver } : {}) }]; });
 }
+const chatDeleteListeners = new Set<(id: number) => void>();
+export const onRoomChatDelete = (fn: (id: number) => void) => { chatDeleteListeners.add(fn); return () => { chatDeleteListeners.delete(fn); }; };
+/** Admin-only (server re-checks the role); the DELETE reaches every client over the live feed. */
+export async function deleteChatMessage(id: number) {
+  const sb = getSupabase();
+  if (!sb) return false;
+  const { error } = await sb.rpc("admin_delete_chat" as never, { p_id: id } as never);
+  if (error) return false;
+  chatDeleteListeners.forEach(fn => fn(id));
+  return true;
+}
+let adminFlag: boolean | null = null;
+const adminListeners = new Set<() => void>();
+async function loadAdmin() {
+  const sb = getSupabase();
+  if (!sb) return;
+  const { data: u } = await sb.auth.getUser();
+  if (!u.user) return;
+  const { data } = await sb.from("user_roles" as never).select("role").eq("user_id", u.user.id).eq("role", "admin").maybeSingle();
+  adminFlag = Boolean(data); adminListeners.forEach(l => l());
+}
+export function useIsChatAdmin() {
+  return useSyncExternalStore((l) => { adminListeners.add(l); if (adminFlag === null) { adminFlag = false; void loadAdmin(); } return () => adminListeners.delete(l); }, () => Boolean(adminFlag), () => false);
+}
 export const onRoomChat = (fn: (row: ChatRow) => void) => {
   chatListeners.add(fn);
   return () => { chatListeners.delete(fn); };
@@ -242,6 +266,8 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
       })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `room_id=eq.${roomId}` },
       (p) => { if (current()) chatListeners.forEach((fn) => fn(p.new as ChatRow)); })
+    .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages" },
+      (p) => { const id = Number((p.old as { id?: number }).id); if (current() && id) chatDeleteListeners.forEach((fn) => fn(id)); })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "gift_events", filter: `room_id=eq.${roomId}` },
       (p) => { if (current()) giftListeners.forEach((fn) => fn(p.new as GiftRow)); })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "gesture_events", filter: `room_id=eq.${roomId}` },

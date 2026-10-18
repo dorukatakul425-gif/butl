@@ -39,7 +39,7 @@ function applyTimes(vipUntil: number | null, premiumUntil: number | null) {
 
 export async function refreshViewerStatus() {
   const sb = getSupabase();
-  if (!sb) return;
+  if (!sb?.auth) return;
   const { data: u } = await sb.auth.getUser();
   if (!u.user) return applyTimes(null, null);
   let { data, error } = await sb.from("profiles").select("vip_until, vip_plan, premium_until").eq("id", u.user.id).maybeSingle();

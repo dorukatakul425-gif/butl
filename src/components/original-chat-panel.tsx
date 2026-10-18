@@ -11,11 +11,11 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
 import { CilizMusicService, YTVideoService, type MusicItem, type MusicService } from "@/lib/music";
-import { pushActionLine, pushTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
+import { pushActionLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
-import { displaySeatOf, loadRoomChatHistory, onRoomChat, profileBySeat, sendChat, useRoom } from "@/lib/room-session";
+import { deleteChatMessage, displaySeatOf, loadRoomChatHistory, onRoomChatDelete, useIsChatAdmin, onRoomChat, profileBySeat, sendChat, useRoom } from "@/lib/room-session";
 import type { Profile } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import { translate } from "@/lib/ciliz-assets";
@@ -48,7 +48,8 @@ export function OriginalChatPanel() {
   const cancelLongTap = () => { clearTimeout(longTap.current); longTap.current = undefined; };
   useEffect(() => () => clearTimeout(longTap.current), []);
   useEffect(() => { setSelected(null); setReportMessage(null); }, [session.lines.length === 0]);
-  const selectMessage = (line: ChatTextLine) => { cancelLongTap(); if (!line.sender.isViewer) setSelected(line); };
+  const isAdmin = useIsChatAdmin();
+  const selectMessage = (line: ChatTextLine) => { cancelLongTap(); if (!line.sender.isViewer || (isAdmin && line.messageId !== undefined)) setSelected(line); };
   const onTranslate = (key: number, original: string) => {
     if (translations[key]?.translated) { toggleTranslation(key); return; }
     const fn = chatTranslator() ?? ((t: string) => translateChatText({ data: { text: t, lang: VIEWER_LOCALE } }).then(r => r.ttext));
@@ -121,6 +122,7 @@ export function OriginalChatPanel() {
       else showSourceToast("Mesaj gönderilemedi.");
     });
   };
+  useEffect(() => onRoomChatDelete(id => removeTextLine(id)), []);
   useEffect(() => onRoomChat(row => {
     const seat = displaySeatOf(row.user_id);
     const sender = seat >= 0 ? profileBySeat(seat) : null;
@@ -197,7 +199,7 @@ export function OriginalChatPanel() {
                   const stone = assets && stoneId ? assets.stones[stoneId] : undefined;
                   if (!stone || !assets) return null;
                   const img = dialogImage(assets, stone.image, 14, 14);
-                  return <div className="chat__stone" style={{ display: "inline-block" }}><img className="chat__stone-img" src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" /></div>;
+                  return <><div className="chat__stone" style={{ display: "inline-block" }}><img className="chat__stone-img" src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" /></div>{" "}</>;
                 })()}
                 <span className={`chat__sender-name ${chatNameClass(line.sender)}${(line.sender.isViewer ? decor.stone : line.sender.stone) && assets?.stones[(line.sender.isViewer ? decor.stone : line.sender.stone) ?? ""] ? " chat__sender-name--stone" : ""}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
                   onClick={() => { setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
@@ -230,7 +232,7 @@ export function OriginalChatPanel() {
           ) : line.kind === "gift" ? (
             <div key={line.key} className="chat__info chat__noselect">
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
-              <img className="chat__gift" src={line.image} width={28} height={28} title={line.name} alt="" crossOrigin="anonymous" />
+              <img className="chat__gift" src={line.image} width={line.imageWidth ?? 28} height={line.imageHeight ?? 28} title={line.name} alt="" crossOrigin="anonymous" />
               {line.count > 1 && <div className="chat__count"><div className="chat__icon chat__icon--count" />{line.count}</div>}
               <div className="chat__icon chat__icon--arrows" />
               <div className="chat__multigift-receivers">
@@ -289,6 +291,8 @@ export function OriginalChatPanel() {
       {assets && selected && <MessageActions assets={assets} blocked={blocked.has(selected.sender.id)} translationShown={Boolean(translations[selected.key]?.shown)} canTranslate={needsTranslation(selected.sender, VIEWER_LOCALE)} busy={menuBusy}
         onClose={() => setSelected(null)} onTranslate={() => { onTranslate(selected.key, selected.text); setSelected(null); }}
         onReport={() => { setReportMessage(selected); setSelected(null); }}
+        isOwn={Boolean(selected.sender.isViewer)}
+        onDelete={isAdmin && selected.messageId !== undefined ? () => { const id = selected.messageId!; setSelected(null); void deleteChatMessage(id).then(ok => { if (!ok) showSourceToast('Mesaj silinemedi.'); }); } : undefined}
         onIgnore={() => { setMenuBusy(true); void setUserBlocked(selected.sender.id, !blocked.has(selected.sender.id)).then(() => setSelected(null), () => showSourceToast('İgnore kaydedilemedi.')).finally(() => setMenuBusy(false)); }} />}
       {assets && reportMessage && <SourceInfoDialog title={translate(assets, 'dlg:report_issue:title')} context={translate(assets, 'dlg:report_issue:desc', reportMessage.sender.name, reportMessage.text)} onClose={() => setReportMessage(null)}
         cancel={{ title: translate(assets, 'dlg:report_issue:cancel'), onClick: () => setReportMessage(null) }}

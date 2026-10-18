@@ -13,7 +13,7 @@ export interface PlayingSong {
 }
 export interface ChatMusicLine { kind?: "music"; key: number; sender: MusicSender; artist: string; title: string }
 export interface ChatUser extends ChatProfile { name: string; photoUrl: string }
-export interface ChatGiftLine { kind: "gift"; key: number; sender: ChatUser; receivers: ChatUser[]; giftType: string; image: string; name: string; count: number }
+export interface ChatGiftLine { kind: "gift"; key: number; sender: ChatUser; receivers: ChatUser[]; giftType: string; image: string; imageWidth?: number; imageHeight?: number; name: string; count: number }
 export interface ChatTextLine { kind: "text"; key: number; sender: ChatUser; receiver?: ChatUser; text: string; messageId?: number }
 export type ChatActionPart = { text: string } | { user: ChatUser };
 /** ChatContent.pushActionLine: newcomer / birthday / vip / rewarded-video widget rows. */
@@ -21,7 +21,9 @@ export interface ChatActionLine { kind: "action"; key: number; style: "newcomer"
 export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine;
 
 interface State { song: PlayingSong | null; lines: ChatLine[]; muted: boolean; volume: number }
-let state: State = { song: null, lines: [], muted: false, volume: 1 };
+const MUSIC_KEY = "deltagame.music.volume";
+const savedMusic = (() => { try { const v = Number(typeof window !== "undefined" ? window.localStorage.getItem(MUSIC_KEY) ?? 1 : 1); return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1; } catch { return 1; } })();
+let state: State = { song: null, lines: [], muted: savedMusic === 0, volume: savedMusic };
 const listeners = new Set<() => void>();
 const set = (next: Partial<State>) => { state = { ...state, ...next }; listeners.forEach(l => l()); };
 let seq = 0;
@@ -32,6 +34,11 @@ export function pushTextLine(sender: ChatUser, text: string, receiver?: ChatUser
   if (messageId !== undefined && state.lines.some(line => line.kind === 'text' && line.messageId === messageId)) return false;
   set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, text, ...(receiver ? { receiver } : {}), ...(messageId !== undefined ? { messageId } : {}) }] });
   return true;
+}
+
+/** Admin deleted a message: drop it for everyone with no placeholder. */
+export function removeTextLine(messageId: number) {
+  if (state.lines.some(l => l.kind === 'text' && l.messageId === messageId)) set({ lines: state.lines.filter(l => !(l.kind === 'text' && l.messageId === messageId)) });
 }
 
 export function pushActionLine(line: Omit<ChatActionLine, "kind" | "key">) {
@@ -94,8 +101,8 @@ export function applyRoomMusic(music: RoomMusic | null | undefined, serverOffset
 const sameUsers = (a: ChatUser[], b: ChatUser[]) => a.length === b.length && a.every(u => b.some(v => v.id === u.id));
 const intersects = (a: ChatUser[], b: ChatUser[]) => a.some(u => b.some(v => v.id === u.id));
 /** Batcher.sendGift + GiftBatch.merge: consecutive same gifts from one sender collapse into one line with a count. */
-export function pushGiftLine(sender: ChatUser, receiver: ChatUser, gift: { type: string; image: string; name: string }) {
-  let line: ChatGiftLine = { kind: "gift", key: ++seq, sender, receivers: [receiver], giftType: gift.type, image: gift.image, name: gift.name, count: 1 };
+export function pushGiftLine(sender: ChatUser, receiver: ChatUser, gift: { type: string; image: string; name: string; width?: number; height?: number }) {
+  let line: ChatGiftLine = { kind: "gift", key: ++seq, sender, receivers: [receiver], giftType: gift.type, image: gift.image, ...(gift.width ? { imageWidth: gift.width } : {}), ...(gift.height ? { imageHeight: gift.height } : {}), name: gift.name, count: 1 };
   const lines = [...state.lines];
   for (;;) {
     const prev = lines[lines.length - 1];
@@ -117,6 +124,7 @@ export const setMusicVolume = (value: number) => {
   const volume = Math.max(0, Math.min(1, value));
   const muted = volume === 0;
   set({ volume, muted });
+  try { window.localStorage.setItem(MUSIC_KEY, String(volume)); } catch { /* ignore */ }
   if (sharedAudio) { sharedAudio.volume = volume; sharedAudio.muted = muted; }
 };
 

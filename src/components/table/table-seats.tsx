@@ -185,7 +185,8 @@ export function TableSeats() {
       if (!assets) return;
       let mine = false;
       // Our own sends already animated instantly on click.
-      if (row.sender_id === playersRef.current[VIEWER_SEAT]?.id && localSent.current > 0) { localSent.current--; mine = true; }
+      const ownKey = `${row.seed}:${row.receiver_id}`;
+      if (row.sender_id === playersRef.current[VIEWER_SEAT]?.id && localSent.current.has(ownKey)) { localSent.current.delete(ownKey); mine = true; }
       const from = displaySeatOf(row.sender_id), to = displaySeatOf(row.receiver_id);
       const meta = assets.gifts[row.gift_type];
       if (from < 0 || to < 0 || !meta) return;
@@ -196,7 +197,7 @@ export function TableSeats() {
       pushGiftLine(
         { id: row.sender_id, name: s?.name ?? "", photoUrl: s?.photo_url || DEFAULT_PHOTO },
         { id: row.receiver_id, name: r?.name ?? "", photoUrl: r?.photo_url || DEFAULT_PHOTO },
-        { type: row.gift_type, name: item?.name ?? row.gift_type, image: item ? dialogImage(assets, item.image, 28, 28).src : "" },
+        (() => { const im = item ? dialogImage(assets, item.image, 28, 28) : null; return { type: row.gift_type, name: item?.name ?? row.gift_type, image: im?.src ?? "", ...(im ? { width: im.width, height: im.height } : {}) }; })(),
       );
     }
   }, [assets, giftItems, offerResponse]);
@@ -213,7 +214,7 @@ export function TableSeats() {
     ids.forEach((id) => preloadSfx(assets.sfxUrl, id));
   }, [giftSeat, assets, giftItems]);
 
-  const spent = useRef(0), localSent = useRef(0);
+  const spent = useRef(0), localSent = useRef(new Set<string>());
   const send = useCallback(
     (item: GiftStoreItem) => {
       if (!assets) return;
@@ -231,12 +232,12 @@ export function TableSeats() {
       const meta = assets.gifts[item.type];
       if (meta) for (const id of receivers) {
         const to = displaySeatOf(id);
-        if (to >= 0) { localSent.current++; void tableRef.current?.sendGift(VIEWER_SEAT, to, createSentGift(assets, meta, seed)); }
+        if (to >= 0) { localSent.current.add(`${seed}:${id}`); void tableRef.current?.sendGift(VIEWER_SEAT, to, createSentGift(assets, meta, seed)); }
       }
       // Server checks price, locks and balance in one transaction; the room feed animates it.
       void sendGiftRpc(item.type, receivers, seed).then(res => {
         spent.current = Math.max(0, spent.current - cost);
-        if (!res.ok && meta) localSent.current = Math.max(0, localSent.current - receivers.length);
+        if (!res.ok) for (const id of receivers) localSent.current.delete(`${seed}:${id}`);
         if (res.ok) { window.dispatchEvent(new CustomEvent(GIFT_SENT_EVENT, { detail: item.type })); return; }
         if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
         else showSourceToast("Hediye gönderilemedi.");
