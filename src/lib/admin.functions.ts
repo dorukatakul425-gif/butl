@@ -76,6 +76,22 @@ export const adjustBalance = createServerFn({ method: "POST" })
     return { value: value as number };
   });
 
+const KissesInput = z.object({
+  userId: z.string().uuid(),
+  value: z.number().int().min(0).max(10_000_000),
+});
+
+/** Admin: set a player's total kiss count to an exact value. */
+export const setKisses = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => KissesInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const { data: value, error } = await admin.rpc("admin_set_kisses", { _user_id: data.userId, _value: data.value });
+    if (error) throw new Error(error.message);
+    return { value: value as number };
+  });
+
 const BanInput = z.object({
   userId: z.string().uuid(),
   banned: z.boolean(),
