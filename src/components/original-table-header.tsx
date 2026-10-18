@@ -10,7 +10,6 @@ import backgroundUp from "@/assets/ui_btn_bg_up.svg";
 import backgroundDown from "@/assets/ui_btn_bg_down.svg";
 import heartUp from "@/assets/ui_btn_gold_add_heart_up.svg";
 import heartDown from "@/assets/ui_btn_gold_add_heart_down.svg";
-import roulette from "@/assets/ui_btn_roulette.svg";
 import menu from "@/assets/ui_btn_misc_menu.svg";
 import settings from "@/assets/ui_btn_settings.svg";
 import changeTable from "@/assets/ui_btn_change_table.svg";
@@ -26,13 +25,13 @@ import { SourceAchievementsDialog } from "@/components/table/source-achievements
 
 import { SettingsDialog } from '@/components/settings/settings-dialog';
 import { SourceSeasonDialog } from '@/components/table/source-season-dialogs';
+import { SourceLeagueButton } from '@/components/table/source-league-button';
 import { SourceChangeTable } from '@/components/table/source-change-table';
 import { useRoom, VIEWER_DISPLAY_SEAT } from '@/lib/room-session';
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
 // All artwork is extracted unchanged from the live game's preloader bundle.
 const middleIcons = [
-  { asset: roulette, label: "Rulet", kind: "default" },
   { asset: menu, label: "Menü", kind: "menu" },
   { asset: settings, label: "Ayarlar", kind: "default" },
 ];
@@ -70,7 +69,7 @@ export function OriginalTableHeader() {
     const id = window.setInterval(() => { n -= 1; setChangeCount(n); if (n < 1) window.clearInterval(id); }, 1000);
     return () => window.clearInterval(id);
   }, [room.roomId]);
-  const [season, setSeason] = useState<'roulette' | null>(null);
+  const [season, setSeason] = useState<'league' | null>(null);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -110,6 +109,7 @@ export function OriginalTableHeader() {
       <output className="original-header-balance" aria-label="Kalp bakiyesi" aria-live="polite" style={{ width: `${String(gold ?? '—').length}ch` }}>{gold ?? '—'}</output>
       </div>
       <div className="original-header-middle">
+        <SourceLeagueButton onClick={() => setSeason('league')} />
         {middleIcons.map((icon) => icon.kind === "menu" ? (
           <Button key={icon.label} ref={menuTriggerRef} type="button" variant="ghost"
             className="original-header-button original-icon-menu" aria-label="Menü" title="Menü"
@@ -119,7 +119,7 @@ export function OriginalTableHeader() {
             <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
             <img src={menu} alt="" className="original-button-icon" />
           </Button>
-        ) : <OriginalIcon key={icon.label} {...icon} onClick={icon.label === 'Ayarlar' ? () => setSettingsOpen(true) : icon.label === 'Rulet' ? () => setSeason('roulette') : undefined} />)}
+        ) : <OriginalIcon key={icon.label} {...icon} onClick={icon.label === 'Ayarlar' ? () => setSettingsOpen(true) : undefined} />)}
         <Button variant="ghost" className="original-header-button original-icon-back" aria-label="Ana sayfaya dön" title="Geri" onClick={() => void navigate({ to: "/" })}>
           <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
           <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
