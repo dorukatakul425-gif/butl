@@ -44,3 +44,5 @@
 @media (prefers-reduced-motion: reduce) { .bottle-roll-big, .bottle-roll-text { animation: none; } }
 .music-play-toggle { position: absolute; inset: 0; margin: auto; width: 30px; height: 30px; padding: 0; z-index: 4; color: var(--foreground); background: var(--background); border-radius: 50%; }
 .music-stop-button { position: absolute; left: -24px; top: 0; width: 22px; height: 22px; padding: 0; z-index: 5; color: var(--foreground); background: var(--background); border-radius: 50%; }
+/* Original will_they_kiss / will_kiss_back hint: white bold 14px Arial, centered at y=-79, black shadow. */
+.bottle-kiss-hint { position: absolute; left: 0; top: -79px; width: max-content; max-width: 300px; transform: translate(-50%, -50%); font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 2px rgba(0, 0, 0, 0.5); white-space: nowrap; }
