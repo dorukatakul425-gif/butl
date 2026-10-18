@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { TelegramNotifications } from "@/components/admin/telegram-notifications";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setKisses, setBan, listReports, resolveReport, listStatusReviews, reviewStatus, sendBroadcast, listRoomsAdmin, viewRoomAdmin } from "@/lib/admin.functions";
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/sako")({
   component: AdminPage,
 });
 
-type Tab = "umumi" | "masalar" | "oyuncular" | "sikayetler" | "statuslar";
+type Tab = "umumi" | "masalar" | "oyuncular" | "sikayetler" | "statuslar" | "telegram";
 
 const TABS: Array<[Tab, string]> = [
   ["umumi", "Ümumi"],
@@ -30,6 +31,7 @@ const TABS: Array<[Tab, string]> = [
   ["oyuncular", "Oyunçular"],
   ["sikayetler", "Şikayətlər"],
   ["statuslar", "Statuslar"],
+  ["telegram", "Telegram bildirişləri"],
 ];
 
 function AdminPage() {
@@ -78,6 +80,7 @@ function Dashboard() {
         {tab === "oyuncular" && <Players />}
         {tab === "sikayetler" && <Reports />}
         {tab === "statuslar" && <StatusReviews />}
+        {tab === "telegram" && <TelegramNotifications />}
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 import { deleteChatMessage, displaySeatOf, loadRoomChatHistory, onRoomChatDelete, onRoomKickout, onRoomHarem, useIsChatAdmin, onRoomChat, profileBySeat, sendChat, useRoom } from "@/lib/room-session";
 import { getSupabase, type Profile } from "@/lib/supabase";
+import { playerPhoto } from "@/lib/player-photo";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import { translate } from "@/lib/ciliz-assets";
 import { EmojiPicker } from "@/components/chat/emoji-picker";
@@ -33,7 +34,7 @@ import { roomProfileResolver } from '@/lib/room-profile-resolver';
 const VIEWER_LOCALE = "tr";
 
 const VIEWER_COUNTRY = "TR";
-const profileUser = (p: Profile) => ({ id: p.id, name: p.name, photoUrl: p.photo_url || DEFAULT_PHOTO, male: p.male, isVip: Boolean(p.vip_until && Date.parse(p.vip_until) > Date.now()), ...(p.stone ? { stone: p.stone } : {}) });
+const profileUser = (p: Profile) => ({ id: p.id, name: p.name, photoUrl: playerPhoto(p.photo_url, p.telegram_id), male: p.male, isVip: Boolean(p.vip_until && Date.parse(p.vip_until) > Date.now()), ...(p.stone ? { stone: p.stone } : {}) });
 
 /** Original chat area: MediaPanel (video, music), chat body with info lines, input at bottom (source order). */
 export function OriginalChatPanel() {
@@ -387,10 +388,7 @@ export function OriginalChatPanel() {
         </div>
       </div>
       {session.song && <MusicView key={session.song.key} song={session.song} muted={session.muted} volume={session.volume} onPlayer={() => setListType('audio')} onDj={id => {
-        if (id === VIEWER.id) { setListType('audio'); return; }
-        const seat = displaySeatOf(id);
-        if (seat < 0) { if (assets) showSourceToast(translate(assets, 'warning:offline_gift:desc')); return; }
-        window.dispatchEvent(new CustomEvent(OPEN_GIFT_FOR_SEAT_EVENT, { detail: seat }));
+        if (id) window.dispatchEvent(new CustomEvent('source:open-profile', { detail: id }));
       }} />}
       <InteractiveHints />
       {emojiOpen && assets && <EmojiPicker size={emojiSize} vip={vip} lockText={translate(assets, "chat:emoji:hint")} activateText={translate(assets, "chat:emoji:activate")}

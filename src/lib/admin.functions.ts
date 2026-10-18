@@ -1,6 +1,7 @@
 // Admin panel (/sako) server functions. Every call re-verifies the caller's admin role.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { telegramNoticeSchema, telegramPayload } from "./telegram-notifications";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -269,4 +270,67 @@ export const reviewStatus = createServerFn({ method: "POST" })
     const { error } = await admin.from("statuses").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+/** Direct Bot API: uses the same explicitly configured bot token as Telegram login. */
+async function callTelegram(token: string, method: string, body: Record<string, unknown> | FormData) {
+  const multipart = body instanceof FormData;
+  const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    method: "POST", headers: multipart ? undefined : { "Content-Type": "application/json" },
+    body: multipart ? body : JSON.stringify(body), signal: AbortSignal.timeout(20000),
+  });
+  const raw = await response.text();
+  let json: { ok?: boolean; description?: string; result?: { photo?: Array<{ file_id: string }>; video?: { file_id: string } }; parameters?: { retry_after?: number } };
+  try { json = JSON.parse(raw); } catch { throw new Error(`Telegram [${response.status}]: etibarsız cavab`); }
+  if (!response.ok || json.ok !== true) {
+    // Do not include the token-bearing URL or arbitrary response bodies in logs.
+    const reason = (json.description ?? "Göndərilə bilmədi").replaceAll(token, "[redacted]");
+    console.error(`Telegram [${response.status}]: ${reason}`);
+    throw new Error(`Telegram [${response.status}]: ${reason}${json.parameters?.retry_after ? ` (${json.parameters.retry_after} saniyə gözləyin)` : ""}`);
+  }
+  return json.result;
+}
+
+export const sendTelegramNotifications = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => telegramNoticeSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const token = process.env["TELEGRAM_BOT_TOKEN"];
+    if (!token) throw new Error("Telegram botu konfiqurasiya edilməyib.");
+    let query = admin.from("profiles").select("id, telegram_id").not("telegram_id", "is", null).order("id").limit(11);
+    if (data.after) query = query.gt("id", data.after);
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    const batch = (rows ?? []).slice(0, 10) as Array<{ id: string; telegram_id: number }>;
+    let sent = 0, failed = 0;
+    const errors = new Set<string>();
+    for (const row of batch) {
+      try { const payload = telegramPayload(data, row.telegram_id); await callTelegram(token, payload.method, payload.body); sent++; }
+      catch (e) { failed++; errors.add(e instanceof Error ? e.message : "Telegram göndərişi uğursuz oldu."); }
+      await new Promise(resolve => setTimeout(resolve, 60));
+    }
+    return { attempted: batch.length, sent, failed, errors: [...errors].slice(0, 5), after: batch.at(-1)?.id ?? null, done: (rows ?? []).length <= 10 };
+  });
+
+export const uploadTelegramMedia = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => { if (!(d instanceof FormData)) throw new Error("Fayl tələb olunur."); return d; })
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const token = process.env["TELEGRAM_BOT_TOKEN"];
+    if (!token) throw new Error("Telegram botu konfiqurasiya edilməyib.");
+    const file = data.get("file"), kind = data.get("kind");
+    if (!(file instanceof File) || !["photo", "video"].includes(String(kind))) throw new Error("Etibarsız fayl.");
+    const photo = kind === "photo";
+    if (!file.size || file.size > (photo ? 10 : 50) * 1024 * 1024) throw new Error(photo ? "Şəkil 10 MB-dan böyük ola bilməz." : "Video 50 MB-dan böyük ola bilməz.");
+    if (!(photo ? ["image/jpeg", "image/png"] : ["video/mp4"]).includes(file.type)) throw new Error("Şəkil JPEG/PNG, video MP4 olmalıdır.");
+    const { data: recipient } = await admin.from("profiles").select("telegram_id").eq("id", context.userId).maybeSingle();
+    if (!recipient?.telegram_id) throw new Error("Fayl yükləmək üçün admin hesabına Telegram ilə giriş edin.");
+    const form = new FormData(); form.set("chat_id", String(recipient.telegram_id)); form.set(String(kind), file);
+    form.set("disable_notification", "true"); form.set("caption", "Admin: göndəriş üçün media önbaxışı");
+    const result = await callTelegram(token, photo ? "sendPhoto" : "sendVideo", form);
+    const fileId = photo ? result?.photo?.at(-1)?.file_id : result?.video?.file_id;
+    if (!fileId) throw new Error("Telegram fayl ID-si alınmadı.");
+    return { fileId };
   });

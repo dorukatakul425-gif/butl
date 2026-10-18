@@ -78,8 +78,8 @@ export const telegramLogin = createServerFn({ method: "POST" })
         .eq("id", userId);
     }
 
-    // Refresh the Telegram photo when the profile has none.
-    if (userId && !existing?.photo_url) {
+    // Import once at registration. Missing Telegram photos remain NO PHOTO until the player changes it.
+    if (userId && !existing) {
       const photo = await fetchTelegramPhoto(botToken, tg.id);
       if (photo && photo.byteLength > 0) {
         const path = `${userId}/telegram.jpg`;

@@ -15,7 +15,7 @@ import type { SeatPlayer } from "@/components/table/table-seats";
 import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceProfileSettings } from "@/components/profile/source-own-profile";
 import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast, OPEN_BANK_EVENT } from "@/components/source-dialogs";
-import { formatHarem, formatStats, splitStatusEmoji, type ServerUserProfile } from "@/lib/user-profile";
+import { profileRibbon, formatHarem, formatStats, splitStatusEmoji, type ServerUserProfile } from "@/lib/user-profile";
 import { reportPlayer } from "@/lib/game-reports";
 
 const Div = (p: React.HTMLAttributes<HTMLDivElement>) => <div role={p.onClick ? "button" : undefined} {...p} />;
@@ -68,6 +68,8 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
     return () => window.clearTimeout(id);
   }, [self, player.vipUntil, vipNow]);
   const vipLabel = self ? viewerVip : Boolean(player.vipUntil && player.vipUntil > vipNow);
+  const [leagueTop, setLeagueTop] = useState(false);
+  const ribbon = profileRibbon(leagueTop, vipLabel);
   const [statsState, setStatsState] = useState<"narrowed" | "expanded">("narrowed");
   const [popup, setPopup] = useState<"settings" | "claims" | "report-photo" | "report-user" | "block" | "achievements" | "kickout" | null>(null);
   const [loaded, setLoaded] = useState<ServerUserProfile | null>(null);
@@ -95,6 +97,23 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   };
   const stats = profile ? formatStats(profile) : null;
   const userId = self ? feature.viewerId ?? undefined : player.id;
+  useEffect(() => {
+    const sb = getSupabase();
+    setLeagueTop(false);
+    if (!sb || !userId) return;
+    let alive = true, revision = 0;
+    const load = async () => {
+      const r = ++revision;
+      const { data, error } = await sb.rpc("profile_league_top", { p_user: userId });
+      if (alive && r === revision && !error) setLeagueTop(data === true);
+    };
+    void load();
+    const ch = sb.channel(`profile-top-${userId}-${Math.random()}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "league_members" }, () => void load())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "league_rounds" }, () => void load()).subscribe();
+    const timer = window.setInterval(() => void load(), 5000);
+    return () => { alive = false; window.clearInterval(timer); void sb.removeChannel(ch); };
+  }, [userId]);
   const [savedBio, setSavedBio] = useState<{ userId: string; value: string | null } | null>(null);
   const bio = savedBio && savedBio.userId === userId ? savedBio.value : profile?.status;
   // Bio belongs to the home profile, not the statistics adapter. Read even when stats are supplied.
@@ -292,7 +311,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
         </div>
       </div>
       {/* UserProfileDialog: label = user.detail.top ? 'top' : user.isVip ? 'vip' : '' (top-left ribbon). */}
-      {vipLabel && <div className="user-profile__label user-profile__label--vip" />}
+      {ribbon && <div aria-label={ribbon.toUpperCase()} className={`user-profile__label user-profile__label--${ribbon}`} />}
     </section>
 
     {popup === "claims" && createPortal(<div className="source-feature-layer">

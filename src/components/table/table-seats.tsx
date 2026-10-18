@@ -21,6 +21,7 @@ import { GIFT_SENT_EVENT, setSeatLocator } from "@/lib/interactive-hint-flags";
 import { OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
 import { onRoomGift, onRoomGesture, sendGesture, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat } from "@/lib/room-session";
 import { getSupabase, type Profile } from "@/lib/supabase";
+import { playerPhoto } from "@/lib/player-photo";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import ignoredPhoto from "@/assets/source-ignore-photo.svg";
 import { useBlockedUsers } from "@/lib/block-session";
@@ -373,7 +374,7 @@ function buildPlayers(assets: CilizAssets, profiles: Array<Profile | null>, fram
     return {
       id: p.id,
       name: p.name,
-      photoUrl: p.photo_url || DEFAULT_PHOTO,
+      photoUrl: playerPhoto(p.photo_url, p.telegram_id),
       frame: assets.frames[f] ? f : "",
       stone: assets.stones[st] ? st : "",
       male: p.male,

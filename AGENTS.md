@@ -65,3 +65,7 @@
 - Music/entry notices use chat_messages with typed payloads and server triggers; current rooms.music controls playback only, so reload, deduplication, deletion and 24-hour history expiry are shared with chat. Newcomer eligibility is claimed once under a locked profile row.
 - Popup focus trapping depends on visibility, not callback identity; keep close callbacks in a ref so profile refreshes never steal focus from a native birthday picker.
 - Every DB migration must exist in BOTH supabase/migrations/ (dated name) and drizzle/migrations/ (NNNN_name.sql); the VPS deploy only applies drizzle/migrations, so a supabase-only migration never reaches the live database.
+
+- Telegram notifications use the configured direct bot token only after per-call admin authorization; bounded keyset batches return actual Bot API successes and failures, while media uploads require the admin’s own Telegram chat.
+- Profile ribbons prefer authenticated current league promotion-band status over active VIP; original source lacks a server TOP definition, so do not claim the local rule is exact source parity.
+- Telegram avatars are imported only at initial registration; missing avatars retain the Telegram placeholder until a user saves a photo.

@@ -83,3 +83,6 @@ export function splitStatusEmoji(text: string): Array<{ text: string; emoji: boo
   if (last < text.length) out.push({ text: text.slice(last), emoji: false });
   return out;
 }
+
+/** Original label priority: current TOP takes precedence over an active VIP. */
+export function profileRibbon(top: boolean, vip: boolean): "top" | "vip" | null { return top ? "top" : vip ? "vip" : null; }
