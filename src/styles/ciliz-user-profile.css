@@ -1119,7 +1119,14 @@ a.user-profile__action { display: block; }
 .profile-layer .user-profile,
 .profile-layer .user-profile * { box-sizing: content-box; }
 .profile-layer .user-profile { max-height: inherit; }
-.profile-layer .user-profile__x_popup { position: relative; }
+/* Keep Telegram's absolute positioning: flex centering plus relative left/top
+   offsets centers twice and moves the popup offscreen with the full game CSS. */
+.profile-layer .user-profile__x_popup {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + env(safe-area-inset-top));
+  transform: translate(-50%, calc(-50% - (env(safe-area-inset-top) / 2)));
+}
 .profile-layer .user-profile__details { min-width: 0; flex-shrink: 1; }
 .profile-layer.portrait .user-profile__details { max-width: none; }
 .profile-layer .user-profile__scrollable { min-height: 0; }

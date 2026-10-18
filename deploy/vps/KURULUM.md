@@ -65,7 +65,8 @@ Script sırasıyla şunları yapar (10–15 dk):
    Ayarlar: site adresi `https://DOMAIN`, kayıt açık, e-posta onayı kapalı (kullanıcı adı girişi dahili adres kullanır), anonim giriş kapalı.
 4. Veritabanı hazır olunca: özel `avatars` alanını oluşturur, `supabase/migrations/20261015073400_cloud_bootstrap.sql`
    dosyasını uygular (tüm tablolar, oyun fonksiyonları, erişim kuralları, fiyat listeleri, canlı yayın tabloları) ve
-   `drizzle/migrations` dosyalarını "uygulandı" diye kaydeder.
+   yalnız bu dosyanın içerdiği migration'ları "uygulandı" diye kaydeder, sonra kalan
+   `drizzle/migrations` dosyalarını sırayla uygular.
 5. Oyunu VPS adresleriyle Node sunucusu olarak derler (`deploy/vps/build.sh`) ve `butl` systemd servisini başlatır (port 3000, yalnız localhost).
 6. Caddy'yi ayarlar: `https://DOMAIN/auth/v1, /rest/v1, /realtime/v1 (WebSocket), /storage/v1` → Supabase; geri kalan her şey → oyun.
 7. Güvenlik duvarında yalnız 22, 80, 443'ü açar ve servisleri test eder.
@@ -127,6 +128,8 @@ Geri yükleme: `docker compose exec -T db pg_restore -U supabase_admin -d postgr
 
 - VPS ve Lovable **ayrı veritabanlarıdır**: hesaplar, bakiyeler, mesajlar ve fotoğraflar arasında otomatik aktarılmaz. Fiyat listeleri ve oyun kuralları her ikisinde aynıdır.
 - Orijinal görseller, sesler ve müzik/video katalogları dış hizmetlerden yüklenir; VPS'in internete çıkışı olmalıdır.
+- Şutla/Koru için `0028_kickout.sql` uygulanmış olmalıdır. Telegram istemcisi kalp ücretini ve ücretsiz kullanım zamanını kendi sunucusundan alır; ZIP ve gönderilen yardım ekranları bu iki sayısal değeri içermez. Doğrulanmış değerler `kickout_config.paid_price` ve `free_cooldown_seconds` alanlarına girilmeden işlem açılmaz. 30 saniyelik şutlama, 15 dakikalık dönüş engeli ve VIP'nin yarı bekleme süresi zaten uygulanır.
+- Eski kurulumda yeni özellikler yoksa yalnız "uygulandı" listesini silmeyin: önce gerçek tablo/fonksiyonların varlığını kontrol edin. Önceki kurucu bootstrap'ta bulunmayan migration'ları da uygulandı diye işaretleyebiliyordu; yeni kurucu bunu yapmaz.
 - Lovable'da çalışmak için hiçbir şey değiştirmeyin: Lovable kendi `.env` ve Cloudflare derlemesini kullanır; `.env.production.local` ve `.output/` yalnız VPS'te oluşur ve git'e eklenmez.
 
 ## Canlı səsli/görüntülü otaqlar

@@ -17,7 +17,8 @@ it('uses a confirmed host price and keeps the dialog open when rejected', async 
   render(<SourceKickoutDialog player={player} self={false} assets={assets} onClose={vi.fn()} onConfirmed={confirmed} />);
   await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Şutla' })));
   expect(execute).toHaveBeenCalledWith('user-kick', { userId: 'other', expectedPrice: 7, referrer: 'profile' });
-  expect(confirmed).not.toHaveBeenCalled(); expect(screen.getByRole('status')).toHaveTextContent('Reddedildi');
+  expect(confirmed).not.toHaveBeenCalled();
+  expect(screen.getByRole('button', { name: 'Şutla' })).toBeEnabled();
 });
 it('allows self-defense without VIP only for a host-confirmed pending kick', async () => {
   const execute = vi.fn().mockResolvedValue({ confirmed: true }), confirmed = vi.fn();

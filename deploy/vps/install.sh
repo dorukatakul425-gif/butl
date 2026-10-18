@@ -130,15 +130,16 @@ dbq -c "create table if not exists public._vps_migrations(name text primary key,
 if [[ "$(dbq -tAc "select to_regclass('public.rooms') is null")" == "t" ]]; then
   dbq -c "insert into storage.buckets(id, name, public) values ('avatars','avatars',false) on conflict (id) do nothing;"
   dbq < "$APP_DIR/supabase/migrations/20261015073400_cloud_bootstrap.sql"
-  # Bootstrap already contains every drizzle migration: record them as applied.
-  for f in "$APP_DIR"/drizzle/migrations/*.sql; do
-    dbq -c "insert into public._vps_migrations(name) values ('$(basename "$f")') on conflict do nothing;"
-  done
+  # Record only the migrations embedded in this bootstrap snapshot.
+  while IFS= read -r n; do
+    dbq -c "insert into public._vps_migrations(name) values ('$n') on conflict do nothing;"
+  done < <(bash "$APP_DIR/deploy/vps/bootstrap-migrations.sh")
+  dbq -c "insert into public._vps_migrations(name) values ('0000_cloud_bootstrap.sql') on conflict do nothing;"
   echo "Şema kuruldu."
 else
   echo "Şema zaten var, yeni migration'lar uygulanıyor."
-  bash "$APP_DIR/deploy/vps/migrate.sh"
 fi
+bash "$APP_DIR/deploy/vps/migrate.sh"
 docker compose restart rest realtime >/dev/null
 
 # ---------- Build the game ----------

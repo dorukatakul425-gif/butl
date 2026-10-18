@@ -34,6 +34,7 @@
 - Use authenticated subscriptions for connection, heart awards and harem inbox; deduplicate events, acknowledge confirmed notices, and never infer rewards or prices.
 - Feature dialogs require verified session state for mutations; kick/save uses atomic authenticated database RPCs, source-derived deadlines and a membership trigger for all room-entry paths. Kick pricing/free cooldown remain unconfigured until verified host values are supplied, never guessed. Participation metadata grants no privilege.
 - Scope profile layout resets to the profile layer, restoring original content-box sizing and non-repeating fixed-size SVG icons without changing other source dialogs.
+- Keep profile popup positioning absolute inside its fixed layer, using the source safe-area translation; relative offsets combined with flex centering shift the popup offscreen.
 - Leagues are scored only by database triggers on trusted kiss/gift events and finalized lazily inside get_league; tunable numbers live in league_config/league_levels so clients never compute scores, moves or rewards.
 - Composite manifest-sized original center artwork below the bottle in Pixi so layout and input remain shared.
 - Roulette uses original wheel/frame/center and host-fed prizes/winners. Screenshot labels are inert, not payouts; the 2,000-spin preview never changes wallets. Only authenticated host awards persist.

@@ -15,4 +15,8 @@
 - [x] Implement authenticated source-derived kick/save behavior and rule tests (11 database tests; 23 total passing).
 - [ ] Apply migration 0028 on hosting database and set verified kick price/free cooldown (archive contains no values; host access unavailable).
 - [ ] Verify live two-player kick/save after hosting migration/configuration (host session unavailable).
-- [ ] Commit requested popup and kick/save changes directly to main.
+- [x] Commit requested popup and kick/save changes directly to main (6edc78b).
+- [x] Fix mobile profile popup right-shift; full production CSS centered at 320/390/430/844/1280px before and after stats expansion.
+- [x] Recheck Telegram archive and IMG_4146/4147: source timing/VIP rules confirmed; numeric price/base cooldown absent.
+- [x] Correct fresh VPS migration tracking to apply post-bootstrap features including kick/save; 18 focused tests passed.
+- [ ] Apply verified heart price/base cooldown and verify two-player live operation (blocked by missing numeric Telegram settings and VPS host access/address).
