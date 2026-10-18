@@ -120,6 +120,19 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     void spinBottle();
   };
   const participating = round.spinner===VIEWER || round.target===VIEWER;
+  // Original hints: observers see "Öpüşecekler mi?" (5s after the pair is chosen),
+  // then "Geri öpecek mi?" once the first player has decided.
+  const [willTheyKiss, setWillTheyKiss] = useState(false);
+  const decidedCount = Object.keys(round.decisions).length;
+  useEffect(() => {
+    setWillTheyKiss(false);
+    if (round.phase !== "choose" || participating) return;
+    const id = window.setTimeout(() => setWillTheyKiss(true), 5000);
+    return () => window.clearTimeout(id);
+  }, [round.phase, roundNo, participating]);
+  const kissHint = !participating && canPlay && !stale && round.phase === "choose"
+    ? (decidedCount >= 1 ? "Geri öpecek mi?" : willTheyKiss ? "Öpüşecekler mi?" : null)
+    : null;
   const [left,right] = round.spinner>=0 && round.target>=0 ? leftRight(round.spinner,round.target) : [-1,-1];
   const offer = offers[round.spinner] ?? offers[0];
   const decide = (decision:Decision) => {
@@ -128,6 +141,7 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
   };
   return <div ref={overlay} className="bottle-play-overlay" aria-label="Şişe oyunu" data-phase={round.phase} data-spinner={round.spinner} data-target={round.target}>
     {waitKey && <span className="bottle-turn-status bottle-turn-status--waiting" role="status">{translate(assets, waitKey)}</span>}
+    {kissHint && <span className="bottle-kiss-hint" role="status">{kissHint}</span>}
     {canPlay && !stale && round.phase==="offer" && round.spinner<0 && <span className="bottle-turn-status bottle-turn-status--waiting" role="status">{translate(assets,"game:nextturn")}</span>}
     {canPlay && !stale && round.phase==="offer" && round.spinner===VIEWER && <>
       <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={!ready} onClick={spin} />
