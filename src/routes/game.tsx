@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { joinRoom, leaveRoom, leaveRoomNow, useRoom } from "@/lib/room-session";
 import { setViewerProfile } from "@/lib/viewer";
+import { setupTelegramViewport } from "@/lib/telegram-viewport";
 import woodTable from "@/assets/original-wood-table.png";
 import { OriginalTableHeader } from "@/components/original-table-header";
 import { OriginalChatPanel } from "@/components/original-chat-panel";
@@ -36,6 +37,9 @@ function Index() {
   const navigate = useNavigate();
   const room = useRoom();
   const [joined, setJoined] = useState(false);
+  // Telegram Mini App only: keep the table height stable while the chat
+  // keyboard opens (original client's expand + keyboard scroll behavior).
+  useEffect(() => setupTelegramViewport(), []);
   useEffect(() => {
     if (!auth.ready) return;
     if (!auth.session || !auth.profile) { void navigate({ to: "/auth" }); return; }

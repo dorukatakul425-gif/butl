@@ -213,6 +213,11 @@
   flex-direction: column;
 }
 
+/* Telegram Mini App only: freeze the game at the pre-keyboard height so the
+   table never gets squashed when the chat keyboard opens (site untouched). */
+html.tg-webapp .original-table-page { min-height: var(--tg-app-height, 100svh); }
+html.tg-webapp .original-game { height: var(--tg-app-height, 100svh); }
+
 .original-table {
   width: 100%;
   flex: 1 1 auto;
