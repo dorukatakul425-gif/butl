@@ -1,0 +1,41 @@
+.animated-gift-theme {
+  --gift-teaser-surface: oklch(0.97 0.035 145);
+  --gift-teaser-ink: oklch(0.36 0.10 145);
+  --gift-teaser-accent: oklch(0.69 0.17 140);
+  --gift-teaser-border: oklch(0.86 0.07 145);
+  --gift-notice-surface: oklch(1 0 0);
+  --gift-notice-ink: oklch(0.28 0.015 145);
+  --gift-notice-overlay: oklch(0 0 0 / 0.65);
+  --gift-notice-shadow: 0 12px 40px oklch(0 0 0 / 0.24);
+}
+.send-gift__x_header--teaser { display: flex; align-items: center; gap: 8px; }
+.send-gift__x_header--teaser .send-gift__x_popup__title { flex: 1; min-width: 0; }
+.send-gift__recipient { min-width: 0; overflow: hidden; }
+.send-gift__recipient .send-gift__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.animated-gift-trigger {
+  display: flex; flex: 0 0 auto; flex-direction: column; align-items: center;
+  gap: 2px; height: auto; min-height: 44px; padding: 5px 9px; border-radius: 6px;
+  border: 1px solid var(--gift-teaser-border); background: var(--gift-teaser-surface);
+  color: var(--gift-teaser-ink); font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px; line-height: 14px; letter-spacing: 0;
+}
+.animated-gift-trigger:hover { background: var(--gift-teaser-surface); color: var(--gift-teaser-ink); border-color: var(--gift-teaser-accent); }
+.animated-gift-label { display: flex; align-items: center; gap: 4px; font-weight: 700; }
+.animated-gift-label svg { width: 13px; height: 13px; }
+.animated-gift-timer { font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.animated-gift-overlay { position: fixed; inset: 0; z-index: 1100; background: var(--gift-notice-overlay); }
+.animated-gift-notice {
+  position: fixed; z-index: 1101; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(320px, calc(100vw - 32px)); padding: 24px; border-radius: 8px;
+  background: var(--gift-notice-surface); color: var(--gift-notice-ink);
+  box-shadow: var(--gift-notice-shadow); text-align: center; font-family: Arial, Helvetica, sans-serif;
+}
+.animated-gift-notice-icon { width: 36px; height: 36px; margin: 0 auto 12px; color: var(--gift-teaser-accent); }
+.animated-gift-notice-title { margin: 0 0 12px; font-size: 17px; font-weight: 700; letter-spacing: 0; }
+.animated-gift-notice-description { margin: 0 0 20px; font-size: 14px; line-height: 21px; }
+.animated-gift-notice-close { background: var(--gift-teaser-accent); color: var(--gift-notice-ink); width: 100%; }
+.animated-gift-notice-close:hover { background: var(--gift-teaser-accent); }
+@media (max-width: 360px) {
+  .send-gift__x_header--teaser { gap: 4px; }
+  .animated-gift-trigger { padding: 5px; }
+}

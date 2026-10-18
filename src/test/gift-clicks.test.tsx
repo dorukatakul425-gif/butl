@@ -61,18 +61,19 @@ describe("gift dialog stays open", () => {
   it("does not close when tapping outside the drawer (e.g. another player)", () => {
     const onClose = vi.fn();
     render(<SendGiftDialog open assets={assets} items={[item]} receiverName="Oyuncu 2" onSend={() => {}} onPreload={() => {}} onClose={onClose} />);
-    act(() => { vi.runAllTimers(); });
+    act(() => { vi.advanceTimersByTime(1); });
     fireEvent.click(document.body);
-    fireEvent.click(screen.getByRole("dialog").parentElement!);
+    const parent = screen.getByRole("dialog").parentElement;
+    if (parent) fireEvent.click(parent);
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.getByRole("dialog")).toBeTruthy();
   });
   it("shows the new receiver name when retargeted", () => {
     const props = { open: true, assets, items: [item], onSend: () => {}, onPreload: () => {}, onClose: () => {} };
     const { rerender } = render(<SendGiftDialog {...props} receiverName="Oyuncu 2" />);
-    act(() => { vi.runAllTimers(); });
+    act(() => { vi.advanceTimersByTime(1); });
     rerender(<SendGiftDialog {...props} receiverName="Oyuncu 7" />);
-    act(() => { vi.runAllTimers(); });
+    act(() => { vi.advanceTimersByTime(1); });
     expect(screen.getByRole("dialog").textContent).toContain("Oyuncu 7");
   });
 });

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { Button } from "@/components/ui/button";
 import type { GiftStoreItem } from "@/lib/gifts";
+import { AnimatedGiftTeaser } from "./animated-gift-teaser";
 
 // Markup and class names ported from SendGiftDialog.tsx (giftType 'gift', html5 layout) and Dialog.Header.
 const bem = (block: string) => (element?: string, mods: Array<string | false | undefined> = []) => {
@@ -162,20 +163,21 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
             <div className="popup__close-icon" />
           </div>
         </div>
-        <div className={`popup__header ${cls("x_header")}`}>
+        <div className={`popup__header ${cls("x_header")} send-gift__x_header--teaser`}>
           <div className={`popup__title popup__title--left ${cls("x_popup__title")}`}>
             {selective && multiselect ? (
               <div className={cls("multi-title")}>{multiselect.title}</div>
             ) : (
               <>
               {onProfile && <div className={`${cls("btn", ["profile"])} ${showProfile ? "send-gift__show-profile" : ""}`} role="button" aria-label="Profil" onClick={(e) => { e.stopPropagation(); onProfile(); }} />}
-              <div>
+              <div className="send-gift__recipient">
                 <div className={cls("gift-title")}>{title.charAt(0).toLocaleUpperCase("tr") + title.slice(1)}</div>
                 <div className={`${cls("name")} ${showProfile ? "send-gift__show-name" : ""}`}>{receiverName}</div>
               </div>
               </>
             )}
           </div>
+          <AnimatedGiftTeaser />
           {multiselect && (
             <div className={cls("multigift-btn-list")}>
               {selective ? (
