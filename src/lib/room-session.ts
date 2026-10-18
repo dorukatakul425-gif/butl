@@ -71,6 +71,21 @@ const set = (next: Partial<RoomState>) => {
 
 const chatListeners = new Set<(row: ChatRow) => void>();
 const giftListeners = new Set<(row: GiftRow) => void>();
+/** Server chat history: messages of this table from the last 24 hours, oldest first. */
+export const CHAT_HISTORY_HOURS = 24;
+export async function loadRoomChatHistory(roomId: number, now = Date.now()) {
+  const sb = getSupabase();
+  if (!sb) return [];
+  const since = new Date(now - CHAT_HISTORY_HOURS * 3600_000).toISOString();
+  const { data } = await sb.from("chat_messages").select("id, room_id, user_id, receiver_id, text, created_at")
+    .eq("room_id", roomId).gte("created_at", since).order("id", { ascending: false }).limit(100);
+  const rows = ((data ?? []) as unknown as ChatRow[]).reverse();
+  const ids = [...new Set(rows.flatMap(r => [r.user_id, r.receiver_id].filter((x): x is string => !!x)))];
+  if (!ids.length) return [];
+  const { data: profs } = await sb.from("profiles").select("*").in("id", ids);
+  const byId = new Map(((profs ?? []) as unknown as Profile[]).map(p => [p.id, p]));
+  return rows.flatMap(row => { const sender = byId.get(row.user_id); if (!sender) return []; const receiver = row.receiver_id ? byId.get(row.receiver_id) : undefined; return [{ row, sender, ...(receiver ? { receiver } : {}) }]; });
+}
 export const onRoomChat = (fn: (row: ChatRow) => void) => {
   chatListeners.add(fn);
   return () => { chatListeners.delete(fn); };

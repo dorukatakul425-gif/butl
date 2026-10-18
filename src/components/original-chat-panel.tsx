@@ -15,7 +15,7 @@ import { pushActionLine, pushTextLine, registerMusicServices, sendMusic, useMusi
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
-import { displaySeatOf, onRoomChat, profileBySeat, sendChat } from "@/lib/room-session";
+import { displaySeatOf, loadRoomChatHistory, onRoomChat, profileBySeat, sendChat, useRoom } from "@/lib/room-session";
 import type { Profile } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import { translate } from "@/lib/ciliz-assets";
@@ -149,16 +149,39 @@ export function OriginalChatPanel() {
   }), []);
   useEffect(() => { registerMusicServices([services.audio, services.video]); }, [services]);
 
+  // ChatView: follow the end while at the bottom; otherwise show the "Yeni mesajlar" pill.
+  const atBottom = useRef(true);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    if (atBottom.current) { el.scrollTop = el.scrollHeight; setShowScrollBtn(false); }
+    else setShowScrollBtn(true);
   }, [session.lines.length]);
+  const onChatScroll = () => {
+    const el = scrollRef.current; if (!el) return;
+    atBottom.current = Math.ceil(el.scrollTop) >= el.scrollHeight - el.clientHeight - 2;
+    if (atBottom.current) setShowScrollBtn(false);
+  };
+  const followEnd = () => { const el = scrollRef.current; if (el) { el.scrollTop = el.scrollHeight; atBottom.current = true; } setShowScrollBtn(false); };
+  // _recv_game_chat_history: on joining a table load the stored messages (last 24 hours).
+  const roomId = useRoom().roomId;
+  useEffect(() => {
+    if (!roomId) return;
+    let alive = true;
+    void loadRoomChatHistory(roomId).then(rows => {
+      if (!alive) return;
+      for (const r of rows) pushTextLine({ ...profileUser(r.sender), ...(r.sender.id === VIEWER.id ? { isViewer: true } : {}) }, r.row.text, r.receiver ? { ...profileUser(r.receiver), ...(r.receiver.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, r.row.id);
+    });
+    return () => { alive = false; };
+  }, [roomId]);
 
   const listService = listType ? services[listType] : null;
 
   return (
     <section ref={sectionRef} className="original-chat chat" aria-label="Sohbet">
-      <div ref={scrollRef} className="original-chat-scroll chat__scroll">
+      {showScrollBtn && <div className="chat__scroll-btn" role="button" style={{ bottom: 50 }} onClick={followEnd}><div className="chat__scroll-btn-icon" /><div>{assets ? translate(assets, "chat:scroll:text") : "Yeni mesajlar"}</div></div>}
+      <div ref={scrollRef} onScroll={onChatScroll} className="original-chat-scroll chat__scroll">
         <div className={`chat__body${small ? " chat__small" : ""}`}>
           {session.lines.filter(line => line.kind !== "text" || !blocked.has(line.sender.id)).map((line) => line.kind === "text" ? (
             <div key={line.key} className={`chat__message chat__noselect${chatMessageIsBold(line.sender, line.receiver) ? " chat__message--bold" : ""}`}>

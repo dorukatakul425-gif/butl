@@ -6,13 +6,13 @@ import { getSupabase } from "@/lib/supabase";
  * come from the server's vip_until / premium_until and switch off by themselves
  * the moment the paid period ends (the server enforces the same expiry).
  */
-export interface ViewerProgress { kisses: number; vip: boolean; vipUntil: number | null; premium: boolean; premiumUntil: number | null }
+export interface ViewerProgress { kisses: number; vip: boolean; vipUntil: number | null; vipPlan: string | null; premium: boolean; premiumUntil: number | null }
 /** Hearts balance: unknown until the game backend exists, so paid items need hearts (0). */
 export const VIEWER_GOLD = 0;
 export const VIEWER_STATUS_CHANGED = "viewer:status-changed";
 const KEY = "bottle:viewer-progress";
 const listeners = new Set<() => void>();
-let state: ViewerProgress = { kisses: 0, vip: false, vipUntil: null, premium: false, premiumUntil: null };
+let state: ViewerProgress = { kisses: 0, vip: false, vipUntil: null, vipPlan: null, premium: false, premiumUntil: null };
 let loaded = false;
 let watching = false;
 let expiryTimer: number | undefined;
@@ -42,8 +42,11 @@ export async function refreshViewerStatus() {
   if (!sb) return;
   const { data: u } = await sb.auth.getUser();
   if (!u.user) return applyTimes(null, null);
-  const { data } = await sb.from("profiles").select("vip_until, premium_until").eq("id", u.user.id).maybeSingle();
-  const p = data as { vip_until: string | null; premium_until: string | null } | null;
+  let { data, error } = await sb.from("profiles").select("vip_until, vip_plan, premium_until").eq("id", u.user.id).maybeSingle();
+  // Server not yet updated with vip_plan: still read the VIP time.
+  if (error) ({ data } = await sb.from("profiles").select("vip_until, premium_until").eq("id", u.user.id).maybeSingle());
+  const p = data as { vip_until: string | null; vip_plan?: string | null; premium_until: string | null } | null;
+  set({ vipPlan: p?.vip_plan ?? null });
   applyTimes(p?.vip_until ? Date.parse(p.vip_until) : null, p?.premium_until ? Date.parse(p.premium_until) : null);
 }
 
@@ -53,6 +56,9 @@ function watch() {
   void refreshViewerStatus();
   window.addEventListener(VIEWER_STATUS_CHANGED, () => void refreshViewerStatus());
   window.setInterval(() => void refreshViewerStatus(), 60_000);
+  // VIP granted elsewhere (other device, admin) unlocks VIP gestures/sounds without reload.
+  window.addEventListener("focus", () => void refreshViewerStatus());
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") void refreshViewerStatus(); });
 }
 
 export function getViewerProgress(): ViewerProgress { load(); return state; }
@@ -63,7 +69,7 @@ export function addViewerKiss(count = 1) {
   try { window.localStorage.setItem(KEY, JSON.stringify({ kisses: state.kisses })); } catch { /* storage full */ }
 }
 
-const SERVER: ViewerProgress = { kisses: 0, vip: false, vipUntil: null, premium: false, premiumUntil: null };
+const SERVER: ViewerProgress = { kisses: 0, vip: false, vipUntil: null, vipPlan: null, premium: false, premiumUntil: null };
 export function useViewerProgress(): ViewerProgress {
   return useSyncExternalStore(cb => { watch(); listeners.add(cb); return () => listeners.delete(cb); }, getViewerProgress, () => SERVER);
 }

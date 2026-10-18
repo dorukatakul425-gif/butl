@@ -1,4 +1,5 @@
-import { VIEWER_STATUS_CHANGED } from "@/lib/viewer-progress";
+import { VIEWER_STATUS_CHANGED, useViewerProgress } from "@/lib/viewer-progress";
+import { vipCountdown } from "@/lib/vip-countdown";
 import { DatPrice } from "@/components/bank/dat-price";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -88,6 +89,9 @@ export function VipDialog({ assets, onClose, onBought }: { assets: CilizAssets; 
   const bank = useRef<HTMLDivElement>(null);
   const [buttonWidth, setButtonWidth] = useState(0);
   const [bought, setBought] = useState(false);
+  const viewer = useViewerProgress();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { if (!viewer.vip) return; const id = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(id); }, [viewer.vip]);
   const busy = useRef(false);
   // VipPresenter purchase -> server extends vip_until -> showVipBought().
   const buy = async (id: string) => {
@@ -141,7 +145,7 @@ export function VipDialog({ assets, onClose, onBought }: { assets: CilizAssets; 
                   {o.isPopular && <div className="vip__popular">{t("bank:popular")}</div>}
                 </div>
                 <div role="button" className="button button--confirm vip__x_button" style={buttonWidth > 0 ? { width: buttonWidth } : undefined}
-                  onClick={() => void buy(o.id)}><DatPrice text={`${o.price}/${o.term}`} /></div>
+                  onClick={() => void buy(o.id)}>{viewer.vip && viewer.vipUntil && (viewer.vipPlan ?? "vip7") === o.id && viewer.vipUntil > now ? <span className="vip__countdown">{vipCountdown(viewer.vipUntil - now)}</span> : <DatPrice text={`${o.price}/${o.term}`} />}</div>
               </div>)}
             </div>
           </div>
