@@ -5,7 +5,7 @@ import { SourceSeasonDialog } from '@/components/table/source-season-dialogs';
 import { SourceSettingsChild } from '@/components/settings/source-settings-children';
 import { attachSourceFeatureSession, executeSourceFeature, type SourceFeatureSnapshot } from '@/lib/source-feature-session';
 import type { CilizAssets } from '@/lib/ciliz-assets';
-const assets: CilizAssets = { gifts: {}, giftStore: [], spines: {}, sfxUrl: '/sfx/${name}.mp3', frames: {}, stones: {}, decor: [], bundles: [], images: { cup: { size: [0, 0, 60, 60] } }, dialogBundles: [{ dpr: 3, url: '/images/${name}' }], leagues: [{ image: 'cup', gold: 4 }], translation: { 'dlg:change_table:title': 'Masayı değiştir', 'dlg:change_table:btn_random2': 'Rastgele tablo!', 'roulette:main:panel1:header': 'Çarkıfelek', 'roulette:main:btn1': 'Çevir', 'roulette:main:btn2': 'Atla', 'roulette:help:header': 'Oyunun Kuralları', 'roulette:help:btn': 'Tamam', 'dlg:bottle_pass:title': 'Dönemsel geçiş kartı', 'dlg:profile_info:title': 'Profil ayarları', 'dlg:profile_info:save': 'Kaydet', 'dlg:league:idle:title': 'Ligler', 'dlg:league:ladder:title': 'Ligler listesi' } };
+const assets: CilizAssets = { gifts: {}, giftStore: [], spines: {}, sfxUrl: '/sfx/${name}.mp3', frames: {}, stones: {}, decor: [], bundles: [], images: { cup: { size: [0, 0, 60, 60] } }, dialogBundles: [{ dpr: 3, url: '/images/${name}' }], leagues: [{ image: 'cup', gold: 4 }], translation: { 'dlg:change_table:title': 'Masayı değiştir', 'dlg:change_table:btn_random2': 'Rastgele tablo!', 'roulette:main:panel1:header': 'Çarkıfelek', 'roulette:main:btn1': 'Çevir', 'roulette:main:btn2': 'Atla', 'roulette:help:header': 'Oyunun Kuralları', 'roulette:help:btn': 'Tamam', 'dlg:bottle_pass:title': 'Dönemsel geçiş kartı', 'dlg:profile_info:title': 'Profil ayarları', 'dlg:profile_info:save': 'Kaydet', 'dlg:league:idle:title': 'Ligler', 'dlg:league:ladder:title': 'Ligler listesi', 'kickout:info:header': 'Şutlama', 'kickout:info:desc': '%0 sizi #%1 masasından şutladı %2d(erkek|kadın)', 'kickout:info:return': 'Geri dönüş:', 'kickout:help:btn_ok': 'Tamam' } };
 vi.mock('@/components/decor/decor-selection', () => ({ useCilizAssets: () => assets }));
 vi.mock('@/lib/sfx', () => ({ playSfx: vi.fn() }));
 afterEach(() => { cleanup(); attachSourceFeatureSession(null); vi.useRealTimers(); });
@@ -29,6 +29,17 @@ describe('original feature windows', () => {
  it('honors server kickout timers without joining blocked tables', async () => {
   const execute = host({ viewerId: 'me', tables: { friends: [], history: [{ id: '12', bottle: 'standart', men: 6, women: 6, blockedUntil: Date.now() + 60000 }] } });
   render(<SourceChangeTable onClose={vi.fn()} />); fireEvent.click(screen.getByRole('button', { name: /#12/ })); expect(execute).not.toHaveBeenCalled();
+ });
+ it('opens the original kickout info dialog when tapping a counting-down table', () => {
+  const execute = host({ viewerId: 'me', tables: { friends: [], history: [{ id: '12', bottle: 'standart', men: 6, women: 6, blockedUntil: Date.now() + 60000, kicker: { id: 'k1', name: 'Ayşe', male: false } }] } });
+  render(<SourceChangeTable onClose={vi.fn()} />);
+  fireEvent.click(screen.getByRole('button', { name: /#12/ }));
+  expect(execute).not.toHaveBeenCalled();
+  expect(screen.getByRole('dialog', { name: 'Şutlama' })).toBeVisible();
+  expect(screen.getByText('Ayşe sizi #12 masasından şutladı kadın')).toBeVisible();
+  expect(screen.getByText('Geri dönüş:')).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: 'Tamam' }));
+  expect(screen.queryByRole('dialog', { name: 'Şutlama' })).toBeNull();
  });
  it('help Escape preserves the underlying wheel and never spins locally', () => {
   const close = vi.fn(); render(<SourceSeasonDialog feature="roulette" onClose={close} />);

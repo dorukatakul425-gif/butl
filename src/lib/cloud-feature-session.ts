@@ -39,8 +39,10 @@ async function refreshTables() {
   const read = ++tableRead;
   const { data, error } = await sb.rpc('list_tables');
   if (error || read !== tableRead) return;
-  const history: SourceTableEntry[] = ((data ?? []) as Array<{ room_id: number; men: number; women: number; bottle: string; is_current: boolean }>).map((r) => ({
+  const history: SourceTableEntry[] = ((data ?? []) as Array<{ room_id: number; men: number; women: number; bottle: string; is_current: boolean; blocked_until: string | null; kicker_id: string | null; kicker_name: string | null; kicker_photo: string | null; kicker_male: boolean | null }>).map((r) => ({
     id: String(r.room_id), bottle: r.bottle || 'standart', men: r.men, women: r.women, ...(r.is_current ? { current: true } : {}),
+    ...(r.blocked_until ? { blockedUntil: Date.parse(r.blocked_until) } : {}),
+    ...(r.kicker_id ? { kicker: { id: r.kicker_id, name: r.kicker_name ?? '', ...(r.kicker_photo ? { photo: r.kicker_photo } : {}), ...(r.kicker_male !== null ? { male: r.kicker_male } : {}) } } : {}),
   }));
   snapshot = { ...snapshot, tables: { friends: [], history, canViewById: true } };
   emit();
