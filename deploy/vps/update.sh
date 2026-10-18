@@ -9,6 +9,9 @@ bash deploy/vps/migrate.sh
 docker compose -f /opt/butl-supabase/docker-compose.yml restart rest >/dev/null
 bash deploy/vps/build.sh
 systemctl restart butl
+# Oyun servisi de butl.env'i okusun (TELEGRAM_BOT_TOKEN vb. sunucu fonksiyonlarına ulaşsın).
+mkdir -p /etc/systemd/system/butl.service.d
+printf '[Service]\nEnvironmentFile=/etc/butl/butl.env\n' > /etc/systemd/system/butl.service.d/telegram.conf
 # Telegram botu: servis dosyasını tazele ve çalıştır (token /etc/butl/butl.env içinde).
 install -m 644 deploy/vps/butl-bot.service /etc/systemd/system/butl-bot.service
 systemctl daemon-reload
