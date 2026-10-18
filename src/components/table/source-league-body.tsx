@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { dialogImage, translate, type CilizAssets } from '@/lib/ciliz-assets';
 import { splitLeague } from '@/lib/league';
@@ -68,13 +68,27 @@ export function SourceLeagueBody({ assets, league, viewerId, onLadder, onPrize, 
     </div>
     <div className="league__section" ref={stayRef}><div className="league__list">{parts.stay.length > 0 && <><div className="league__label league__label--stay">{t('dlg:league:desc:stay')}</div>{parts.stay.map(user)}<div className="league__label league__label--stay">{t('dlg:league:desc:stay')}</div></>}</div></div>
     <div className="league__section league__section--down"><div className="league__list">{parts.down.length > 0 && <><div className="league__label league__label--move">{t('dlg:league:desc:down')}</div>{parts.down.map(user)}</>}</div></div>
-    {finished && <div className="popup__buttons">
-      <div className="source-feature-message">{t('dlg:league:desc:prize_finish', String(league.finalPos ?? '—'))}</div>
-      <div className="source-feature-rewards">
-        {(league.rewardGifts ?? []).map(id => <Img key={id} assets={assets} name={assets.gifts[id]?.storeImage ?? ''} size={60} />)}
-        {league.rewardGold ? <span className="source-feature-reward"><span aria-hidden className="roulette__heart" />{league.rewardGold}</span> : null}
-      </div>
-      <Button variant="ghost" className="button button--confirm" onClick={onClaim}>{t('dlg:league:manual:btn')}</Button>
-    </div>}
+    {finished && <FinishedRewards assets={assets} league={league} onClaim={onClaim} />}
+  </div>;
+}
+
+/** Original RewardDialog: closed chest first (btn_open), then the opened prize view (btn_claim). */
+function FinishedRewards({ assets, league, onClaim }: { assets: CilizAssets; league: League; onClaim: () => void }) {
+  const [opened, setOpened] = useState(false);
+  const t = (key: string, ...args: string[]) => translate(assets, key, ...args);
+  const pos = league.finalPos ?? 0;
+  const chest = pos >= 1 && pos <= 3 ? String(pos) : 'regular';
+  if (!opened) return <div className="popup__buttons">
+    <div className="source-feature-message">{t('dlg:league_reward:desc')}</div>
+    <div className={`league__present league__present--${chest} league__present--chest`} aria-hidden><div className={`league__present-icon league__present-icon--${chest}`} /></div>
+    <Button variant="ghost" className="button button--confirm" onClick={() => setOpened(true)}>{t('dlg:league_reward:btn_open')}</Button>
+  </div>;
+  return <div className="popup__buttons">
+    <div className="source-feature-message">{t('dlg:league:desc:prize_finish', String(league.finalPos ?? '—'))}</div>
+    <div className="source-feature-rewards">
+      {(league.rewardGifts ?? []).map(id => <Img key={id} assets={assets} name={assets.gifts[id]?.storeImage ?? ''} size={60} />)}
+      {league.rewardGold ? <span className="source-feature-reward"><span aria-hidden className="roulette__heart" />{league.rewardGold}</span> : null}
+    </div>
+    <Button variant="ghost" className="button button--confirm" onClick={onClaim}>{t('dlg:league_reward:btn_claim')}</Button>
   </div>;
 }
