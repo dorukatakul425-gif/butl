@@ -34,6 +34,7 @@ export interface Profile {
   name: string;
   male: boolean;
   age: number | null;
+  birthday?: string | null;
   /** Telegram-style first-entry gender/age setup finished (complete_profile_setup RPC). */
   profile_setup_done?: boolean;
   city: string | null;

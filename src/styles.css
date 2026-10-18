@@ -292,6 +292,10 @@
 }
 
 .original-header-middle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 240px);
   display: flex;
   justify-content: space-evenly;
   align-items: center;
@@ -403,6 +407,7 @@
 
 @media (max-width: 500px), (max-height: 500px) {
   .original-table-header { height: 48px; padding: 8px 10px 10px; }
+  .original-header-middle { width: calc(100% - 160px); }
   .original-header-button { width: 28px; height: 28px; }
   .original-button-background { width: 35px; height: 35px; }
   .original-button-icon { width: 18px; height: 18px; }
@@ -450,7 +455,7 @@ input, textarea, [contenteditable="true"] {
 }
 
 /* TableView lblTable/lblTableId: Label (Arial bold white), 14px (9px small), stacked left of change-table, 6px gap. */
-.original-header-table { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 6px; flex-shrink: 0; font-family: Arial, Helvetica, sans-serif; font-weight: bold; color: var(--game-wallet-text); line-height: 1.15; text-align: center; }
+.original-header-table { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-left: auto; margin-right: 6px; flex-shrink: 0; font-family: Arial, Helvetica, sans-serif; font-weight: bold; color: var(--game-wallet-text); line-height: 1.15; text-align: center; }
 .original-header-table-label, .original-header-table-id { font-size: 14px; }
 @media (max-width: 500px), (max-height: 500px) {
   .original-header-table-label, .original-header-table-id { font-size: 9px; }

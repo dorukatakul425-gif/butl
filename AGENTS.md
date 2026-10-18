@@ -56,3 +56,4 @@
 
 - Table and own-profile settings share ProfileInfoDialog and the authenticated profile-edit adapter; one atomic locked-row RPC validates prior state and debits information changes, while photo uploads remain separate to preserve source charging semantics.
 - League competition has no visible game entry points (table header, settings, profile cup); retain historical league data/services without exposing them or deleting earned records.
+- Profile table actions derive eligibility from current room membership on every render; reject absent recipients before composing/sending, so departures cannot turn private messages into public ones. Birthday-derived zodiac indices are isolated in the browser-safe Telegram profile helper to match the source icon mapping.

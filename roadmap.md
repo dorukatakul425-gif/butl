@@ -25,3 +25,9 @@
 - [x] Implement source-verified first free / subsequent 20-heart information changes and free photo-only edits; 41 focused tests passed; phone/desktop dialog controls checked.
 - [ ] Apply migration 0029 on VPS and verify signed-in save/photo/wallet on repository host (blocked by unavailable host access/session).
 - [x] Deliver settings changes directly to main.
+- [x] Fix active-VIP bottle eligibility without changing purchase validation.
+- [x] Match Telegram avatar proportions, off-table profile actions/notices, name badges and zodiac.
+- [x] Show message report icon only on selection; remove season pass and center remaining header icons.
+- [x] Run all 231 tests; verify off-table gift/message/kick notices and centered popup in isolated real-component browser checks at 393×596 and 1280×1800.
+- [ ] Deliver changes to butl.
+- [ ] Verify these changes with the user's VIP account on live VPS (blocked by unavailable authorized host access/session).

@@ -1,4 +1,6 @@
 import { useViewerProgress } from "@/lib/viewer-progress";
+import { useRoom } from "@/lib/room-session";
+import { profileIsAtTable } from "@/lib/telegram-profile";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { loadProfileBio } from "@/lib/profile-social";
@@ -8,7 +10,7 @@ import { SourceKickoutDialog } from './source-kickout-dialog';
 import { Button } from '@/components/ui/button';
 import type React from "react";
 import { createPortal } from "react-dom";
-import { translate, type CilizAssets } from "@/lib/ciliz-assets";
+import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
 import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceProfileSettings } from "@/components/profile/source-own-profile";
@@ -75,6 +77,9 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   const [portrait, setPortrait] = useState(true);
   const [report, setReport] = useState("");
   const feature = useSourceFeatureSession();
+  const room = useRoom();
+  const atTable = profileIsAtTable(player.id, room.players);
+  const stone = player.stone && assets.stones[player.stone] ? dialogImage(assets, assets.stones[player.stone].image, 15, 15) : null;
   const blockedUsers = useBlockedUsers();
   const blocked = Boolean(player.id && blockedUsers.has(player.id));
   const [blocking, setBlocking] = useState(false);
@@ -170,9 +175,18 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
 
   const onSendMessage = () => {
     if (self) { showSourceToast(t("warning:self_chat:desc")); return; }
+    if (!atTable) { showSourceToast(t("warning:offline_chat:desc")); return; }
     if (!player.id) { noServer(); return; }
     window.dispatchEvent(new CustomEvent("game-reply-to", { detail: { id: player.id, name: player.name, photoUrl: player.photoUrl, male: player.male, private: true } }));
     onClose();
+  };
+  const onSendGift = () => {
+    if (!atTable) { showSourceToast(t("warning:offline_gift:desc")); return; }
+    onGift();
+  };
+  const onKickout = () => {
+    if (!atTable) { showSourceToast(t("dlg:profile:toast1")); return; }
+    setPopup("kickout");
   };
   const onHarem = () => {
     if (self && harem.noOwner) { showSourceToast(t("dlg:profile:harem:tooltip")); return; }
@@ -213,7 +227,11 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
           </Div>
           <div className="user-profile__shadow" />
           <div className="user-profile__title">
-            <div className="user-profile__name">{player.name}{player.age ? `, ${player.age}` : ""}</div>
+            {stone ? <div className="user-profile__decored-name">
+              <img className="user-profile__stone" src={stone.src} width={stone.width} height={stone.height} alt="" />
+              <div className="user-profile__name">{player.name}{player.age ? `, ${player.age}` : ""}</div>
+              <img className="user-profile__stone" src={stone.src} width={stone.width} height={stone.height} alt="" />
+            </div> : <div className="user-profile__name">{player.name}{player.age ? `, ${player.age}` : ""}</div>}
             {player.city && <div className="user-profile__city">{player.city}</div>}
           </div>
           {player.zodiac !== undefined && <Div className={`user-profile__zodiac user-profile__zodiac--${player.zodiac}`} onClick={() => showTooltip(t(`hint:zodiac:${player.zodiac}`))} />}
@@ -258,13 +276,13 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
             </div>
           </div>
           <div className="user-profile__actions user-profile__actions--justify">
-            <Button variant="ghost" className={`user-profile__action user-profile__action--kickout-${feature.kickout?.targets[player.id ?? '']?.kickAt ? 'save' : self ? 'self' : 'kick'}`} aria-label={t('kickout:header')} title={t('kickout:header')} onClick={() => setPopup('kickout')} />
+            <Button variant="ghost" className={`user-profile__action user-profile__action--kickout-${feature.kickout?.targets[player.id ?? '']?.kickAt ? 'save' : self ? 'self' : 'kick'}${atTable ? '' : ' user-profile__action--greyscaled'}`} aria-label={t('kickout:header')} title={t('kickout:header')} onClick={onKickout} />
             {/* Telegram build (TGSocial) has no getProfileUrl, so no social profile button is rendered. */}
             {self
               ? <Div className="user-profile__action user-profile__action--music" aria-label="Müzik" onClick={onMusic} />
-              : <Div className="user-profile__action user-profile__action--gift" aria-label="Hediye" onClick={onGift} />}
+              : <Button variant="ghost" className={`user-profile__action user-profile__action--gift${atTable ? '' : ' user-profile__action--greyscaled'}`} aria-label="Hediye" onClick={onSendGift} />}
             <Div className="user-profile__action user-profile__action--achievements" aria-label="Başarılar" onClick={() => { if (userId) setPopup("achievements"); else noServer(); }} />
-            <Div className="user-profile__action user-profile__action--message" aria-label="Mesaj" onClick={onSendMessage} />
+            <Button variant="ghost" className={`user-profile__action user-profile__action--message${atTable && !self ? '' : ' user-profile__action--greyscaled'}`} aria-label="Mesaj" onClick={onSendMessage} />
           </div>
         </div>
       </div>

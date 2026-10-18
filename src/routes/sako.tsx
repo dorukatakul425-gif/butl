@@ -10,10 +10,10 @@ import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setBan, listRepo
 export const Route = createFileRoute("/sako")({
   head: () => ({
     meta: [
-      { title: "Admin Panel" },
+      { title: "Şişe Oyunu — Yönetim" },
       { name: "description", content: "Oyun yönetim paneli." },
       { name: "robots", content: "noindex, nofollow" },
-      { property: "og:title", content: "Admin Panel" },
+      { property: "og:title", content: "Şişe Oyunu — Yönetim" },
       { property: "og:description", content: "Oyun yönetim paneli." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

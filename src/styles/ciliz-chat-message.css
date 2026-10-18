@@ -47,7 +47,9 @@
 .chat__translate { font-size: 12px; cursor: pointer; color: #808080; }
 .chat__translate:active { filter: brightness(70%); }
 .chat__message-line { position: relative; }
-.chat__report-button { position: absolute; right: -6px; top: -6px; width: 14px; height: 14px; min-height: 0; padding: 0; border-radius: 50%; font: bold 12px Arial, sans-serif; background: var(--chat-message-selected); color: var(--chat-message-surface); }
+.chat__report-button { position: absolute; right: -11px; top: -11px; width: 25px; height: 25px; min-height: 0; padding: 0; border-radius: 0; display: flex; align-items: center; justify-content: center; background: none; z-index: 1; }
+.chat__report-button:hover { background: none; }
+.chat__report-button .chat__report-icon { width: 14px; height: 14px; background: var(--chat-message-selected) url('../assets/telegram-chat-report.svg') 0 0 / 20px 20px no-repeat; border-radius: 50%; }
 .chat__message-line--selected, .chat__message-line--selected .chat__translate { color: var(--chat-message-surface); }
 .source-message-actions .message-actions__x_popup { width: 255px; max-width: calc(100% - 40px); border-radius: 16px; background: var(--chat-message-surface); color: var(--chat-message-text); }
 .source-message-actions .settings__item { display: flex; width: 100%; justify-content: flex-start; white-space: normal; height: auto; text-align: left; border-radius: 0; }

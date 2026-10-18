@@ -300,6 +300,7 @@
 .user-profile__decored-name{
   display: flex;
   width: 100%;
+  align-items: center;
 }
 .user-profile__name{
   display: flex;

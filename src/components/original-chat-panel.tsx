@@ -116,8 +116,12 @@ export function OriginalChatPanel() {
   const doSend = (value: string) => {
     if (!value.trim()) return;
     const to = receiver;
+    if (to?.id && displaySeatOf(to.id) < 0) {
+      if (assets) showSourceToast(translate(assets, "warning:offline_chat:desc"));
+      return;
+    }
     setText(""); setReceiver(undefined); inputRef.current?.focus();
-    void sendChat(value, to?.id && displaySeatOf(to.id) >= 0 ? to.id : undefined, Boolean(to?.private)).then(ok => {
+    void sendChat(value, to?.id, Boolean(to?.private)).then(ok => {
       if (ok) window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: value }));
       else showSourceToast("Mesaj gönderilemedi.");
     });
@@ -237,12 +241,12 @@ export function OriginalChatPanel() {
         <div className={`chat__body${small ? " chat__small" : ""}`}>
           {session.lines.filter(line => line.kind !== "text" || !blocked.has(line.sender.id)).map((line) => line.kind === "text" ? (
             <div key={line.key} className={`chat__message chat__noselect${chatMessageIsBold(line.sender, line.receiver) ? " chat__message--bold" : ""}${line.private ? " chat__message--private" : ""}`}>
-              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
               <div className={`chat__message-line${selected?.key === line.key ? ' chat__message-line--selected' : ''}`}
-                onContextMenu={e => { e.preventDefault(); selectMessage(line); }} onDoubleClick={() => selectMessage(line)}
+                onClick={() => selectMessage(line)} onContextMenu={e => { e.preventDefault(); selectMessage(line); }} onDoubleClick={() => selectMessage(line)}
                 onTouchStart={e => { cancelLongTap(); if (e.touches.length === 1) longTap.current = setTimeout(() => selectMessage(line), 500); }}
                 onTouchEnd={cancelLongTap} onTouchMove={cancelLongTap} onTouchCancel={cancelLongTap}>
-                {!line.sender.isViewer && <Button variant="ghost" className="chat__report-button" aria-label={`${line.sender.name}: Mesaj seçenekleri`} onClick={() => selectMessage(line)}>!</Button>}
+                {!line.sender.isViewer && selected?.key === line.key && <Button variant="ghost" className="chat__report-button" aria-label={`${line.sender.name}: Mesaj seçenekleri`} onClick={() => selectMessage(line)}><span className="chat__report-icon" /></Button>}
                 {(() => {
                   // ChatContent.setDecor: 14×14 stone before the name; the name shrinks to make room.
                   const stoneId = line.sender.isViewer ? decor.stone : line.sender.stone;
@@ -252,13 +256,13 @@ export function OriginalChatPanel() {
                   return <><div className="chat__stone" style={{ display: "inline-block" }}><img className="chat__stone-img" src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" /></div>{" "}</>;
                 })()}
                 <span className={`chat__sender-name ${chatNameClass(line.sender)}${(line.sender.isViewer ? decor.stone : line.sender.stone) && assets?.stones[(line.sender.isViewer ? decor.stone : line.sender.stone) ?? ""] ? " chat__sender-name--stone" : ""}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
-                  onClick={() => { setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
+                  onClick={e => { e.stopPropagation(); setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
                 <span className={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}>: </span>
                 {line.private && <span className="chat__private-label">(özel) </span>}
                 {line.receiver && <><span className="chat__sender-name">{line.receiver.name}</span><span>, </span></>}
                 <span className="chat__word-break">{translations[line.key]?.shown ? translations[line.key]?.translated : line.text}</span>
                 {assets && needsTranslation(line.sender, VIEWER_LOCALE, line.text) && (
-                  <div className="chat__translate js-translate" role="button" onClick={() => onTranslate(line.key, line.text)}>
+                  <div className="chat__translate js-translate" role="button" onClick={e => { e.stopPropagation(); onTranslate(line.key, line.text); }}>
                     {translate(assets, translations[line.key]?.shown ? "dlg:translate:show_original" : "dlg:translate:show_translation")}
                   </div>
                 )}
@@ -272,7 +276,7 @@ export function OriginalChatPanel() {
                 else if (line.icon === "chat" && line.sender) { setReceiver(line.sender); inputRef.current?.focus(); }
               }}>
               <div className="chat__action-line">
-                {line.sender && (line.style === "newcomer" || line.style === "birthday") && <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />}
+                {line.sender && (line.style === "newcomer" || line.style === "birthday") && <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={e => { e.stopPropagation(); window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender?.id })); }} />}
                 {line.parts.map((part, i) => "user" in part
                   ? <span key={i} className={`chat__sender-name ${chatNameClass(part.user)}`} style={{ fontWeight: "bold", whiteSpace: "nowrap" }}
                       onClick={e => { e.stopPropagation(); setReceiver(part.user); inputRef.current?.focus(); }}>{part.user.name}</span>
@@ -282,14 +286,14 @@ export function OriginalChatPanel() {
             </div>
           ) : line.kind === "gift" ? (
             <div key={line.key} className="chat__info chat__noselect">
-              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
               <img className="chat__gift" src={line.image} width={line.imageWidth ?? 28} height={line.imageHeight ?? 28} title={line.name} alt="" crossOrigin="anonymous" />
               {line.count > 1 && <div className="chat__count"><div className="chat__icon chat__icon--count" />{line.count}</div>}
               <div className="chat__icon chat__icon--arrows" />
               <div className="chat__multigift-receivers">
                 {line.receivers.map((u) => (
                   <div key={u.id} className="chat__multigift-photo-wrapper">
-                    <div className="chat__photo chat__multigift-photo" style={{ backgroundImage: `url('${u.photoUrl}')` }} title={u.name} />
+                    <div className="chat__photo chat__multigift-photo" style={{ backgroundImage: `url('${u.photoUrl}')` }} title={u.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: u.id }))} />
                   </div>
                 ))}
               </div>
@@ -311,7 +315,7 @@ export function OriginalChatPanel() {
             </div>
           ) : (
             <div key={line.key} className="chat__info chat__noselect">
-              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
               <div className="chat__icon chat__icon--music" />
               <div className="chat__info-line chat__text-format">
                 {line.artist && <span>{line.artist}<br /></span>}
@@ -350,7 +354,7 @@ export function OriginalChatPanel() {
         <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji js-emoji" onClick={toggleEmoji} aria-expanded={emojiOpen} aria-label="Emoji"><img className="original-chat-control-image" src={emojiIcon} width={26} height={26} alt="" /></Button>
         <Button variant="ghost" type="button" className="original-chat-round original-chat-gift" aria-label="Hediye" onClick={() => {
           const seat = receiver ? displaySeatOf(receiver.id) : undefined;
-          if (seat === undefined || seat < 0) { showSourceToast('Hediye göndermek için bir oyuncu seçin.'); return; }
+          if (seat === undefined || seat < 0) { showSourceToast(receiver && assets ? translate(assets, 'warning:offline_gift:desc') : 'Hediye göndermek için bir oyuncu seçin.'); return; }
           window.dispatchEvent(new CustomEvent(OPEN_GIFT_FOR_SEAT_EVENT, { detail: seat }));
         }}><img className="original-chat-control-image" src={giftIcon.url} width={26} height={26} alt="" /></Button>
         <Button variant="ghost" type="submit" className="original-chat-round original-chat-send" aria-label="Gönder"><img className="original-chat-control-image" src={sendIcon} width={26} height={26} alt="" /></Button>
@@ -359,7 +363,7 @@ export function OriginalChatPanel() {
         onClose={() => setSelected(null)} onTranslate={() => { onTranslate(selected.key, selected.text); setSelected(null); }}
         onReport={() => { setReportMessage(selected); setSelected(null); }}
         isOwn={Boolean(selected.sender.isViewer)}
-        onDelete={isAdmin && selected.messageId !== undefined ? () => { const id = selected.messageId!; setSelected(null); void deleteChatMessage(id).then(ok => { if (!ok) showSourceToast('Mesaj silinemedi.'); }); } : undefined}
+        onDelete={isAdmin && selected.messageId !== undefined ? () => { const id = selected.messageId; if (id === undefined) return; setSelected(null); void deleteChatMessage(id).then(ok => { if (!ok) showSourceToast('Mesaj silinemedi.'); }); } : undefined}
         onIgnore={() => { setMenuBusy(true); void setUserBlocked(selected.sender.id, !blocked.has(selected.sender.id)).then(() => setSelected(null), () => showSourceToast('İgnore kaydedilemedi.')).finally(() => setMenuBusy(false)); }} />}
       {assets && reportMessage && <SourceInfoDialog title={translate(assets, 'dlg:report_issue:title')} context={translate(assets, 'dlg:report_issue:desc', reportMessage.sender.name, reportMessage.text)} onClose={() => setReportMessage(null)}
         cancel={{ title: translate(assets, 'dlg:report_issue:cancel'), onClick: () => setReportMessage(null) }}

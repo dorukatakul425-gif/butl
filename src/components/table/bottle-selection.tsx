@@ -7,6 +7,7 @@ import { dialogImage, translate } from "@/lib/ciliz-assets";
 import { VIEWER_STORE } from "@/lib/viewer";
 import { buyBottle, useRoom, VIEWER_DISPLAY_SEAT } from "@/lib/room-session";
 import { OPEN_BANK_EVENT } from "@/components/source-dialogs";
+import { useViewerProgress } from "@/lib/viewer-progress";
 
 export function BottleSelection({ open, onClose }: { open: boolean; onClose: () => void }) {
   const assets = useCilizAssets();
@@ -14,12 +15,13 @@ export function BottleSelection({ open, onClose }: { open: boolean; onClose: () 
   const [notice, setNotice] = useState('');
   const [buying, setBuying] = useState(false);
   const room = useRoom();
+  const { vip } = useViewerProgress();
   const [scrolled, setScrolled] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const [box, setBox] = useState<{top: number; left: number; width: number; height: number; landscape: boolean} | null>(null);
-  const items = useMemo(() => assets ? bottleItems(assets, VIEWER_STORE.social) : [], [assets]);
+  const items = useMemo(() => assets ? bottleItems(assets, VIEWER_STORE.social, vip) : [], [assets, vip]);
   useEffect(() => {
     if (!open) return;
     setNotice('');

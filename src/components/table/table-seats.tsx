@@ -1,4 +1,5 @@
 import { KickoutSeatFx } from "@/components/table/kickout-seat-fx";
+import { telegramZodiac } from "@/lib/telegram-profile";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCilizAssets } from "@/components/decor/decor-selection";
 import { SendGiftDialog } from "@/components/gifts/send-gift-dialog";
@@ -328,7 +329,7 @@ export function TableSeats() {
           onDecor={() => setProfileSeat(null)} onMusic={() => setProfileSeat(null)} />;
       })()}
       {assets && offTable && <ProfileDialog player={offTable} self={false} assets={assets}
-        onClose={() => setOffTable(null)} onGift={() => setOffTable(null)} onDecor={() => setOffTable(null)} onMusic={() => setOffTable(null)} />}
+        onClose={() => setOffTable(null)} onGift={() => { const seat = offTable.id ? displaySeatOf(offTable.id) : -1; if (seat < 0) return; setOffTable(null); setTarget(state => openFor(state, seat, VIEWER_SEAT)); }} onDecor={() => setOffTable(null)} onMusic={() => setOffTable(null)} />}
       {assets && ownProfileOpen && (
         <ProfileDialog player={{ ...(playersRef.current[VIEWER_SEAT] ?? { name: VIEWER.name, photoUrl: DEFAULT_PHOTO, frame: '', stone: '', male: VIEWER.male }), age: VIEWER.age }} self assets={assets}
           onClose={() => setOwnProfileOpen(false)} onGift={() => setOwnProfileOpen(false)}
@@ -365,6 +366,7 @@ function buildPlayers(assets: CilizAssets, profiles: Array<Profile | null>, fram
       isNew: Date.now() - Date.parse(p.created_at) < 24 * 3600 * 1000,
       ...(p.age ? { age: p.age } : {}),
       ...(p.city ? { city: p.city } : {}),
+      zodiac: telegramZodiac(p.birthday),
       ...(p.vip_until && Date.parse(p.vip_until) > Date.now() ? { vipUntil: Date.parse(p.vip_until) } : {}),
     };
   });

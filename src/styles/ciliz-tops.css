@@ -280,6 +280,10 @@
   flex: none;
   width: 42px;
   height: 42px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  object-position: center top;
+  image-rendering: auto;
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;

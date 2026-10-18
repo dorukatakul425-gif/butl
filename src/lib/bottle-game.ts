@@ -50,11 +50,11 @@ export function pickTarget(spinner: number, random = Math.random()) {
   const candidates = eligibleTargets(spinner);
   return candidates[Math.min(candidates.length - 1, Math.floor(Math.max(0, random) * candidates.length))] ?? 0;
 }
-export function bottleItems(assets: CilizAssets, social: string) {
+export function bottleItems(assets: CilizAssets, social: string, vip = false) {
   return (assets.bottleStore ?? []).flatMap(entry => {
     if (entry.social && !entry.social.includes(social)) return [];
     const bottle = assets.bottles?.[entry.id];
-    return bottle ? [{ bottle, locked: Boolean(entry.vip_s), name: assets.translation[`bottle:${bottle.type}`] ?? bottle.type }] : [];
+    return bottle ? [{ bottle, locked: Boolean(entry.vip_s) && !vip, name: assets.translation[`bottle:${bottle.type}`] ?? bottle.type }] : [];
   });
 }
 let selectedBottle = "standart";
