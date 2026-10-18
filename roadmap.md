@@ -20,3 +20,8 @@
 - [x] Recheck Telegram archive and IMG_4146/4147: source timing/VIP rules confirmed; numeric price/base cooldown absent.
 - [x] Correct fresh VPS migration tracking to apply post-bootstrap features including kick/save; 18 focused tests passed.
 - [ ] Apply verified heart price/base cooldown and verify two-player live operation (blocked by missing numeric Telegram settings and VPS host access/address).
+
+- [x] Match table settings and shared profile-settings flow to original Telegram source; remove league header/settings/profile-cup entries.
+- [x] Implement source-verified first free / subsequent 20-heart information changes and free photo-only edits; 41 focused tests passed; phone/desktop dialog controls checked.
+- [ ] Apply migration 0029 on VPS and verify signed-in save/photo/wallet on repository host (blocked by unavailable host access/session).
+- [x] Deliver settings changes directly to main.

@@ -15,11 +15,10 @@ export const TG_LEGAL = {
 };
 export const CLIENT_VERSION = "1.6.393";
 
-export function buildSettingsItems(t: T, cb: { onSfx: (v: number) => void; onMusic: (v: number) => void; onInvite: () => void; onProfile: () => void; onContacts: () => void; league?: { enabled: boolean; busy: boolean; onChange: (enabled: boolean) => void } }): SettingsItem[] {
+export function buildSettingsItems(t: T, cb: { onSfx: (v: number) => void; onMusic: (v: number) => void; onInvite: () => void; onProfile: () => void; onContacts: () => void }): SettingsItem[] {
   return [
     { type: "slider", icon: "sound", name: t("ios:dlg:settings:sounds"), onChange: cb.onSfx },
     { type: "slider", icon: "music", name: t("ios:dlg:settings:music"), onChange: cb.onMusic },
-    ...(cb.league ? [{ type: 'checkbox' as const, icon: 'league', name: t('dlg:league:idle:title'), ...cb.league }] : []),
     { type: "simple", icon: "invite", name: t("bank:invite:btn"), action: cb.onInvite },
     { type: "simple", icon: "profile-info", name: t("dlg:profile_info:title"), action: cb.onProfile },
     { type: "simple", icon: "feedback", name: t("dlg:settings:contacts"), action: cb.onContacts },

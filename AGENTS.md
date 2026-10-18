@@ -53,3 +53,6 @@
 - Profile bio lives on profiles.bio; game popups read it through the same RLS-scoped client independently of stats RPCs, refresh while open, and never reuse another player's bio. Follower/following/view counts come only from get_profile_stats and record_profile_view (unique viewer rows), so clients cannot inflate them.
 - DM images/voice notes upload to the private dm-media bucket at sender/recipient/file (friend-checked policies) and the message row is delivered by Cloud realtime; bubbles read signed URLs.
 - Unsend is a sender-only soft delete (unsend_message RPC wipes body/media); both sides receive it as a realtime UPDATE. User reports go to user_reports and are read/resolved only through admin server functions.
+
+- Table and own-profile settings share ProfileInfoDialog and the authenticated profile-edit adapter; one atomic locked-row RPC validates prior state and debits information changes, while photo uploads remain separate to preserve source charging semantics.
+- League competition has no visible game entry points (table header, settings, profile cup); retain historical league data/services without exposing them or deleting earned records.

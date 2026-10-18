@@ -11,9 +11,7 @@ import backgroundDown from "@/assets/ui_btn_bg_down.svg";
 import heartUp from "@/assets/ui_btn_gold_add_heart_up.svg";
 import heartDown from "@/assets/ui_btn_gold_add_heart_down.svg";
 import bottlePass from "@/assets/ui_btn_bottle_pass.svg";
-import leagueInfo from "@/assets/ui_btn_league_info.svg";
 import roulette from "@/assets/ui_btn_roulette.svg";
-import league from "@/assets/ui_btn_league.svg";
 import menu from "@/assets/ui_btn_misc_menu.svg";
 import settings from "@/assets/ui_btn_settings.svg";
 import changeTable from "@/assets/ui_btn_change_table.svg";
@@ -29,10 +27,7 @@ import { SourceAchievementsDialog } from "@/components/table/source-achievements
 
 import { SettingsDialog } from '@/components/settings/settings-dialog';
 import { SourceSeasonDialog } from '@/components/table/source-season-dialogs';
-import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceChangeTable } from '@/components/table/source-change-table';
-import { SourceLeagueButton } from '@/components/table/source-league-button';
-import { OPEN_LEAGUE_EVENT } from '@/lib/user-profile';
 import { useRoom, VIEWER_DISPLAY_SEAT } from '@/lib/room-session';
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
@@ -40,7 +35,6 @@ import { useRoom, VIEWER_DISPLAY_SEAT } from '@/lib/room-session';
 const middleIcons = [
   { asset: bottlePass, label: "Şişe bileti", kind: "bottle-pass" },
   { asset: roulette, label: "Rulet", kind: "default" },
-  { asset: league, label: "Lig", kind: "default" },
   { asset: menu, label: "Menü", kind: "menu" },
   { asset: settings, label: "Ayarlar", kind: "default" },
 ];
@@ -78,13 +72,7 @@ export function OriginalTableHeader() {
     const id = window.setInterval(() => { n -= 1; setChangeCount(n); if (n < 1) window.clearInterval(id); }, 1000);
     return () => window.clearInterval(id);
   }, [room.roomId]);
-  const [season, setSeason] = useState<'league' | 'roulette' | 'bottle-pass' | null>(null);
-  // Profile popup league cup (source cb.onleague) opens the same league dialog as the header button.
-  useEffect(() => {
-    const open = () => setSeason('league');
-    window.addEventListener(OPEN_LEAGUE_EVENT, open);
-    return () => window.removeEventListener(OPEN_LEAGUE_EVENT, open);
-  }, []);
+  const [season, setSeason] = useState<'roulette' | 'bottle-pass' | null>(null);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -133,7 +121,7 @@ export function OriginalTableHeader() {
             <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
             <img src={menu} alt="" className="original-button-icon" />
           </Button>
-        ) : icon.label === 'Lig' ? <SourceLeagueButton key={icon.label} onClick={() => setSeason('league')} /> : <OriginalIcon key={icon.label} {...icon} onClick={icon.label === 'Ayarlar' ? () => setSettingsOpen(true) : icon.label === 'Rulet' ? () => setSeason('roulette') : icon.kind === 'bottle-pass' ? () => setSeason('bottle-pass') : undefined} />)}
+        ) : <OriginalIcon key={icon.label} {...icon} onClick={icon.label === 'Ayarlar' ? () => setSettingsOpen(true) : icon.label === 'Rulet' ? () => setSeason('roulette') : icon.kind === 'bottle-pass' ? () => setSeason('bottle-pass') : undefined} />)}
         <Button variant="ghost" className="original-header-button original-icon-back" aria-label="Ana sayfaya dön" title="Geri" onClick={() => void navigate({ to: "/" })}>
           <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
           <img src={backgroundDown} alt="" className="original-button-background original-button-down" />

@@ -7,12 +7,12 @@ import { SourceKickoutDialog } from './source-kickout-dialog';
 import { Button } from '@/components/ui/button';
 import type React from "react";
 import { createPortal } from "react-dom";
-import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
+import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
 import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceProfileSettings } from "@/components/profile/source-own-profile";
 import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast, OPEN_BANK_EVENT } from "@/components/source-dialogs";
-import { formatHarem, formatStats, leagueCupImage, splitStatusEmoji, OPEN_LEAGUE_EVENT, type ServerUserProfile } from "@/lib/user-profile";
+import { formatHarem, formatStats, splitStatusEmoji, type ServerUserProfile } from "@/lib/user-profile";
 import { TG_SUPPORT_EMAIL as SUPPORT_EMAIL, CLIENT_VERSION } from "@/components/settings/settings-items";
 
 const Div = (p: React.HTMLAttributes<HTMLDivElement>) => <div role={p.onClick ? "button" : undefined} {...p} />;
@@ -157,9 +157,6 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       {sub && <div className="user-profile__stats-item-subtitle">{sub} {t("dlg:profile:rank")}</div>}
     </div>
   );
-  const cupName = leagueCupImage(profile, assets.leagues);
-  const cup = cupName && assets.images?.[cupName] ? dialogImage(assets, cupName, 46, 48).src : "";
-  const onCup = () => { onClose(); window.dispatchEvent(new CustomEvent(OPEN_LEAGUE_EVENT, { detail: { userId, level: profile?.league ?? 0 } })); };
   const big = Boolean(stats && profile?.total_kisses && profile?.dj_score && profile?.gestures);
 
   const onSendMessage = () => {
@@ -228,7 +225,6 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
                 </div>
                 {statItem("gesture", stats?.gestures, stats?.gesturesRank)}
               </div>
-              {cup && <img src={cup} width={46} height={48} alt={t("dlg:league:title")} role="button" className="user-profile__league" onClick={onCup} />}
             </div>
             <div className="user-profile__stats-border-item">
               <div className="user-profile__stats-border" />

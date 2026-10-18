@@ -1,6 +1,7 @@
 // Lovable Cloud adapter for the source feature dialogs (currently: change table).
 import { attachSourceFeatureSession, type SourceFeatureSnapshot, type SourceTableEntry } from './source-feature-session';
 import { getSupabase } from './supabase';
+import { readProfileEdit, saveProfileEdit, saveProfilePhoto } from './profile-edit';
 import { leagueHeader, type LeagueInfo } from './league';
 
 let snapshot: SourceFeatureSnapshot = { viewerId: null };
@@ -100,6 +101,16 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
     execute: async (action, input) => {
       const sb = getSupabase();
       if (!sb) return { confirmed: false, message: 'Server bağlantısı yoxdur.' };
+      if (action === 'profile-refresh' || action === 'save-profile' || action === 'save-profile-photo') {
+        try {
+          if (action === 'save-profile-photo') await saveProfilePhoto(viewerId, String(input?.['photo'] ?? ''));
+          const profile = action === 'save-profile' && input ? await saveProfileEdit(input) : await readProfileEdit();
+          if (snapshot.viewerId !== viewerId) return { confirmed: false };
+          snapshot = { ...snapshot, profile }; emit(); return { confirmed: true };
+        } catch (e) {
+          return { confirmed: false, message: e instanceof Error ? e.message : 'Profil kaydedilemedi.' };
+        }
+      }
       if (action === 'league-settings') {
         if (input?.['enabled'] !== 0 && input?.['enabled'] !== 1) return { confirmed: false };
         const revision = ++preferenceRevision;

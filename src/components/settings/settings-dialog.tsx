@@ -6,7 +6,6 @@ import { setMusicVolume, useMusicSession } from "@/lib/music-session";
 import { VIEWER_STORE } from "@/lib/viewer";
 import { executeSourceFeature, useSourceFeatureSession } from '@/lib/source-feature-session';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { showSourceToast, SourceInfoDialog } from '@/components/source-dialogs';
 import { SourceSettingsChild } from './source-settings-children';
 import { buildContactItems, buildSettingsItems, idCopyValue, type SettingsItem } from './settings-items';
@@ -98,7 +97,7 @@ function SettingsPopup({ title, items, phase, onClose, info, sliders }: {
             <div className={cls("")}>
               {items.map((item) => item.type === "slider"
                 ? <Slider key={item.icon} icon={item.icon} name={item.name} value={item.icon === "sound" ? sliders?.sfx ?? 0 : sliders?.music ?? 0} onChange={item.onChange} />
-                : item.type === 'checkbox' ? <div className={cls('checkbox-item')} key={item.icon}><div className={cls('checkbox-title')}><div className={cls('icon', [item.icon])} /><span className={cls('item-name')}>{item.name}</span></div><Switch aria-label={item.name} checked={item.enabled} disabled={item.busy} onCheckedChange={item.onChange} /></div>
+                : item.type === 'checkbox' ? <div className={cls('checkbox-item')} key={item.icon}><div className={cls('checkbox-title')}><div className={cls('icon', [item.icon])} /><span className={cls('item-name')}>{item.name}</span></div><label className="checkbox settings__x_checkbox"><input className="checkbox__input" type="checkbox" aria-label={item.name} checked={item.enabled} disabled={item.busy} onChange={e => item.onChange(e.target.checked)} /><span className="checkbox__label" /></label></div>
                 : <Simple key={item.icon + item.name} item={item} close={onClose} />)}
               {info && (
                 <div className={cls("info")} style={{ position: "relative", cursor: "pointer" }} onClick={info.onCopy}>
@@ -120,7 +119,6 @@ type View = "settings" | "contacts" | "report" | "profile" | null;
 export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const session = useSourceFeatureSession();
   const [view, setView] = useState<View>(null);
-  const [savingLeague, setSavingLeague] = useState(false);
   const [assets, setAssets] = useState<CilizAssets | null>(null);
   const { mounted, phase } = usePopupPhase(open);
   const sfxVolume = useSfxVolume();
@@ -153,13 +151,6 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
   }
 
   const items = buildSettingsItems(t, {
-    league: { enabled: session.leagueParticipation === true, busy: savingLeague || session.leagueParticipation === undefined, onChange: async enabled => {
-      if (savingLeague) return;
-      setSavingLeague(true);
-      try { const result = await executeSourceFeature('league-settings', { enabled: enabled ? 1 : 0 }); if (!result.confirmed) showSourceToast(result.message ?? 'Lig seçimi kaydedilemedi.'); }
-      catch { showSourceToast('Lig seçimi kaydedilemedi.'); }
-      finally { setSavingLeague(false); }
-    } },
     onSfx: setSfxVolume,
     onMusic: setMusicVolume,
     onInvite: () => {
