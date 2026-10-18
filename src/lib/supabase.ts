@@ -42,6 +42,8 @@ export interface Profile {
   frame: string;
   stone: string;
   kisses: number;
+  /** Original game.kisses: kisses collected at the current table (room_players.kisses), reset on leave. */
+  table_kisses?: number;
   gold: number;
   tokens?: number;
   dat?: number;
