@@ -11,7 +11,7 @@ create table if not exists public.league_config (
   users_max int not null default 20,
   move_up int not null default 3,
   move_down int not null default 3,
-  round_hours int not null default 72,
+  round_hours int not null default 24,
   entry_kisses int not null default 100,
   gift_diff_lim int not null default 100
 );
