@@ -9,3 +9,5 @@
 - [ ] Apply migration 0024 on the hosting database.
 - [x] Unsend DMs, detailed report popup to admin, app-style live rooms list.
 - [ ] Apply migration 0025 on the hosting database.
+- [x] Connect saved home-profile bio to game popups independently of the stats migration; test save/read/update/clear.
+- [ ] Verify bio save-to-popup on the repository host (blocked by unavailable host session).

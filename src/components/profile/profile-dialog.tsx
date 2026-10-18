@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
+import { loadProfileBio } from "@/lib/profile-social";
 import { setUserBlocked, useBlockedUsers } from "@/lib/block-session";
 import { SourceAchievementsDialog } from "@/components/table/source-achievements-dialog";
 import { SourceKickoutDialog } from './source-kickout-dialog';
@@ -31,7 +32,15 @@ function SourceStatus({ text }: { text: string }) {
     el.classList.toggle("user-profile__status--pointer", initRows.current > narrowedRows);
     el.style.height = `${lineHeight * (toNarrow ? narrowedRows : initRows.current)}px`;
   };
-  useLayoutEffect(update, []);
+  useLayoutEffect(() => {
+    initRows.current = 0;
+    const el = ref.current;
+    if (el) {
+      el.style.height = "";
+      el.classList.remove("user-profile__status--narrowed", "user-profile__status--pointer");
+    }
+    update();
+  }, [text]);
   return <>
     <div ref={ref} className="user-profile__status" onClick={update}>
       {splitStatusEmoji(text).map((part, i) => part.emoji ? <span key={i} className="user-profile__status-emoji">{part.text}</span> : part.text)}
@@ -71,6 +80,26 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   };
   const stats = profile ? formatStats(profile) : null;
   const userId = self ? feature.viewerId ?? undefined : player.id;
+  const [savedBio, setSavedBio] = useState<{ userId: string; value: string | null } | null>(null);
+  const bio = savedBio && savedBio.userId === userId ? savedBio.value : profile?.status;
+  // Bio belongs to the home profile, not the statistics adapter. Read even when stats are supplied.
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!sb || !userId) return;
+    let alive = true;
+    let revision = 0;
+    const load = async () => {
+      const current = ++revision;
+      const value = await loadProfileBio(userId);
+      if (alive && current === revision && value !== undefined) setSavedBio({ userId, value });
+    };
+    void load();
+    const ch = sb.channel(`profile-bio-${userId}-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${userId}` }, () => void load())
+      .subscribe();
+    const timer = window.setInterval(() => void load(), 5000);
+    return () => { alive = false; window.clearInterval(timer); void sb.removeChannel(ch); };
+  }, [userId]);
   const harem = formatHarem(self, userId ?? "", profile);
   // Source useResizeSensor: the photo is a square of min(popup width, popup height).
   useLayoutEffect(() => {
@@ -186,7 +215,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
         </div>
         <div className="user-profile__details">
           <div className="user-profile__scrollable">
-            {profile?.status && infoSize > 0 && <SourceStatus text={profile.status} />}
+            {bio && infoSize > 0 && <SourceStatus text={bio} />}
             <div className={`user-profile__stats${big ? " user-profile__stats--big" : ""}`}>
               <div className="user-profile__counters">
                 {statItem("kiss", stats?.totalKisses, stats?.totalKissesRank)}

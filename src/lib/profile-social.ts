@@ -35,3 +35,12 @@ export async function saveBio(me: string, bio: string) {
   const { error } = await sb.from("profiles").update({ bio: value || null }).eq("id", me);
   return !error;
 }
+
+/** Read the same saved field as the home editor; undefined means the read failed. */
+export async function loadProfileBio(id: string): Promise<string | null | undefined> {
+  const sb = getSupabase();
+  if (!sb) return undefined;
+  const { data, error } = await sb.from("profiles").select("bio").eq("id", id).maybeSingle();
+  if (error || !data) return undefined;
+  return data.bio ?? null;
+}

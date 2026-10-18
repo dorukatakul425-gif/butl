@@ -48,6 +48,6 @@
 - Admin panel lives at /sako; roles are in user_roles via has_role, and every admin server function re-verifies the role before using the service client, so the page itself grants nothing.
 - Bans live in user_bans and are enforced in the database (write triggers, session revocation) plus a root BanGuard screen, so a still-valid token cannot keep playing.
 - Friends and direct messages live in friendships/direct_messages: requests/answers go through owner-checked RPCs, inserts require are_friends, and delivery uses one per-player Cloud realtime channel in src/lib/social.ts, so UI state cannot fake friendship or read others' chats.
-- Profile bio lives on profiles.bio; follower/following/view counts come only from get_profile_stats and record_profile_view (unique viewer rows), so clients cannot inflate them.
+- Profile bio lives on profiles.bio; game popups read it through the same RLS-scoped client independently of stats RPCs, refresh while open, and never reuse another player's bio. Follower/following/view counts come only from get_profile_stats and record_profile_view (unique viewer rows), so clients cannot inflate them.
 - DM images/voice notes upload to the private dm-media bucket at sender/recipient/file (friend-checked policies) and the message row is delivered by Cloud realtime; bubbles read signed URLs.
 - Unsend is a sender-only soft delete (unsend_message RPC wipes body/media); both sides receive it as a realtime UPDATE. User reports go to user_reports and are read/resolved only through admin server functions.
