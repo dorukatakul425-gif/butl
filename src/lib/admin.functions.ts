@@ -89,10 +89,22 @@ export const setBan = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     if (data.userId === context.userId) throw new Error("Kendini banlayamazsın");
     const admin = await assertAdmin(context);
+    // Original: ban / disabled_ban system lines appear in the target's room chat.
+    const { data: seat } = await admin.from("room_players").select("room_id").eq("user_id", data.userId).maybeSingle();
+    const { data: target } = await admin.from("profiles").select("name").eq("id", data.userId).maybeSingle();
+    const banLine = async (kind: "ban" | "disabled_ban") => {
+      let roomId = seat?.room_id as number | undefined;
+      if (!roomId) {
+        const { data: anyRoom } = await admin.from("rooms").select("id").order("id").limit(1).maybeSingle();
+        roomId = anyRoom?.id as number | undefined;
+      }
+      if (roomId) await admin.from("chat_messages").insert({ room_id: roomId, user_id: data.userId, text: (target?.name as string) ?? "?", kind });
+    };
     if (!data.banned) {
       await admin.from("user_bans").delete().eq("user_id", data.userId);
       const { error } = await admin.auth.admin.updateUserById(data.userId, { ban_duration: "none" });
       if (error) throw new Error(error.message);
+      await banLine("disabled_ban");
       return { banned: false };
     }
     const until = data.hours ? new Date(Date.now() + data.hours * 3600000).toISOString() : null;
@@ -104,7 +116,57 @@ export const setBan = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await admin.rpc("admin_revoke_sessions", { _user_id: data.userId });
     await admin.from("room_players").delete().eq("user_id", data.userId);
+    await banLine("ban");
     return { banned: true };
+  });
+
+const BroadcastInput = z.object({ roomId: z.number().int().positive(), text: z.string().trim().min(1).max(300) });
+
+/** Original admin_chat: a green announcement line in the chosen room's chat. */
+export const sendBroadcast = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => BroadcastInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await (context.supabase as any).rpc("admin_broadcast", { p_room: data.roomId, p_text: data.text });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Original viewtable: admins can watch any table — live seats + chat, read-only. */
+export const listRoomsAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const admin = await assertAdmin(context);
+    const { data: rooms, error } = await admin.from("rooms").select("id, phase, created_at").order("id");
+    if (error) throw new Error(error.message);
+    const { data: players } = await admin.from("room_players").select("room_id, user_id");
+    const counts = new Map<number, number>();
+    for (const p of players ?? []) counts.set(p.room_id, (counts.get(p.room_id) ?? 0) + 1);
+    return { rooms: (rooms ?? []).map((r: any) => ({ id: r.id as number, phase: r.phase as string, players: counts.get(r.id) ?? 0 })) };
+  });
+
+const ViewRoomInput = z.object({ roomId: z.number().int().positive() });
+
+export const viewRoomAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ViewRoomInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const { data: seats, error } = await admin.from("room_players").select("seat, user_id, last_seen").eq("room_id", data.roomId).order("seat");
+    if (error) throw new Error(error.message);
+    const ids = (seats ?? []).map((s: any) => s.user_id);
+    const { data: people } = ids.length ? await admin.from("profiles").select("id, name, username, photo_url, male").in("id", ids) : { data: [] };
+    const byId = new Map<string, any>((people ?? []).map((p: any) => [p.id, p]));
+    const { data: msgs } = await admin.from("chat_messages").select("id, user_id, text, kind, created_at")
+      .eq("room_id", data.roomId).order("id", { ascending: false }).limit(50);
+    const msgIds = [...new Set((msgs ?? []).map((m: any) => m.user_id))];
+    const { data: msgPeople } = msgIds.length ? await admin.from("profiles").select("id, name").in("id", msgIds) : { data: [] };
+    const nameOf = new Map<string, string>((msgPeople ?? []).map((p: any) => [p.id, p.name as string]));
+    return {
+      seats: (seats ?? []).map((s: any) => ({ seat: s.seat as number, name: (byId.get(s.user_id)?.name ?? "?") as string, photoUrl: (byId.get(s.user_id)?.photo_url ?? "") as string })),
+      messages: ((msgs ?? []) as any[]).reverse().map((m) => ({ id: m.id as number, name: nameOf.get(m.user_id) ?? "?", text: m.text as string, kind: (m.kind ?? "chat") as string })),
+    };
   });
 
 const ReportsInput = z.object({ status: z.enum(["open", "reviewed", "dismissed"]).default("open") });
