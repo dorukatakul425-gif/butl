@@ -17,8 +17,32 @@
 .user-profile__photo-controls{padding:0;border:0;background:none;cursor:pointer;display:contents}
 
 .settings__icon--league{background-image:url('../assets/ui_btn_league.svg');background-size:contain;background-position:center;background-repeat:no-repeat}
-.source-kickout-popup{width:360px;max-width:calc(100vw - 20px)}
-.source-kickout-popup .kickout__photo{position:relative;flex-shrink:0}
-.source-kickout-popup .kickout__photo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.source-kickout-popup .kickout__description{min-width:0;overflow-wrap:anywhere}
+.source-kickout-popup{width:80%;max-width:236px;border-radius:16px;background-color:rgba(0,0,0,.8);color:#fff;box-shadow:none}
+.source-kickout-popup .popup__header{color:#fff}
+.source-kickout-popup .popup__title{color:#fff}
+.source-kickout-popup .kickout__photo{position:relative;flex-shrink:0;width:62px;height:62px;border-radius:8px;overflow:visible}
+.source-kickout-popup .kickout__photo img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.source-kickout-popup .kickout__description{min-width:0;overflow-wrap:anywhere;margin-left:12px;font-size:13px;color:#fff}
+.source-kickout-popup .kickout__info{background-color:#fffae2;color:#000}
 .source-kickout-help{display:flex;align-items:center;gap:12px;margin:12px 0;font-size:14px}
+/* Roulette dialog: original full-screen transparent popup with green round close (roulette__x_popup / roulette__close). */
+.source-roulette-popup{background-color:transparent;box-shadow:none;height:100%;width:100%;max-height:100%;max-width:100%;display:flex;justify-content:center;align-items:center;border-radius:0}
+.source-roulette-popup .popup__header{display:none}
+.source-roulette-popup .popup__content{padding:70px 8px 20px;display:flex;flex-direction:column;row-gap:28px;max-width:90%;color:#fff;font-size:14px;overflow:auto}
+.source-roulette-popup .popup__close{position:fixed;top:8px;right:8px;width:30px;min-height:30px;height:30px;z-index:1;background-color:#9dc93b;border-radius:50%;border:2px solid #fff;box-shadow:0 4px 8px 0 rgba(0,0,0,.3);display:flex;justify-content:center;align-items:center;padding:0}
+.source-roulette-popup .popup__close-icon{background-size:11px 11px;height:11px;width:11px}
+.source-roulette-popup .roulette__paper--guide{align-self:center;width:100%;max-width:320px}
+.source-roulette-popup .roulette__paper--jackpot{display:flex;align-items:center;padding:10px;width:100%;max-width:320px;align-self:center}
+.source-roulette-popup .popup__buttons{display:flex;justify-content:center}
+@media (min-width:700px){
+.source-roulette-popup .popup__content{display:grid;column-gap:40px;row-gap:48px;grid-template-columns:2fr minmax(252px,1fr);grid-template-areas:"guide wheel" "jackpot wheel";padding:0 16px;max-width:700px}
+.source-roulette-popup .roulette__paper--guide{grid-area:guide;align-self:end}
+.source-roulette-popup .roulette__paper--wheel{grid-area:wheel}
+.source-roulette-popup .roulette__paper--jackpot{grid-area:jackpot}
+}
+.source-roulette-popup .popup__content{align-items:center;margin:0 auto}
+.source-roulette-popup .roulette__paper--wheel{align-self:center}
+.source-roulette-popup .roulette__wheel-section{margin:0 auto}
+.source-roulette-popup .roulette__paper--wheel{margin-left:auto;margin-right:auto}
+.source-roulette-popup .roulette__x_popup__content{display:flex;flex-direction:column;row-gap:28px;max-width:90%;margin:0 auto;align-items:center}
+@media (min-width:700px){.source-roulette-popup .roulette__x_popup__content{display:grid;column-gap:40px;row-gap:48px;grid-template-columns:2fr minmax(252px,1fr);grid-template-areas:"guide wheel" "jackpot wheel";max-width:700px;align-items:stretch}}
