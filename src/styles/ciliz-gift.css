@@ -660,3 +660,6 @@
   opacity: 1;
   transform: scale(1);
 }
+
+/* Rapid taps must not select/zoom the gift tile on iOS. */
+.send-gift__item{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}

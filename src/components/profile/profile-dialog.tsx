@@ -16,7 +16,7 @@ import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceProfileSettings } from "@/components/profile/source-own-profile";
 import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast, OPEN_BANK_EVENT } from "@/components/source-dialogs";
 import { formatHarem, formatStats, splitStatusEmoji, type ServerUserProfile } from "@/lib/user-profile";
-import { TG_SUPPORT_EMAIL as SUPPORT_EMAIL, CLIENT_VERSION } from "@/components/settings/settings-items";
+import { reportPlayer } from "@/lib/game-reports";
 
 const Div = (p: React.HTMLAttributes<HTMLDivElement>) => <div role={p.onClick ? "button" : undefined} {...p} />;
 
@@ -69,7 +69,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   }, [self, player.vipUntil, vipNow]);
   const vipLabel = self ? viewerVip : Boolean(player.vipUntil && player.vipUntil > vipNow);
   const [statsState, setStatsState] = useState<"narrowed" | "expanded">("narrowed");
-  const [popup, setPopup] = useState<"settings" | "claims" | "report-photo" | "report-user" | "achievements" | "kickout" | null>(null);
+  const [popup, setPopup] = useState<"settings" | "claims" | "report-photo" | "report-user" | "block" | "achievements" | "kickout" | null>(null);
   const [loaded, setLoaded] = useState<ServerUserProfile | null>(null);
   const profile = profileProp ?? loaded;
   const sectionRef = useRef<HTMLElement>(null);
@@ -205,11 +205,16 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       void loadRef.current();
     });
   };
+  const sendReport = async (kind: "photo" | "user", text: string) => {
+    if (!player.id || self) return;
+    const result = await reportPlayer(player.id, kind, text);
+    showSourceToast(result === "error" ? "Şikayet gönderilemedi." : t("dlg:report_photo:toast"));
+  };
   const onBlock = () => {
     if (!player.id || self || blocking) return;
     setBlocking(true);
     void setUserBlocked(player.id, !blocked)
-      .then(() => showSourceToast(t(blocked ? "dlg:unblock:title" : "dlg:block:title")))
+      .then(() => showSourceToast(t(blocked ? "hint:icon:unblock" : "hint:icon:block")))
       .catch(() => showSourceToast("İşlem yapılamadı."))
       .finally(() => setBlocking(false));
   };
@@ -294,26 +299,29 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       <div className="popup-shade" onClick={() => setPopup(null)} />
       <section role="dialog" aria-modal="true" className="popup popup--center popup--show message-actions__x_popup">
         {[
-          { key: blocked ? "dlg:unblock:title" : "dlg:block:title", icon: "ignore", action: () => { setPopup(null); onBlock(); } },
+          { key: blocked ? "dlg:unblock:title" : "dlg:block:title", icon: "ignore", action: () => setPopup("block") },
           { key: "hint:report_photo", icon: "adult", action: () => setPopup("report-photo") },
           { key: "dlg:report_user:title", icon: "report", action: () => setPopup("report-user") },
         ].map(i => <div key={i.key} role="button" className="settings__item settings__item--selectable" onClick={i.action}><div className={`settings__icon settings__icon--${i.icon}`} />{t(i.key)}</div>)}
       </section>
     </div>, document.body)}
 
+    {popup === "block" && <SourceInfoDialog hasClose title={t(blocked ? "dlg:unblock:title" : "dlg:block:title")} context={t(blocked ? "dlg:unblock:desc" : "dlg:block:desc", player.name)} onClose={() => setPopup(null)}
+      confirm={{ title: t(blocked ? "dlg:unblock:ok" : "dlg:block:block"), onClick: () => { setPopup(null); onBlock(); } }}
+      cancel={{ title: t(blocked ? "dlg:unblock:cancel" : "dlg:block:cancel"), onClick: () => setPopup(null) }} />}
+
     {popup === "report-photo" && <SourceInfoDialog hasClose title={t("dlg:report_photo:title")} context={t("dlg:report_photo:desc")} onClose={() => setPopup(null)}
-      confirm={{ title: t("dlg:report_photo:ok"), onClick: () => { setPopup(null); noServer(); } }}
+      confirm={{ title: t("dlg:report_photo:ok"), onClick: () => { setPopup(null); void sendReport("photo", ""); } }}
       cancel={{ title: t("dlg:report_photo:cancel"), onClick: () => setPopup(null) }} />}
 
     {popup === "report-user" && <SourceDialogLayer title={t("dlg:report_user:title")} onClose={() => setPopup(null)} onShade={() => setPopup(null)}>
       <div className="popup__content"><div className="report">
-        <textarea rows={5} placeholder={t("dlg:report_user:hint")} onInput={e => setReport((e.target as HTMLTextAreaElement).value.trim())} />
+        <textarea rows={5} maxLength={1000} placeholder={t("dlg:report_user:hint")} onInput={e => setReport((e.target as HTMLTextAreaElement).value.trim())} />
       </div></div>
       <SourceButtons cancel={{ title: t("dlg:report_user:cancel"), onClick: () => setPopup(null) }}
         confirm={{ title: t("dlg:report_user:send"), onClick: () => {
-          const body = [`User id: ${feature.viewerId ?? ""}`, "Social: tg", `Accused User: ${player.id ?? ""}`, `Accused User social: ${profile?.social ?? ""}`, `Date: ${new Date().toISOString()}`, `Client version: ${CLIENT_VERSION}`, "Text:", report].join("\n");
-          window.open(`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`HTML5 User report: tg_id: ${player.id ?? ""}`)}&body=${encodeURIComponent(body)}`, "_blank");
-          setPopup(null);
+          if (!report) return;
+          setPopup(null); void sendReport("user", report); setReport("");
         } }} />
     </SourceDialogLayer>}
 

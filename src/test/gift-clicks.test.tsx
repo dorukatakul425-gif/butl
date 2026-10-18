@@ -89,3 +89,15 @@ describe("gift music shortcuts", () => {
     window.removeEventListener("source:open-music-list", openMusic);
   });
 });
+describe("touch taps", () => {
+  it("sends once per touch tap even when the browser drops the click", () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("IntersectionObserver", class { observe() {} disconnect() {} });
+    const onSend = vi.fn();
+    render(<SendGiftDialog open assets={assets} items={[item]} receiverName="Alıcı" onSend={onSend} onPreload={vi.fn()} onClose={vi.fn()} />);
+    const gift = screen.getByRole("button", { name: "Gül" });
+    for (let i = 0; i < 5; i++) { fireEvent.pointerDown(gift, { pointerType: "touch" }); fireEvent.pointerUp(gift, { pointerType: "touch" }); }
+    fireEvent.click(gift);
+    expect(onSend).toHaveBeenCalledTimes(5);
+  });
+});

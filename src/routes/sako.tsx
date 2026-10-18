@@ -279,7 +279,7 @@ function PlayerRow({ p }: { p: Player }) {
   );
 }
 
-const CATEGORY_TR: Record<string, string> = { spam: "Spam", harassment: "Hakaret / taciz", inappropriate: "Uygunsuz içerik", fake: "Sahte profil", scam: "Dolandırıcılık", other: "Diğer" };
+const CATEGORY_TR: Record<string, string> = { spam: "Spam", harassment: "Hakaret / taciz", inappropriate: "Uygunsuz içerik", fake: "Sahte profil", scam: "Dolandırıcılık", other: "Diğer", photo: "Fotoğraf (müstehcen)" };
 
 function Reports() {
   const [status, setStatus] = useState<"open" | "reviewed" | "dismissed">("open");
@@ -307,12 +307,13 @@ function Reports() {
           <div key={x.id} className="rounded-lg border bg-card p-3 text-card-foreground">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded bg-destructive/15 px-2 py-0.5 text-xs font-semibold text-destructive">{CATEGORY_TR[x.category] ?? x.category}</span>
-              <span className="text-xs text-muted-foreground">{new Date(x.createdAt).toLocaleString("tr-TR")} · {x.context === "chat" ? "Özel mesaj" : "Profil"}</span>
+              <span className="text-xs text-muted-foreground">{new Date(x.createdAt).toLocaleString("tr-TR")} · {x.context === "chat" ? "Özel mesaj" : x.context === "game" ? "Oyun profili" : "Profil"}</span>
             </div>
             <div className="mt-2 text-sm">
               <b>Şikayet edilen:</b> {x.reported.name} <span className="text-muted-foreground">@{x.reported.username}{x.reported.playerNo ? ` · #${x.reported.playerNo}` : ""}</span>
             </div>
             <div className="text-sm"><b>Şikayet eden:</b> {x.reporter.name} <span className="text-muted-foreground">@{x.reporter.username}</span></div>
+            {x.photoUrl && <a href={x.photoUrl} target="_blank" rel="noreferrer"><img src={x.photoUrl} alt="Şikayet edilen fotoğraf" className="mt-2 h-28 w-28 rounded object-cover" /></a>}
             {x.details && <p className="mt-2 whitespace-pre-wrap rounded bg-muted p-2 text-sm">{x.details}</p>}
             <div className="mt-3 flex flex-wrap gap-2">
               {status !== "reviewed" && <Button size="sm" disabled={m.isPending} onClick={() => m.mutate({ id: x.id, status: "reviewed" })}>İncelendi</Button>}

@@ -177,7 +177,7 @@ export const listReports = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const admin = await assertAdmin(context);
     const { data: rows, error } = await admin.from("user_reports")
-      .select("id, reporter_id, reported_id, category, details, context, status, admin_note, created_at")
+      .select("id, reporter_id, reported_id, category, details, context, status, admin_note, created_at, photo_url")
       .eq("status", data.status).order("created_at", { ascending: false }).limit(100);
     if (error) throw new Error(error.message);
     const ids = [...new Set((rows ?? []).flatMap((r: any) => [r.reporter_id, r.reported_id]))];
@@ -186,7 +186,7 @@ export const listReports = createServerFn({ method: "POST" })
     const { count: open } = await admin.from("user_reports").select("*", { count: "exact", head: true }).eq("status", "open");
     const reports = (rows ?? []).map((r: any) => ({
       id: r.id as string, category: r.category as string, details: r.details as string, context: r.context as string, status: r.status as string,
-      adminNote: (r.admin_note ?? "") as string, createdAt: r.created_at as string,
+      adminNote: (r.admin_note ?? "") as string, photoUrl: (r.photo_url ?? null) as string | null, createdAt: r.created_at as string,
       reporter: { id: r.reporter_id as string, name: (byId.get(r.reporter_id)?.name ?? "?") as string, username: (byId.get(r.reporter_id)?.username ?? "") as string },
       reported: { id: r.reported_id as string, name: (byId.get(r.reported_id)?.name ?? "?") as string, username: (byId.get(r.reported_id)?.username ?? "") as string, playerNo: (byId.get(r.reported_id)?.player_no ?? null) as number | null },
     }));
