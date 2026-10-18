@@ -11,7 +11,7 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
 import { CilizMusicService, YTVideoService, type MusicItem, type MusicService } from "@/lib/music";
-import { pushActionLine, pushHaremLine, pushKickoutLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
+import { pushActionLine, pushHaremLine, pushKickoutLine, pushSystemLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
@@ -143,6 +143,10 @@ export function OriginalChatPanel() {
       queue = queue.then(async () => {
         const [sender, rec] = await participants;
         if (!alive || !sender) return;
+        if (row.kind && row.kind !== 'chat') {
+          pushSystemLine(row.kind as 'admin_chat' | 'ban' | 'disabled_ban', row.kind === 'admin_chat' ? row.text : `${row.text}`, row.id);
+          return;
+        }
         const isViewer = row.user_id === VIEWER.id;
         pushTextLine({ ...profileUser(sender), ...(isViewer ? { isViewer: true } : {}) }, row.text, rec ? { ...profileUser(rec), ...(rec.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, row.id, Boolean(row.is_private));
       });
@@ -231,7 +235,10 @@ export function OriginalChatPanel() {
     let alive = true;
     void loadRoomChatHistory(roomId).then(rows => {
       if (!alive) return;
-      for (const r of rows) pushTextLine({ ...profileUser(r.sender), ...(r.sender.id === VIEWER.id ? { isViewer: true } : {}) }, r.row.text, r.receiver ? { ...profileUser(r.receiver), ...(r.receiver.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, r.row.id, Boolean(r.row.is_private));
+      for (const r of rows) {
+        if (r.row.kind && r.row.kind !== 'chat') { pushSystemLine(r.row.kind as 'admin_chat' | 'ban' | 'disabled_ban', r.row.text, r.row.id); continue; }
+        pushTextLine({ ...profileUser(r.sender), ...(r.sender.id === VIEWER.id ? { isViewer: true } : {}) }, r.row.text, r.receiver ? { ...profileUser(r.receiver), ...(r.receiver.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, r.row.id, Boolean(r.row.is_private));
+      }
     });
     return () => { alive = false; };
   }, [roomId]);
@@ -320,6 +327,15 @@ export function OriginalChatPanel() {
               <div className={`chat__icon chat__icon--${line.icon}`} />
               <div className="chat__info-line chat__info-line--harem"><span style={{ color: "#878787" }}>{line.text}<div className="chat__icon chat__icon--heart" />{line.price}</span></div>
               <div className="chat__photo" style={{ backgroundImage: `url('${line.receiver.photoUrl}')` }} title={line.receiver.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.receiver.id }))} />
+            </div>
+          ) : line.kind === "system" ? (
+            <div key={line.key} className="chat__info chat__noselect">
+              <div className={`chat__icon chat__icon--${line.style === 'admin_chat' ? 'admin_chat' : 'ban'}`} />
+              <div className="chat__info-line chat__text-format">
+                <span style={{ color: line.style === 'admin_chat' ? '#6fbf5c' : '#ff4545' }}>
+                  {line.style === 'ban' ? `${line.text} oyundan yasaklandı` : line.style === 'disabled_ban' ? `${line.text} kullanıcısının yasağı kaldırıldı` : line.text}
+                </span>
+              </div>
             </div>
           ) : line.kind === "kickout" ? (
             <div key={line.key} className="chat__info chat__noselect">
