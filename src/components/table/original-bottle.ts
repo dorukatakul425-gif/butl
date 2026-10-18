@@ -1,7 +1,7 @@
 // Browser-only port of Bottle3d: live normal/specular/shadow textures, original GLSL lighting.
 import { Container, Mesh, Program, QuadUv, Rectangle, Shader, Sprite, Texture } from "pixi.js";
 import { ASSETS_TO_VIRTUAL as K, bundleUrl, type CilizAssets } from "@/lib/ciliz-assets";
-
+import { realBottleFallback } from "@/lib/real-bottle-fallback";
 const vertex = `attribute vec2 aVertexPosition; attribute vec2 aTextureCoord;
 uniform mat3 translationMatrix; uniform mat3 projectionMatrix; varying vec2 vPos; varying vec2 vUvs;
 void main(){vPos=aVertexPosition;vUvs=aTextureCoord;gl_Position=vec4((projectionMatrix*translationMatrix*vec3(aVertexPosition,1.0)).xy,0.0,1.0);}`;
@@ -16,19 +16,23 @@ float lambertian=Kd*max(dot(N,L),0.0);vec3 R=normalize(reflect(-L,N));vec3 V=nor
 float specular=Ks*pow(max(dot(R,V),0.0001),shininess);
 float light=baseColor.a*(lambertian+specular);gl_FragColor=uAlpha*(baseColor+vec4(light,light,light,0.0));}`;
 let program: Program | undefined;
+export async function bottleArtwork(assets: CilizAssets, type: string, size: number, load: (url: string) => Promise<HTMLImageElement>) {
+  const bottle = assets.bottles?.[type] ?? assets.bottles?.['standart'];
+  const image = bottle ? await load(bundleUrl(assets, bottle.image, "png", size)).catch(() => load(realBottleFallback)) : await load(realBottleFallback);
+  const sprite = Sprite.from(image);
+  const original = bottle && image.src !== realBottleFallback ? assets.images[bottle.image] : undefined;
+  const frame = original?.size_v2 ?? original?.size ?? [-31.5, -99, 63, 173];
+  sprite.width = (frame[2] ?? 63) * K; sprite.height = (frame[3] ?? 173) * K;
+  sprite.anchor.set(-(frame[0] ?? 0)/(frame[2] || 1), -(frame[1] ?? 0)/(frame[3] || 1));
+  return sprite;
+}
 export async function originalBottle(assets: CilizAssets, type: string, size: number, load: (url: string) => Promise<HTMLImageElement>, rotation: Container) {
   const bottle = assets.bottles?.[type] ?? assets.bottles?.['standart'];
-  if (!bottle) throw new Error("Bottle catalogue unavailable");
+  if (!bottle) return bottleArtwork(assets, type, size, load);
   const name = bottle.bottle3d;
   const p = name ? assets.bottle3d?.[name] : undefined;
-  if (!p || !name) {
-    const image = await load(bundleUrl(assets, bottle.image, "png", size));
-    const sprite = Sprite.from(image);
-    const frame = assets.images[bottle.image]?.size ?? [0,0,57,103];
-    sprite.width = (frame[2] ?? 57) * K; sprite.height = (frame[3] ?? 103) * K;
-    sprite.anchor.set(-(frame[0] ?? 0)/(frame[2] ?? 1), -(frame[1] ?? 0)/(frame[3] ?? 1));
-    return sprite;
-  }
+  if (!p || !name) return bottleArtwork(assets, type, size, load);
+  try {
   const [base, luminosity, normal, shadow] = await Promise.all(["base","luminosity","normal","shadow"].map(async suffix => Texture.from(await load(bundleUrl(assets, `${name}.${suffix}`, "png", size)))));
   const view = new Container();
   const shade = new Sprite(shadow);
@@ -54,4 +58,7 @@ export async function originalBottle(assets: CilizAssets, type: string, size: nu
     render(renderer);
   };
   return view;
+  } catch {
+    return bottleArtwork(assets, type, size, load);
+  }
 }

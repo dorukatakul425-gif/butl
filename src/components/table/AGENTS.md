@@ -1,0 +1,1 @@
+- Keep bottle recovery inside original-bottle: preserve selected 2D catalogue artwork when any 3D texture fails, then use embedded real-bottle pixels when hosted artwork is unavailable, so the table never falls back to a white outline.
