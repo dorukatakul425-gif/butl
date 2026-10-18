@@ -14,8 +14,10 @@ describe("telegram viewport", () => {
     expect(keyboardScrollTarget(300, 0, 700, 500)).toBe(100);
     // No keyboard → no scroll.
     expect(keyboardScrollTarget(0, 0, 700, 500)).toBeNull();
-    // Input already fully above the keyboard → no scroll.
-    expect(keyboardScrollTarget(300, 0, 400, 500)).toBeNull();
+    // Verbatim original: input above the visible area still scrolls by
+    // keyboardHeight - distanceToInput (the original only fires while an
+    // input is focused, so this path keeps that exact behavior).
+    expect(keyboardScrollTarget(300, 0, 400, 500)).toBe(400);
     // Scroll offset reduces the shift (original: keyboardHeight - scrollY).
     expect(keyboardScrollTarget(300, 100, 700, 500)).toBe(0);
     // Never scrolls to a negative position.
