@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
-import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setBan, listReports, resolveReport, listStatusReviews, reviewStatus } from "@/lib/admin.functions";
+import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setBan, listReports, resolveReport, listStatusReviews, reviewStatus, sendBroadcast, listRoomsAdmin, viewRoomAdmin } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/sako")({
   head: () => ({
@@ -73,6 +73,8 @@ function Dashboard() {
             </div>
           ))}
         </div>
+        <Broadcast />
+        <Rooms />
         <StatusReviews />
         <Reports />
         <Players />
@@ -81,7 +83,98 @@ function Dashboard() {
   );
 }
 
+/** Original admin_chat: green announcement into a room's chat. */
+function Broadcast() {
+  const rooms = useServerFn(listRoomsAdmin);
+  const send = useServerFn(sendBroadcast);
+  const qc = useQueryClient();
+  const r = useQuery({ queryKey: ["admin", "rooms"], queryFn: () => rooms(), refetchInterval: 15000 });
+  const [roomId, setRoomId] = useState<number | null>(null);
+  const [text, setText] = useState("");
+  const m = useMutation({
+    mutationFn: () => send({ data: { roomId: roomId ?? 0, text } }),
+    onSuccess: () => { setText(""); void qc.invalidateQueries({ queryKey: ["admin", "room"] }); },
+  });
+  const list = r.data?.rooms ?? [];
+  const chosen = roomId ?? list[0]?.id ?? null;
+  return (
+    <div className="mb-8 rounded-lg border bg-card p-4 text-card-foreground">
+      <h2 className="mb-3 text-lg font-semibold">Duyuru (yeşil admin mesajı)</h2>
+      <form className="flex flex-col gap-2 md:flex-row" onSubmit={(e) => { e.preventDefault(); if (chosen && text.trim()) m.mutate(); }}>
+        <select className="rounded-md border bg-background px-3 py-2 text-sm" value={chosen ?? ""} onChange={(e) => setRoomId(Number(e.target.value))}>
+          {list.map((rm: AdminRoom) => <option key={rm.id} value={rm.id}>Masa {rm.id} · {rm.players} oyuncu</option>)}
+        </select>
+        <Input placeholder="Tüm masada görünecek duyuru metni" value={text} onChange={(e) => setText(e.target.value)} maxLength={300} />
+        <Button type="submit" disabled={m.isPending || !chosen || !text.trim()}>Gönder</Button>
+      </form>
+      {m.isError && <p className="mt-2 text-sm text-destructive">{(m.error as Error).message}</p>}
+      {m.isSuccess && <p className="mt-2 text-sm text-green-600">Duyuru gönderildi.</p>}
+    </div>
+  );
+}
+
+/** Original viewtable: watch any table live — seats and chat, read-only. */
+function Rooms() {
+  const rooms = useServerFn(listRoomsAdmin);
+  const view = useServerFn(viewRoomAdmin);
+  const r = useQuery({ queryKey: ["admin", "rooms"], queryFn: () => rooms(), refetchInterval: 15000 });
+  const [open, setOpen] = useState<number | null>(null);
+  const detail = useQuery({
+    queryKey: ["admin", "room", open],
+    queryFn: () => view({ data: { roomId: open ?? 0 } }),
+    enabled: open !== null,
+    refetchInterval: 5000,
+  });
+  return (
+    <div className="mb-8 rounded-lg border bg-card p-4 text-card-foreground">
+      <h2 className="mb-3 text-lg font-semibold">Masaları izle</h2>
+      <div className="mb-3 flex flex-wrap gap-2">
+        {(r.data?.rooms ?? []).map((rm: AdminRoom) => (
+          <Button key={rm.id} variant={open === rm.id ? "default" : "outline"} size="sm" onClick={() => setOpen(open === rm.id ? null : rm.id)}>
+            Masa {rm.id} · {rm.players}
+          </Button>
+        ))}
+        {r.data && r.data.rooms.length === 0 && <p className="text-sm text-muted-foreground">Aktif masa yok.</p>}
+      </div>
+      {open !== null && detail.data && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <div className="mb-2 text-xs text-muted-foreground">Koltuklar</div>
+            <div className="grid grid-cols-4 gap-2">
+              {detail.data.seats.map((s: AdminSeat) => (
+                <div key={s.seat} className="flex flex-col items-center rounded-md border p-2">
+                  {s.photoUrl ? <img src={s.photoUrl} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="h-10 w-10 rounded-full bg-muted" />}
+                  <span className="mt-1 max-w-full truncate text-xs">{s.name}</span>
+                </div>
+              ))}
+              {detail.data.seats.length === 0 && <p className="col-span-4 text-sm text-muted-foreground">Masa boş.</p>}
+            </div>
+          </div>
+          <div>
+            <div className="mb-2 text-xs text-muted-foreground">Canlı sohbet (son 50)</div>
+            <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2 text-sm">
+              {detail.data.messages.map((msg) => (
+                <div key={msg.id}>
+                  {msg.kind === "admin_chat"
+                    ? <span className="text-green-600">{msg.text}</span>
+                    : msg.kind === "ban" || msg.kind === "disabled_ban"
+                      ? <span className="text-red-600">{msg.kind === "ban" ? `${msg.text} oyundan yasaklandı` : `${msg.text} kullanıcısının yasağı kaldırıldı`}</span>
+                      : <><span className="font-medium">{msg.name}:</span> {msg.text}</>}
+                </div>
+              ))}
+              {detail.data.messages.length === 0 && <p className="text-muted-foreground">Mesaj yok.</p>}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 type Player = Awaited<ReturnType<typeof listPlayers>>["players"][number];
+type AdminRoom = { id: number; phase: string; players: number };
+type AdminSeat = { seat: number; name: string; photoUrl: string };
+type AdminReport = Awaited<ReturnType<typeof listReports>>["reports"][number];
 
 function Players() {
   const [search, setSearch] = useState("");
@@ -99,7 +192,7 @@ function Players() {
       {r.isError && <p className="mb-3 text-sm text-destructive">{(r.error as Error).message}</p>}
       <div className="space-y-2">
         {r.isLoading && <p className="text-muted-foreground">Yükleniyor…</p>}
-        {r.data?.players.map((p) => <PlayerRow key={p.id} p={p} />)}
+        {r.data?.players.map((p: Player) => <PlayerRow key={p.id} p={p} />)}
         {r.data && r.data.players.length === 0 && <p className="text-muted-foreground">Oyuncu bulunamadı.</p>}
       </div>
       <div className="mt-4 flex items-center justify-center gap-3">
@@ -210,7 +303,7 @@ function Reports() {
       {r.isLoading && <p className="text-muted-foreground">Yükleniyor…</p>}
       {r.data && r.data.reports.length === 0 && <p className="text-muted-foreground">Şikayet yok.</p>}
       <div className="space-y-2">
-        {r.data?.reports.map((x) => (
+        {r.data?.reports.map((x: AdminReport) => (
           <div key={x.id} className="rounded-lg border bg-card p-3 text-card-foreground">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded bg-destructive/15 px-2 py-0.5 text-xs font-semibold text-destructive">{CATEGORY_TR[x.category] ?? x.category}</span>
