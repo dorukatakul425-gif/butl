@@ -40,10 +40,12 @@
 - [done] Change-table kickout info (black popup) + roulette original layout pushed to repo (d9ad3c2); VPS deploy pending user
 
 ## Current Telegram parity request
-- [ ] Announce newcomer once per account.
-- [ ] Keep birthday selector open and match birthday chat announcement.
-- [ ] Add gift-screen real audio/video music shortcuts.
-- [ ] Persist music chat notices with message retention.
-- [ ] Match bottom black table cooldown notice with finite seconds.
-- [ ] Gate league popup by actual participation; show 100-kiss notice otherwise.
-- [ ] Run regression tests, deliver to repo, deploy and verify available live flows.
+- [x] Announce newcomer once per account.
+- [x] Keep birthday selector open and match birthday chat announcement.
+- [x] Add gift-screen real audio/video music shortcuts.
+- [x] Persist music chat notices with message retention.
+- [x] Match bottom black table cooldown notice with finite seconds.
+- [x] Gate league popup by actual participation; show 100-kiss notice otherwise.
+- [x] Run regression tests, deliver to repo, deploy and verify available live flows.
+
+- [ ] Verify signed-in live multiplayer music purchase/reload and birthday gift flow (blocked: no authorized player session; deployment and 272 regression tests verified).
