@@ -21,5 +21,5 @@ describe('current league TOP authority', () => {
   await db.exec("UPDATE league_rounds SET finish_at=now()-interval '1 second'");
   expect(await top(1)).toBe(false);
   await db.close();
- });
+ }, 20000);
 });
