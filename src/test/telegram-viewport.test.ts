@@ -18,8 +18,9 @@ describe("telegram viewport", () => {
     // keyboardHeight - distanceToInput (the original only fires while an
     // input is focused, so this path keeps that exact behavior).
     expect(keyboardScrollTarget(300, 0, 400, 500)).toBe(400);
-    // Scroll offset reduces the shift (original: keyboardHeight - scrollY).
-    expect(keyboardScrollTarget(300, 100, 700, 500)).toBe(0);
+    // Scroll offset reduces the shift check, but the target stays
+    // keyboardHeight - distanceToInput (verbatim original).
+    expect(keyboardScrollTarget(300, 100, 700, 500)).toBe(100);
     // Never scrolls to a negative position.
     expect(keyboardScrollTarget(100, 0, 560, 500)).toBe(40);
   });
