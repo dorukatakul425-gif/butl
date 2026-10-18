@@ -8,8 +8,9 @@ import welcomeBackground from '@/assets/ui_btn_league_info_circle.svg';
 
 /** Original LeagueButton states; rank and time strings remain host-owned. */
 export function SourceLeagueButton({ onClick }: { onClick: () => void }) {
-  const { leagueHeader: info } = useSourceFeatureSession();
+  const { leagueHeader: info, league } = useSourceFeatureSession();
   const running = info?.type === 'running';
+  const limit = league?.limit;
   const pill = running ? info.leftTimeShortText?.replaceAll('&nbsp;', '\u00a0') : info?.type === 'finished' ? info.positionText : undefined;
   return <Button variant="ghost" aria-label="Lig" title="Lig" aria-haspopup="dialog" onClick={onClick} className="original-header-button original-icon-default original-league-button">
     <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
@@ -17,5 +18,6 @@ export function SourceLeagueButton({ onClick }: { onClick: () => void }) {
     {running ? <span className="original-league-position">{info.positionText ?? '—'}</span> : <img src={cup} alt="" className="original-button-icon" />}
     {pill && <span className="original-league-info"><img src={infoBackground} alt="" /><span>{pill}</span></span>}
     {info?.type === 'welcome' && <span className="original-league-info original-league-welcome"><img src={welcomeBackground} alt="" /><span>!</span></span>}
+    {running && limit && <span className="original-league-info original-league-welcome original-league-limit"><img src={welcomeBackground} alt="" /><span>!</span></span>}
   </Button>;
 }
