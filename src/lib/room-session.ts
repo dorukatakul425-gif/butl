@@ -27,6 +27,7 @@ export interface ChatRow {
   user_id: string;
   receiver_id: string | null;
   text: string;
+  kind?: string; // 'chat' | 'admin_chat' | 'ban' | 'disabled_ban'
   created_at: string;
   is_private?: boolean;
 }
@@ -87,7 +88,7 @@ export async function loadRoomChatHistory(roomId: number, now = Date.now()) {
   const sb = getSupabase();
   if (!sb) return [];
   const since = new Date(now - CHAT_HISTORY_HOURS * 3600_000).toISOString();
-  const { data } = await sb.from("chat_messages").select("id, room_id, user_id, receiver_id, text, created_at, is_private")
+  const { data } = await sb.from("chat_messages").select("id, room_id, user_id, receiver_id, text, created_at, is_private, kind")
     .eq("room_id", roomId).gte("created_at", since).order("id", { ascending: false }).limit(100);
   const rows = ((data ?? []) as unknown as ChatRow[]).reverse();
   const ids = [...new Set(rows.flatMap(r => [r.user_id, r.receiver_id].filter((x): x is string => !!x)))];
