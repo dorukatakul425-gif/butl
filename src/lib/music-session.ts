@@ -22,7 +22,14 @@ export type ChatActionPart = { text: string } | { user: ChatUser };
 export interface ChatActionLine { kind: "action"; key: number; style: "newcomer" | "birthday" | "vip" | "rewarded-video"; icon: "gift" | "chat" | "vip" | "rewarded-video"; parts: ChatActionPart[]; sender?: ChatUser; seat?: number }
 /** ChatView.createHaremLine: sender photo, harem icon, grey text with <heart>price, receiver photo. */
 export interface ChatHaremLine { kind: "harem"; key: number; icon: "harem_free" | "harem_busy"; sender: ChatUser; receiver: ChatUser; text: string; price: number }
-export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine | ChatKickoutLine | ChatHaremLine;
+/** Original system lines: admin_chat (green 6fbf5c), ban / disabled_ban (red ff4545). */
+export interface ChatSystemLine { kind: "system"; key: number; style: "admin_chat" | "ban" | "disabled_ban"; text: string; messageId?: number }
+export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine | ChatKickoutLine | ChatHaremLine | ChatSystemLine;
+export function pushSystemLine(style: ChatSystemLine["style"], text: string, messageId?: number) {
+  if (messageId !== undefined && state.lines.some(l => l.kind === "system" && l.messageId === messageId)) return false;
+  set({ lines: [...state.lines, { kind: "system", key: ++seq, style, text, ...(messageId !== undefined ? { messageId } : {}) }] });
+  return true;
+}
 export function pushHaremLine(line: Omit<ChatHaremLine, "kind" | "key">) {
   set({ lines: [...state.lines, { kind: "harem", key: ++seq, ...line }] });
 }
