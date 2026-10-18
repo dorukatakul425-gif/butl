@@ -8,6 +8,8 @@ export interface ChatProfile {
   isViewer?: boolean;
   /** Server-provided player locale (e.g. "tr", "ru"). */
   locale?: string;
+  /** Decor stone id shown next to the name in chat (ChatContent.setDecor). */
+  stone?: string;
 }
 
 const customColors: Record<string, string> = {

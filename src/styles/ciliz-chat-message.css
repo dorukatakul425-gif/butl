@@ -53,3 +53,7 @@
 .source-message-actions .settings__item { display: flex; width: 100%; justify-content: flex-start; white-space: normal; height: auto; text-align: left; border-radius: 0; }
 .source-message-actions .settings__icon { flex-shrink: 0; }
 .original-chat-gift { font-size: 23px; }
+/* ChatContent.setDecor stone badge, original preloader.css */
+.chat__sender-name--stone { max-width: calc(100% - 2em); }
+.chat__stone { display: inline-block; position: relative; width: 14px; height: 14px; margin-right: -2px; box-sizing: content-box; vertical-align: bottom; }
+.chat__stone-img { position: absolute; top: 2.5px; left: 0; }

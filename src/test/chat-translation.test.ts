@@ -9,3 +9,12 @@ describe("chat translation link", () => {
     expect(needsTranslation({ locale: "ru", isViewer: true }, "tr")).toBe(false);
   });
 });
+
+describe("chat translation by message language", () => {
+  it("offers translation for a foreign-language message when the sender has no locale", () => {
+    expect(needsTranslation({}, "tr", "Привет, как дела?")).toBe(true);
+    expect(needsTranslation({}, "tr", "hello how are you")).toBe(true);
+    expect(needsTranslation({}, "tr", "merhaba nasılsın")).toBe(false);
+    expect(needsTranslation({ isViewer: true }, "tr", "hello")).toBe(false);
+  });
+});

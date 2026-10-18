@@ -24,12 +24,15 @@ import { emojiPickerSize, emojiSendDecision, insertEmoji } from "@/lib/emoji";
 import { useViewerProgress } from "@/lib/viewer-progress";
 import { OPEN_GIFT_FOR_SEAT_EVENT, shouldScheduleVipTeaser, VIP_TEASER_DELAY, widgetOfTheDay } from "@/lib/chat-promos";
 import { OPEN_BANK_EVENT, OPEN_VIP_EVENT, SourceInfoDialog, showSourceToast } from "@/components/source-dialogs";
+import { translateChatText } from "@/lib/chat-translate.functions";
+import { dialogImage } from "@/lib/ciliz-assets";
+import { useDecorState } from "@/lib/decor-store";
 import { applyTranslation, chatTranslator, needsTranslation, toggleTranslation, useChatTranslations } from "@/lib/chat-translation";
 
 const VIEWER_LOCALE = "tr";
 
 const VIEWER_COUNTRY = "TR";
-const profileUser = (p: Profile) => ({ id: p.id, name: p.name, photoUrl: p.photo_url || DEFAULT_PHOTO, male: p.male, isVip: Boolean(p.vip_until && Date.parse(p.vip_until) > Date.now()) });
+const profileUser = (p: Profile) => ({ id: p.id, name: p.name, photoUrl: p.photo_url || DEFAULT_PHOTO, male: p.male, isVip: Boolean(p.vip_until && Date.parse(p.vip_until) > Date.now()), ...(p.stone ? { stone: p.stone } : {}) });
 
 /** Original chat area: MediaPanel (video, music), chat body with info lines, input at bottom (source order). */
 export function OriginalChatPanel() {
@@ -37,6 +40,7 @@ export function OriginalChatPanel() {
   const session = useMusicSession();
   const blocked = useBlockedUsers();
   const translations = useChatTranslations();
+  const decor = useDecorState();
   const [selected, setSelected] = useState<ChatTextLine | null>(null);
   const [reportMessage, setReportMessage] = useState<ChatTextLine | null>(null);
   const [menuBusy, setMenuBusy] = useState(false);
@@ -47,8 +51,7 @@ export function OriginalChatPanel() {
   const selectMessage = (line: ChatTextLine) => { cancelLongTap(); if (!line.sender.isViewer) setSelected(line); };
   const onTranslate = (key: number, original: string) => {
     if (translations[key]?.translated) { toggleTranslation(key); return; }
-    const fn = chatTranslator();
-    if (!fn) { showSourceToast("Çeviri sunucusu henüz bağlı değil."); return; }
+    const fn = chatTranslator() ?? ((t: string) => translateChatText({ data: { text: t, lang: VIEWER_LOCALE } }).then(r => r.ttext));
     void fn(original, key).then(t => applyTranslation(key, t), () => showSourceToast('Çeviri alınamadı.'));
   };
   const [listType, setListType] = useState<"audio" | "video" | null>(null);
@@ -165,12 +168,20 @@ export function OriginalChatPanel() {
                 onTouchStart={e => { cancelLongTap(); if (e.touches.length === 1) longTap.current = setTimeout(() => selectMessage(line), 500); }}
                 onTouchEnd={cancelLongTap} onTouchMove={cancelLongTap} onTouchCancel={cancelLongTap}>
                 {!line.sender.isViewer && <Button variant="ghost" className="chat__report-button" aria-label={`${line.sender.name}: Mesaj seçenekleri`} onClick={() => selectMessage(line)}>!</Button>}
-                <span className={`chat__sender-name ${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
+                {(() => {
+                  // ChatContent.setDecor: 14×14 stone before the name; the name shrinks to make room.
+                  const stoneId = line.sender.isViewer ? decor.stone : line.sender.stone;
+                  const stone = assets && stoneId ? assets.stones[stoneId] : undefined;
+                  if (!stone || !assets) return null;
+                  const img = dialogImage(assets, stone.image, 14, 14);
+                  return <div className="chat__stone" style={{ display: "inline-block" }}><img className="chat__stone-img" src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" /></div>;
+                })()}
+                <span className={`chat__sender-name ${chatNameClass(line.sender)}${(line.sender.isViewer ? decor.stone : line.sender.stone) && assets?.stones[(line.sender.isViewer ? decor.stone : line.sender.stone) ?? ""] ? " chat__sender-name--stone" : ""}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
                   onClick={() => { setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
                 <span className={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}>: </span>
                 {line.receiver && <><span className="chat__sender-name">{line.receiver.name}</span><span>, </span></>}
                 <span className="chat__word-break">{translations[line.key]?.shown ? translations[line.key]?.translated : line.text}</span>
-                {assets && needsTranslation(line.sender, VIEWER_LOCALE) && (
+                {assets && needsTranslation(line.sender, VIEWER_LOCALE, line.text) && (
                   <div className="chat__translate js-translate" role="button" onClick={() => onTranslate(line.key, line.text)}>
                     {translate(assets, translations[line.key]?.shown ? "dlg:translate:show_original" : "dlg:translate:show_translation")}
                   </div>
