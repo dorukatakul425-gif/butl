@@ -1,0 +1,15 @@
+[Unit]
+Description=Deltagame.az Telegram botu
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/butl
+EnvironmentFile=/etc/butl/butl.env
+ExecStart=/usr/bin/node bot/telegram-bot.mjs
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

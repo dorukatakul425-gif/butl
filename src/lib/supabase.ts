@@ -37,6 +37,9 @@ export interface Profile {
   birthday?: string | null;
   /** Telegram-style first-entry gender/age setup finished (complete_profile_setup RPC). */
   profile_setup_done?: boolean;
+  /** Scripted first-entry tutorial with fake table finished (complete_tutorial RPC). */
+  tutorial_done?: boolean;
+  telegram_id?: number | null;
   city: string | null;
   photo_url: string | null;
   frame: string;

@@ -9,6 +9,11 @@ bash deploy/vps/migrate.sh
 docker compose -f /opt/butl-supabase/docker-compose.yml restart rest >/dev/null
 bash deploy/vps/build.sh
 systemctl restart butl
+# Telegram botu: servis dosyasını tazele ve çalıştır (token /etc/butl/butl.env içinde).
+install -m 644 deploy/vps/butl-bot.service /etc/systemd/system/butl-bot.service
+systemctl daemon-reload
+systemctl enable --now butl-bot >/dev/null 2>&1 || true
+systemctl restart butl-bot || true
 bash deploy/vps/caddy.sh
 sleep 2
 S=$(curl -s -o /dev/null -w "%{http_code}" -H "Host: $(. /etc/butl/butl.env; echo "$DOMAIN")" http://127.0.0.1:3000/auth || true)
