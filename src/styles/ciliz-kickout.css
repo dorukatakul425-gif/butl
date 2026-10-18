@@ -317,3 +317,20 @@
   display: inline-block;
   margin: 0 2px 0 4px;
 }
+/* Chat system lines: admin_chat (green) and ban / disabled_ban (red). */
+.chat__icon--admin_chat {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2222%22%20height%3D%2222%22%20viewBox%3D%220%200%2022%2022%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%236fbf5c%22%3E%3Cpath%20d%3D%22M13.5%202.5%205%207H2.5A1.5%201.5%200%200%200%201%208.5v5A1.5%201.5%200%200%200%202.5%2015H5l8.5%204.5a1%201%200%200%200%201.5-.87V3.37a1%201%200%200%200-1.5-.87z%22%2F%3E%3Cpath%20d%3D%22M17.5%207a4.5%204.5%200%200%201%200%208%20l-1-1.6a2.8%202.8%200%200%200%200-4.8z%22%2F%3E%3Cpath%20d%3D%22M19.5%204.5a8%208%200%200%201%200%2013l-1-1.6a6.3%206.3%200%200%200%200-9.8z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-size: 22px 22px;
+  background-repeat: no-repeat;
+  height: 22px;
+  width: 22px;
+  margin-left: 10px;
+}
+.chat__icon--ban {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2222%22%20height%3D%2222%22%20viewBox%3D%220%200%2022%2022%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%23ff4545%22%3E%3Cpath%20d%3D%22M11%201a10%2010%200%201%200%200%2020A10%2010%200%200%200%2011%201zm0%202.6a7.4%207.4%200%200%201%205.8%2012L5.2%205.2A7.4%207.4%200%200%201%2011%203.6zm0%2014.8a7.4%207.4%200%200%201-5.8-12L16.8%2016.8A7.4%207.4%200%200%201%2011%2018.4z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-size: 22px 22px;
+  background-repeat: no-repeat;
+  height: 22px;
+  width: 22px;
+  margin-left: 10px;
+}
