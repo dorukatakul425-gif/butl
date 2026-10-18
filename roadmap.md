@@ -33,6 +33,17 @@
 - [ ] Verify these changes with the user's VIP account on live VPS (blocked by unavailable authorized host access/session).
 - [x] Replace outline bottle fallback with selected real artwork and an offline real-bottle fallback; 236 tests passed and six real bottle types plus offline fallback visibly checked.
 - [x] Deliver bottle fix to butl main (6a53c78); downloaded committed offline artwork matches tested bytes.
-- [ ] Compare Telegram source with current table/music/gifts and profile/chat/realtime; fix verified defects without restoring removed league/pass features.
-- [ ] Run regression tests and deliver verified parity fixes to butl main.
+- [x] Compare available Telegram frontend with current table/music/gifts and profile/chat/realtime; fix verified ranking, departed-chat, recovery, stale-auth, gift-flight and kick-sound defects without restoring removed league/pass features.
+- [x] Run 258 regression tests; visibly check the actual Pixi bottle and MusicView controls at 393×596 and 1280×1800 with no page errors.
+- [x] Deliver verified parity fixes to butl main (8837503).
 - [ ] Verify full signed-in multiplayer parity on the live host (blocked by unavailable authorized VPS access and original-game authenticated session).
+- [done] Change-table kickout info (black popup) + roulette original layout pushed to repo (d9ad3c2); VPS deploy pending user
+
+## Current Telegram parity request
+- [ ] Announce newcomer once per account.
+- [ ] Keep birthday selector open and match birthday chat announcement.
+- [ ] Add gift-screen real audio/video music shortcuts.
+- [ ] Persist music chat notices with message retention.
+- [ ] Match bottom black table cooldown notice with finite seconds.
+- [ ] Gate league popup by actual participation; show 100-kiss notice otherwise.
+- [ ] Run regression tests, deliver to repo, deploy and verify available live flows.

@@ -11,7 +11,7 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
 import { CilizMusicService, YTVideoService, type MusicItem, type MusicService } from "@/lib/music";
-import { pushActionLine, pushHaremLine, pushKickoutLine, pushSystemLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
+import { pushActionLine, pushMusicHistoryLine, stampChatHistory, expireChatHistory, pushHaremLine, pushKickoutLine, pushSystemLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
@@ -22,7 +22,7 @@ import { translate } from "@/lib/ciliz-assets";
 import { EmojiPicker } from "@/components/chat/emoji-picker";
 import { emojiPickerSize, emojiSendDecision, insertEmoji } from "@/lib/emoji";
 import { useViewerProgress } from "@/lib/viewer-progress";
-import { OPEN_GIFT_FOR_SEAT_EVENT, shouldScheduleVipTeaser, VIP_TEASER_DELAY, widgetOfTheDay } from "@/lib/chat-promos";
+import { OPEN_GIFT_FOR_SEAT_EVENT, newcomerKind, newcomerKey, widgetParts, shouldScheduleVipTeaser, VIP_TEASER_DELAY, widgetOfTheDay } from "@/lib/chat-promos";
 import { OPEN_BANK_EVENT, OPEN_VIP_EVENT, SourceInfoDialog, showSourceToast } from "@/components/source-dialogs";
 import { translateChatText } from "@/lib/chat-translate.functions";
 import { dialogImage } from "@/lib/ciliz-assets";
@@ -71,7 +71,7 @@ export function OriginalChatPanel() {
   const { vip } = useViewerProgress();
   useEffect(() => {
     const reply = (e: Event) => { setReceiver((e as CustomEvent).detail); inputRef.current?.focus(); };
-    const music = () => setListType("audio");
+    const music = (e: Event) => setListType((e as CustomEvent<{ type?: string }>).detail?.type === "video" ? "video" : "audio");
     window.addEventListener("game-reply-to", reply);
     window.addEventListener("source:open-music-list", music);
     return () => { window.removeEventListener("game-reply-to", reply); window.removeEventListener("source:open-music-list", music); };
@@ -135,6 +135,28 @@ export function OriginalChatPanel() {
     return data as Profile | null;
   }), [room.roomId]);
   useEffect(() => resolver.remember(room.players), [resolver, room.players]);
+  const receiveChatRow = (row: import("@/lib/room-session").ChatRow, sender: Profile, rec?: Profile | null) => {
+    const user = { ...profileUser(sender), ...(sender.id === VIEWER.id ? { isViewer: true } : {}) };
+    if (row.kind === "music") {
+      pushMusicHistoryLine({ ...user, musicLevel: 0 }, row.payload?.artist ?? "", row.payload?.title ?? row.text, row.id, row.payload?.key);
+    } else if (row.kind === "newcomer" || row.kind === "birthday") {
+      if (!assets || sender.id === VIEWER.id) return;
+      if (row.kind === "newcomer" && (sender.male === VIEWER.male || !sender.photo_url)) return;
+      const icon = row.kind === "birthday" ? "gift" : newcomerKind(profileBySeat(5)?.gold ?? 0);
+      pushActionLine({ style: row.kind, icon, sender: user, parts: widgetParts(assets.translation[row.kind === "birthday" ? "chat:birthday" : newcomerKey(icon)] ?? "%", user), messageId: row.id });
+    } else if (row.kind && row.kind !== "chat") {
+      pushSystemLine(row.kind as "admin_chat" | "ban" | "disabled_ban", row.text, row.id);
+    } else {
+      pushTextLine(user, row.text, rec ? profileUser(rec) : undefined, row.id, Boolean(row.is_private));
+    }
+    stampChatHistory(row.id, row.created_at);
+  };
+  const receiveRef = useRef(receiveChatRow);
+  receiveRef.current = receiveChatRow;
+  useEffect(() => {
+    const id = window.setInterval(() => expireChatHistory(), 1000);
+    return () => window.clearInterval(id);
+  }, []);
   useEffect(() => {
     let alive = true;
     let queue = Promise.resolve();
@@ -142,13 +164,7 @@ export function OriginalChatPanel() {
       const participants = Promise.all([resolver.find(row.user_id), resolver.find(row.receiver_id)]);
       queue = queue.then(async () => {
         const [sender, rec] = await participants;
-        if (!alive || !sender) return;
-        if (row.kind && row.kind !== 'chat') {
-          pushSystemLine(row.kind as 'admin_chat' | 'ban' | 'disabled_ban', row.kind === 'admin_chat' ? row.text : `${row.text}`, row.id);
-          return;
-        }
-        const isViewer = row.user_id === VIEWER.id;
-        pushTextLine({ ...profileUser(sender), ...(isViewer ? { isViewer: true } : {}) }, row.text, rec ? { ...profileUser(rec), ...(rec.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, row.id, Boolean(row.is_private));
+        if (alive && sender) receiveRef.current(row, sender, rec);
       });
     });
     return () => { alive = false; off(); };
@@ -235,13 +251,11 @@ export function OriginalChatPanel() {
     let alive = true;
     void loadRoomChatHistory(roomId).then(rows => {
       if (!alive) return;
-      for (const r of rows) {
-        if (r.row.kind && r.row.kind !== 'chat') { pushSystemLine(r.row.kind as 'admin_chat' | 'ban' | 'disabled_ban', r.row.text, r.row.id); continue; }
-        pushTextLine({ ...profileUser(r.sender), ...(r.sender.id === VIEWER.id ? { isViewer: true } : {}) }, r.row.text, r.receiver ? { ...profileUser(r.receiver), ...(r.receiver.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, r.row.id, Boolean(r.row.is_private));
-      }
+      for (const r of rows) receiveRef.current(r.row, r.sender, r.receiver);
+
     });
     return () => { alive = false; };
-  }, [roomId]);
+  }, [roomId, assets]);
 
   const listService = listType ? services[listType] : null;
   const trG = (key: string, ...args: Array<string | boolean | undefined>) => (assets?.translation[key] ?? key).replace(/%(\d*)(?:([bd])\(([^)]*)\))?/g, (_m, i: string, kind?: string, opts?: string) => {
@@ -295,7 +309,7 @@ export function OriginalChatPanel() {
             <div key={line.key} className={`chat__action chat__action--${line.style} chat__noselect`} role="button"
               onClick={() => {
                 if (line.style === "vip") openVip();
-                else if (line.icon === "gift" && line.seat !== undefined) window.dispatchEvent(new CustomEvent(OPEN_GIFT_FOR_SEAT_EVENT, { detail: line.seat }));
+                else if (line.icon === "gift" && line.sender) { const seat = displaySeatOf(line.sender.id); if (seat >= 0) window.dispatchEvent(new CustomEvent(OPEN_GIFT_FOR_SEAT_EVENT, { detail: seat })); else if (assets) showSourceToast(translate(assets, "warning:offline_gift:desc")); }
                 else if (line.icon === "chat" && line.sender) { setReceiver(line.sender); inputRef.current?.focus(); }
               }}>
               <div className="chat__action-line">

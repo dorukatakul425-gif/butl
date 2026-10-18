@@ -13,12 +13,12 @@ import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { closedTarget, giftReceivers, openFor, seatSelection, selectGender, setSelective, type GiftTargetState } from "@/lib/gift-selection";
-import { pushActionLine, pushGestureLine, pushGiftLine } from "@/lib/music-session";
+import { pushGestureLine, pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
 import { setViewerKisses, useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-progress";
 import { GIFT_SENT_EVENT, setSeatLocator } from "@/lib/interactive-hint-flags";
-import { newcomerKey, newcomerKind, newcomersToNotify, widgetParts, OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
+import { OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
 import { onRoomGift, onRoomGesture, sendGesture, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat } from "@/lib/room-session";
 import { getSupabase, type Profile } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
@@ -183,7 +183,7 @@ export function TableSeats() {
     if (sig === seatSig.current.sig && seatSig.current.table === activeTable) return;
     seatSig.current = { sig, table: activeTable };
     activeTable.setPlayers(next);
-    notifyNewcomers(assets, next);
+    // Newcomer/birthday widgets come from the once-only server announcement feed.
   }, [assets, activeTable, room.players, decor.frame, decor.stone, blocked]);
   // Decor and ownership come from our server profile (set_decor / buy_decor RPCs).
   const ownProfile = room.players[VIEWER_SEAT];
@@ -377,7 +377,7 @@ function buildPlayers(assets: CilizAssets, profiles: Array<Profile | null>, fram
       frame: assets.frames[f] ? f : "",
       stone: assets.stones[st] ? st : "",
       male: p.male,
-      isNew: Date.now() - Date.parse(p.created_at) < 24 * 3600 * 1000,
+      isNew: false,
       ...(p.age ? { age: p.age } : {}),
       ...(p.city ? { city: p.city } : {}),
       zodiac: telegramZodiac(p.birthday),
@@ -387,13 +387,3 @@ function buildPlayers(assets: CilizAssets, profiles: Array<Profile | null>, fram
   });
 }
 
-// GameSession.notifyNewcomers: one widget per new opposite-sex player per session.
-const notifiedNewcomers = new Set<string>();
-function notifyNewcomers(assets: CilizAssets, players: SeatPlayer[]) {
-  const users = players.map((p, seat) => ({ ...p, id: p.id ?? `seat-${seat}`, seat })).filter(u => u.seat !== VIEWER_SEAT && !u.empty);
-  const kind = newcomerKind(profileBySeat(VIEWER_SEAT)?.gold ?? VIEWER_GOLD);
-  for (const u of newcomersToNotify(users, { id: VIEWER.id || "viewer", male: VIEWER.male }, notifiedNewcomers)) {
-    const user = { id: u.id, name: u.name, photoUrl: u.photoUrl, male: u.male };
-    pushActionLine({ style: "newcomer", icon: kind, parts: widgetParts(translate(assets, newcomerKey(kind)), user), sender: user, seat: u.seat });
-  }
-}

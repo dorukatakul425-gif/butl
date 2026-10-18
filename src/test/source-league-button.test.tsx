@@ -5,7 +5,7 @@ import { attachSourceFeatureSession, type SourceFeatureSnapshot } from '@/lib/so
 
 afterEach(() => { cleanup(); attachSourceFeatureSession(null); });
 function host(leagueHeader: NonNullable<SourceFeatureSnapshot['leagueHeader']>) {
-  const snapshot = { viewerId: 'me', leagueHeader };
+  const snapshot = { viewerId: 'me', leagueHeader, leagueState: leagueHeader.type };
   attachSourceFeatureSession({ getSnapshot: () => snapshot, subscribe: () => () => {}, execute: vi.fn() });
 }
 it('keeps the cup and never invents a rank or countdown without host state', () => {
@@ -31,4 +31,11 @@ it('shows the original welcome indicator without a fictional rank', () => {
   host({ type: 'welcome' }); render(<SourceLeagueButton onClick={vi.fn()} />);
   expect(screen.getByText('!')).toBeVisible();
   expect(document.querySelector('.original-league-position')).toBeNull();
+});
+it('does not open the league popup for a player who has not begun competition', () => {
+  const snapshot = { viewerId: 'me', leagueState: 'undefined' };
+  attachSourceFeatureSession({ getSnapshot: () => snapshot, subscribe: () => () => {}, execute: vi.fn() });
+  const open = vi.fn(); render(<SourceLeagueButton onClick={open} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Lig' }));
+  expect(open).not.toHaveBeenCalled();
 });

@@ -16,3 +16,6 @@ export function leagueHeader(info: LeagueInfo, viewerId: string, now: number) {
   const left = Math.max(0, (info.finish_ms ?? now) - now), h = Math.floor(left / 3600000), d = Math.floor(h / 24);
   return { type: 'running' as const, positionText: pos ? String(pos) : '—', leftTimeShortText: d > 0 ? `${d}g` : h > 0 ? `${h}s` : `${Math.ceil(left / 60000)}dk` };
 }
+
+/** Only server-confirmed league participation exposes a league dialog. */
+export const canOpenLeague = (state: string | undefined) => state === "welcome" || state === "running" || state === "finished";

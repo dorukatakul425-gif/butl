@@ -3,12 +3,14 @@ import { Button } from '@/components/ui/button';
 
 export function SourceFeaturePopup({ title, children, onClose, help, inactive = false, className = '', contentClass = '', footer, headerClass = '', titleClass = '', closeIconClass = '', manualClass }: { contentClass?: string; footer?: ReactNode; headerClass?: string; titleClass?: string; closeIconClass?: string; manualClass?: string | undefined; title: string; children: ReactNode; onClose: () => void; help?: (() => void) | undefined; inactive?: boolean; className?: string }) {
   const ref = useRef<HTMLElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   useEffect(() => {
     if (inactive) return;
     const previous = document.activeElement;
     ref.current?.focus();
     const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); onClose(); }
+      if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeRef.current(); }
       if (e.key === 'Tab') {
         const controls = ref.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),a[href]');
         if (!controls?.length) { e.preventDefault(); return; }
@@ -19,7 +21,7 @@ export function SourceFeaturePopup({ title, children, onClose, help, inactive = 
     };
     document.addEventListener('keydown', key, true);
     return () => { document.removeEventListener('keydown', key, true); if (previous instanceof HTMLElement) previous.focus(); };
-  }, [inactive, onClose]);
+  }, [inactive]);
   return <div className="source-feature-layer"><div className="popup-shade" onClick={inactive ? undefined : onClose} />
     <section ref={ref} tabIndex={-1} role="dialog" aria-modal={!inactive} inert={inactive} aria-label={title} className={`popup popup--center source-feature-popup ${className}`}>
       {/* Dialog.Header (closeBtnMod 'dlg'): title, extra children (manual icon), then the close button inside the header. */}

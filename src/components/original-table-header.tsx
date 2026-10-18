@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { getPendingGold, subscribePendingGold } from "@/lib/game-session";
-import { OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT, OPEN_DECOR_EVENT, SourceToastHost } from "@/components/source-dialogs";
+import { OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT, OPEN_DECOR_EVENT, SourceToastHost, showSourceToast } from "@/components/source-dialogs";
 import { VipDialog } from "@/components/bank/vip-dialog";
 import { useCilizAssets } from "@/components/decor/decor-selection";
 import backgroundUp from "@/assets/ui_btn_bg_up.svg";
@@ -131,7 +131,7 @@ export function OriginalTableHeader() {
         <span className="original-header-table-id">{room.roomId}</span>
       </div>}
       <Button variant="ghost" aria-label="Masa değiştir" title="Masa değiştir" aria-disabled={changeCount >= 1}
-        onClick={() => { if (changeCount < 1) setChangeOpen(true); }}
+        onClick={() => { if (changeCount < 1) setChangeOpen(true); else showSourceToast((vipAssets?.translation["hint:change_room:waiting"] ?? "Bekleyin % saniye, oyun masasını değiştir").replace(/%0?/, String(Number.isFinite(changeCount) ? changeCount : 9))); }}
         className={`original-header-button original-icon-default${changeCount >= 1 ? ' original-change-table--count' : ''}`}>
         <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
         <img src={backgroundDown} alt="" className="original-button-background original-button-down" />

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
+import { Button } from "@/components/ui/button";
 import type { GiftStoreItem } from "@/lib/gifts";
 
 // Markup and class names ported from SendGiftDialog.tsx (giftType 'gift', html5 layout) and Dialog.Header.
@@ -142,6 +143,10 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
   if (!open || !box) return null;
   const title = translate(assets, "dlg:gift:title", "").replace("%", "").trim();
 
+  const openMusic = (type: "audio" | "video") => {
+    onClose();
+    window.dispatchEvent(new CustomEvent("source:open-music-list", { detail: { type } }));
+  };
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif", pointerEvents: "none" }}>
       <div
@@ -187,6 +192,13 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
         </div>
         <div className={`popup__content popup__content--no-padding ${cls("x_popup__content")}`} style={{ flex: 1 }}>
           <div ref={listRef} className={cls("", ["gift"])}>
+            {!selective && ([{ type: "video" as const, image: "g_video_v3", price: 9, label: "music:video" }, { type: "audio" as const, image: "g_music_v3", price: 5, label: "music:audio" }]).map(media => {
+              const image = dialogImage(assets, media.image, 60, 60);
+              return <Button key={media.type} variant="ghost" className={`${cls("item")} p-0 gap-0 whitespace-normal`} aria-label={translate(assets, media.label)} title={translate(assets, media.label)} onClick={() => openMusic(media.type)}>
+                <div className={cls("image-block")}><img className={cls("image")} src={image.src} width={image.width} height={image.height} alt="" crossOrigin="anonymous" /></div>
+                <div className={cls("subitem")}><div className={cls("icon", ["heart"])} /><div className={cls("price")}>{media.price}</div></div>
+              </Button>;
+            })}
             {items.map((item) => (
               <GiftItem key={item.type} assets={assets} item={item} onSend={onSend} onPreload={onPreload} onLocked={onLocked} />
             ))}

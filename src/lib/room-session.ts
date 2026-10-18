@@ -28,6 +28,7 @@ export interface ChatRow {
   receiver_id: string | null;
   text: string;
   kind?: string; // 'chat' | 'admin_chat' | 'ban' | 'disabled_ban'
+  payload?: { artist?: string; title?: string; key?: number };
   created_at: string;
   is_private?: boolean;
 }
@@ -88,7 +89,7 @@ export async function loadRoomChatHistory(roomId: number, now = Date.now()) {
   const sb = getSupabase();
   if (!sb) return [];
   const since = new Date(now - CHAT_HISTORY_HOURS * 3600_000).toISOString();
-  const { data } = await sb.from("chat_messages").select("id, room_id, user_id, receiver_id, text, created_at, is_private, kind")
+  const { data } = await sb.from("chat_messages").select("id, room_id, user_id, receiver_id, text, created_at, is_private, kind, payload")
     .eq("room_id", roomId).gte("created_at", since).order("id", { ascending: false }).limit(100);
   const rows = ((data ?? []) as unknown as ChatRow[]).reverse();
   const ids = [...new Set(rows.flatMap(r => [r.user_id, r.receiver_id].filter((x): x is string => !!x)))];
@@ -273,7 +274,7 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` },
       () => { if (current()) { void loadPlayers(roomId, mySeat); nudgeRoom(); } })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` },
-      (p) => { const old = p.old as { seat?: number; room_id?: number }; const next = p.new as { seat?: number; room_id?: number }; if (current() && (old.seat !== next.seat || old.room_id !== next.room_id)) void loadPlayers(roomId, mySeat); })
+      (p) => { const old = p.old as { seat?: number; room_id?: number }; const next = p.new as { seat?: number; room_id?: number }; if (current() && (old.seat !== next.seat || old.room_id !== next.room_id || (p.old as { kisses?: number }).kisses !== (p.new as { kisses?: number }).kisses)) void loadPlayers(roomId, mySeat); })
     .on("postgres_changes", { event: "DELETE", schema: "public", table: "room_players" },
       () => {
         // DELETE cannot be filtered reliably under RLS; old fields can be redacted.
@@ -301,7 +302,7 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
           const event = before ? haremTransition(prof.id, before.harem_owner, after.harem_owner, Number(after.harem_value ?? 0)) : null;
           if (event) haremListeners.forEach(fn => fn(event));
           const players = [...state.players];
-          players[i] = prof;
+          players[i] = { ...prof, table_kisses: before?.table_kisses ?? 0 };
           set({ players });
         }
       })

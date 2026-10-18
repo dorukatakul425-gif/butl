@@ -55,9 +55,12 @@
 - Unsend is a sender-only soft delete (unsend_message RPC wipes body/media); both sides receive it as a realtime UPDATE. User reports go to user_reports and are read/resolved only through admin server functions.
 
 - Table and own-profile settings share ProfileInfoDialog and the authenticated profile-edit adapter; one atomic locked-row RPC validates prior state and debits information changes, while photo uploads remain separate to preserve source charging semantics.
-- League competition has no visible game entry points (table header, settings, profile cup); retain historical league data/services without exposing them or deleting earned records.
+- The league header uses get_league participation state to gate dialogs; nonparticipants receive the source bottom notice rather than an empty league dialog.
 - Profile table actions derive eligibility from current room membership on every render; reject absent recipients before composing/sending, so departures cannot turn private messages into public ones. Birthday-derived zodiac indices are isolated in the browser-safe Telegram profile helper to match the source icon mapping.
 - Bottle rendering falls back from original 3D textures to the selected 2D artwork, then an embedded real-bottle image; failed CDN/shader preparation must never display the white outline placeholder.
 - Preserve host ranking numbers; guard overlapping reads against newer live state, and merge recovery history without resurrecting deleted bodies or clearing read receipts.
 - Resolve departed chat identities through a room-scoped verified-profile cache, never current seating alone; send eligibility still requires current membership.
 - Scope kick timers and gift-flight cancellation to their target and room, so seat reuse or room changes cannot inherit delayed effects or audio.
+
+- Music/entry notices use chat_messages with typed payloads and server triggers; current rooms.music controls playback only, so reload, deduplication, deletion and 24-hour history expiry are shared with chat. Newcomer eligibility is claimed once under a locked profile row.
+- Popup focus trapping depends on visibility, not callback identity; keep close callbacks in a ref so profile refreshes never steal focus from a native birthday picker.

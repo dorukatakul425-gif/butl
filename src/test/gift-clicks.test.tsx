@@ -76,3 +76,16 @@ describe("gift dialog stays open", () => {
     expect(screen.getByRole("dialog").textContent).toContain("Oyuncu 7");
   });
 });
+describe("gift music shortcuts", () => {
+  it("closes the gift drawer and opens the real audio or video selector without sending a gift", () => {
+    const onSend = vi.fn(), onClose = vi.fn(), openMusic = vi.fn();
+    window.addEventListener("source:open-music-list", openMusic);
+    render(<SendGiftDialog open assets={assets} items={[item]} receiverName="Alıcı" onSend={onSend} onPreload={() => {}} onClose={onClose} />);
+    fireEvent.click(screen.getByRole("button", { name: "music:video" }));
+    expect((openMusic.mock.calls[0]?.[0] as CustomEvent).detail).toEqual({ type: "video" });
+    fireEvent.click(screen.getByRole("button", { name: "music:audio" }));
+    expect((openMusic.mock.calls[1]?.[0] as CustomEvent).detail).toEqual({ type: "audio" });
+    expect(onClose).toHaveBeenCalledTimes(2); expect(onSend).not.toHaveBeenCalled();
+    window.removeEventListener("source:open-music-list", openMusic);
+  });
+});
