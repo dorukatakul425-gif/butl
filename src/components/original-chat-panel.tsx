@@ -11,11 +11,11 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
 import { CilizMusicService, YTVideoService, type MusicItem, type MusicService } from "@/lib/music";
-import { pushActionLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
+import { pushActionLine, pushKickoutLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
-import { deleteChatMessage, displaySeatOf, loadRoomChatHistory, onRoomChatDelete, useIsChatAdmin, onRoomChat, profileBySeat, sendChat, useRoom } from "@/lib/room-session";
+import { deleteChatMessage, displaySeatOf, loadRoomChatHistory, onRoomChatDelete, onRoomKickout, useIsChatAdmin, onRoomChat, profileBySeat, sendChat, useRoom } from "@/lib/room-session";
 import type { Profile } from "@/lib/supabase";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import { translate } from "@/lib/ciliz-assets";
@@ -65,7 +65,7 @@ export function OriginalChatPanel() {
     window.addEventListener(HINT_SET_INPUT_EVENT, set);
     return () => window.removeEventListener(HINT_SET_INPUT_EVENT, set);
   }, []);
-  const [receiver, setReceiver] = useState<import("@/lib/music-session").ChatUser | undefined>();
+  const [receiver, setReceiver] = useState<(import("@/lib/music-session").ChatUser & { private?: boolean }) | undefined>();
   const [small, setSmall] = useState(false);
   const { vip } = useViewerProgress();
   useEffect(() => {
@@ -117,12 +117,15 @@ export function OriginalChatPanel() {
     if (!value.trim()) return;
     const to = receiver;
     setText(""); setReceiver(undefined); inputRef.current?.focus();
-    void sendChat(value, to?.id && displaySeatOf(to.id) >= 0 ? to.id : undefined).then(ok => {
+    void sendChat(value, to?.id && displaySeatOf(to.id) >= 0 ? to.id : undefined, Boolean(to?.private)).then(ok => {
       if (ok) window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: value }));
       else showSourceToast("Mesaj gönderilemedi.");
     });
   };
   useEffect(() => onRoomChatDelete(id => removeTextLine(id)), []);
+  const room = useRoom();
+  const lastSeen = useRef(new Map<string, Profile>());
+  useEffect(() => { for (const p of room.players) if (p) lastSeen.current.set(p.id, p); }, [room.players]);
   useEffect(() => onRoomChat(row => {
     const seat = displaySeatOf(row.user_id);
     const sender = seat >= 0 ? profileBySeat(seat) : null;
@@ -130,7 +133,15 @@ export function OriginalChatPanel() {
     const rSeat = row.receiver_id ? displaySeatOf(row.receiver_id) : -1;
     const rec = rSeat >= 0 ? profileBySeat(rSeat) : null;
     const isViewer = row.user_id === VIEWER.id;
-    pushTextLine({ ...profileUser(sender), ...(isViewer ? { isViewer: true } : {}) }, row.text, rec ? { ...profileUser(rec), ...(rec.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, row.id);
+    pushTextLine({ ...profileUser(sender), ...(isViewer ? { isViewer: true } : {}) }, row.text, rec ? { ...profileUser(rec), ...(rec.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, row.id, Boolean(row.is_private));
+  }), []);
+  // ChatPresenter.sendKickout: kick / kicked / save info line for everyone at the table.
+  useEffect(() => onRoomKickout(ev => {
+    const find = (id: string | null) => { if (!id) return null; const seat = displaySeatOf(id); return seat >= 0 ? profileBySeat(seat) : null; };
+    const actor = find(ev.actor_id) ?? find(ev.target_id), target = find(ev.target_id) ?? (ev.kind === 'kicked' ? lastSeen.current.get(ev.target_id) ?? null : null);
+    if (!actor || !target) return;
+    const u = (p: Profile) => ({ ...profileUser(p), ...(p.id === VIEWER.id ? { isViewer: true } : {}) });
+    pushKickoutLine(ev.kind, u(actor), u(target), ev.id);
   }), []);
 
   useEffect(() => {
@@ -173,12 +184,24 @@ export function OriginalChatPanel() {
     let alive = true;
     void loadRoomChatHistory(roomId).then(rows => {
       if (!alive) return;
-      for (const r of rows) pushTextLine({ ...profileUser(r.sender), ...(r.sender.id === VIEWER.id ? { isViewer: true } : {}) }, r.row.text, r.receiver ? { ...profileUser(r.receiver), ...(r.receiver.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, r.row.id);
+      for (const r of rows) pushTextLine({ ...profileUser(r.sender), ...(r.sender.id === VIEWER.id ? { isViewer: true } : {}) }, r.row.text, r.receiver ? { ...profileUser(r.receiver), ...(r.receiver.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, r.row.id, Boolean(r.row.is_private));
     });
     return () => { alive = false; };
   }, [roomId]);
 
   const listService = listType ? services[listType] : null;
+  const trG = (key: string, ...args: Array<string | boolean | undefined>) => (assets?.translation[key] ?? key).replace(/%(\d*)(?:([bd])\(([^)]*)\))?/g, (_m, i: string, kind?: string, opts?: string) => {
+    const arg = args[Number(i) || 0];
+    if (kind === 'b') return (opts ?? '').split('|')[arg ? 0 : 1] ?? '';
+    if (kind === 'd') return (opts ?? '').split('|')[0] ?? '';
+    return arg === undefined ? '' : String(arg);
+  });
+  const kickoutTooltip = (line: import("@/lib/music-session").ChatKickoutLine) => {
+    if (!assets) return "";
+    if (line.icon === "kick") return trG("kickout:chat:kick", line.sender.male, line.receiver.name);
+    if (line.icon === "kicked") return trG("kickout:chat:banish", line.sender.male, line.receiver.name);
+    return line.sender.id === line.receiver.id ? trG("kickout:chat:defend", line.sender.male) : trG("kickout:chat:save", line.sender.male, line.receiver.name);
+  };
 
   return (
     <section ref={sectionRef} className="original-chat chat" aria-label="Sohbet">
@@ -186,7 +209,7 @@ export function OriginalChatPanel() {
       <div ref={scrollRef} onScroll={onChatScroll} className="original-chat-scroll chat__scroll">
         <div className={`chat__body${small ? " chat__small" : ""}`}>
           {session.lines.filter(line => line.kind !== "text" || !blocked.has(line.sender.id)).map((line) => line.kind === "text" ? (
-            <div key={line.key} className={`chat__message chat__noselect${chatMessageIsBold(line.sender, line.receiver) ? " chat__message--bold" : ""}`}>
+            <div key={line.key} className={`chat__message chat__noselect${chatMessageIsBold(line.sender, line.receiver) ? " chat__message--bold" : ""}${line.private ? " chat__message--private" : ""}`}>
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
               <div className={`chat__message-line${selected?.key === line.key ? ' chat__message-line--selected' : ''}`}
                 onContextMenu={e => { e.preventDefault(); selectMessage(line); }} onDoubleClick={() => selectMessage(line)}
@@ -204,6 +227,7 @@ export function OriginalChatPanel() {
                 <span className={`chat__sender-name ${chatNameClass(line.sender)}${(line.sender.isViewer ? decor.stone : line.sender.stone) && assets?.stones[(line.sender.isViewer ? decor.stone : line.sender.stone) ?? ""] ? " chat__sender-name--stone" : ""}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
                   onClick={() => { setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
                 <span className={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}>: </span>
+                {line.private && <span className="chat__private-label">(özel) </span>}
                 {line.receiver && <><span className="chat__sender-name">{line.receiver.name}</span><span>, </span></>}
                 <span className="chat__word-break">{translations[line.key]?.shown ? translations[line.key]?.translated : line.text}</span>
                 {assets && needsTranslation(line.sender, VIEWER_LOCALE, line.text) && (
@@ -243,6 +267,14 @@ export function OriginalChatPanel() {
                 ))}
               </div>
             </div>
+          ) : line.kind === "kickout" ? (
+            <div key={line.key} className="chat__info chat__noselect">
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
+              <div className={`chat__icon chat__icon--${line.icon}`} title={assets ? kickoutTooltip(line) : ""} />
+              <div className="chat__icon chat__icon--arrows" />
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.receiver.photoUrl}')` }} title={line.receiver.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.receiver.id }))} />
+              {line.icon === "kick" && displaySeatOf(line.receiver.id) >= 0 && <div className="chat__reply-button chat__reply-button--save" role="button" aria-label="Koru" onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.receiver.id }))} />}
+            </div>
           ) : (
             <div key={line.key} className="chat__info chat__noselect">
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} />
@@ -274,6 +306,7 @@ export function OriginalChatPanel() {
         if (emojiSendDecision(text, vip) === "warn") { setEmojiWarning(text); return; }
         doSend(text);
       }}>
+        {receiver?.private && <div className="chat__private-badge" role="button" aria-label="Özel mesajı iptal et" title="Sadece bu oyuncu görür" onClick={() => setReceiver(undefined)}>Özel</div>}
         <input ref={inputRef} className="original-chat-input-field" type="text" maxLength={300} placeholder={assets ? translate(assets, 'chat:input_hint') : 'Mesaj yaz'} aria-label="Mesaj yaz" value={receiver ? `${receiver.name}, ${text}` : text}
           onChange={(e) => {
             const prefix = receiver ? `${receiver.name}, ` : "";

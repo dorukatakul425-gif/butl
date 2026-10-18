@@ -14,11 +14,13 @@ export interface PlayingSong {
 export interface ChatMusicLine { kind?: "music"; key: number; sender: MusicSender; artist: string; title: string }
 export interface ChatUser extends ChatProfile { name: string; photoUrl: string }
 export interface ChatGiftLine { kind: "gift"; key: number; sender: ChatUser; receivers: ChatUser[]; giftType: string; image: string; imageWidth?: number; imageHeight?: number; name: string; count: number }
-export interface ChatTextLine { kind: "text"; key: number; sender: ChatUser; receiver?: ChatUser; text: string; messageId?: number }
+export interface ChatTextLine { kind: "text"; key: number; sender: ChatUser; receiver?: ChatUser; text: string; messageId?: number; private?: boolean }
+/** ChatView.createKickoutLine: kicker photo, kick/kicked/save icon, arrows, target photo. */
+export interface ChatKickoutLine { kind: "kickout"; key: number; icon: "kick" | "kicked" | "save"; sender: ChatUser; receiver: ChatUser; eventId: number }
 export type ChatActionPart = { text: string } | { user: ChatUser };
 /** ChatContent.pushActionLine: newcomer / birthday / vip / rewarded-video widget rows. */
 export interface ChatActionLine { kind: "action"; key: number; style: "newcomer" | "birthday" | "vip" | "rewarded-video"; icon: "gift" | "chat" | "vip" | "rewarded-video"; parts: ChatActionPart[]; sender?: ChatUser; seat?: number }
-export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine;
+export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine | ChatKickoutLine;
 
 interface State { song: PlayingSong | null; lines: ChatLine[]; muted: boolean; volume: number }
 const MUSIC_KEY = "deltagame.music.volume";
@@ -29,10 +31,14 @@ const set = (next: Partial<State>) => { state = { ...state, ...next }; listeners
 let seq = 0;
 
 /** Local chat only; real multiplayer transport is not configured. */
-export function pushTextLine(sender: ChatUser, text: string, receiver?: ChatUser, messageId?: number) {
+export function pushKickoutLine(icon: ChatKickoutLine["icon"], sender: ChatUser, receiver: ChatUser, eventId: number) {
+  if (state.lines.some(l => l.kind === "kickout" && l.eventId === eventId)) return;
+  set({ lines: [...state.lines, { kind: "kickout", key: ++seq, icon, sender, receiver, eventId }] });
+}
+export function pushTextLine(sender: ChatUser, text: string, receiver?: ChatUser, messageId?: number, isPrivate = false) {
   if (!text.trim()) return false;
   if (messageId !== undefined && state.lines.some(line => line.kind === 'text' && line.messageId === messageId)) return false;
-  set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, text, ...(receiver ? { receiver } : {}), ...(messageId !== undefined ? { messageId } : {}) }] });
+  set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, text, ...(receiver ? { receiver } : {}), ...(messageId !== undefined ? { messageId } : {}), ...(isPrivate ? { private: true } : {}) }] });
   return true;
 }
 

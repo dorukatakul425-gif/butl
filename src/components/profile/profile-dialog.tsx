@@ -171,7 +171,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   const onSendMessage = () => {
     if (self) { showSourceToast(t("warning:self_chat:desc")); return; }
     if (!player.id) { noServer(); return; }
-    window.dispatchEvent(new CustomEvent("game-reply-to", { detail: { id: player.id, name: player.name, photoUrl: player.photoUrl, male: player.male } }));
+    window.dispatchEvent(new CustomEvent("game-reply-to", { detail: { id: player.id, name: player.name, photoUrl: player.photoUrl, male: player.male, private: true } }));
     onClose();
   };
   const onHarem = () => {

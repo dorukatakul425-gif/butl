@@ -27,7 +27,12 @@ export interface ChatRow {
   receiver_id: string | null;
   text: string;
   created_at: string;
+  is_private?: boolean;
 }
+export interface KickoutEventRow { id: number; room_id: number; actor_id: string | null; target_id: string; kind: 'kick' | 'save' | 'kicked'; kick_at: string | null; created_at: string }
+const kickoutListeners = new Set<(row: KickoutEventRow) => void>();
+/** Telegram user_kickout / user_save / user_kicked, shared with every player at the table. */
+export const onRoomKickout = (fn: (row: KickoutEventRow) => void) => { kickoutListeners.add(fn); return () => { kickoutListeners.delete(fn); }; };
 export interface GiftRow {
   id: number;
   sender_id: string;
@@ -77,7 +82,7 @@ export async function loadRoomChatHistory(roomId: number, now = Date.now()) {
   const sb = getSupabase();
   if (!sb) return [];
   const since = new Date(now - CHAT_HISTORY_HOURS * 3600_000).toISOString();
-  const { data } = await sb.from("chat_messages").select("id, room_id, user_id, receiver_id, text, created_at")
+  const { data } = await sb.from("chat_messages").select("id, room_id, user_id, receiver_id, text, created_at, is_private")
     .eq("room_id", roomId).gte("created_at", since).order("id", { ascending: false }).limit(100);
   const rows = ((data ?? []) as unknown as ChatRow[]).reverse();
   const ids = [...new Set(rows.flatMap(r => [r.user_id, r.receiver_id].filter((x): x is string => !!x)))];
@@ -268,6 +273,8 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
       (p) => { if (current()) chatListeners.forEach((fn) => fn(p.new as ChatRow)); })
     .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages" },
       (p) => { const id = Number((p.old as { id?: number }).id); if (current() && id) chatDeleteListeners.forEach((fn) => fn(id)); })
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "kickout_events", filter: `room_id=eq.${roomId}` },
+      (p) => { if (current()) kickoutListeners.forEach((fn) => fn(p.new as KickoutEventRow)); })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "gift_events", filter: `room_id=eq.${roomId}` },
       (p) => { if (current()) giftListeners.forEach((fn) => fn(p.new as GiftRow)); })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "gesture_events", filter: `room_id=eq.${roomId}` },
@@ -361,10 +368,10 @@ export async function decide(kiss: boolean): Promise<void> {
   await getSupabase()?.rpc("decide", { p_kiss: kiss });
 }
 
-export async function sendChat(text: string, receiverId?: string): Promise<boolean> {
+export async function sendChat(text: string, receiverId?: string, isPrivate = false): Promise<boolean> {
   const sb = getSupabase();
   if (!sb) return false;
-  const { error } = await sb.rpc("send_chat", { p_text: text, p_receiver: receiverId ?? null });
+  const { error } = await sb.rpc("send_chat", { p_text: text, p_receiver: receiverId ?? null, p_private: Boolean(isPrivate && receiverId) } as never);
   return !error;
 }
 

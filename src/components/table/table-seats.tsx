@@ -1,3 +1,4 @@
+import { KickoutSeatFx } from "@/components/table/kickout-seat-fx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCilizAssets } from "@/components/decor/decor-selection";
 import { SendGiftDialog } from "@/components/gifts/send-gift-dialog";
@@ -261,6 +262,7 @@ export function TableSeats() {
       <div ref={hostRef} className="original-table-seats" aria-label="Masadaki oyuncular">
         {activeTable && assets && <BottlePlay key={room.roomId} table={activeTable} assets={assets} />}
       </div>
+      {activeTable && assets && <KickoutSeatFx assets={assets} seatPoint={seat => activeTable.seatPoint(seat)} />}
       <TokensBankHost />
       {assets && (
         <GestureDialog
