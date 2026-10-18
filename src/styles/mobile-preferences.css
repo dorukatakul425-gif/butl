@@ -1,3 +1,5 @@
+@import "./mobile-home-app.css";
+
 .app-preferences {--app-bg:oklch(.988 .003 165);--app-fg:oklch(.24 .025 166);--app-surface:oklch(1 0 0);--app-muted:oklch(.55 .025 166);--app-line:oklch(.91 .017 165);--app-accent:oklch(.93 .035 165);--app-brand:oklch(.57 .14 165);--app-on-brand:oklch(1 0 0);--app-shadow:0 8px 25px oklch(.25 .05 165 / .08);--app-danger:oklch(.62 .21 18);min-height:100dvh;background:var(--app-bg);color:var(--app-fg);}
 .app-preferences[data-theme=dark] {--app-bg:oklch(.18 .009 165);--app-fg:oklch(.96 .007 165);--app-surface:oklch(.235 .012 165);--app-muted:oklch(.73 .013 165);--app-line:oklch(.33 .016 165);--app-accent:oklch(.3 .04 165);--app-brand:oklch(.76 .15 165);--app-on-brand:oklch(.18 .02 165);--app-shadow:0 8px 25px oklch(.1 .01 165 / .28);}
 .app-preferences .mobile-home {--background:var(--app-bg);--foreground:var(--app-fg);--surface:var(--app-surface);--muted:var(--app-accent);--muted-foreground:var(--app-muted);--border:var(--app-line);--accent:var(--app-accent);--primary:var(--app-brand);--primary-foreground:var(--app-on-brand);--shadow:var(--app-shadow);--play-bg:var(--app-accent);}

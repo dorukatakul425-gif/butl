@@ -1,0 +1,76 @@
+/* Home-only mobile application presentation. */
+.app-preferences .mobile-home.mobile-home{--home-canvas:oklch(.965 .006 160);--home-accent-soft:color-mix(in oklch,var(--primary) 9%,var(--surface));--home-stroke:color-mix(in oklch,var(--foreground) 9%,var(--surface));--home-nav-shadow:0 -4px 24px color-mix(in oklch,var(--foreground) 6%,transparent);--home-ease:cubic-bezier(.22,1,.36,1);background:var(--background);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;isolation:isolate;}
+.app-preferences[data-theme=dark] .mobile-home.mobile-home{--home-canvas:oklch(.15 .008 160);}
+.app-preferences .mobile-home.mobile-home .mh-shell{max-width:560px;min-height:100dvh;padding:max(20px,env(safe-area-inset-top)) 20px calc(108px + env(safe-area-inset-bottom));border:0;border-radius:0;box-shadow:none;overflow:visible;display:flex;flex-direction:column;}
+.app-preferences .mobile-home.mobile-home .mh-top{position:relative;top:auto;margin:0;padding:0 0 18px;background:var(--background);backdrop-filter:none;animation:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;border-bottom:1px solid var(--home-stroke);}
+.app-preferences .mobile-home.mobile-home .mh-id{min-width:0;gap:10px;align-items:center;}
+.app-preferences .mobile-home.mobile-home .mh-avatar{background:var(--surface);border:1px solid var(--home-stroke);width:46px;height:46px;padding:2px;box-shadow:none;flex-shrink:0;}
+.app-preferences .mobile-home.mobile-home .mh-id-text{min-width:0;flex:1;}
+.app-preferences .mobile-home.mobile-home .mh-id-text strong{font-size:16px;max-width:100%;color:var(--foreground);line-height:1.35;}
+.app-preferences .mobile-home.mobile-home .mh-id-text span{max-width:100%;font-size:11px;line-height:1.5;letter-spacing:0;}
+.app-preferences .mobile-home.mobile-home .mh-id-text .mh-greeting{font-size:10px;}
+.app-preferences .mobile-home.mobile-home .mh-id-text .mh-user-name-row{margin-top:1px;}
+.app-preferences .mobile-home.mobile-home .mh-top-actions{display:flex;flex-direction:column;align-items:flex-end;gap:7px;}
+.app-preferences .mobile-home.mobile-home .app-controls{gap:6px;}
+.app-preferences .mobile-home.mobile-home .app-controls .app-theme-control{width:36px;height:36px;background:var(--surface);}
+.app-preferences .mobile-home.mobile-home .app-controls .app-language-control{height:36px;}
+.app-preferences .mobile-home.mobile-home .mh-wallet{box-shadow:none;height:32px;gap:5px;border:0;padding:0 0 0 8px;background:var(--home-accent-soft);border-radius:8px;}
+.app-preferences .mobile-home.mobile-home .mh-wallet .mh-coin{display:inline-grid;width:16px;height:16px;font-size:9px;}
+.app-preferences .mobile-home.mobile-home .mh-wallet strong{font-size:12px;max-width:100px;font-variant-numeric:tabular-nums;}
+.app-preferences .mobile-home.mobile-home .mh-wallet small{font-size:9px;}
+.app-preferences .mobile-home.mobile-home .mh-wallet-add{color:var(--primary);height:32px;width:32px;border-radius:8px;background:transparent;}
+.app-preferences .mobile-home.mobile-home .mh-banner{order:2;margin:14px 0 0;width:100%;display:block;position:relative;}
+.app-preferences .mobile-home.mobile-home .mh-banner::before{content:'DeltaGame.az';display:block;width:100%;text-align:left;margin:0 0 12px;font-size:23px;font-weight:800;color:var(--foreground);letter-spacing:0;}
+.app-preferences .mobile-home.mobile-home .mh-banner img{width:100%;max-width:none;aspect-ratio:920 / 391;object-fit:cover;border-radius:8px;box-shadow:none;animation:none;}
+.app-preferences .mobile-home.mobile-home .mh-banner h2{font-size:20px;color:var(--foreground);margin:12px 0 0;}
+.app-preferences .mobile-home.mobile-home .st-section,.app-preferences .mobile-home.mobile-home section[aria-label='Statuslar']{order:1;margin-top:20px;}
+.app-preferences .mobile-home.mobile-home .mh-status-heading{margin-bottom:13px;}
+.app-preferences .mobile-home.mobile-home .mh-status-heading h2{font-size:14px;font-weight:800;}
+.app-preferences .mobile-home.mobile-home .mh-status-list,.app-preferences .mobile-home.mobile-home .mh-users-list{scroll-snap-type:x proximity;overscroll-behavior-x:contain;gap:16px;padding:3px 1px 5px;}
+.app-preferences .mobile-home.mobile-home .mh-story,.app-preferences .mobile-home.mobile-home .mh-user{scroll-snap-align:start;}
+.app-preferences .mobile-home.mobile-home .mh-story-label{font-size:11px;margin-top:6px;min-height:24px;}
+.app-preferences .mobile-home.mobile-home .st-empty{align-self:center;line-height:1.6;font-size:12px;}
+.app-preferences .mobile-home.mobile-home .mh-bot-row{order:3;display:grid;grid-template-columns:minmax(0,1fr) 100px;align-items:center;gap:16px;margin-top:16px;padding:0 0 22px;border-bottom:1px solid var(--home-stroke);}
+.app-preferences .mobile-home.mobile-home .mh-promo{border-radius:8px;box-shadow:none;width:100%;aspect-ratio:640 / 357;object-fit:cover;}
+.app-preferences .mobile-home.mobile-home .mh-bot-row .mh-bot{width:100%;height:auto;min-height:108px;margin:0;gap:5px;}
+.app-preferences .mobile-home.mobile-home .mh-bot-bubble{box-shadow:none;background:var(--primary);color:var(--primary-foreground);border:0;padding:10px 8px;font-size:11px;line-height:1.5;}
+.app-preferences .mobile-home.mobile-home .mh-bot-bubble strong{display:block;color:inherit;}
+.app-preferences .mobile-home.mobile-home .mh-bot-bubble::after{background:var(--primary);border:0;}
+.app-preferences .mobile-home.mobile-home .mh-bot .mh-robot{width:54px;height:63px;animation:none;}
+.app-preferences .mobile-home.mobile-home .mh-bot .mh-robot *{animation:none;}
+.app-preferences .mobile-home.mobile-home .mh-bot .mh-rb-arm-r{animation:mh-rb-wave-r 3.6s ease-in-out infinite;}
+.app-preferences .mobile-home.mobile-home .mh-tanis{order:4;margin:22px 0 0;text-align:left;}
+.app-preferences .mobile-home.mobile-home .mh-tanis h2{font-size:22px;font-weight:800;color:var(--foreground);background:none;letter-spacing:0;}
+.app-preferences .mobile-home.mobile-home .mh-tanis p{font-size:12px;line-height:1.6;margin-top:4px;}
+.app-preferences .mobile-home.mobile-home .mh-users{order:5;margin-top:15px;}
+.app-preferences .mobile-home.mobile-home .mh-user{flex:0 0 80px;}
+.app-preferences .mobile-home.mobile-home .mh-user img{height:68px;width:68px;padding:3px;border-color:var(--home-stroke);}
+.app-preferences .mobile-home.mobile-home .mh-user-name{font-size:11px;}
+.app-preferences .mobile-home.mobile-home .mh-user .mh-follow{min-height:32px;padding:0 10px;border-radius:8px;font-size:10px;}
+.app-preferences .mobile-home.mobile-home .mh-footer{order:6;margin-top:22px;padding-top:14px;border-top:1px solid var(--home-stroke);font-size:11px;gap:8px;}
+.app-preferences .mobile-home.mobile-home .mh-signout{width:44px;height:44px;}
+.app-preferences .mobile-home.mobile-home .mh-notice{order:0;overflow-wrap:anywhere;}
+.app-preferences .mobile-home.mobile-home .bn{z-index:40;padding-bottom:0;}
+.app-preferences .mobile-home.mobile-home .bn-bar{max-width:560px;height:calc(76px + env(safe-area-inset-bottom));padding:10px 8px env(safe-area-inset-bottom);grid-template-columns:repeat(5,minmax(0,1fr));border-radius:0;border:0;border-top:1px solid var(--home-stroke);background:color-mix(in oklch,var(--surface) 94%,transparent);box-shadow:var(--home-nav-shadow);backdrop-filter:blur(16px);}
+.app-preferences .mobile-home.mobile-home .bn-item,.app-preferences .mobile-home.mobile-home .bn-games{min-width:0;min-height:54px;gap:4px;border-radius:8px;justify-content:center;}
+.app-preferences .mobile-home.mobile-home .bn-ico{width:46px;height:28px;border-radius:8px;}
+.app-preferences .mobile-home.mobile-home .bn-label{font-size:10px;letter-spacing:0;line-height:1.4;}
+.app-preferences .mobile-home.mobile-home .bn-games{color:var(--primary);}
+.app-preferences .mobile-home.mobile-home .bn-games-ring{width:38px;height:38px;padding:2px;margin-top:-3px;background:var(--home-accent-soft);box-shadow:none;animation:none;}
+.app-preferences .mobile-home.mobile-home .bn-games-ring img{background:var(--surface);}
+.app-preferences .mobile-home.mobile-home .bn-games .bn-label{margin-top:-2px;}
+.app-preferences .mobile-home.mobile-home .bn-games::before{display:none;}
+.app-preferences .mobile-home.mobile-home button{touch-action:manipulation;}
+.app-preferences .mobile-home.mobile-home .mh-avatar,.app-preferences .mobile-home.mobile-home .mh-bot,.app-preferences .mobile-home.mobile-home .mh-join,.app-preferences .mobile-home.mobile-home .mh-game-action,.app-preferences .mobile-home.mobile-home .bn-ico{transition:transform 180ms var(--home-ease),background-color 180ms ease,opacity 180ms ease;}
+.app-preferences .mobile-home.mobile-home .mh-avatar:active,.app-preferences .mobile-home.mobile-home .mh-bot:active,.app-preferences .mobile-home.mobile-home .mh-game-action:active{transform:scale(.97);}
+.app-preferences .mobile-home.mobile-home .mh-dialog{border-radius:8px;max-height:calc(100dvh - 100px);overflow-y:auto;}
+.app-preferences .mobile-home.mobile-home .mh-dialog.mh-dialog-card{animation:home-sheet-enter 280ms var(--home-ease) both;margin-top:50px;}
+.app-preferences .mobile-home.mobile-home .mh-card-bot{animation:none;}
+.app-preferences .mobile-home.mobile-home .mh-game-action{height:50px;}
+.app-preferences .mobile-home.mobile-home .mh-shop{animation:home-sheet-enter 280ms var(--home-ease);}
+.app-preferences .mobile-home.mobile-home .mh-shop-badge,.app-preferences .mobile-home.mobile-home .mh-admin-badge{letter-spacing:0;}
+.app-preferences .mobile-home.mobile-home .mh-admin-badge,.app-preferences .mobile-home.mobile-home .mh-admin-badge::after,.app-preferences .mobile-home.mobile-home .mh-admin-badge svg{animation:none;}
+@keyframes home-sheet-enter{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@media(min-width:640px){.app-preferences .mobile-home.mobile-home{padding:0;background:var(--home-canvas);}.app-preferences .mobile-home.mobile-home .mh-shell{background:var(--background);padding-top:30px;border-left:1px solid var(--home-stroke);border-right:1px solid var(--home-stroke);}.app-preferences .mobile-home.mobile-home .bn-bar{border-left:1px solid var(--home-stroke);border-right:1px solid var(--home-stroke);}}
+@media(max-width:360px){.app-preferences .mobile-home.mobile-home .mh-shell{padding-left:14px;padding-right:14px;}.app-preferences .mobile-home.mobile-home .mh-id{gap:7px;}.app-preferences .mobile-home.mobile-home .mh-id-text{display:flex;}.app-preferences .mobile-home.mobile-home .mh-avatar{width:40px;height:40px;}.app-preferences .mobile-home.mobile-home .mh-id-text strong{font-size:14px;}.app-preferences .mobile-home.mobile-home .mh-bot-row{grid-template-columns:minmax(0,1fr) 92px;gap:10px;}.app-preferences .mobile-home.mobile-home .mh-banner::before{font-size:21px;}}
+@media(prefers-reduced-motion:reduce){.app-preferences .mobile-home.mobile-home *,.app-preferences .mobile-home.mobile-home *::before,.app-preferences .mobile-home.mobile-home *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}

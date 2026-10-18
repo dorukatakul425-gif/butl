@@ -1,0 +1,1 @@
+- Keep mobile homepage presentation in mobile-home-app.css, imported by mobile-preferences.css and scoped with .app-preferences .mobile-home.mobile-home; specificity preserves the redesign without altering account, game, social or theme behavior.
