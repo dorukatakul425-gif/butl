@@ -11,7 +11,7 @@ import type { SeatPlayer } from "@/components/table/table-seats";
 import { useSourceFeatureSession } from "@/lib/source-feature-session";
 import { SourceProfileSettings } from "@/components/profile/source-own-profile";
 import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast, OPEN_BANK_EVENT } from "@/components/source-dialogs";
-import { formatHarem, formatStats, leagueCupImage, okProfileUrl, splitStatusEmoji, OPEN_LEAGUE_EVENT, type ServerUserProfile } from "@/lib/user-profile";
+import { formatHarem, formatStats, leagueCupImage, splitStatusEmoji, OPEN_LEAGUE_EVENT, type ServerUserProfile } from "@/lib/user-profile";
 import { TG_SUPPORT_EMAIL as SUPPORT_EMAIL, CLIENT_VERSION } from "@/components/settings/settings-items";
 
 const Div = (p: React.HTMLAttributes<HTMLDivElement>) => <div role={p.onClick ? "button" : undefined} {...p} />;
@@ -40,7 +40,7 @@ function SourceStatus({ text }: { text: string }) {
   </>;
 }
 
-/** Port of UserProfileDialog + UserProfilePresenter (OK.ru client 1.6.393). */
+/** Port of UserProfileDialog + UserProfilePresenter (Telegram client 1.6.393). */
 export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, onMusic, profile: profileProp = null }: {
   player: SeatPlayer; self: boolean; assets: CilizAssets; onClose: () => void;
   onGift: () => void; onDecor: () => void; onMusic: () => void;
@@ -72,7 +72,6 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   const stats = profile ? formatStats(profile) : null;
   const userId = self ? feature.viewerId ?? undefined : player.id;
   const harem = formatHarem(self, userId ?? "", profile);
-  const socialHref = okProfileUrl(userId);
   // Source useResizeSensor: the photo is a square of min(popup width, popup height).
   useLayoutEffect(() => {
     const el = sectionRef.current; if (!el) return;
@@ -224,9 +223,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
           </div>
           <div className="user-profile__actions user-profile__actions--justify">
             <Button variant="ghost" className={`user-profile__action user-profile__action--kickout-${feature.kickout?.targets[player.id ?? '']?.kickAt ? 'save' : self ? 'self' : 'kick'}`} aria-label={t('kickout:header')} title={t('kickout:header')} onClick={() => setPopup('kickout')} />
-            {socialHref
-              ? <a className="user-profile__action user-profile__action--ok" href={socialHref} target="_blank" rel="noreferrer" aria-label="DAT" />
-              : <div className="user-profile__action user-profile__action--ok user-profile__action--disabled" aria-label="DAT" />}
+            {/* Telegram build (TGSocial) has no getProfileUrl, so no social profile button is rendered. */}
             {self
               ? <Div className="user-profile__action user-profile__action--music" aria-label="Müzik" onClick={onMusic} />
               : <Div className="user-profile__action user-profile__action--gift" aria-label="Hediye" onClick={onGift} />}
@@ -258,8 +255,8 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       </div></div>
       <SourceButtons cancel={{ title: t("dlg:report_user:cancel"), onClick: () => setPopup(null) }}
         confirm={{ title: t("dlg:report_user:send"), onClick: () => {
-          const body = [`User id: ${feature.viewerId ?? ""}`, "Social: ok", `Accused User: ${player.id ?? ""}`, `Accused User social: ${profile?.social ?? ""}`, `Date: ${new Date().toISOString()}`, `Client version: ${CLIENT_VERSION}`, "Text:", report].join("\n");
-          window.open(`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`HTML5 User report: ok_id: ${player.id ?? ""}`)}&body=${encodeURIComponent(body)}`, "_blank");
+          const body = [`User id: ${feature.viewerId ?? ""}`, "Social: tg", `Accused User: ${player.id ?? ""}`, `Accused User social: ${profile?.social ?? ""}`, `Date: ${new Date().toISOString()}`, `Client version: ${CLIENT_VERSION}`, "Text:", report].join("\n");
+          window.open(`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`HTML5 User report: tg_id: ${player.id ?? ""}`)}&body=${encodeURIComponent(body)}`, "_blank");
           setPopup(null);
         } }} />
     </SourceDialogLayer>}
