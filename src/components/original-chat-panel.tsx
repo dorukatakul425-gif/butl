@@ -321,6 +321,13 @@ export function OriginalChatPanel() {
                 ))}
               </div>
             </div>
+          ) : line.kind === "gesture" ? (
+            <div key={line.key} className="chat__info chat__info--multiline chat__info--gesture chat__noselect">
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
+              <div className="chat__gesture-icons">
+                <img className="chat__gesture" src={line.image} width={40} height={40} title={line.gestureName} alt="" crossOrigin="anonymous" />
+              </div>
+            </div>
           ) : line.kind === "harem" ? (
             <div key={line.key} className="chat__info chat__info--multiline chat__noselect">
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
