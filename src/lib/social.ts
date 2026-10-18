@@ -8,7 +8,7 @@ export type Friendship = { id: string; requester_id: string; addressee_id: strin
 export type DirectMessage = { id: string; sender_id: string; recipient_id: string; body: string; kind?: "text" | "image" | "audio"; media_path?: string | null; duration_ms?: number | null; deleted_at?: string | null; created_at: string; read_at: string | null; pending?: boolean };
 export type SocialProfile = { id: string; name: string; username: string; photo_url: string | null };
 export type FriendState = "none" | "sent" | "received" | "friends";
-export type SocialNotice = { id: string; kind: "message" | "request" | "accepted"; from: string; title: string; body: string; photo: string | null };
+export type SocialNotice = { id: string; kind: "message" | "request" | "accepted" | "harem"; from: string; title: string; body: string; photo: string | null };
 
 export const MAX_MESSAGE_LENGTH = 1000;
 
@@ -310,6 +310,13 @@ export function startSocial(me: string) {
     })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "direct_messages", filter: `recipient_id=eq.${me}` }, payload => {
       if (live()) void handleIncoming(payload.new as DirectMessage);
+    })
+    // Admiration alerts: someone else admired the same person, or the person rejected you.
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "profile_notifications", filter: `user_id=eq.${me}` }, payload => {
+      if (!live()) return;
+      const n = payload.new as { id: number; actor_id: string | null; body: string };
+      void (n.actor_id ? profileOf(n.actor_id) : Promise.resolve(undefined)).then(p =>
+        notify({ id: `h-${n.id}`, kind: "harem", from: n.actor_id ?? me, title: "Hayranlık", body: n.body, photo: p?.photo_url ?? null }));
     })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "direct_messages", filter: `sender_id=eq.${me}` }, payload => {
       if (!live()) return;

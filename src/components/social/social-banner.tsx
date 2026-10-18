@@ -1,4 +1,4 @@
-import { MessageCircle, UserPlus, UserCheck, X } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, UserCheck, X } from "lucide-react";
 import { translate, usePreferences } from "@/lib/app-preferences";
 import { dismissNotice, openSocialNotice, useSocial } from "@/lib/social";
 
@@ -10,7 +10,7 @@ export function SocialBanner({ defaultPhoto }: { defaultPhoto: string }) {
   return <div className="sb-stack" aria-live="polite">
     <style>{SB_STYLES}</style>
     {notices.map(n => {
-      const Icon = n.kind === "message" ? MessageCircle : n.kind === "request" ? UserPlus : UserCheck;
+      const Icon = n.kind === "message" ? MessageCircle : n.kind === "request" ? UserPlus : n.kind === "harem" ? Heart : UserCheck;
       return <div key={n.id} className="sb-card" role="status">
         <button type="button" className="sb-main" onClick={() => { dismissNotice(n.id); openSocialNotice(n); }}>
           <span className="sb-photo"><img src={n.photo || defaultPhoto} alt="" /><span className={"sb-kind sb-" + n.kind}><Icon size={11} strokeWidth={2.6} /></span></span>
