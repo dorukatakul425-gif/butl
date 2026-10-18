@@ -1,0 +1,488 @@
+.roulette__animated-currency-icon--heart{
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%3C!--%20Generator%3A%20Adobe%20Illustrator%2022.0.1%2C%20SVG%20Export%20Plug-In%20.%20SVG%20Version%3A%206.00%20Build%200)%20%20--%3E%0A%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%20%20%20%20%20width%3D%2272%22%20height%3D%2266%22%0A%09%20viewBox%3D%220%200%2072%2056%22%20style%3D%22enable-background%3Anew%200%200%2072%2056%3B%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cstyle%20type%3D%22text%2Fcss%22%3E%0A%09.st0%7Bfill%3Aurl(%23SVGID_1_)%3B%7D%0A%3C%2Fstyle%3E%0A%3ClinearGradient%20id%3D%22SVGID_1_%22%20gradientUnits%3D%22userSpaceOnUse%22%20x1%3D%2236%22%20y1%3D%221.6667%22%20x2%3D%2236%22%20y2%3D%2246.3676%22%3E%0A%09%3Cstop%20%20offset%3D%220%22%20style%3D%22stop-color%3A%23F6711C%22%2F%3E%0A%09%3Cstop%20%20offset%3D%221%22%20style%3D%22stop-color%3A%23DC3600%22%2F%3E%0A%3C%2FlinearGradient%3E%0A%3Cpath%20class%3D%22st0%22%20d%3D%22M51.2%2C1.1c-7.9%2C0-13%2C4.6-14.6%2C6.4c-0.3%2C0.3-0.8%2C0.3-1.2%2C0c-1.6-1.8-6.7-6.4-14.6-6.4c-9.7%2C0-19.7%2C8.1-19.7%2C19.3%0A%09s8%2C16.5%2C15.9%2C22c6.4%2C4.5%2C13.4%2C9.3%2C16.8%2C11.7c1.3%2C0.9%2C3.1%2C0.9%2C4.4%2C0C41.6%2C51.8%2C48.6%2C47%2C55%2C42.5c7.8-5.5%2C15.9-10.9%2C15.9-22%0A%09S60.9%2C1.1%2C51.2%2C1.1z%22%2F%3E%0A%3C%2Fsvg%3E%0A");}
+.popup--roulette{
+  background-color: transparent;}
+.roulette-jackpot__x_popup{
+  justify-content: space-between;
+  border-radius: 16px;
+  background-color: rgba(0, 0, 0, 0.8);
+  height: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  max-width: 236px;
+  width: 80%;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);}
+.roulette-jackpot__x_popup__content{
+  display: flex;
+  padding: 10px 10px 0 10px;
+  -webkit-column-gap: 10px;
+     -moz-column-gap: 10px;
+          column-gap: 10px;}
+.roulette-jackpot__x_popup__buttons{
+  padding: 10px;}
+.roulette-jackpot__x_button{
+  width: 100%;
+  border-radius: 6px;}
+.roulette-jackpot__name{
+  display: inline-block;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 15px;
+  margin-right: 4px;
+  max-width: 100%;
+  vertical-align: text-bottom;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;}
+.roulette-jackpot__name--premium{
+  background-color: #e9a103;
+  background-image: linear-gradient(to bottom, #f0d033 0%, #d98300);
+  color: transparent;
+  -webkit-background-clip: text;
+          background-clip: text;}
+.roulette-jackpot__message{
+  font-size: 13px;
+  color: white;
+  overflow: hidden;}
+.roulette-jackpot__photo{
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;}
+.roulette-jackpot__heart{
+  display: inline;
+  background-size: 14px 11px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-position: left;
+  font-weight: bold;
+  padding-left: 16px;}
+.roulette-jackpot__close{
+  background-size: 16px 16px;
+  height: 16px;
+  width: 16px;
+  flex-shrink: 0;
+  cursor: pointer;
+  -webkit-filter: brightness(0) invert(1);
+          filter: brightness(0) invert(1);}
+.roulette__x_popup{
+  background-color: transparent;
+  box-shadow: none;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: initial;
+  max-width: initial;
+  max-height: 100%;
+  max-height: calc(100% - env(safe-area-inset-top));}
+.roulette__scroll-fade{
+  position: absolute;
+  top: 0;
+  height: 80px;
+  width: 100%;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.65), transparent);
+  opacity: 0;
+  -webkit-animation: roulette-scroll-fade-appear 200ms ease forwards;
+          animation: roulette-scroll-fade-appear 200ms ease forwards;}
+.roulette__x_popup__content{
+  padding: 0;
+  display: grid;
+  -webkit-column-gap: 40px;
+     -moz-column-gap: 40px;
+          column-gap: 40px;
+  row-gap: 48px;
+  grid-template-columns: 2fr minmax(252px, 1fr);
+  grid-template-areas: "guide wheel" "jackpot wheel";
+  color: #ffffff;
+  font-size: 14px;
+  padding: 0 16px 0 16px;}
+.roulette__x_popup__content{
+    padding: 70px 8px 20px 8px;}
+.portrait .roulette__x_popup__content{
+  display: flex;
+  flex-direction: column;
+  row-gap: 28px;
+  max-width: 90%;}
+.landscape .roulette__x_popup__content{
+  max-width: 700px;}
+.roulette__x_button{
+  min-width: 140px;}
+.roulette__close{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  min-height: 30px;
+  height: 30px;
+  z-index: 1;
+  cursor: pointer;
+  background-color: #9dc93b;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-sizing: border-box;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3);}
+.roulette__close-icon{
+  background-size: 11px 11px;
+  height: 11px;
+  width: 11px;}
+.roulette__gold{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  background-repeat: no-repeat;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 1;}
+.roulette__gold--header-big{
+  background-size: 74px 67px;
+  height: 67px;
+  width: 74px;}
+.roulette__gold--header-small{
+  background-size: 42px 38px;
+  height: 38px;
+  width: 42px;}
+.roulette__gold-title{
+  position: absolute;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.55);}
+.roulette__gold-title--header-big{
+  font-size: 19px;}
+.roulette__gold-title--header-small{
+  font-size: 12px;}
+.roulette__gold-title--header-big.roulette__gold-title--header-up{
+  left: 72px;
+  top: 19px;}
+.roulette__gold-title--header-big.roulette__gold-title--header-side{
+  bottom: -17px;}
+.roulette__gold-title--header-small.roulette__gold-title--header-up{
+  left: 43px;
+  top: 8px;}
+.roulette__gold-title--header-small.roulette__gold-title--header-side{
+  bottom: -10px;}
+.roulette__help-icon{
+  background-size: 11px 15px;
+  height: 15px;
+  width: 11px;
+  position: absolute;
+  top: 9px;
+  left: 11px;
+  cursor: pointer;}
+.roulette__animated-currency-icon{
+  position: fixed;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  pointer-events: none;}
+.roulette__animated-currency-icon--chance{
+  background-size: 18px 18px;
+  height: 18px;
+  width: 18px;}
+.roulette__animated-currency-icon--heart{
+  background-size: 22px 18px;
+  height: 18px;
+  width: 22px;}
+.roulette__paper{
+  border-radius: 15px;
+  background-color: rgba(0, 0, 0, 0.4);}
+.roulette__paper--guide{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  position: relative;
+  padding: 8px 16px 10px 16px;
+  grid-area: guide;}
+.landscape .roulette__paper--guide{
+  align-self: end;}
+.roulette__paper--wheel{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: transparent;
+  grid-area: wheel;}
+.roulette__paper--jackpot{
+  display: flex;
+  padding: 8px;
+  min-height: 54px;
+  height: 54px;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;}
+.roulette__paper--jackpot.roulette__paper--animate-out{
+  -webkit-animation: jackpot-user-change-out 333ms;
+          animation: jackpot-user-change-out 333ms;}
+.roulette__paper--jackpot.roulette__paper--animate-in{
+  -webkit-animation: jackpot-user-change-in 400ms;
+          animation: jackpot-user-change-in 400ms;}
+.roulette__glare{
+  position: absolute;
+  overflow: hidden;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;}
+.roulette__glare--animate::before{
+  position: absolute;
+  left: -200px;
+  top: 0;
+  content: '';
+  width: 90px;
+  height: 200%;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.35) 51%, rgba(255, 255, 255, 0) 100%);
+  -webkit-animation: jackpot-glare 1000ms;
+          animation: jackpot-glare 1000ms;
+  -webkit-transform: translate(0, -25%) rotate(28deg);
+          transform: translate(0, -25%) rotate(28deg);}
+.roulette__title{
+  font-weight: bold;
+  color: #ffef6c;
+  line-height: 1.43;}
+.roulette__description{
+  font-size: 14px;
+  margin: 8px 0;
+  text-align: center;}
+.roulette__chances{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 10px;}
+.roulette__chances-stats{
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-left: 8px;
+  cursor: pointer;
+  height: 28px;
+  border: solid 1px #9dc93b;
+  box-sizing: border-box;
+  border-radius: 14px;
+  background-size: 18px 18px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-position: 8px;
+  padding: 0 12px 0 30px;
+  font-weight: bold;}
+.roulette__chances-plus{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background-color: #9dc93b;
+  border-radius: 7px;
+  outline: solid 1px rgba(0, 0, 0, 0.5);
+  right: -6px;}
+.roulette__chances-plus-icon{
+  background-size: 8px 8px;
+  height: 8px;
+  width: 8px;}
+.roulette__chances-tooltip{
+  display: flex;
+  position: absolute;
+  border-radius: 6px;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);
+  top: 30px;
+  background-color: #ffffff;
+  z-index: 1;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+  font-weight: normal;}
+.roulette__chances-tooltip-arrow{
+  background-size: 18px 10px;
+  height: 10px;
+  width: 18px;
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);}
+.roulette__premium{
+  background-size: 40px 52px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-position: -2px center;
+  width: 38px;
+  min-height: 64px;
+  background-color: #fdb100;
+  flex-shrink: 0;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;}
+.roulette__chances-tooltip-text{
+  padding: 8px;
+  color: #000000;
+  text-align: center;
+  max-width: 170px;}
+.roulette__chances-tooltip-arrow,.roulette__premium,.roulette__chances-tooltip-text{
+  pointer-events: none;}
+.roulette__daily-bonus{
+  display: inline-flex;
+  background-size: 18px 18px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-position: left;
+  font-weight: bold;
+  padding-left: 21px;
+  height: 18px;
+  align-items: center;}
+.roulette__daily-bonus--shifted{
+  margin: 4px 0 -4px 0;}
+.roulette__wheel-section{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 252px;
+  height: 252px;}
+.roulette__wheel-overflow-container{
+  width: 222px;
+  height: 222px;
+  overflow: hidden;}
+.roulette__wheel{
+  background-size: 222px 222px;
+  height: 222px;
+  width: 222px;}
+.roulette__wheel-item{
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform-origin: left center;
+          transform-origin: left center;
+  font-size: 11px;
+  font-weight: bold;}
+.roulette__wheel-item--jackpot_gold{
+  font-size: 14px;
+  color: white;}
+.roulette__wheel-item--jackpot_gold::before{
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 3px #00ca9b;
+  z-index: -1;
+  left: 32px;
+  top: 7px;}
+.roulette__wheel-item--jackpot_gold.roulette__wheel-item--ios::before{
+  top: 6.5px;}
+.roulette__wheel-frame{
+  background-size: 252px 252px;
+  height: 252px;
+  width: 252px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);}
+.roulette__wheel-frame::after{
+  content: '';
+  background-size: 66px 59px;
+  height: 59px;
+  width: 66px;
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+  left: -36px;}
+.roulette__wheel-center{
+  background-size: 52px 46px;
+  height: 46px;
+  width: 52px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);}
+.roulette__reward-icon{
+  background-size: 30px 30px;
+  height: 30px;
+  width: 30px;
+  margin-right: 2px;}
+.roulette__spins{
+  display: flex;
+  margin: 14px 0;
+  line-height: 20px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);}
+.roulette__spins--hidden{
+  visibility: hidden;}
+.roulette__spins-price{
+  background-size: 24px 24px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-position: left center;
+  font-weight: bold;
+  padding-left: 26px;
+  height: 23px;
+  margin-left: 5px;}
+.roulette__jackpot-info{
+  display: flex;
+  flex-direction: column;
+  line-height: 18px;
+  min-width: 0;
+  flex: 1;}
+.roulette__jackpot-title{
+  font-weight: bold;
+  color: #ffef6c;}
+.roulette__photo{
+  flex-shrink: 0;
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  margin-right: 8px;}
+.roulette__message{
+  overflow: hidden;}
+.roulette__name{
+  display: inline-block;
+  font-weight: bold;
+  margin-right: 4px;
+  max-width: 100%;
+  vertical-align: text-bottom;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;}
+.roulette__name--premium{
+  background-color: #e9a103;
+  background-image: linear-gradient(to bottom, #f0d033 0%, #d98300);
+  color: transparent;
+  -webkit-background-clip: text;
+          background-clip: text;}
+.roulette__heart{
+  background-size: 18px 14px;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: inline;
+  background-position: left;
+  font-weight: bold;
+  padding-left: 20px;
+}}}
