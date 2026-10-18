@@ -55,5 +55,5 @@
 .original-chat-gift { font-size: 23px; }
 /* ChatContent.setDecor stone badge, original preloader.css */
 .chat__sender-name--stone { max-width: calc(100% - 2em); }
-.chat__stone { display: inline-block; position: relative; width: 14px; height: 14px; margin-right: -2px; box-sizing: content-box; vertical-align: bottom; }
-.chat__stone-img { position: absolute; top: 2.5px; left: 0; }
+.chat__stone { display: inline-block; position: relative; width: 14px; height: 14px; margin-right: 2px; box-sizing: content-box; vertical-align: bottom; line-height: 17px; }
+.chat__stone-img { position: absolute; top: 1.5px; left: 0; width: 14px; height: 14px; }

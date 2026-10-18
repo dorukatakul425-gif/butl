@@ -1,3 +1,4 @@
+import { useViewerProgress } from "@/lib/viewer-progress";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { loadProfileBio } from "@/lib/profile-social";
@@ -57,6 +58,14 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   profile?: ServerUserProfile | null;
 }) {
   const t = (key: string, ...a: string[]) => translate(assets, key, ...a);
+  const viewerVip = useViewerProgress().vip;
+  const [vipNow, setVipNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (self || !player.vipUntil || player.vipUntil <= Date.now()) return;
+    const id = window.setTimeout(() => setVipNow(Date.now()), Math.min(player.vipUntil - Date.now() + 50, 2 ** 31 - 1));
+    return () => window.clearTimeout(id);
+  }, [self, player.vipUntil, vipNow]);
+  const vipLabel = self ? viewerVip : Boolean(player.vipUntil && player.vipUntil > vipNow);
   const [statsState, setStatsState] = useState<"narrowed" | "expanded">("narrowed");
   const [popup, setPopup] = useState<"settings" | "claims" | "report-photo" | "report-user" | "achievements" | "kickout" | null>(null);
   const [loaded, setLoaded] = useState<ServerUserProfile | null>(null);
@@ -259,6 +268,8 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
           </div>
         </div>
       </div>
+      {/* UserProfileDialog: label = user.detail.top ? 'top' : user.isVip ? 'vip' : '' (top-left ribbon). */}
+      {vipLabel && <div className="user-profile__label user-profile__label--vip" />}
     </section>
 
     {popup === "claims" && createPortal(<div className="source-feature-layer">

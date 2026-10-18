@@ -258,6 +258,12 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
       if (current()) { await sb.rpc("room_tick", { p_room: roomId }); void loadPlayers(roomId, mySeat); }
     });
     if (++pulse % 5 === 0) { void loadPlayers(roomId, mySeat); void refreshRoom(); }
+    // A late keepalive leave_room from the previous page can delete the fresh seat: re-join when it is gone.
+    if (pulse % 2 === 0) void sb.auth.getUser().then(async ({ data: u }) => {
+      if (!u.user || !current()) return;
+      const { data: mine, error: missingErr } = await sb.from("room_players").select("room_id").eq("user_id", u.user.id).maybeSingle();
+      if (!missingErr && !mine && current()) void joinRoom().catch(() => undefined);
+    });
   }, 2000);
   await Promise.all([loadPlayers(roomId, mySeat), refreshRoom()]);
   nudgeRoom();

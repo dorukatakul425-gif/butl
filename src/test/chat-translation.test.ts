@@ -3,8 +3,8 @@ import { needsTranslation } from "@/lib/chat-translation";
 
 describe("chat translation link", () => {
   it("shows only for other players with a different locale", () => {
-    expect(needsTranslation({ locale: "ru" }, "tr")).toBe(true);
-    expect(needsTranslation({ locale: "tr" }, "tr")).toBe(false);
+    expect(needsTranslation({ locale: "ru" }, "tr", "привет")).toBe(true);
+    expect(needsTranslation({ locale: "tr" }, "tr", "merhaba")).toBe(false);
     expect(needsTranslation({}, "tr")).toBe(false);
     expect(needsTranslation({ locale: "ru", isViewer: true }, "tr")).toBe(false);
   });
@@ -16,5 +16,11 @@ describe("chat translation by message language", () => {
     expect(needsTranslation({}, "tr", "hello how are you")).toBe(true);
     expect(needsTranslation({}, "tr", "merhaba nasılsın")).toBe(false);
     expect(needsTranslation({ isViewer: true }, "tr", "hello")).toBe(false);
+  });
+});
+
+describe("unknown-language messages", () => {
+  it("still offers translation when the language cannot be recognised", () => {
+    expect(needsTranslation({}, "tr", "Pesyer")).toBe(true);
   });
 });

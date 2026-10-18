@@ -41,6 +41,8 @@ export interface SeatPlayer {
   zodiac?: number;
   /** No player at this server seat. */
   empty?: boolean;
+  /** Paid VIP period still running (profiles.vip_until in the future). */
+  vipUntil?: number;
 }
 
 export const VIEWER_SEAT = 5;
@@ -153,7 +155,7 @@ export function TableSeats() {
     for (const player of next) if (player.id && blocked.has(player.id)) player.photoUrl = ignoredPhoto;
     playersRef.current = next;
     // Wallet updates (every gift) must not rebuild seats: only redraw when what is drawn changes.
-    const sig = JSON.stringify(next.map(p => [p.id, p.name, p.photoUrl, p.frame, p.stone, p.male, p.empty, p.age, p.city]));
+    const sig = JSON.stringify(next.map(p => [p.id, p.name, p.photoUrl, p.frame, p.stone, p.male, p.empty, p.age, p.city, p.vipUntil]));
     if (sig === seatSig.current.sig && seatSig.current.table === activeTable) return;
     seatSig.current = { sig, table: activeTable };
     activeTable.setPlayers(next);
@@ -350,6 +352,7 @@ function buildPlayers(assets: CilizAssets, profiles: Array<Profile | null>, fram
       isNew: Date.now() - Date.parse(p.created_at) < 24 * 3600 * 1000,
       ...(p.age ? { age: p.age } : {}),
       ...(p.city ? { city: p.city } : {}),
+      ...(p.vip_until && Date.parse(p.vip_until) > Date.now() ? { vipUntil: Date.parse(p.vip_until) } : {}),
     };
   });
 }

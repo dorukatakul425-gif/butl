@@ -48,8 +48,11 @@ function Index() {
     const stopAchievements = startCloudAchievements();
     const stopBlocks = startCloudBlocks(auth.session.user.id);
     const bye = () => leaveRoomNow();
+    // Back/forward cache restores the page after pagehide already freed the seat: sit down again.
+    const back = (e: PageTransitionEvent) => { if (e.persisted) void joinRoom().catch(() => undefined); };
     window.addEventListener("pagehide", bye);
-    return () => { alive = false; stopAchievements(); stopBlocks(); window.removeEventListener("pagehide", bye); void leaveRoom(); };
+    window.addEventListener("pageshow", back);
+    return () => { alive = false; stopAchievements(); stopBlocks(); window.removeEventListener("pagehide", bye); window.removeEventListener("pageshow", back); void leaveRoom(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.ready, auth.session?.user.id, Boolean(auth.profile), auth.profile?.profile_setup_done]);
   if (auth.profile && auth.profile.profile_setup_done === false) return <ProfileSetupDialog onDone={() => undefined} />;

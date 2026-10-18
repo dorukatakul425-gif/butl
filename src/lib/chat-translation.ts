@@ -33,8 +33,11 @@ export function detectLocale(text: string): string | undefined {
 /** ChatPresenter.needsTranslation: other players only; sender locale or detected text language differs from the viewer's. */
 export function needsTranslation(sender: { locale?: string; isViewer?: boolean }, viewerLocale: string | undefined, text = "") {
   if (sender.isViewer || !viewerLocale) return false;
-  const detected = detectLocale(text) ?? viewerLocale;
-  if (!sender.locale) return !eqLocale(detected, viewerLocale);
+  if (!text.trim()) return false;
+  const found = detectLocale(text);
+  // No server locale: offer translation unless the text is clearly in the viewer's language.
+  if (!sender.locale) return !found || !eqLocale(found, viewerLocale);
+  const detected = found ?? viewerLocale;
   return !eqLocale(sender.locale, viewerLocale) || !eqLocale(detected, viewerLocale);
 }
 

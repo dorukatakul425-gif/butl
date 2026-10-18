@@ -29,9 +29,17 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
   const ref = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
   const img = dialogImage(assets, item.image, 60, 60);
-  const hold = useRef<{ delay?: number; repeat?: number; fired: boolean }>({ fired: false });
+  const hold = useRef<{ delay?: number; repeat?: number; fired: boolean; x?: number; y?: number; moved?: boolean }>({ fired: false });
   const stopHold = () => { window.clearTimeout(hold.current.delay); window.clearInterval(hold.current.repeat); };
   useEffect(() => () => { window.clearTimeout(timer.current); stopHold(); }, []);
+  // Scrolling the gift list is never a tap: cancel any pending hold-to-send.
+  useEffect(() => {
+    const root = ref.current?.closest(".popup__content");
+    if (!root) return;
+    const onScroll = () => { hold.current.moved = true; stopHold(); };
+    root.addEventListener("scroll", onScroll, { passive: true });
+    return () => root.removeEventListener("scroll", onScroll);
+  }, []);
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
@@ -55,7 +63,7 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
     timer.current = window.setTimeout(() => el.classList.remove("send-gift__item--active"), 500);
   };
   return (
-    <div ref={ref} className={`${cls("item")} touch-manipulation`} data-code={item.type} title={item.name} onClick={() => { if (hold.current.fired) { hold.current.fired = false; return; } stopHold(); activate(); }} onPointerEnter={() => onPreload(item)} onPointerDown={() => { onPreload(item); stopHold(); hold.current.fired = false; if (item.lock) return; hold.current.delay = window.setTimeout(() => { hold.current.fired = true; activate(); hold.current.repeat = window.setInterval(activate, 120); }, 350); }} onPointerUp={stopHold} onPointerLeave={stopHold} onPointerCancel={stopHold} onContextMenu={e => e.preventDefault()} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
+    <div ref={ref} className={`${cls("item")} touch-manipulation`} data-code={item.type} title={item.name} onClick={() => { if (hold.current.fired || hold.current.moved) { hold.current.fired = false; hold.current.moved = false; return; } stopHold(); activate(); }} onPointerEnter={() => onPreload(item)} onPointerDown={e => { onPreload(item); stopHold(); hold.current.fired = false; hold.current.moved = false; hold.current.x = e.clientX; hold.current.y = e.clientY; if (item.lock) return; hold.current.delay = window.setTimeout(() => { hold.current.fired = true; activate(); hold.current.repeat = window.setInterval(activate, 120); }, 350); }} onPointerMove={e => { if (Math.abs(e.clientX - (hold.current.x ?? e.clientX)) > 8 || Math.abs(e.clientY - (hold.current.y ?? e.clientY)) > 8) { hold.current.moved = true; stopHold(); } }} onPointerUp={stopHold} onPointerLeave={stopHold} onPointerCancel={() => { hold.current.moved = true; stopHold(); }} onContextMenu={e => e.preventDefault()} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
       <div className={cls("image-block")}>
         <img className={cls("image", [item.lock && "locked"])} draggable={false} src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" loading="lazy" decoding="async" />
       </div>
