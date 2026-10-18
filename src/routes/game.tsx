@@ -16,9 +16,6 @@ import { DailyBonusHost } from "@/components/table/daily-bonus-dialog";
 import { startCloudBlocks } from "@/lib/block-session";
 import { SourceHaremNotice } from '@/components/table/source-harem-notice';
 import { ProfileSetupDialog } from "@/components/profile/profile-setup-dialog";
-import { TutorialTable } from "@/components/tutorial/tutorial-table";
-import { getSupabase } from "@/lib/supabase";
-import { refreshProfile } from "@/lib/auth";
 
 export const Route = createFileRoute("/game")({
   head: () => ({
@@ -39,21 +36,12 @@ function Index() {
   const navigate = useNavigate();
   const room = useRoom();
   const [joined, setJoined] = useState(false);
-  const [tutorialDone, setTutorialDone] = useState(false);
-  const finishTutorial = async () => {
-    const sb = getSupabase();
-    if (sb) await sb.rpc("complete_tutorial").catch(() => undefined);
-    await refreshProfile();
-    setTutorialDone(true);
-  };
   useEffect(() => {
     if (!auth.ready) return;
     if (!auth.session || !auth.profile) { void navigate({ to: "/auth" }); return; }
     setViewerProfile(auth.profile);
     // Telegram first entry: gender/age setup must finish before the live room is mounted.
     if (auth.profile.profile_setup_done === false) return;
-    // New Telegram players first play the scripted fake-table tutorial.
-    if (auth.profile.tutorial_done === false && !tutorialDone) return;
     let alive = true;
     void joinRoom().then(() => { if (alive) setJoined(true); }).catch(() => { if (alive) setJoined(false); });
     // Closing the tab frees the seat at once, so others see the player leave immediately.
@@ -68,16 +56,6 @@ function Index() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.ready, auth.session?.user.id, Boolean(auth.profile), auth.profile?.profile_setup_done]);
   if (auth.profile && auth.profile.profile_setup_done === false) return <ProfileSetupDialog onDone={() => undefined} />;
-  if (auth.profile && auth.profile.tutorial_done === false && !tutorialDone) {
-    return (
-      <TutorialTable
-        viewerMale={auth.profile.male}
-        viewerName={auth.profile.name}
-        viewerPhoto={auth.profile.photo_url}
-        onFinish={() => void finishTutorial()}
-      />
-    );
-  }
   if (!joined || !room.roomId) {
     return <main className="grid min-h-dvh place-items-center bg-background p-6 text-center text-foreground">
       <p>{room.error ?? "Masaya bağlanılıyor…"}</p>
