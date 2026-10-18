@@ -68,4 +68,4 @@
 
 - Telegram notifications use the configured direct bot token only after per-call admin authorization; bounded keyset batches return actual Bot API successes and failures, while media uploads require the admin’s own Telegram chat.
 - Profile ribbons prefer authenticated current league promotion-band status over active VIP; original source lacks a server TOP definition, so do not claim the local rule is exact source parity.
-- Telegram avatars are imported only at initial registration; missing avatars retain the Telegram placeholder until a user saves a photo.
+- On each verified Telegram login, refresh identity and accessible private-chat bio through server-only Bot API calls; distinguish confirmed removal from API failure and use new avatar object keys so cached photos cannot mask changes.
