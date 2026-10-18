@@ -12,6 +12,8 @@ alter table public.profiles
   add column if not exists tutorial_done boolean not null default true;
 
 -- Marks the scripted first-entry tutorial as finished for the signed-in player.
+-- Like the original client's TutorialFinishedDialog (addViewerGold), finishing
+-- the tutorial grants a one-time +50 gold bonus.
 create or replace function public.complete_tutorial()
 returns void
 language plpgsql
@@ -22,7 +24,10 @@ begin
   if auth.uid() is null then
     raise exception 'not authenticated';
   end if;
-  update public.profiles set tutorial_done = true where id = auth.uid();
+  update public.profiles
+  set tutorial_done = true,
+      gold = gold + 50
+  where id = auth.uid() and tutorial_done = false;
 end;
 $$;
 

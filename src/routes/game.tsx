@@ -69,7 +69,14 @@ function Index() {
   }, [auth.ready, auth.session?.user.id, Boolean(auth.profile), auth.profile?.profile_setup_done]);
   if (auth.profile && auth.profile.profile_setup_done === false) return <ProfileSetupDialog onDone={() => undefined} />;
   if (auth.profile && auth.profile.tutorial_done === false && !tutorialDone) {
-    return <TutorialTable viewerMale={auth.profile.male} onFinish={() => void finishTutorial()} />;
+    return (
+      <TutorialTable
+        viewerMale={auth.profile.male}
+        viewerName={auth.profile.name}
+        viewerPhoto={auth.profile.photo_url}
+        onFinish={() => void finishTutorial()}
+      />
+    );
   }
   if (!joined || !room.roomId) {
     return <main className="grid min-h-dvh place-items-center bg-background p-6 text-center text-foreground">
