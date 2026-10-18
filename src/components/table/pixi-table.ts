@@ -748,6 +748,15 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     setPlayers(next: SeatPlayer[]) {
       if (destroyed) return;
       players = next.slice(0, seats.length);
+      // Original updateGameUser: the seat's kiss badge follows the server value,
+      // so a rejoin restores it and a fresh join starts at zero.
+      players.forEach((player, index) => {
+        const kisses = player?.empty ? 0 : (player?.kisses ?? 0);
+        if ((seatKisses.get(index) ?? 0) !== kisses) {
+          seatKisses.set(index, kisses);
+          seats[index]?.setKisses(kisses, res());
+        }
+      });
       layout();
     },
     setPlayer(index: number, player: SeatPlayer) {
