@@ -8,6 +8,7 @@ import { applyRoomMusic, resetRoomMusic, type RoomMusic } from "./music-session"
 import { DEFAULT_PHOTO } from "./ciliz-default-photo";
 import { installCloudFeatureSession } from "./cloud-feature-session";
 import { selectBottle } from "./bottle-game";
+import { eventDeduper, haremTransition, revisionGuard } from './live-event-guards';
 
 export type RoomPhase = "offer" | "spin" | "choose" | "result" | "return";
 export interface RoomRow {
@@ -256,14 +257,17 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
   const { data: auth } = await sb.auth.getUser();
   if (auth.user) installCloudFeatureSession(auth.user.id, switchRoom);
   const refreshRoom = async () => {
+    const read = roomRevision.next();
     const { data: room } = await sb.from("rooms").select("*").eq("id", roomId).single();
-    if (room && current()) applyRoom(room as unknown as RoomRow);
+    if (room && current() && roomRevision.current(read)) applyRoom(room as unknown as RoomRow);
   };
+  const roomRevision = revisionGuard();
+  const acceptKickout = eventDeduper();
 
   channel = sb
     .channel(`room-${roomId}`)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
-      (p) => { if (current()) applyRoom(p.new as RoomRow); })
+      (p) => { if (current()) { roomRevision.next(); applyRoom(p.new as RoomRow); } })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` },
       () => { if (current()) { void loadPlayers(roomId, mySeat); nudgeRoom(); } })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` },
@@ -278,7 +282,7 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages" },
       (p) => { const id = Number((p.old as { id?: number }).id); if (current() && id) chatDeleteListeners.forEach((fn) => fn(id)); })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "kickout_events", filter: `room_id=eq.${roomId}` },
-      (p) => { if (current()) kickoutListeners.forEach((fn) => fn(p.new as KickoutEventRow)); })
+      (p) => { const row = p.new as KickoutEventRow; if (current() && acceptKickout(row.id)) kickoutListeners.forEach((fn) => fn(row)); })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "gift_events", filter: `room_id=eq.${roomId}` },
       (p) => { if (current()) giftListeners.forEach((fn) => fn(p.new as GiftRow)); })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "gesture_events", filter: `room_id=eq.${roomId}` },
@@ -289,10 +293,11 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
         const prof = p.new as Profile;
         const i = state.players.findIndex((x) => x?.id === prof.id);
         if (i >= 0) {
+          playerRead++;
           const before = state.players[i] as (Profile & { harem_owner?: string | null }) | null;
           const after = prof as Profile & { harem_owner?: string | null; harem_value?: number };
-          if (before && after.harem_owner && after.harem_owner !== before.harem_owner)
-            haremListeners.forEach((fn) => fn({ targetId: prof.id, newOwnerId: after.harem_owner!, oldOwnerId: before.harem_owner ?? null, price: Number(after.harem_value ?? 0) }));
+          const event = before ? haremTransition(prof.id, before.harem_owner, after.harem_owner, Number(after.harem_value ?? 0)) : null;
+          if (event) haremListeners.forEach(fn => fn(event));
           const players = [...state.players];
           players[i] = prof;
           set({ players });

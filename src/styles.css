@@ -1,5 +1,4 @@
 @import "tailwindcss" source(none);
-@source "../src";
 @import "tw-animate-css";
 @import "./styles/ciliz-decor.css";
 @import "./styles/ciliz-gift.css";
@@ -31,6 +30,8 @@
 @import "./styles/ciliz-chat-controls.css";
 @import "./styles/profile-home.css";
 @import "./styles/mobile-preferences.css";
+
+@source "../src";
 
 @custom-variant dark (&:is(.dark *));
 

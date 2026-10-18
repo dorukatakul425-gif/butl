@@ -8,7 +8,7 @@ import { unsendMessage } from "@/lib/social";
 import {
   joinTyping, loadConversation, markConversationRead, MAX_MESSAGE_LENGTH, normalizeMessage, onDirectMessage, otherParty,
   requestNotifyPermission, sendDirectMessage, setActiveChat, setSocialSound, socialSoundEnabled, unlockSocialAudio, upsertMessage,
-  useSocial, type DirectMessage, messagePreview,
+  useSocial, type DirectMessage, messagePreview, onSocialRecovery, mergeConversation,
 } from "@/lib/social";
 
 // Full-screen messenger: conversation list of friends and a realtime chat thread.
@@ -70,7 +70,13 @@ function ChatThread({ me, peer, defaultPhoto, onBack, onOpenProfile }: { me: str
     setActiveChat(peer);
     setLoading(true);
     setMessages([]);
-    void loadConversation(me, peer).then(rows => { if (on) { setMessages(prev => rows.reduce(upsertMessage, prev)); setLoading(false); } });
+    let readVersion = 0;
+    const recover = () => {
+      const version = ++readVersion;
+      void loadConversation(me, peer).then(rows => { if (on && version === readVersion) { setMessages(prev => mergeConversation(prev, rows)); setLoading(false); void markConversationRead(peer); } });
+    };
+    recover();
+    const offRecovery = onSocialRecovery(recover);
     void markConversationRead(peer);
     const off = onDirectMessage((m, type) => {
       const mine = m.sender_id === me && m.recipient_id === peer;
@@ -83,7 +89,7 @@ function ChatThread({ me, peer, defaultPhoto, onBack, onOpenProfile }: { me: str
     document.addEventListener("visibilitychange", onVisible);
     const t = joinTyping(me, peer, setTyping);
     typingRef.current = t;
-    return () => { on = false; off(); t.leave(); typingRef.current = null; setActiveChat(null); document.removeEventListener("visibilitychange", onVisible); };
+    return () => { on = false; off(); offRecovery(); t.leave(); typingRef.current = null; setActiveChat(null); document.removeEventListener("visibilitychange", onVisible); };
   }, [me, peer]);
 
   useEffect(() => { const el = listRef.current; if (el) el.scrollTo({ top: el.scrollHeight, behavior: messages.length > 30 ? "auto" : "smooth" }); }, [messages.length, typing]);

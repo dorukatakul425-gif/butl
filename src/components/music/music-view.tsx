@@ -71,7 +71,7 @@ function HtmlAudio({ url, startPosition, muted, volume, onReady, onProgress, onC
   </>;
 }
 
-export function MusicView({ song, muted, volume }: { song: PlayingSong; muted: boolean; volume: number }) {
+export function MusicView({ song, muted, volume, onDj, onPlayer }: { song: PlayingSong; muted: boolean; volume: number; onDj?: (id: string) => void; onPlayer?: () => void }) {
   const [ready, setReady] = useState(false);
   const [progress, setProgress] = useState(0);
   const [startPosition] = useState(() => Math.max(0, (Date.now() - song.startedAt) / 1000));
@@ -98,11 +98,11 @@ export function MusicView({ song, muted, volume }: { song: PlayingSong; muted: b
     <div className={cls("", [position, media, size])} style={{ right: 0, top: 6 }}>
       <Button variant="ghost" className="music-stop-button" aria-label="Müziği kapat" title="Kapat" onClick={done}><X size={14}/></Button>
       <div className={cls("top", [size, media, position, volumeClass])}>
-        <div className={cls("progress", [ready ? undefined : "loading", size, position, media])}
+        <Button variant="ghost" className={`${cls("progress", [ready ? undefined : "loading", size, position, media])} p-0 border-0`} aria-label={`${song.sender.name}: DJ`} onClick={() => onDj?.(song.sender.id)}
           style={{ backgroundImage: ready ? backgroundImageSector(deg, "#F4F2EF", "#B6B6B6") : "none" }}>
           <div className={cls("photo", [size])} style={{ backgroundImage: `url('${song.sender.photoUrl}')` }} title={song.sender.name} />
-        </div>
-        {!hasVideo && <div title={title} className={cls("recorder", [`${level}`, size, position, media])} />}
+        </Button>
+        {!hasVideo && <Button variant="ghost" title={title} aria-label="Müzik seç" onClick={onPlayer} className={`${cls("recorder", [`${level}`, size, position, media])} p-0 border-0`} />}
         <div className={`${cls("player", [media, size, position])} ${upCls("")}`}>
           {hasVideo
             ? <>

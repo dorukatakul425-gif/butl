@@ -1,4 +1,3 @@
-import defaultBottleUrl from "@/assets/ui_table_default_bottle.svg";
 import autumnCenterUrl from "@/assets/original-table-autumn-center.png";
 const autumnCenter = { url: autumnCenterUrl };
 import { ASSETS_TO_VIRTUAL as ASSETS_K } from "@/lib/ciliz-assets";
@@ -14,7 +13,7 @@ import type { CilizGesture } from "@/lib/gestures";
 import { PHOTO_SIZE as PHOTO, PHOTO_SHADOW_SIZE as SHADOW_SIZE, GIFT_SCALE, OVER_SCALE, FLY_SEC, giftImageFrame, calcGiftPosition } from "@/lib/gift-geometry";
 import { GiftEffects } from "@/components/table/gift-effects";
 import { matchingTableEffects } from "@/lib/table-gift-effects";
-import { originalBottle } from "./original-bottle";
+import { originalBottle, bottleArtwork } from "./original-bottle";
 import { TABLE_USER_KISS } from "@/lib/table-kiss-icon";
 import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
 
@@ -521,11 +520,11 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     }
   };
 
-  const stickGift = async (receiver: SeatView, gift: SentGift, flyView: DisplayObject | undefined) => {
+  const stickGift = async (receiver: SeatView, gift: SentGift, flyView: DisplayObject | undefined, valid: () => boolean) => {
     const pt = calcGiftPosition(gift);
     let view = flyView;
     if (!view) view = await createGiftView(assets, gift.stickImage, gift.spine, true, tableSize());
-    if (destroyed) { destroyView(view); return; }
+    if (destroyed || !valid()) { destroyView(view); return; }
     view.parent?.removeChild(view);
     view.position.set(pt.x, pt.y);
     view.scale.set(pt.scale);
@@ -544,6 +543,10 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     const sender = seats[from];
     const receiver = seats[to];
     if (!sender || !receiver) return;
+    const recipientId = players[to]?.id;
+    if (!recipientId || players[to]?.empty) return;
+    let cancelled = false;
+    const valid = () => !cancelled && !destroyed && !players[to]?.empty && players[to]?.id === recipientId;
     // Optional audio must never hold up a gift flight (slow CDN / suspended audio context).
     void options.prepareSfx?.(gift.startSound)?.catch(() => {});
     void options.prepareSfx?.(gift.finishSound)?.catch(() => {});
@@ -552,7 +555,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       !gift.spine && gift.stickImage !== gift.flyImage ? createGiftView(assets, gift.stickImage, undefined, true, tableSize()) : undefined,
       gift.vfx ? effects.preload(gift.vfx) : undefined,
     ]);
-    if (destroyed) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
+    if (!valid()) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
     // Upload in the background: the flight starts immediately, textures upload on first render.
     void app.renderer.plugins["prepare"].upload(flyView);
     if (stickView) void app.renderer.plugins["prepare"].upload(stickView);
@@ -571,6 +574,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     const stickPt = calcGiftPosition(gift);
     run(FLY_SEC, (raw) => {
       if (flyView.destroyed) return;
+      if (!valid()) { cancelled = true; destroyView(flyView); if (stickView && !stickView.destroyed) destroyView(stickView); if (emitter) emitter.emit = false; return; }
       const p = easeOut(raw);
       const dst = { x: receiver.view.x + stickPt.x, y: receiver.view.y + stickPt.y, rotation: stickPt.rotation };
       flyView.x = (1 - p) * src.x + p * dst.x;
@@ -582,11 +586,12 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       else if (p >= 0.9) scale = (1 - (p - 0.9) / 0.1) * OVER_SCALE + ((p - 0.9) / 0.1) * stickPt.scale;
       flyView.scale.set(scale);
     }, () => {
+      if (!valid() || flyView.destroyed) { if (!flyView.destroyed) destroyView(flyView); if (stickView && !stickView.destroyed) destroyView(stickView); return; }
       if (stickView) destroyView(flyView);
-      void stickGift(receiver, gift, stickView ?? flyView);
+      void stickGift(receiver, gift, stickView ?? flyView, valid);
     });
     const finishSec = gift.spine ? gift.spineFinishSec || FLY_SEC : FLY_SEC;
-    after(finishSec, () => options.playSfx?.(gift.finishSound));
+    after(finishSec, () => { if (valid()) options.playSfx?.(gift.finishSound); });
   };
 
   const observer = new ResizeObserver(layout);
@@ -664,20 +669,22 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       const seat = seats[index];
       if (!seat || destroyed) return null;
       const r = host.getBoundingClientRect();
-      return { x: r.left + stage.x + seat.view.x * scale, y: r.top + stage.y + seat.view.y * scale };
+      return { x: r.left + stage.x + seat.view.x * scale, y: r.top + stage.y + seat.view.y * scale, scale: scale * seat.view.scale.x };
     },
     async setBottle(type: string) {
       const version = ++bottleVersion;
-      // TableView.changeBottle: if the bottle artwork fails, show the original ui_table_default_bottle (57x103).
-      const view = await originalBottle(assets,type,tableSize(),loadImage,bottleLayer).catch(async () => {
-        const sprite = Sprite.from(await loadImage(defaultBottleUrl));
-        sprite.anchor.set(0.5); sprite.width = 57 * ASSETS_K; sprite.height = 103 * ASSETS_K;
-        return sprite;
-      });
+      // Keep selected artwork if 3D textures fail; the final offline fallback is a real bottle too.
+      let view = await originalBottle(assets,type,tableSize(),loadImage,bottleLayer);
+      try {
+        await app.renderer.plugins["prepare"].upload(view);
+      } catch {
+        destroyView(view);
+        view = await bottleArtwork(assets,type,tableSize(),loadImage);
+        await app.renderer.plugins["prepare"].upload(view);
+      }
       if (destroyed || version!==bottleVersion) { destroyView(view); return; }
       bottleLayer.removeChildren().forEach(destroyView);
       bottleLayer.addChild(view);
-      await app.renderer.plugins["prepare"].upload(view);
     },
     async playGesture(index: number, gesture: CilizGesture) {
       const seat = seats[index];

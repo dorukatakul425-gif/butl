@@ -35,6 +35,14 @@ export function upsertMessage(list: readonly DirectMessage[], m: DirectMessage):
   next.push(m);
   return next.sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
+/** Deletion and read receipts are monotonic, including across reconnect snapshots. */
+export function mergeConversation(list: readonly DirectMessage[], rows: readonly DirectMessage[]): DirectMessage[] {
+  return rows.reduce((next, row) => {
+    const existing = next.find(message => message.id === row.id);
+    const merged = existing ? { ...row, read_at: existing.read_at ?? row.read_at, ...(existing.deleted_at ? { deleted_at: existing.deleted_at, body: '', media_path: null } : {}) } : row;
+    return upsertMessage(next, merged);
+  }, [...list]);
+}
 export function summarizeInbox(me: string, rows: readonly DirectMessage[]) {
   const last: Record<string, DirectMessage> = {};
   const unread: Record<string, number> = {};
@@ -73,6 +81,11 @@ export function useSocial() {
 }
 
 const messageListeners = new Set<(m: DirectMessage, type: "insert" | "update") => void>();
+const recoveryListeners = new Set<() => void>();
+export function onSocialRecovery(fn: () => void) {
+  recoveryListeners.add(fn);
+  return () => { recoveryListeners.delete(fn); };
+}
 export function onDirectMessage(fn: (m: DirectMessage, type: "insert" | "update") => void) {
   messageListeners.add(fn);
   return () => { messageListeners.delete(fn); };
@@ -161,31 +174,34 @@ export function dismissNotice(id: string) {
 
 // ---------- data ----------
 async function ensureProfiles(ids: string[]) {
+  const gen = generation;
   const sb = getSupabase();
   const missing = [...new Set(ids)].filter(id => !state.profiles[id]);
   if (!sb || !missing.length) return;
   const { data } = await sb.from("profiles").select("id,name,username,photo_url").in("id", missing);
-  if (!data) return;
+  if (!data || gen !== generation) return;
   const profiles = { ...state.profiles };
   for (const p of data as SocialProfile[]) profiles[p.id] = p;
   set({ profiles });
 }
 export async function refreshFriendships() {
+  const gen = generation;
   const sb = getSupabase();
   const me = state.me;
   if (!sb || !me) return;
   const { data } = await sb.from("friendships").select("id,requester_id,addressee_id,status,created_at").order("created_at", { ascending: false });
-  if (!data || state.me !== me) return;
+  if (!data || state.me !== me || gen !== generation) return;
   const friendships = data as Friendship[];
   set({ friendships });
   await ensureProfiles(friendships.map(f => otherParty(f, me)));
 }
 async function refreshInbox() {
+  const gen = generation;
   const sb = getSupabase();
   const me = state.me;
   if (!sb || !me) return;
   const { data } = await sb.from("direct_messages").select("id,sender_id,recipient_id,body,kind,media_path,duration_ms,deleted_at,created_at,read_at").order("created_at", { ascending: false }).limit(400);
-  if (!data || state.me !== me) return;
+  if (!data || state.me !== me || gen !== generation) return;
   const { last, unread } = summarizeInbox(me, data as DirectMessage[]);
   if (state.activeChat) unread[state.activeChat] = 0;
   set({ last, unread });
@@ -196,6 +212,7 @@ async function profileOf(id: string) {
   return state.profiles[id];
 }
 async function handleIncoming(m: DirectMessage) {
+  const gen = generation;
   const peer = m.sender_id;
   set({ last: { ...state.last, [peer]: m } });
   messageListeners.forEach(l => l(m, "insert"));
@@ -203,6 +220,7 @@ async function handleIncoming(m: DirectMessage) {
   if (viewing) return;
   set({ unread: { ...state.unread, [peer]: (state.unread[peer] ?? 0) + 1 } });
   const p = await profileOf(peer);
+  if (gen !== generation) return;
   notify({ id: `m-${m.id}`, kind: "message", from: peer, title: p?.name ?? "Yeni mesaj", body: messagePreview(m).length > 120 ? messagePreview(m).slice(0, 117) + "…" : messagePreview(m), photo: p?.photo_url ?? null });
 }
 
@@ -295,7 +313,7 @@ export function startSocial(me: string) {
       if (!live()) return;
       if (payload.eventType === "INSERT") {
         const f = payload.new as Friendship;
-        void profileOf(f.requester_id).then(p => notify({ id: `r-${f.id}`, kind: "request", from: f.requester_id, title: "Yeni dostluq istəyi", body: `${p?.name ?? "Bir oyunçu"} sənə dostluq istəyi göndərdi`, photo: p?.photo_url ?? null }));
+        void profileOf(f.requester_id).then(p => { if (live()) notify({ id: `r-${f.id}`, kind: "request", from: f.requester_id, title: "Yeni dostluq istəyi", body: `${p?.name ?? "Bir oyunçu"} sənə dostluq istəyi göndərdi`, photo: p?.photo_url ?? null }); });
       }
       void refreshFriendships();
     })
@@ -304,19 +322,27 @@ export function startSocial(me: string) {
       const f = payload.new as Partial<Friendship>;
       if (payload.eventType === "UPDATE" && f.status === "accepted" && f.addressee_id) {
         const from = f.addressee_id;
-        void profileOf(from).then(p => notify({ id: `a-${f.id}`, kind: "accepted", from, title: "İstək qəbul edildi", body: `${p?.name ?? "Oyunçu"} dostluq istəyini qəbul etdi — indi yaza bilərsən`, photo: p?.photo_url ?? null }));
+        void profileOf(from).then(p => { if (live()) notify({ id: `a-${f.id}`, kind: "accepted", from, title: "İstək qəbul edildi", body: `${p?.name ?? "Oyunçu"} dostluq istəyini qəbul etdi — indi yaza bilərsən`, photo: p?.photo_url ?? null }); });
       }
       void refreshFriendships();
     })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "direct_messages", filter: `recipient_id=eq.${me}` }, payload => {
       if (live()) void handleIncoming(payload.new as DirectMessage);
     })
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "direct_messages", filter: `sender_id=eq.${me}` }, payload => {
+      if (!live()) return;
+      const m = payload.new as DirectMessage;
+      const previous = state.last[m.recipient_id];
+      if (!previous || previous.created_at <= m.created_at) set({ last: { ...state.last, [m.recipient_id]: m } });
+      messageListeners.forEach(l => l(m, "insert"));
+    })
     // Admiration alerts: someone else admired the same person, or the person rejected you.
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "profile_notifications", filter: `user_id=eq.${me}` }, payload => {
       if (!live()) return;
       const n = payload.new as { id: number; actor_id: string | null; body: string };
-      void (n.actor_id ? profileOf(n.actor_id) : Promise.resolve(undefined)).then(p =>
-        notify({ id: `h-${n.id}`, kind: "harem", from: n.actor_id ?? me, title: "Hayranlık", body: n.body, photo: p?.photo_url ?? null }));
+      void (n.actor_id ? profileOf(n.actor_id) : Promise.resolve(undefined)).then(p => {
+        if (live()) notify({ id: `h-${n.id}`, kind: "harem", from: n.actor_id ?? me, title: "Hayranlık", body: n.body, photo: p?.photo_url ?? null });
+      });
     })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "direct_messages", filter: `sender_id=eq.${me}` }, payload => {
       if (!live()) return;
@@ -330,10 +356,10 @@ export function startSocial(me: string) {
       messageListeners.forEach(l => l(m, "update"));
       if (state.last[m.sender_id]?.id === m.id) set({ last: { ...state.last, [m.sender_id]: m } });
     })
-    .subscribe(status => { if (status === "SUBSCRIBED" && live()) { void refreshFriendships(); void refreshInbox(); } });
+    .subscribe(status => { if (status === "SUBSCRIBED" && live()) { void refreshFriendships(); void refreshInbox(); recoveryListeners.forEach(fn => fn()); } });
   const unlock = () => { audio(); };
   window.addEventListener("pointerdown", unlock, { once: true });
-  const onVisible = () => { if (document.visibilityState === "visible") void refreshInbox(); };
+  const onVisible = () => { if (live() && document.visibilityState === "visible") { void refreshInbox(); recoveryListeners.forEach(fn => fn()); } };
   document.addEventListener("visibilitychange", onVisible);
   const onWorkerMessage = (e: MessageEvent) => {
     const d = e.data as { type?: string; kind?: SocialNotice["kind"]; from?: string } | null;
@@ -341,7 +367,7 @@ export function startSocial(me: string) {
   };
   navigator.serviceWorker?.addEventListener("message", onWorkerMessage);
   return () => {
-    if (live()) { generation++; state = INITIAL; listeners.forEach(l => l()); }
+    if (live()) { generation++; state = INITIAL; mediaUrlCache.clear(); listeners.forEach(l => l()); }
     void sb.removeChannel(channel);
     window.removeEventListener("pointerdown", unlock);
     document.removeEventListener("visibilitychange", onVisible);

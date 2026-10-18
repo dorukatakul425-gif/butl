@@ -57,3 +57,7 @@
 - Table and own-profile settings share ProfileInfoDialog and the authenticated profile-edit adapter; one atomic locked-row RPC validates prior state and debits information changes, while photo uploads remain separate to preserve source charging semantics.
 - League competition has no visible game entry points (table header, settings, profile cup); retain historical league data/services without exposing them or deleting earned records.
 - Profile table actions derive eligibility from current room membership on every render; reject absent recipients before composing/sending, so departures cannot turn private messages into public ones. Birthday-derived zodiac indices are isolated in the browser-safe Telegram profile helper to match the source icon mapping.
+- Bottle rendering falls back from original 3D textures to the selected 2D artwork, then an embedded real-bottle image; failed CDN/shader preparation must never display the white outline placeholder.
+- Preserve host ranking numbers; guard overlapping reads against newer live state, and merge recovery history without resurrecting deleted bodies or clearing read receipts.
+- Resolve departed chat identities through a room-scoped verified-profile cache, never current seating alone; send eligibility still requires current membership.
+- Scope kick timers and gift-flight cancellation to their target and room, so seat reuse or room changes cannot inherit delayed effects or audio.

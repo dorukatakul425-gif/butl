@@ -29,5 +29,10 @@
 - [x] Match Telegram avatar proportions, off-table profile actions/notices, name badges and zodiac.
 - [x] Show message report icon only on selection; remove season pass and center remaining header icons.
 - [x] Run all 231 tests; verify off-table gift/message/kick notices and centered popup in isolated real-component browser checks at 393×596 and 1280×1800.
-- [ ] Deliver changes to butl.
+- [x] Deliver profile/VIP changes to butl (f254a3d).
 - [ ] Verify these changes with the user's VIP account on live VPS (blocked by unavailable authorized host access/session).
+- [x] Replace outline bottle fallback with selected real artwork and an offline real-bottle fallback; 236 tests passed and six real bottle types plus offline fallback visibly checked.
+- [x] Deliver bottle fix to butl main (6a53c78); downloaded committed offline artwork matches tested bytes.
+- [ ] Compare Telegram source with current table/music/gifts and profile/chat/realtime; fix verified defects without restoring removed league/pass features.
+- [ ] Run regression tests and deliver verified parity fixes to butl main.
+- [ ] Verify full signed-in multiplayer parity on the live host (blocked by unavailable authorized VPS access and original-game authenticated session).

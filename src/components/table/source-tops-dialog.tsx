@@ -6,6 +6,8 @@ import { translate } from '@/lib/ciliz-assets';
 import { SourceTopsHelp } from './source-tops-help';
 import { getSupabase } from '@/lib/supabase';
 import { DEFAULT_PHOTO } from '@/lib/ciliz-default-photo';
+import { topRankingRows, type TopPlayerRow } from '@/lib/top-ranking';
+import { revisionGuard } from '@/lib/live-event-guards';
 
 // All five sections of the original TopDialog are real and server-ranked.
 const sections = [
@@ -17,7 +19,7 @@ const sections = [
 ] as const;
 // Original dialog: price and harem_price have no period selector (absolute-only).
 const PERIODLESS: ReadonlyArray<string> = ['price', 'harem_price'];
-type Row = { id: string; name: string; photo: string; score: number };
+type Row = { id: string; name: string; photo: string; score: number; rank: number };
 
 export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
   const assets = useCilizAssets();
@@ -31,12 +33,14 @@ export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
     const sb = getSupabase();
     if (!sb) return;
     let alive = true;
+    const revision = revisionGuard();
     const load = async () => {
+      const read = revision.next();
       const [{ data: u }, { data, error }] = await Promise.all([sb.auth.getUser(), sb.rpc('top_players', { p_section: section.id, p_period: period })]);
-      if (!alive) return;
+      if (!alive || !revision.current(read)) return;
       setViewerId(u.user?.id);
       if (error) { setNotice('Puanlar yüklenemedi.'); return; }
-      setRows((data ?? []).map((r: { id: string; name: string; photo_url: string | null; score: number }) => ({ id: r.id, name: r.name, photo: r.photo_url || DEFAULT_PHOTO, score: Number(r.score) })));
+      setRows(topRankingRows((data ?? []) as TopPlayerRow[]).map(r => ({ id: r.id, name: r.name, photo: r.photo_url || DEFAULT_PHOTO, score: r.score, rank: r.rank })));
       setNotice((data ?? []).length ? null : 'Henüz kayıt yok.');
     };
     setNotice('Yükleniyor…'); void load();
@@ -52,7 +56,7 @@ export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
     return () => { document.removeEventListener('keydown', key); };
   }, []);
   if (!assets) return null;
-  const ranked = [...rows].sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
+  const ranked = rows;
   const visible = ranked.slice(0, 50);
   const self = ranked.find(row => row.id === viewerId);
   if (self && !visible.includes(self)) visible.push(self);
@@ -68,7 +72,7 @@ export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
       <div className="top-dlg__content top-dlg__bg">
         {notice ? <p className="source-tops-notice" role="status">{notice}</p> : visible.map(row => <div key={row.id} className={`top-dlg__item${row.id === viewerId ? ' top-dlg__item--sticked' : ''}`}>
           <img className="top-dlg__photo" src={row.photo} alt={row.name} style={{ cursor: "pointer" }} onClick={() => { onClose(); window.dispatchEvent(new CustomEvent("source:open-profile", { detail: row.id })); }} />
-          <div className={`top-dlg__user-info${row.id === viewerId ? ' top-dlg__user-info--viewer' : ''}`}><span className="top-dlg__rank">{ranked.indexOf(row) + 1}. </span><span className="top-dlg__name">{row.name}</span><span className={`top-dlg__icon top-dlg__icon--${section.id}`} /><span className={`top-dlg__score top-dlg__score--${section.id}`}>{row.score.toLocaleString('tr-TR')}</span></div>
+          <div className={`top-dlg__user-info${row.id === viewerId ? ' top-dlg__user-info--viewer' : ''}`}><span className="top-dlg__rank">{row.rank}. </span><span className="top-dlg__name">{row.name}</span><span className={`top-dlg__icon top-dlg__icon--${section.id}`} /><span className={`top-dlg__score top-dlg__score--${section.id}`}>{row.score.toLocaleString('tr-TR')}</span></div>
         </div>)}
       </div>
     </section>

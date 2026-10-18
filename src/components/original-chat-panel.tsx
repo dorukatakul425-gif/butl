@@ -28,6 +28,7 @@ import { translateChatText } from "@/lib/chat-translate.functions";
 import { dialogImage } from "@/lib/ciliz-assets";
 import { useDecorState } from "@/lib/decor-store";
 import { applyTranslation, chatTranslator, needsTranslation, toggleTranslation, useChatTranslations } from "@/lib/chat-translation";
+import { roomProfileResolver } from '@/lib/room-profile-resolver';
 
 const VIEWER_LOCALE = "tr";
 
@@ -128,28 +129,41 @@ export function OriginalChatPanel() {
   };
   useEffect(() => onRoomChatDelete(id => removeTextLine(id)), []);
   const room = useRoom();
-  const lastSeen = useRef(new Map<string, Profile>());
-  useEffect(() => { for (const p of room.players) if (p) lastSeen.current.set(p.id, p); }, [room.players]);
-  useEffect(() => onRoomChat(row => {
-    const seat = displaySeatOf(row.user_id);
-    const sender = seat >= 0 ? profileBySeat(seat) : null;
-    if (!sender) return;
-    const rSeat = row.receiver_id ? displaySeatOf(row.receiver_id) : -1;
-    const rec = rSeat >= 0 ? profileBySeat(rSeat) : null;
-    const isViewer = row.user_id === VIEWER.id;
-    pushTextLine({ ...profileUser(sender), ...(isViewer ? { isViewer: true } : {}) }, row.text, rec ? { ...profileUser(rec), ...(rec.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, row.id, Boolean(row.is_private));
-  }), []);
+  const resolver = useMemo(() => roomProfileResolver(id => { const seat = displaySeatOf(id); return seat >= 0 ? profileBySeat(seat) : null; }, async id => {
+    const sb = getSupabase(); if (!sb) return null;
+    const { data } = await sb.from('profiles').select('*').eq('id', id).maybeSingle();
+    return data as Profile | null;
+  }), [room.roomId]);
+  useEffect(() => resolver.remember(room.players), [resolver, room.players]);
+  useEffect(() => {
+    let alive = true;
+    let queue = Promise.resolve();
+    const off = onRoomChat(row => {
+      const participants = Promise.all([resolver.find(row.user_id), resolver.find(row.receiver_id)]);
+      queue = queue.then(async () => {
+        const [sender, rec] = await participants;
+        if (!alive || !sender) return;
+        const isViewer = row.user_id === VIEWER.id;
+        pushTextLine({ ...profileUser(sender), ...(isViewer ? { isViewer: true } : {}) }, row.text, rec ? { ...profileUser(rec), ...(rec.id === VIEWER.id ? { isViewer: true } : {}) } : undefined, row.id, Boolean(row.is_private));
+      });
+    });
+    return () => { alive = false; off(); };
+  }, [resolver]);
   // ChatPresenter.sendKickout: kick / kicked / save info line for everyone at the table.
-  useEffect(() => onRoomKickout(ev => {
-    const find = (id: string | null) => { if (!id) return null; const seat = displaySeatOf(id); return seat >= 0 ? profileBySeat(seat) : null; };
-    const actor = find(ev.actor_id) ?? find(ev.target_id), target = find(ev.target_id) ?? (ev.kind === 'kicked' ? lastSeen.current.get(ev.target_id) ?? null : null);
-    if (!actor || !target) return;
-    const u = (p: Profile) => ({ ...profileUser(p), ...(p.id === VIEWER.id ? { isViewer: true } : {}) });
-    pushKickoutLine(ev.kind, u(actor), u(target), ev.id);
-  }), []);
+  useEffect(() => {
+    let alive = true;
+    const off = onRoomKickout(ev => { void Promise.all([resolver.find(ev.actor_id), resolver.find(ev.target_id)]).then(([actor, target]) => {
+      if (!alive || !target) return;
+      const u = (p: Profile) => ({ ...profileUser(p), ...(p.id === VIEWER.id ? { isViewer: true } : {}) });
+      pushKickoutLine(ev.kind, u(actor ?? target), u(target), ev.id);
+    }); });
+    return () => { alive = false; off(); };
+  }, [resolver]);
 
   // ChatPresenter.harem: line for everyone at the table, Telegram branch rules.
-  useEffect(() => onRoomHarem(ev => {
+  useEffect(() => {
+    let alive = true;
+    const off = onRoomHarem(ev => {
     if (!assets) return;
     const find = async (id: string | null) => {
       if (!id) return null;
@@ -160,7 +174,7 @@ export function OriginalChatPanel() {
     };
     void (async () => {
       const [target, newOwner, oldOwner] = await Promise.all([find(ev.targetId), find(ev.newOwnerId), find(ev.oldOwnerId)]);
-      if (!target || !newOwner) return;
+      if (!alive || !target || !newOwner) return;
       const u = (p: Profile) => ({ ...profileUser(p), ...(p.id === VIEWER.id ? { isViewer: true } : {}) });
       const icon = newOwner.id === target.id ? "harem_free" as const : "harem_busy" as const;
       const seated = (p: Profile | null) => !!p && displaySeatOf(p.id) >= 0;
@@ -173,7 +187,9 @@ export function OriginalChatPanel() {
         pushHaremLine({ icon, sender: u(newOwner), receiver: u(target), text: `${trG("chat:harem:new:target:new_chat", newOwner.male)} ${forText}`, price: ev.price });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [assets]);
+    });
+    return () => { alive = false; off(); };
+  }, [assets, room.roomId]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -333,7 +349,12 @@ export function OriginalChatPanel() {
           <div role="button" aria-label="Müzik" className="media-panel__music" onClick={() => setListType("audio")} />
         </div>
       </div>
-      {session.song && <MusicView key={session.song.key} song={session.song} muted={session.muted} volume={session.volume} />}
+      {session.song && <MusicView key={session.song.key} song={session.song} muted={session.muted} volume={session.volume} onPlayer={() => setListType('audio')} onDj={id => {
+        if (id === VIEWER.id) { setListType('audio'); return; }
+        const seat = displaySeatOf(id);
+        if (seat < 0) { if (assets) showSourceToast(translate(assets, 'warning:offline_gift:desc')); return; }
+        window.dispatchEvent(new CustomEvent(OPEN_GIFT_FOR_SEAT_EVENT, { detail: seat }));
+      }} />}
       <InteractiveHints />
       {emojiOpen && assets && <EmojiPicker size={emojiSize} vip={vip} lockText={translate(assets, "chat:emoji:hint")} activateText={translate(assets, "chat:emoji:activate")}
         onPick={pickEmoji} onBecomeVip={() => { setEmojiOpen(false); openVip(); }} />}
