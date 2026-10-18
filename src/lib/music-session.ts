@@ -24,7 +24,15 @@ export interface ChatActionLine { kind: "action"; key: number; style: "newcomer"
 export interface ChatHaremLine { kind: "harem"; key: number; icon: "harem_free" | "harem_busy"; sender: ChatUser; receiver: ChatUser; text: string; price: number }
 /** Original system lines: admin_chat (green 6fbf5c), ban / disabled_ban (red ff4545). */
 export interface ChatSystemLine { kind: "system"; key: number; style: "admin_chat" | "ban" | "disabled_ban"; text: string; messageId?: number }
-export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine | ChatKickoutLine | ChatHaremLine | ChatSystemLine;
+/** ChatView.createGestureLine: performer's clickable photo followed by the gesture image (40x40), no sentence. */
+export interface ChatGestureLine { kind: "gesture"; key: number; sender: ChatUser; gestureType: string; gestureName: string; image: string; eventId: number }
+export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine | ChatKickoutLine | ChatHaremLine | ChatSystemLine | ChatGestureLine;
+/** Everyone at the table sees who used the gesture: the performer's photo plus the gesture image. */
+export function pushGestureLine(sender: ChatUser, gestureType: string, gestureName: string, image: string, eventId: number) {
+  if (state.lines.some(l => l.kind === "gesture" && l.eventId === eventId)) return false;
+  set({ lines: [...state.lines, { kind: "gesture", key: ++seq, sender, gestureType, gestureName, image, eventId }] });
+  return true;
+}
 export function pushSystemLine(style: ChatSystemLine["style"], text: string, messageId?: number) {
   if (messageId !== undefined && state.lines.some(l => l.kind === "system" && l.messageId === messageId)) return false;
   set({ lines: [...state.lines, { kind: "system", key: ++seq, style, text, ...(messageId !== undefined ? { messageId } : {}) }] });
