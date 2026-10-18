@@ -63,6 +63,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   const profile = profileProp ?? loaded;
   const sectionRef = useRef<HTMLElement>(null);
   const [infoSize, setInfoSize] = useState(0);
+  const [portrait, setPortrait] = useState(true);
   const [report, setReport] = useState("");
   const feature = useSourceFeatureSession();
   const blockedUsers = useBlockedUsers();
@@ -105,9 +106,10 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   useLayoutEffect(() => {
     const el = sectionRef.current; if (!el) return;
     const measure = () => {
-      const portrait = window.innerHeight >= window.innerWidth;
-      const maxH = Math.round(window.innerHeight * 0.94) - 140;
-      setInfoSize(Math.max(0, Math.floor(portrait ? Math.min(el.clientWidth, maxH) : Math.min(window.innerHeight * 0.8, 400))));
+      const isPortrait = window.innerHeight >= window.innerWidth;
+      setPortrait(isPortrait);
+      // Original useResizeSensor: photo square is min(popup width, popup height).
+      setInfoSize(Math.max(0, Math.floor(Math.min(el.clientWidth, el.clientHeight || window.innerHeight * 0.94))));
     };
     measure();
     const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure); ro?.observe(el);
@@ -192,7 +194,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       .finally(() => setBlocking(false));
   };
 
-  return createPortal(<div className="profile-layer portrait">
+  return createPortal(<div className={`profile-layer ${portrait ? 'portrait' : 'landscape'}`}>
     <div className="popup-shade" onClick={onClose} />
     <section ref={sectionRef} role="dialog" aria-modal="true" aria-label={player.name} className="popup popup--center popup--show user-profile__x_popup">
       <Div className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Div>

@@ -10,7 +10,7 @@ export interface SourceFeatureSnapshot {
   /** Viewer's league level from get_league, also outside a running round (welcome/idle). */
   leagueLevel?: number;
   leagueHeader?: { type: 'unknown' | 'welcome' | 'running' | 'finished'; positionText?: string; leftTimeShortText?: string };
-  kickout?: { price: number; vip: boolean; freeAt?: number; targets: Record<string, { kickAt?: number }> };
+  kickout?: { price: number; vip: boolean; freeAt?: number; lastFreeAt?: number; targets: Record<string, { kickAt?: number }> };
   profile?: { name: string; birthday: string; male: boolean; photo?: string; changePrice?: number };
   tables?: { friends: SourceTableEntry[]; history: SourceTableEntry[]; canViewById?: boolean };
   league?: { level: number; score: number; endsAt: number; players: Array<{ id: string; name: string; score: number; photo?: string }>;

@@ -131,6 +131,12 @@ async function loadPlayers(roomId: number, mySeat: number) {
     .select("seat, user_id, profiles(*)")
     .eq("room_id", roomId);
   if (error || version !== generation || read !== playerRead || state.roomId !== roomId) return;
+  const viewerId = state.players[VIEWER_DISPLAY_SEAT]?.id;
+  if (viewerId && !(data ?? []).some(row => row.user_id === viewerId)) {
+    // The server removed our membership. Never leave a ghost seat able to send actions.
+    set({ connected: false, error: 'Masadan ayrıldınız.', players: mapPlayers((data ?? []) as unknown as PlayerRow[], mySeat) });
+    return;
+  }
   set({ players: mapPlayers((data ?? []) as unknown as PlayerRow[], mySeat) });
 }
 
@@ -246,7 +252,11 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
   let pulse = 0;
   heartbeatTimer = setInterval(() => {
     if (!current()) return;
-    void sb.rpc("heartbeat").then(async () => { if (current()) await sb.rpc("room_tick", { p_room: roomId }); });
+    void sb.rpc("heartbeat").then(async () => {
+      if (!current()) return;
+      await sb.rpc('kickout_refresh');
+      if (current()) { await sb.rpc("room_tick", { p_room: roomId }); void loadPlayers(roomId, mySeat); }
+    });
     if (++pulse % 5 === 0) { void loadPlayers(roomId, mySeat); void refreshRoom(); }
   }, 2000);
   await Promise.all([loadPlayers(roomId, mySeat), refreshRoom()]);

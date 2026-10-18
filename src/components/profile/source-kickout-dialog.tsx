@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { SourceButtons, OPEN_VIP_EVENT } from '@/components/source-dialogs';
+import { SourceButtons, OPEN_VIP_EVENT, OPEN_BANK_EVENT } from '@/components/source-dialogs';
 import { SourceFeaturePopup } from '@/components/table/source-feature-popup';
 import { translate, type CilizAssets } from '@/lib/ciliz-assets';
 import { executeSourceFeature, useSourceFeatureSession } from '@/lib/source-feature-session';
@@ -13,9 +13,11 @@ export function SourceKickoutDialog({ player, self, assets, onClose, onConfirmed
   const session = useSourceFeatureSession();
   const [help, setHelp] = useState(false), [busy, setBusy] = useState(false), [message, setMessage] = useState('');
   const inFlight = useRef(false);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
   const t = (key: string, ...args: string[]) => translate(assets, key, ...args);
   const state = player.id ? session.kickout?.targets[player.id] : undefined;
-  const type = state?.kickAt ? 'save' : 'kick';
+  const type = state?.kickAt && state.kickAt > now ? 'save' : 'kick';
   const permitted = Boolean(session.kickout && state && (session.kickout.vip || (self && type === 'save')));
   const description = self ? t(type === 'save' ? 'kickout:defend' : 'kickout:desc') : t(type === 'save' ? 'kickout:save' : 'kickout:kick', player.name, '30', '15');
   const text = (value: string) => value.replace(/<\/?styled>/g, '').replace(/<\/?b>/g, '').replace(/%\d+d\(([^|]+)\|[^)]+\)/g, '$1');
@@ -24,13 +26,18 @@ export function SourceKickoutDialog({ player, self, assets, onClose, onConfirmed
     inFlight.current = true; setBusy(true); setMessage('');
     try {
       const result = await executeSourceFeature(type === 'kick' ? 'user-kick' : 'user-save', { userId: player.id, expectedPrice: session.kickout?.price ?? 0, referrer: 'profile' });
-      if (result.confirmed) onConfirmed(); else setMessage(result.message ?? t('kickout:toast4'));
+      if (result.confirmed) onConfirmed();
+      else {
+        const reason = result.message ?? '';
+        if (reason.includes('not_enough_gold')) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
+        setMessage(t(reason.includes('target_not_at_table') || reason.includes('not_at_table') ? 'kickout:toast1' : reason.includes('already_kicked') ? 'kickout:toast2' : reason.includes('already_saved') ? 'kickout:toast3' : 'kickout:toast4'));
+      }
     } catch { setMessage(t('kickout:toast4')); }
     finally { inFlight.current = false; setBusy(false); }
   };
   return createPortal(<>
     <SourceFeaturePopup title={t('kickout:header')} onClose={onClose} help={() => setHelp(true)} inactive={help} className="source-kickout-popup" footer={<SourceButtons
-      cancel={{ title: t('kickout:btn_cancel'), onClick: onClose }}
+      cancel={self && type === 'kick' && session.kickout?.vip ? undefined : { title: t('kickout:btn_cancel'), onClick: onClose }}
       confirm={permitted ? { title: t(self ? type === 'save' ? 'kickout:btn_defend' : 'kickout:btn_ok' : type === 'save' ? 'kickout:btn_save' : 'kickout:btn_kick'), enabled: !busy, onClick: self && type === 'kick' ? onClose : () => void act() } : undefined}
       info={session.kickout && !session.kickout.vip && !(self && type === 'save') ? { title: t('kickout:btn_know'), onClick: () => window.dispatchEvent(new Event(OPEN_VIP_EVENT)) } : undefined}
     />}>
@@ -39,6 +46,8 @@ export function SourceKickoutDialog({ player, self, assets, onClose, onConfirmed
         <div className={`kickout__description${self && type === 'kick' ? ' kickout__description--center' : ''}`}>{text(description)}</div>
       </div>
       {type === 'kick' && !self && <div className="kickout__warning">{t('kickout:warning')}</div>}
+      {type === 'save' && state?.kickAt && <div className="kickout__info"><div className="kickout__info-text">{t('kickout:info:return')}</div><div className="kickout__info-time">{Math.max(0, Math.ceil((state.kickAt - now) / 1000))}</div></div>}
+      {session.kickout?.freeAt && session.kickout.freeAt > now && <div className="kickout__price-info"><div className="kickout__price-info-text">{Math.ceil((session.kickout.freeAt - now) / 60000)} min</div></div>}
       {session.kickout ? <div className="kickout__price-info"><div className="kickout__price-info-text">{text(t(!session.kickout.vip && !(self && type === 'save') ? self ? 'kickout:vip3' : 'kickout:vip1' : session.kickout.price ? 'kickout:price' : 'kickout:free'))}</div>
         {permitted && session.kickout.price > 0 && <div className="kickout__price">{session.kickout.price}</div>}</div>
        : <div className="source-feature-message" role="status">Şutla ve Koru hizmeti bağlı değil; ücret ve koruma süresi doğrulanamadı.</div>}

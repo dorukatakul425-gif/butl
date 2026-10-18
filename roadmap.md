@@ -11,3 +11,8 @@
 - [ ] Apply migration 0025 on the hosting database.
 - [x] Connect saved home-profile bio to game popups independently of the stats migration; test save/read/update/clear.
 - [ ] Verify bio save-to-popup on the repository host (blocked by unavailable host session).
+- [x] Match Telegram profile popup sizing and icon layout; verify mobile/desktop (isolated real component, 320/390/844/1280px).
+- [x] Implement authenticated source-derived kick/save behavior and rule tests (11 database tests; 23 total passing).
+- [ ] Apply migration 0028 on hosting database and set verified kick price/free cooldown (archive contains no values; host access unavailable).
+- [ ] Verify live two-player kick/save after hosting migration/configuration (host session unavailable).
+- [ ] Commit requested popup and kick/save changes directly to main.

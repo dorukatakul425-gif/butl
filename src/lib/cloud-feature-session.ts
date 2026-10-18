@@ -8,6 +8,20 @@ const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 let tableRead = 0;
 let preferenceRevision = 0;
+let kickoutRead = 0;
+async function refreshKickout(viewerId: string) {
+  const sb = getSupabase();
+  if (!sb) return;
+  const read = ++kickoutRead;
+  const { data, error } = await sb.rpc('kickout_refresh');
+  if (read !== kickoutRead || snapshot.viewerId !== viewerId) return;
+  if (error || !data?.configured) {
+    const { kickout: _kickout, ...rest } = snapshot;
+    snapshot = rest; emit(); return;
+  }
+  snapshot = { ...snapshot, kickout: { price: data.price, vip: data.vip, freeAt: data.freeAt, lastFreeAt: data.lastFreeAt, targets: data.targets } };
+  emit();
+}
 async function refreshPreference(viewerId: string) {
   const sb = getSupabase();
   if (!sb) return;
@@ -104,7 +118,13 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
         await refreshLeague(viewerId);
         return { confirmed: true };
       }
-      if (action === 'user-kick' || action === 'user-save') return { confirmed: false, message: 'Şutla ve Koru hizmeti bağlı değil.' };
+      if (action === 'user-kick' || action === 'user-save') {
+        if (typeof input?.['userId'] !== 'string' || !Number.isSafeInteger(input?.['expectedPrice'])) return { confirmed: false };
+        const { error } = await sb.rpc('kickout_action', { p_user: input['userId'], p_action: action === 'user-kick' ? 'kick' : 'save', p_expected_price: input['expectedPrice'] });
+        await refreshKickout(viewerId);
+        if (error) return { confirmed: false, message: error.message };
+        return { confirmed: true };
+      }
       if (action !== 'change-table') return { confirmed: false };
       const tableId = input?.['tableId'];
       if (tableId !== undefined && snapshot.tables?.history.find((h) => h.id === String(tableId))?.current) return { confirmed: true };
@@ -118,6 +138,7 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
     },
   });
   void refreshTables();
+  void refreshKickout(viewerId);
   void refreshPreference(viewerId);
   leagueInfo = null; leagueRound = undefined; void leagueChannel?.unsubscribe(); leagueChannel = null;
   void refreshLeague(viewerId);
@@ -130,6 +151,8 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
     const ended = leagueInfo?.state === 'running' && (leagueInfo.finish_ms ?? Infinity) <= Date.now();
     if (ended || ticks % 6 === 0) void refreshLeague(viewerId); else applyLeague(viewerId);
   }, 10000);
+  clearInterval(kickoutTimer);
+  kickoutTimer = setInterval(() => { if (snapshot.viewerId === viewerId) void refreshKickout(viewerId); }, 2000);
   // Live men/women counts: any seat change anywhere refreshes the list.
   const sb = getSupabase();
   if (sb && !liveChannel) {
@@ -145,3 +168,4 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
   }
 }
 let liveChannel: ReturnType<NonNullable<ReturnType<typeof getSupabase>>['channel']> | null = null;
+let kickoutTimer: ReturnType<typeof setInterval> | undefined;

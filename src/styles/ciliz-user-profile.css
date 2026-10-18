@@ -1114,3 +1114,25 @@ a.user-profile__action { display: block; }
 /* Expanded hidden stats must not overlap neighbours when rows carry rank subtitles. */
 .user-profile__hidden-stats-items--expanded{ height: auto; margin-top: 0; }
 .user-profile__counters > *{ flex-shrink: 0; }
+
+/* Telegram's preloader uses content-box, unlike Tailwind's global border-box reset. */
+.profile-layer .user-profile,
+.profile-layer .user-profile * { box-sizing: content-box; }
+.profile-layer .user-profile { max-height: inherit; }
+.profile-layer .user-profile__x_popup { position: relative; }
+.profile-layer .user-profile__details { min-width: 0; flex-shrink: 1; }
+.profile-layer.portrait .user-profile__details { max-width: none; }
+.profile-layer .user-profile__scrollable { min-height: 0; }
+.profile-layer .user-profile__stats,
+.profile-layer .user-profile__counters,
+.profile-layer .user-profile__stats-item { height: auto; min-height: 17px; flex-shrink: 0; }
+.profile-layer .user-profile__stats--big { max-height: none; }
+.profile-layer .user-profile__stats-icon { width: 23px; height: 17px; background-size: 23px 17px; background-repeat: no-repeat; background-position: center; }
+.profile-layer .user-profile__stats-item-subtitle { width: auto; min-width: 0; letter-spacing: 0; }
+.profile-layer .user-profile__actions { flex-shrink: 0; overflow: visible; }
+.profile-layer .user-profile__action { width: 50px; height: 50px; min-width: 50px; flex: 0 0 50px; padding: 0; border: 0; border-radius: 50%; }
+@media (max-width: 400px) { .profile-layer.portrait .user-profile__action { width: 46px; height: 46px; min-width: 46px; flex-basis: 46px; } }
+@media (max-width: 692px) { .profile-layer.landscape .user-profile__action { width: 46px; height: 46px; min-width: 46px; flex-basis: 46px; } }
+.profile-layer.landscape .user-profile__details { width: 265px; }
+.profile-layer .user-profile__status { overflow-wrap: anywhere; white-space: pre-wrap; }
+@media (prefers-reduced-motion: reduce) { .profile-layer .user-profile__status, .profile-layer .user-profile__hidden-stats-items { transition: none; } }
