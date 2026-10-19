@@ -95,6 +95,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "application-name", content: "DeltaGame" },
     ],
+    // Telegram Mini App SDK on every page, so the game sees Telegram wherever the app opens.
+    scripts: [{ src: "https://telegram.org/js/telegram-web-app.js" }],
     links: [
       {
         rel: "stylesheet",
