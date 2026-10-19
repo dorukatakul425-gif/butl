@@ -8,6 +8,7 @@ import { applyRoomMusic, resetRoomMusic, type RoomMusic } from "./music-session"
 import { DEFAULT_PHOTO } from "./ciliz-default-photo";
 import { installCloudFeatureSession } from "./cloud-feature-session";
 import { selectBottle } from "./bottle-game";
+import { emitServerHeartAward, luckyBonusAmount } from "./game-session";
 import { eventDeduper, haremTransition, revisionGuard } from './live-event-guards';
 
 export type RoomPhase = "offer" | "spin" | "choose" | "result" | "return";
@@ -413,7 +414,12 @@ export function displaySeatOf(userId: string) {
 export async function spinBottle(): Promise<void> {
   const res = await getSupabase()?.rpc("spin_bottle");
   // Show the confirmed result at once instead of waiting for the realtime echo.
-  if (res && !res.error) await refreshCurrentRoom();
+  if (res && !res.error) {
+    // Ciliz game_lucky_gold: the server may award a lucky heart bonus with the spin.
+    const lucky = luckyBonusAmount(res.data);
+    if (lucky > 0) emitServerHeartAward({ id: `lucky:${Date.now()}:${Math.random()}`, viewerId: "", amount: lucky, lucky: true, prepaid: true });
+    await refreshCurrentRoom();
+  }
 }
 
 export async function decide(kiss: boolean): Promise<void> {
