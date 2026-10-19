@@ -51,3 +51,4 @@
 - [ ] Verify signed-in live multiplayer music purchase/reload and birthday gift flow (blocked: no authorized player session; deployment and 272 regression tests verified).
 
 - [x] Chat reply arrow (Ciliz parity): green arrow on viewer-addressed messages, tap addresses sender; translate option fixed in message actions (deployed)
+- [x] Performance parity with Ciliz: dirty-frame Pixi rendering (no GPU draw when scene idle), antialias off + DPR cap 2 on mobile, canvas resize guard, chat capped at 100 lines, expiry scan 1s→15s, block list republish only on change (deployed)
