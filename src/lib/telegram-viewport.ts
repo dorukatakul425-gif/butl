@@ -6,6 +6,7 @@
 
 interface TelegramWebApp {
   initData?: string;
+  platform?: string;
   ready?: () => void;
   expand?: () => void;
   disableVerticalSwipes?: () => void;
@@ -42,6 +43,50 @@ export function keyboardScrollTarget(
 }
 
 /**
+ * Original iosSafeArea.ts, verbatim: per-device portrait insets keyed by
+ * `screen.width x screen.height x devicePixelRatio`. Telegram iOS uses the
+ * bottom inset as the white strip under the chat input; unknown devices get
+ * no inset (the original only logs them).
+ */
+const IOS_PORTRAIT_SAFE_AREA: Record<string, [number, number, number, number] | undefined> = {
+  "320x568x2": undefined,
+  "320x693x3": [38, 0, 29, 0],
+  "375x667x2": undefined,
+  "375x667x3": undefined,
+  "375x812x2": [44, 0, 31, 0],
+  "375x812x3": [44, 0, 34, 0],
+  "390x844x3": [47, 0, 34, 0],
+  "393x852x3": [59, 0, 34, 0],
+  "402x874x3": [62, 0, 34, 0],
+  "414x736x3": undefined,
+  "414x896x2": [48, 0, 34, 0],
+  "414x896x3": [44, 0, 34, 0],
+  "420x912x3": [68, 0, 34, 0],
+  "428x926x3": [47, 0, 34, 0],
+  "430x932x3": [59, 0, 34, 0],
+  "440x956x3": [62, 0, 34, 0],
+  "744x1133x2": undefined,
+  "768x1024x2": undefined,
+  "810x1080x2": undefined,
+  "820x1180x2": undefined,
+  "834x1112x2": undefined,
+  "834x1194x2": undefined,
+  "1024x1366x2": undefined,
+};
+
+export function iosPortraitSafeArea(w: number, h: number, dpr: number) {
+  const v = IOS_PORTRAIT_SAFE_AREA[`${w}x${h}x${dpr}`];
+  if (!v) return undefined;
+  return { top: v[0], right: v[1], bottom: v[2], left: v[3] };
+}
+
+/** Original iosAppSafeArea(): device insets with top forced to 0. */
+export function iosAppSafeArea() {
+  const sa = iosPortraitSafeArea(screen.width, screen.height, window.devicePixelRatio);
+  return sa ? { ...sa, top: 0 } : undefined;
+}
+
+/**
  * Sets up the Telegram viewport lock. Only runs inside the Mini App; the
  * website build is untouched. Returns a cleanup function.
  */
@@ -57,6 +102,12 @@ export function setupTelegramViewport(): () => void {
 
   const root = document.documentElement;
   root.classList.add("tg-webapp");
+
+  // Original: Telegram iOS reserves a white strip under the chat input equal
+  // to the device home-indicator inset (chat__safe-area). Other platforms get
+  // no strip.
+  const safeArea = webApp.platform === "ios" ? iosAppSafeArea() : undefined;
+  if (safeArea) root.style.setProperty("--tg-safe-area-bottom", `${safeArea.bottom}px`);
 
   // Stable height captured before the keyboard ever opens: the game keeps this
   // height while typing, so the table proportions never change.
@@ -93,5 +144,6 @@ export function setupTelegramViewport(): () => void {
     window.removeEventListener("resize", onResize);
     root.classList.remove("tg-webapp");
     root.style.removeProperty("--tg-app-height");
+    root.style.removeProperty("--tg-safe-area-bottom");
   };
 }
