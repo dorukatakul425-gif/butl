@@ -165,7 +165,7 @@ export function OriginalChatPanel() {
   const receiveRef = useRef(receiveChatRow);
   receiveRef.current = receiveChatRow;
   useEffect(() => {
-    const id = window.setInterval(() => expireChatHistory(), 1000);
+    const id = window.setInterval(() => expireChatHistory(), 15000);
     return () => window.clearInterval(id);
   }, []);
   useEffect(() => {
