@@ -12,7 +12,7 @@ import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/lib/gifts";
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
-import { closedTarget, giftReceivers, openFor, seatSelection, selectGender, setSelective, type GiftTargetState } from "@/lib/gift-selection";
+import { closedTarget, giftReceivers, openFor, seatSelection, seatTapAction, selectGender, setSelective, type GiftTargetState } from "@/lib/gift-selection";
 import { pushGestureLine, pushGiftLine } from "@/lib/music-session";
 import { BottlePlay } from "./bottle-play";
 import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
@@ -64,6 +64,9 @@ export function TableSeats() {
   const giftSeat = target.receiver;
   const [activeTable, setActiveTable] = useState<PixiTable | null>(null);
   const [gesturesOpen, setGesturesOpen] = useState(false);
+  // onSeatClick, Pixi efektinin içinde çalışır; güncel state için ref'ler.
+  const targetRef = useRef(target); targetRef.current = target;
+  const gesturesOpenRef = useRef(gesturesOpen); gesturesOpenRef.current = gesturesOpen;
 
   const progress = useViewerProgress();
   const room = useRoom();
@@ -145,8 +148,12 @@ export function TableSeats() {
       const table = await createPixiTable(host, assets, {
         onSeatClick: (index) => {
           unlockSfx();
-          // Own seat opens the gesture picker; other seats re-target or toggle the gift dialog.
-          if (index === VIEWER_SEAT) { setTarget(closedTarget); setGesturesOpen(true); return; }
+          // Ciliz TablePresenter onuserphoto: ilk dokunuş hediye/jest panelini açar;
+          // aynı koltuğa ikinci dokunuş profil penceresini açar.
+          const action = seatTapAction(targetRef.current, index, VIEWER_SEAT, gesturesOpenRef.current);
+          if (action === "own-profile") { setGesturesOpen(false); setOwnProfileOpen(true); return; }
+          if (action === "gestures") { setTarget(closedTarget); setGesturesOpen(true); return; }
+          if (action === "profile") { setTarget(closedTarget); setProfileSeat(index); return; }
           setGesturesOpen(false);
           setTarget(state => openFor(state, index, VIEWER_SEAT));
         },
