@@ -33,7 +33,7 @@ beforeAll(async () => {
       receiver_id uuid, text text NOT NULL, kind text NOT NULL DEFAULT 'chat', payload jsonb, created_at timestamptz NOT NULL DEFAULT now());
     CREATE TABLE bottle_prices(bottle text PRIMARY KEY, price integer NOT NULL, vip_only boolean NOT NULL DEFAULT false);
     CREATE TABLE gift_prices(gift_type text PRIMARY KEY, price integer NOT NULL, kisses_required integer NOT NULL DEFAULT 0, vip_only boolean NOT NULL DEFAULT false);
-    INSERT INTO gift_prices VALUES ('rose', 1, 0, false), ('vodka', 3, 0, false), ('ushanka', 2, 0, false);
+    INSERT INTO gift_prices VALUES ('rose', 1, 0, false), ('vodka', 3, 0, false), ('ushanka', 2, 0, false), ('air_kiss', 1, 0, false);
     CREATE TABLE gift_events(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, room_id bigint NOT NULL, sender_id uuid NOT NULL,
       receiver_id uuid NOT NULL, gift_type text NOT NULL, seed integer NOT NULL DEFAULT 0, created_at timestamptz NOT NULL DEFAULT now());
     CREATE TABLE dj_events(user_id uuid NOT NULL, points integer NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
@@ -43,28 +43,39 @@ beforeAll(async () => {
   await db.exec(readFileSync(new URL('../../drizzle/migrations/0042_table_rules.sql', import.meta.url), 'utf8'));
   await db.exec(readFileSync(new URL('../../drizzle/migrations/0043_gift_receiver_effect.sql', import.meta.url), 'utf8'));
   await db.exec(readFileSync(new URL('../../drizzle/migrations/0044_gift_points_not_kisses.sql', import.meta.url), 'utf8'));
+  await db.exec(readFileSync(new URL('../../drizzle/migrations/0047_air_kiss_only.sql', import.meta.url), 'utf8'));
 }, 30000);
 
 afterAll(async () => { await db?.close(); });
 
 describe('gift receiver effect (real game parity)', () => {
-  it('gifts pay points (hearts), never kisses — the kiss counter only grows on kisses', async () => {
+  it('no gift pays hearts, and only air_kiss carries a kiss — exactly like the original assets config', async () => {
     const r = await db.query<{ gift_type: string; price: number; kisses: number; hearts: number }>(
       `SELECT gift_type, price, kisses, hearts FROM gift_prices ORDER BY gift_type`);
     for (const row of r.rows) {
-      expect(row.kisses).toBe(0);
-      expect(row.hearts).toBe(row.price);
+      expect(row.hearts).toBe(0);
+      expect(row.kisses).toBe(row.gift_type === 'air_kiss' ? 1 : 0);
     }
   });
 
-  it('sending a gift does NOT raise the receiver kiss counters, but pays the gift price as gold', async () => {
+  it('sending a regular gift raises neither the receiver kiss counters nor the receiver gold', async () => {
     await as(sender);
     await db.query(`SELECT public.send_gift('vodka', ARRAY['${receiver}']::uuid[], 0)`);
     const p = await db.query<{ kisses: number; gold: number }>(`SELECT kisses, gold FROM profiles WHERE id = '${receiver}'`);
     expect(p.rows[0]!.kisses).toBe(0);
-    expect(p.rows[0]!.gold).toBe(103);
+    expect(p.rows[0]!.gold).toBe(100);
     const rp = await db.query<{ kisses: number }>(`SELECT kisses FROM room_players WHERE room_id = 1 AND user_id = '${receiver}'`);
     expect(rp.rows[0]!.kisses).toBe(0);
+  });
+
+  it('sending air_kiss raises the receiver kiss counters by 1 and pays no gold', async () => {
+    await as(sender);
+    await db.query(`SELECT public.send_gift('air_kiss', ARRAY['${receiver}']::uuid[], 0)`);
+    const p = await db.query<{ kisses: number; gold: number }>(`SELECT kisses, gold FROM profiles WHERE id = '${receiver}'`);
+    expect(p.rows[0]!.kisses).toBe(1);
+    expect(p.rows[0]!.gold).toBe(100);
+    const rp = await db.query<{ kisses: number }>(`SELECT kisses FROM room_players WHERE room_id = 1 AND user_id = '${receiver}'`);
+    expect(rp.rows[0]!.kisses).toBe(1);
   });
 
   it('the sender gains no kisses from their own gift', async () => {
