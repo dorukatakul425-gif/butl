@@ -99,7 +99,8 @@ export function telegramSafeAreaBottom(
   webApp: Pick<TelegramWebApp, "platform" | "safeAreaInset" | "contentSafeAreaInset">,
   iosBottom = 0,
 ): number {
-  if (webApp.platform === "ios") return iosBottom;
+  // Unknown iPhones (not in the original map) fall back to Telegram's own inset.
+  if (webApp.platform === "ios") return iosBottom || webApp.safeAreaInset?.bottom || 0;
   return webApp.contentSafeAreaInset?.bottom ?? webApp.safeAreaInset?.bottom ?? 0;
 }
 
@@ -108,7 +109,23 @@ export function telegramSafeAreaBottom(
  * website build is untouched. Returns a cleanup function.
  */
 export function setupTelegramViewport(): () => void {
-  if (!isTelegramWebApp()) return () => undefined;
+  // The Telegram script can finish loading after the game mounts (or the Mini
+  // App opened straight on the game): wait briefly instead of skipping setup,
+  // otherwise the white strip under the chat input never appears.
+  if (!isTelegramWebApp()) {
+    let cleanup: (() => void) | null = null;
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries++;
+      if (isTelegramWebApp()) { clearInterval(timer); cleanup = startTelegramViewport(); }
+      else if (tries >= 50) clearInterval(timer);
+    }, 100);
+    return () => { clearInterval(timer); cleanup?.(); };
+  }
+  return startTelegramViewport();
+}
+
+function startTelegramViewport(): () => void {
 
   const webApp = window.Telegram?.WebApp;
   if (!webApp) return () => undefined;
