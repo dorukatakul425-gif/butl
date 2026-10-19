@@ -158,8 +158,29 @@ function mapPlayers(rows: PlayerRow[], mySeat: number) {
   return players;
 }
 
+let refreshCurrentRoom: () => Promise<void> = () => Promise.resolve();
+
+/** Seconds each phase lasts before room_tick advances it (mirrors public.room_tick). */
+const PHASE_SECONDS: Record<string, number> = { offer: 9, spin: 6, choose: 9, result: 2, return: 1 };
+let phaseTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Advance the round exactly at its deadline instead of on the next keepalive. */
+function schedulePhaseDeadline(room: RoomRow) {
+  if (phaseTimer) clearTimeout(phaseTimer);
+  phaseTimer = null;
+  const secs = PHASE_SECONDS[room.phase];
+  const startedAt = Date.parse(room.phase_at);
+  if (secs === undefined || !Number.isFinite(startedAt)) return;
+  const wait = Math.max(0, startedAt + secs * 1000 - (Date.now() + serverOffsetMs)) + 80 + Math.random() * 120;
+  phaseTimer = setTimeout(() => {
+    phaseTimer = null;
+    if (state.roomId === room.id) nudgeRoom();
+  }, wait);
+}
+
 function applyRoom(room: RoomRow) {
   if (room.id !== state.roomId) return;
+  schedulePhaseDeadline(room);
   const changed =
     !state.room || state.room.phase !== room.phase || state.room.round !== room.round;
   set({ room, ...(changed ? { phaseReceivedAt: Date.now() } : {}) });
@@ -201,6 +222,8 @@ async function teardown() {
   const sb = getSupabase();
   if (heartbeatTimer) clearInterval(heartbeatTimer);
   heartbeatTimer = null;
+  if (phaseTimer) clearTimeout(phaseTimer);
+  phaseTimer = null;
   if (channel && sb) await sb.removeChannel(channel);
   channel = null;
 }
@@ -319,21 +342,27 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     });
 
   let pulse = 0;
+  // One 5s keepalive (seat stale limit is 20s). Round phases advance through
+  // the deadline timer in applyRoom, so this loop is only a fallback and does
+  // not flood the table with writes/realtime events every 2s.
   heartbeatTimer = setInterval(() => {
     if (!current()) return;
+    pulse++;
     void sb.rpc("heartbeat").then(async () => {
       if (!current()) return;
       await sb.rpc('kickout_refresh');
-      if (current()) { await sb.rpc("room_tick", { p_room: roomId }); void loadPlayers(roomId, mapSeat); }
+      if (current()) await sb.rpc("room_tick", { p_room: roomId });
     });
-    if (++pulse % 5 === 0) { void loadPlayers(roomId, mapSeat); void refreshRoom(); }
+    if (pulse % 2 === 0) { void loadPlayers(roomId, mapSeat); void refreshRoom(); }
     // A late keepalive leave_room from the previous page can delete the fresh seat: re-join when it is gone.
-    if (pulse % 2 === 0) void sb.auth.getUser().then(async ({ data: u }) => {
-      if (!u.user || !current()) return;
-      const { data: mine, error: missingErr } = await sb.from("room_players").select("room_id").eq("user_id", u.user.id).maybeSingle();
+    if (pulse % 2 === 1) void sb.auth.getSession().then(async ({ data: s }) => {
+      const uid = s.session?.user.id;
+      if (!uid || !current()) return;
+      const { data: mine, error: missingErr } = await sb.from("room_players").select("room_id").eq("user_id", uid).maybeSingle();
       if (!missingErr && !mine && current()) void joinRoom().catch(() => undefined);
     });
-  }, 2000);
+  }, 5000);
+  refreshCurrentRoom = () => (current() ? refreshRoom() : Promise.resolve());
   await Promise.all([loadPlayers(roomId, mapSeat), refreshRoom()]);
   nudgeRoom();
 }
@@ -382,11 +411,14 @@ export function displaySeatOf(userId: string) {
 }
 
 export async function spinBottle(): Promise<void> {
-  await getSupabase()?.rpc("spin_bottle");
+  const res = await getSupabase()?.rpc("spin_bottle");
+  // Show the confirmed result at once instead of waiting for the realtime echo.
+  if (res && !res.error) await refreshCurrentRoom();
 }
 
 export async function decide(kiss: boolean): Promise<void> {
-  await getSupabase()?.rpc("decide", { p_kiss: kiss });
+  const res = await getSupabase()?.rpc("decide", { p_kiss: kiss });
+  if (res && !res.error) await refreshCurrentRoom();
 }
 
 export async function sendChat(text: string, receiverId?: string, isPrivate = false): Promise<boolean> {
