@@ -2,7 +2,7 @@ import autumnCenterUrl from "@/assets/original-table-autumn-center.png";
 const autumnCenter = { url: autumnCenterUrl };
 import { ASSETS_TO_VIRTUAL as ASSETS_K } from "@/lib/ciliz-assets";
 // Browser-only: rendered with PixiJS + Spine 3.8 exactly like TableView/TableUserView in preloader.js.
-import { Application, BaseTexture, Container, MIPMAP_MODES, Rectangle, Sprite, Text, TextStyle, Texture, type DisplayObject } from "pixi.js";
+import { Application, BaseTexture, Container, MIPMAP_MODES, Rectangle, Sprite, Text, TextStyle, Texture, UPDATE_PRIORITY, type DisplayObject } from "pixi.js";
 import { TextureAtlas, TextureFilter } from "@pixi-spine/base";
 import { AtlasAttachmentLoader, SkeletonJson, Spine, type SkeletonData } from "@pixi-spine/runtime-3.8";
 import { bundleUrl, SPINE_DESIGN_TO_TABLE, tableFrameSize, VIRTUAL_SIZE, type CilizAssets, type CilizGift } from "@/lib/ciliz-assets";
@@ -399,11 +399,15 @@ export interface PixiTableOptions {
 }
 
 export async function createPixiTable(host: HTMLElement, assets: CilizAssets, options: PixiTableOptions = {}) {
+  // Ciliz TableView: antialias kapalı mobilde/Safari'de, çözünürlük 2x ile sınırlı.
+  // DPR 3 telefonda 9x piksel yerine 4x çizilir — donmaların ana sebebi buydu.
+  const mobileGpu = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const resolution = Math.min(window.devicePixelRatio || 1, 2);
   const app = new Application({
     backgroundAlpha: 0,
-    antialias: true,
+    antialias: !mobileGpu,
     autoDensity: true,
-    resolution: window.devicePixelRatio || 1,
+    resolution,
     width: host.clientWidth || 1,
     height: host.clientHeight || 1,
   });
@@ -439,14 +443,32 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   let players: SeatPlayer[] = [];
   let scale = 1;
 
-  const res = () => scale * (window.devicePixelRatio || 1);
+  const res = () => scale * resolution;
   const tableSize = () => VIRTUAL_SIZE * res();
 
+  // Ciliz PIXIPatcher eşdeğeri: sahne değişmedikçe GPU'ya çizim yapılmaz.
+  // Hareket (tween, parçacık, spine) varken her kare, durgunken hiç çizilmez.
+  let dirtyFrames = 3;
+  const markDirty = () => { dirtyFrames = 3; };
+  app.ticker.remove(app.render, app);
+  app.ticker.add(() => {
+    if (dirtyFrames <= 0) return;
+    dirtyFrames--;
+    app.render();
+  }, null, UPDATE_PRIORITY.LOW);
+
+  let lastWidth = 0;
+  let lastHeight = 0;
   const layout = () => {
     const width = host.clientWidth;
     const height = host.clientHeight;
     if (!width || !height) return;
-    app.renderer.resize(width, height);
+    // Boyut değişmediyse canvas'ı sıfırlayan resize çağrısını atla.
+    if (width !== lastWidth || height !== lastHeight) {
+      lastWidth = width;
+      lastHeight = height;
+      app.renderer.resize(width, height);
+    }
     const header = (host.parentElement?.querySelector(".original-table-header") as HTMLElement | null)?.offsetHeight ?? 0;
     const available = height - header;
     scale = Math.min(width / VIRTUAL_SIZE, available / VIRTUAL_SIZE);
@@ -455,6 +477,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     stage.y = header + available / 2;
     effects.setLayout(width / scale, available / scale);
     players.forEach((player, index) => void seats[index]?.set(player, assets, res(), tableSize()));
+    markDirty();
   };
 
   stage.addChild(animationLayer, tableVfxLayer, giftVfxLayer);
@@ -469,11 +492,15 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     const frame = assets.images['td_table_autumn_c']?.size;
     centerDecor.width = (frame?.[2] ?? 287.4) * ASSETS_K;
     centerDecor.height = (frame?.[3] ?? 287.5) * ASSETS_K;
+    markDirty();
   }).catch(error => console.error('Original table ornament could not be loaded', error));
+  // Oturan hediyelerdeki spine animasyonları kendi ticker'ıyla oynar; biri varken çizim sürer.
+  const hasLiveSpine = () => seats.some(seat => seat.gifts.children.some(child => child instanceof Spine && child.autoUpdate));
   app.ticker.add(() => {
     const dt = Math.min(app.ticker.deltaMS / 1000, 0.1);
     for (const tick of ticks) if (!tick(dt)) ticks.delete(tick);
     effects.update(dt);
+    if (ticks.size > 0 || effects.active || hasLiveSpine()) markDirty();
   });
   const run = (duration: number, step: (p: number) => void, done?: () => void) => {
     let t = 0;
@@ -660,6 +687,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       bottleLayer.rotation = 0;
       if (resetKisses) { seatKisses.clear(); seats.forEach(seat => seat.setKisses(0, res())); }
       seats.forEach((seat, index) => { const position = SEATS[index]; if (position) seat.view.position.set(position[0], position[1]); seat.view.scale.set(1); seat.view.rotation = 0; });
+      markDirty();
     },
     settleRound(from: number, to: number, center: boolean) {
       if (destroyed) return;
@@ -667,6 +695,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       bottleLayer.rotation = (spinAngle(to, 0) * Math.PI / 180) % (2 * Math.PI);
       bottleLayer.alpha = center ? 0 : 1;
       if (center) leftRight(from, to).forEach((index, i) => { const seat = seats[index]; if (seat) { seat.view.position.set(i === 0 ? -46 : 46, -5); seat.view.scale.set(CENTER_PLAYER_SCALE); } });
+      markDirty();
     },
     /** Kisses collected at this table, shown on the seat like TableUserView.setKisses. */
     addKiss(index: number) {
@@ -674,6 +703,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       const next = (seatKisses.get(index) ?? 0) + 1;
       seatKisses.set(index, next);
       seats[index]?.setKisses(next, res());
+      markDirty();
     },
     seatPoint(index: number) {
       const seat = seats[index];
@@ -695,6 +725,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       if (destroyed || version!==bottleVersion) { destroyView(view); return; }
       bottleLayer.removeChildren().forEach(destroyView);
       bottleLayer.addChild(view);
+      markDirty();
     },
     async playGesture(index: number, gesture: CilizGesture) {
       const seat = seats[index];
@@ -725,6 +756,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     pointBottle(to: number) {
       if (destroyed || to < 0) return;
       bottleLayer.rotation = (spinAngle(to, 0) * Math.PI / 180) % (2 * Math.PI);
+      markDirty();
     },
     async spinBottle(from: number, to: number, seed = Math.random()) {
       if (destroyed) return;
@@ -773,11 +805,13 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       if (destroyed || !players.length) return;
       players[index] = player;
       void seats[index]?.set(player, assets, res(), tableSize());
+      markDirty();
     },
     // TablePresenter isSelective / selectedUsers / toggleHighlightUser.
     setSelection(modes: SeatSelection[]) {
       if (destroyed) return;
       seats.forEach((seat, i) => seat.setSelection(modes[i] ?? "none", res()));
+      markDirty();
     },
     sendGift(from: number, to: number, gift: SentGift) {
       return flyGift(from, to, gift).catch((error) => console.error(`Gift ${gift.type} could not be shown`, error));
