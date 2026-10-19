@@ -25,3 +25,16 @@ describe("telegram viewport", () => {
     expect(keyboardScrollTarget(100, 0, 560, 500)).toBe(40);
   });
 });
+
+describe("iosPortraitSafeArea (original iosSafeArea.ts map)", () => {
+  it("returns the device bottom inset for known iPhones", async () => {
+    const { iosPortraitSafeArea } = await import("@/lib/telegram-viewport");
+    expect(iosPortraitSafeArea(393, 852, 3)).toEqual({ top: 59, right: 0, bottom: 34, left: 0 });
+    expect(iosPortraitSafeArea(375, 812, 2)).toEqual({ top: 44, right: 0, bottom: 31, left: 0 });
+  });
+  it("returns undefined for devices without a home-indicator inset", async () => {
+    const { iosPortraitSafeArea } = await import("@/lib/telegram-viewport");
+    expect(iosPortraitSafeArea(320, 568, 2)).toBeUndefined();
+    expect(iosPortraitSafeArea(768, 1024, 2)).toBeUndefined();
+  });
+});
