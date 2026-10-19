@@ -31,6 +31,7 @@ function Stats({ men, women, timer }: { men: number; women: number; timer?: stri
 export function SourceChangeTable({ onClose }: { onClose: () => void }) {
   const assets = useCilizAssets(), session = useSourceFeatureSession();
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [now, setNow] = useState(Date.now()), [info, setInfo] = useState<SourceTableEntry | null>(null);
+  const [fullTable, setFullTable] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
   if (!assets) return null;
@@ -38,7 +39,13 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
   const change = async (id?: string) => {
     if (busy) return;
     setBusy(true); setMessage('');
-    try { const result = await executeSourceFeature('change-table', id ? { tableId: id } : undefined); if (result.confirmed) onClose(); else setMessage(result.message ?? t('dlg:music:unavailable')); }
+    try {
+      const result = await executeSourceFeature('change-table', id ? { tableId: id } : undefined);
+      if (result.confirmed) onClose();
+      // Original GameQueuePresenter: a full table opens the "Boş yer yoxdur" popup.
+      else if (result.message === 'table_full' || result.message === 'Masa dolu') setFullTable(id ?? '');
+      else setMessage(result.message ?? t('dlg:music:unavailable'));
+    }
     catch (e) { setMessage(e instanceof Error ? e.message : t('dlg:music:unavailable')); }
     finally { setBusy(false); }
   };
@@ -85,5 +92,10 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
     </div>
     <div className="kickout__info"><div className="kickout__info-text">{t('kickout:info:return')}</div><div className="kickout__info-time">{Math.max(0, Math.ceil(((info.blockedUntil ?? now) - now) / 1000))}</div></div>
     </div>
+  </SourceFeaturePopup>}
+  {fullTable !== null && <SourceFeaturePopup title="Boş yer yoxdur" onClose={() => setFullTable(null)} className="source-kickout-popup" footer={<SourceButtons confirm={{ title: 'Başqa masa seç', onClick: () => setFullTable(null) }} />}>
+    <div className="kickout"><div className="kickout__description" style={{ whiteSpace: 'pre-line' }}>
+      {`Masa ${fullTable} ətrafında boş yer yoxdur.\nLütfən boş yer üçün gözlə.`}
+    </div></div>
   </SourceFeaturePopup>}</>, document.body);
 }
