@@ -19,15 +19,23 @@ export interface ChatTextLine { kind: "text"; key: number; sender: ChatUser; rec
 export interface ChatKickoutLine { kind: "kickout"; key: number; icon: "kick" | "kicked" | "save"; sender: ChatUser; receiver: ChatUser; eventId: number }
 export type ChatActionPart = { text: string } | { user: ChatUser };
 /** ChatContent.pushActionLine: newcomer / birthday / vip / rewarded-video widget rows. */
-export interface ChatActionLine { kind: "action"; key: number; style: "newcomer" | "birthday" | "vip" | "rewarded-video" | "bottle"; icon: "gift" | "chat" | "vip" | "rewarded-video" | "bottle"; parts: ChatActionPart[]; sender?: ChatUser; seat?: number; messageId?: number; createdAt?: string }
+export interface ChatActionLine { kind: "action"; key: number; style: "newcomer" | "birthday" | "vip" | "rewarded-video"; icon: "gift" | "chat" | "vip" | "rewarded-video"; parts: ChatActionPart[]; sender?: ChatUser; seat?: number; messageId?: number; createdAt?: string }
+/** ChatView.createBottleLine: sender photo, old bottle (grayscale, 45°), green arrows, new bottle. No text. */
+export interface ChatBottleLine { kind: "bottle"; key: number; sender: ChatUser; oldImage: string; oldName: string; newImage: string; newName: string; messageId?: number }
 /** ChatView.createHaremLine: sender photo, harem icon, grey text with <heart>price, receiver photo. */
 export interface ChatHaremLine { kind: "harem"; key: number; icon: "harem_free" | "harem_busy"; sender: ChatUser; receiver: ChatUser; text: string; price: number }
 /** Original system lines: admin_chat (green 6fbf5c), ban / disabled_ban (red ff4545). */
 export interface ChatSystemLine { kind: "system"; key: number; style: "admin_chat" | "ban" | "disabled_ban"; text: string; messageId?: number; createdAt?: string }
 /** ChatView.createGestureLine: performer's clickable photo followed by the gesture image (40x40), no sentence. */
 export interface ChatGestureLine { kind: "gesture"; key: number; sender: ChatUser; gestureType: string; gestureName: string; image: string; eventId: number }
-export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine | ChatKickoutLine | ChatHaremLine | ChatSystemLine | ChatGestureLine;
+export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionLine | ChatKickoutLine | ChatHaremLine | ChatSystemLine | ChatGestureLine | ChatBottleLine;
 /** Everyone at the table sees who used the gesture: the performer's photo plus the gesture image. */
+/** Everyone at the table sees the bottle change: sender photo, old bottle, arrows, new bottle. */
+export function pushBottleLine(sender: ChatUser, oldImage: string, oldName: string, newImage: string, newName: string, messageId?: number) {
+  if (messageId !== undefined && state.lines.some(l => l.kind === "bottle" && l.messageId === messageId)) return false;
+  set({ lines: [...state.lines, { kind: "bottle", key: ++seq, sender, oldImage, oldName, newImage, newName, ...(messageId !== undefined ? { messageId } : {}) }] });
+  return true;
+}
 export function pushGestureLine(sender: ChatUser, gestureType: string, gestureName: string, image: string, eventId: number) {
   if (state.lines.some(l => l.kind === "gesture" && l.eventId === eventId)) return false;
   set({ lines: [...state.lines, { kind: "gesture", key: ++seq, sender, gestureType, gestureName, image, eventId }] });
@@ -163,7 +171,7 @@ export function useMusicSession() {
 /** Music notices are independent from current playback and replay from chat_messages. */
 export function pushMusicHistoryLine(sender: MusicSender, artist: string, title: string, messageId: number, eventKey?: number) {
   if (state.lines.some(l => "messageId" in l && l.messageId === messageId)) return false;
-  set({ lines: [...state.lines, { kind: "music", key: ++seq, sender, artist, title, messageId, eventKey }] });
+  set({ lines: [...state.lines, { kind: "music", key: ++seq, sender, artist, title, messageId, ...(eventKey !== undefined ? { eventKey } : {}) }] });
   return true;
 }
 export function stampChatHistory(messageId: number, createdAt: string) {
