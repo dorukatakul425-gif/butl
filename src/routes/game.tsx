@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { joinRoom, leaveRoom, leaveRoomNow, useRoom } from "@/lib/room-session";
 import { setViewerProfile } from "@/lib/viewer";
@@ -38,6 +38,7 @@ function Index() {
   const navigate = useNavigate();
   const room = useRoom();
   const [joined, setJoined] = useState(false);
+  const loadingResetRef = useRef(false);
   // Telegram Mini App only: keep the table height stable while the chat
   // keyboard opens (original client's expand + keyboard scroll behavior).
   useEffect(() => setupTelegramViewport(), []);
@@ -48,7 +49,10 @@ function Index() {
     // Telegram first entry: gender/age setup must finish before the live room is mounted.
     if (auth.profile.profile_setup_done === false) return;
     let alive = true;
-    resetGameLoading();
+    // Yükleme ekranı sadece masaya ilk girişte sıfırlanır; profil yenilenmesi gibi
+    // sonraki effect çalışmalarında sıfırlamak, tamamlanmış aşamaları siler ve
+    // (bileşenler zaten yüklü olduğu için tekrar tamamlanamaz) loader'da takılı bırakır.
+    if (!loadingResetRef.current) { loadingResetRef.current = true; resetGameLoading(); }
     void joinRoom().then(() => { if (alive) setJoined(true); }).catch(() => { if (alive) setJoined(false); });
     // Closing the tab frees the seat at once, so others see the player leave immediately.
     const stopAchievements = startCloudAchievements();
