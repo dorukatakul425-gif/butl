@@ -49,3 +49,5 @@
 - [x] Run regression tests, deliver to repo, deploy and verify available live flows.
 
 - [ ] Verify signed-in live multiplayer music purchase/reload and birthday gift flow (blocked: no authorized player session; deployment and 272 regression tests verified).
+
+- [x] Chat reply arrow (Ciliz parity): green arrow on viewer-addressed messages, tap addresses sender; translate option fixed in message actions (deployed)
