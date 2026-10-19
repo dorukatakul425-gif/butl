@@ -157,7 +157,7 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
           opak beyaz şerit olarak çıkar; simgeler başlığın altında kalır. */}
       <div
         className={`popup__header ${cls("x_header")} send-gift__x_header--teaser`}
-        style={{ position: "absolute", top: 0, left: box.left, width: Math.max(0, box.width - 30), height: box.header, paddingTop: "env(safe-area-inset-top, 0px)", boxSizing: "border-box", pointerEvents: "auto", zIndex: 2 }}
+        style={{ position: "absolute", top: 0, left: box.left, width: box.width, height: box.header, paddingTop: "env(safe-area-inset-top, 0px)", boxSizing: "border-box", pointerEvents: "auto", zIndex: 2 }}
       >
         <div className={`popup__title popup__title--left ${cls("x_popup__title")}`}>
           {selective && multiselect ? (
