@@ -11,7 +11,7 @@ import { useCilizAssets } from "@/components/decor/decor-selection";
 import { MusicListDialog, MusicPreviewDialog } from "@/components/music/music-dialogs";
 import { MusicView } from "@/components/music/music-view";
 import { CilizMusicService, YTVideoService, type MusicItem, type MusicService } from "@/lib/music";
-import { pushActionLine, pushMusicHistoryLine, stampChatHistory, expireChatHistory, pushHaremLine, pushKickoutLine, pushSystemLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
+import { pushActionLine, pushBottleLine, pushMusicHistoryLine, stampChatHistory, expireChatHistory, pushHaremLine, pushKickoutLine, pushSystemLine, pushTextLine, removeTextLine, registerMusicServices, sendMusic, useMusicSession } from "@/lib/music-session";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { Button } from "@/components/ui/button";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
@@ -141,11 +141,15 @@ export function OriginalChatPanel() {
     if (row.kind === "music") {
       pushMusicHistoryLine({ ...user, musicLevel: 0 }, row.payload?.artist ?? "", row.payload?.title ?? row.text, row.id, row.payload?.key);
     } else if (row.kind === "bottle") {
-      // Original ChatPresenter.changeBottle: info line with the old and new bottle names.
+      // Original ChatPresenter.changeBottle: sender photo, old bottle (grayscale), arrows, new bottle.
       if (!assets) return;
-      const bottleName = (t?: string) => (t ? (assets.translation[`bottle:${t}`] ?? t) : t) || "standart";
-      const oldName = bottleName(row.payload?.old), newName = bottleName(row.payload?.new);
-      pushActionLine({ style: "bottle", icon: "bottle", sender: user, parts: [{ text: `${sender.name} şişeni dəyişdi: ${oldName} → ${newName}` }], messageId: row.id });
+      const bottleView = (t?: string) => {
+        const b = t ? assets.bottles?.[t] : undefined;
+        const name = t ? (assets.translation[`bottle:${t}`] ?? t) : "standart";
+        return { image: b ? dialogImage(assets, b.image, 30, 30).src : "", name };
+      };
+      const oldB = bottleView(row.payload?.old), newB = bottleView(row.payload?.new);
+      pushBottleLine(user, oldB.image, oldB.name, newB.image, newB.name, row.id);
     } else if (row.kind === "newcomer" || row.kind === "birthday") {
       if (!assets || sender.id === VIEWER.id) return;
       if (row.kind === "newcomer" && (sender.male === VIEWER.male || !sender.photo_url)) return;
@@ -341,6 +345,13 @@ export function OriginalChatPanel() {
                   </div>
                 ))}
               </div>
+            </div>
+          ) : line.kind === "bottle" ? (
+            <div key={line.key} className="chat__info chat__noselect">
+              <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
+              {line.oldImage && <img className="chat__bottle chat__bottle--old" src={line.oldImage} width={30} height={30} title={line.oldName} alt="" crossOrigin="anonymous" />}
+              <div className="chat__icon chat__icon--arrows" />
+              {line.newImage && <img className="chat__bottle" src={line.newImage} width={30} height={30} title={line.newName} alt="" crossOrigin="anonymous" />}
             </div>
           ) : line.kind === "gesture" ? (
             <div key={line.key} className="chat__info chat__info--multiline chat__info--gesture chat__noselect">
