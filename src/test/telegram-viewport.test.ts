@@ -38,3 +38,30 @@ describe("iosPortraitSafeArea (original iosSafeArea.ts map)", () => {
     expect(iosPortraitSafeArea(768, 1024, 2)).toBeUndefined();
   });
 });
+
+describe("telegramSafeAreaBottom (Android white strip)", () => {
+  it("uses contentSafeAreaInset.bottom on Android", async () => {
+    const { telegramSafeAreaBottom } = await import("@/lib/telegram-viewport");
+    expect(
+      telegramSafeAreaBottom({
+        platform: "android",
+        contentSafeAreaInset: { top: 24, bottom: 16, left: 0, right: 0 },
+        safeAreaInset: { top: 24, bottom: 48, left: 0, right: 0 },
+      }),
+    ).toBe(16);
+  });
+  it("falls back to safeAreaInset.bottom when contentSafeAreaInset is absent", async () => {
+    const { telegramSafeAreaBottom } = await import("@/lib/telegram-viewport");
+    expect(
+      telegramSafeAreaBottom({
+        platform: "android",
+        safeAreaInset: { top: 24, bottom: 48, left: 0, right: 0 },
+      }),
+    ).toBe(48);
+  });
+  it("keeps the iOS device-table inset on iOS and 0 when nothing is known", async () => {
+    const { telegramSafeAreaBottom } = await import("@/lib/telegram-viewport");
+    expect(telegramSafeAreaBottom({ platform: "ios" }, 34)).toBe(34);
+    expect(telegramSafeAreaBottom({ platform: "android" })).toBe(0);
+  });
+});
