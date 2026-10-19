@@ -15,7 +15,8 @@ describe('Telegram login profile refresh', () => {
   it('uses current Telegram display name and username instead of saved identity', async () => {
     mockApi({ok:true,result:{id:42,type:'private',first_name:'New',last_name:'Name',username:'NEW_USER'}}, {ok:true,result:{total_count:0,photos:[]}});
     const p = await fetchTelegramProfile('test-token', user);
-    expect(p.name).toBe('New Name'); expect(p.username).toBe('new_user');
+    // Ciliz parity: masada sadece first_name gösterilir.
+    expect(p.name).toBe('New'); expect(p.username).toBe('new_user');
   });
   it('downloads the latest changed photo', async () => {
     mockApi({ok:false}, {ok:true,result:{total_count:1,photos:[[{file_id:'new-photo'}]]}}, {ok:true,result:{file_path:'photos/new.jpg'}});
