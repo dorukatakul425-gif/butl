@@ -343,6 +343,11 @@ class SeatView {
     if (this.photo.texture !== Texture.EMPTY) this.photo.texture.destroy(true);
   }
 
+  /** Çerçeve spine'ları ("stick") sonsuz döngüde oynar; biri varken sahne çizilmeye devam eder. */
+  hasAnimatedFrame() {
+    return this.frameContainer.children.some(child => child instanceof Spine && child.autoUpdate);
+  }
+
   private async sprite(assets: CilizAssets, name: string, tableSize: number, ax: number, ay: number) {
     const img = await loadImage(bundleUrl(assets, name, "png", tableSize));
     const sprite = new Sprite(Texture.from(img));
@@ -500,8 +505,9 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     centerDecor.height = (frame?.[3] ?? 287.5) * ASSETS_K;
     markDirty();
   }).catch(error => console.error('Original table ornament could not be loaded', error));
-  // Oturan hediyelerdeki spine animasyonları kendi ticker'ıyla oynar; biri varken çizim sürer.
-  const hasLiveSpine = () => seats.some(seat => seat.gifts.children.some(child => child instanceof Spine && child.autoUpdate));
+  // Oturan hediyelerdeki ve çerçevelerdeki spine animasyonları kendi ticker'ıyla
+  // oynar; biri varken çizim sürer (çerçeve "stick" animasyonu sonsuz döngüdür).
+  const hasLiveSpine = () => seats.some(seat => seat.hasAnimatedFrame() || seat.gifts.children.some(child => child instanceof Spine && child.autoUpdate));
   app.ticker.add(() => {
     const dt = Math.min(app.ticker.deltaMS / 1000, 0.1);
     for (const tick of ticks) if (!tick(dt)) ticks.delete(tick);
