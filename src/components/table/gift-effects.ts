@@ -127,6 +127,8 @@ export class GiftEffects {
   prepare(renderer: IRenderer, name: string) {
     return renderer.plugins["prepare"].upload(this.vfx[name] ?? []);
   }
+  /** Aktif parçacık varken masa render'ı durmasın diye dışarıya açık durum. */
+  get active() { return this.emitters.size > 0; }
   update(dt: number) {
     for (const emitter of this.emitters) {
       emitter.update(dt);
