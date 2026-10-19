@@ -140,6 +140,12 @@ export function OriginalChatPanel() {
     const user = { ...profileUser(sender), ...(sender.id === VIEWER.id ? { isViewer: true } : {}) };
     if (row.kind === "music") {
       pushMusicHistoryLine({ ...user, musicLevel: 0 }, row.payload?.artist ?? "", row.payload?.title ?? row.text, row.id, row.payload?.key);
+    } else if (row.kind === "bottle") {
+      // Original ChatPresenter.changeBottle: info line with the old and new bottle names.
+      if (!assets) return;
+      const bottleName = (t?: string) => (t ? (assets.translation[`bottle:${t}`] ?? t) : t) || "standart";
+      const oldName = bottleName(row.payload?.old), newName = bottleName(row.payload?.new);
+      pushActionLine({ style: "bottle", icon: "bottle", sender: user, parts: [{ text: `${sender.name} şişeni dəyişdi: ${oldName} → ${newName}` }], messageId: row.id });
     } else if (row.kind === "newcomer" || row.kind === "birthday") {
       if (!assets || sender.id === VIEWER.id) return;
       if (row.kind === "newcomer" && (sender.male === VIEWER.male || !sender.photo_url)) return;
