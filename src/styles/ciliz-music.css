@@ -335,6 +335,19 @@
   min-height: 30px;
   max-height: none;
 }
+/* Original createBottleLine: old bottle grayscale, both rotated 45deg. */
+.chat__bottle {
+  margin-left: 15px;
+  flex-shrink: 0;
+  transform: rotate(45deg);
+}
+.chat__bottle:last-child {
+  margin: 0 0 0 4px;
+}
+.chat__bottle--old {
+  filter: grayscale(100);
+  margin: 0 4px 0 15px;
+}
 .chat__info--gesture {
   align-items: flex-start;
 }
