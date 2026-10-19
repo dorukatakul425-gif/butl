@@ -16,3 +16,7 @@ it('expires music and text together at the same 24-hour boundary', () => {
   expireChatHistory(now-1); render(<Count/>); expect(screen.getByText('2')).toBeVisible();
   cleanup(); expireChatHistory(now); render(<Count/>); expect(screen.getByText('0')).toBeVisible();
 });
+it('keeps only the last 100 lines so long sessions do not slow the phone', () => {
+  for (let i = 0; i < 120; i++) pushTextLine(sender, `message ${i}`);
+  render(<Count/>); expect(screen.getByText('100')).toBeVisible();
+});
