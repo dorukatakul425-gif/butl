@@ -43,3 +43,8 @@ export function subscribePendingGold(fn: () => void) { pendingListeners.add(fn);
 export function setPendingGold(delta: number) { pendingGold = Math.max(0, pendingGold + delta); pendingListeners.forEach(fn => fn()); }
 /** Emit only awards confirmed by an authenticated server RPC response. */
 export function emitServerHeartAward(award: VerifiedHeartAward) { awardListeners.forEach(fn => fn(award)); }
+/** spin_bottle returns the lucky bonus hearts (0 = no bonus); guard against junk payloads. */
+export function luckyBonusAmount(data: unknown): number {
+  const n = Number(data ?? 0);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
