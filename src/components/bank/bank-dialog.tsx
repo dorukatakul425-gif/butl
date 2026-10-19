@@ -1,8 +1,12 @@
 import { DatPrice } from "@/components/bank/dat-price";
+import { StarPrice } from "@/components/bank/star-price";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { loadCilizAssets, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { bankOptions, bonusPercent } from "@/lib/bank";
+import { starsBankOptions } from "@/lib/stars-bank";
+import { createStarsInvoice } from "@/lib/stars-payment.functions";
+import { isTelegramWebApp } from "@/lib/telegram-viewport";
 import { getSupabase } from "@/lib/supabase";
 import { emitServerHeartAward, setPendingGold } from "@/lib/game-session";
 import { showSourceToast } from "@/components/source-dialogs";
@@ -133,6 +137,45 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
     onClose();
     setReceived({ gold: got, position });
   };
+  // Telegram sürümü: Ciliz'deki gibi fatura linki alınır, Telegram'ın kendi ödeme ekranı açılır.
+  const confirmStarsPayment = async (totalGold: number, position: number) => {
+    const sb = getSupabase();
+    if (!sb) return;
+    const { data: u } = await sb.auth.getUser();
+    if (!u.user) return;
+    const { data: before } = await sb.from("profiles").select("gold").eq("id", u.user.id).maybeSingle();
+    const startGold = Number(before?.gold ?? 0);
+    // Bot successful_payment'ı işleyip kalbi ekleyene kadar kısa süre bekle.
+    for (let i = 0; i < 12; i++) {
+      await new Promise((r) => setTimeout(r, 1000));
+      const { data: row } = await sb.from("profiles").select("gold").eq("id", u.user.id).maybeSingle();
+      if (Number(row?.gold ?? 0) >= startGold + totalGold) {
+        setPendingGold(totalGold);
+        onClose();
+        setReceived({ gold: totalGold, position });
+        return;
+      }
+    }
+    showSourceToast("Ödeme alındı; kalplerin birazdan hesabına eklenecek.");
+  };
+  const buyStars = async (stars: number, totalGold: number, position: number) => {
+    if (busy.current) return;
+    const app = window.Telegram?.WebApp;
+    const initData = app?.initData ?? "";
+    if (!initData || !app?.openInvoice) { showSourceToast("Ödeme yalnız Telegram içinde açılır."); return; }
+    busy.current = true;
+    try {
+      const { link } = await createStarsInvoice({ data: { initData, stars } });
+      busy.current = false;
+      app.openInvoice(link, (status) => {
+        if (status === "paid") void confirmStarsPayment(totalGold, position);
+        else if (status === "failed") showSourceToast("Ödeme tamamlanmadı.");
+      });
+    } catch (e) {
+      busy.current = false;
+      showSourceToast(e instanceof Error ? e.message : "Fatura açılamadı.");
+    }
+  };
   const receivedDialog = received && assets ? <ReceivedGoldDialog assets={assets} gold={received.gold} position={received.position} onContinue={async (pt) => {
     const r = received; setReceived(null);
     const sb = getSupabase();
@@ -143,9 +186,22 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
   const premiumDialog = premiumOpen && assets ? <PremiumPassDialog t={(k) => translate(assets, k)} onClose={() => setPremiumOpen(false)} /> : null;
   if (!mounted || !assets) return <>{receivedDialog}{premiumDialog}</>;
   const t = (key: string) => translate(assets, key);
-  const options = bankOptions(assets);
+  // Telegram'da Ciliz'in Stars paketleri ve yıldız ikonu; web sürümü eski DAT haliyle kalır.
+  const isTg = isTelegramWebApp();
+  const items = isTg
+    ? starsBankOptions().map((o) => ({
+        key: `s${o.stars}`, gold: o.gold, bonus: o.bonus, idx: o.idx,
+        label: o.label ? { type: o.label.type, text: t(`bank:${o.label.type}`) } : undefined,
+        price: <StarPrice amount={o.stars} />,
+        onBuy: () => void buyStars(o.stars, o.gold + o.bonus, o.idx - 1),
+      }))
+    : bankOptions(assets).map((o) => ({
+        key: `d${o.real}`, gold: o.gold, bonus: o.bonus, idx: o.idx,
+        label: o.label, price: <DatPrice text={o.price} />,
+        onBuy: () => void buy(o.real, o.idx - 1),
+      }));
   const bonusDesc = t("bank:bonus:big");
-  const itemsNum = options.length + (isVip ? 1 : 0) + 1;
+  const itemsNum = items.length + (isVip ? 1 : 0) + 1;
 
   return <>{receivedDialog}{premiumDialog}{createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif" }}>
@@ -182,8 +238,8 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
                   <DialogButton title={t("mobile:vip:know")} mods={["vip"]} onClick={onVip ?? onClose} />
                 </div>
               )}
-              {options.map((opt) => (
-                <div key={opt.real} className={cls("item")}>
+              {items.map((opt) => (
+                <div key={opt.key} className={cls("item")}>
                   {opt.label && (
                     <div className={cls("label", [opt.label.type])}>
                       <div className={cls("label-blick")} />
@@ -200,7 +256,7 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
                       {[1, 2, 3, 4].map((n) => <div key={n} className={cls("blick", [String(n)])} />)}
                     </div>
                   </div>
-                  <DialogButton title={<DatPrice text={opt.price} />} onClick={() => void buy(opt.real, opt.idx - 1)} />
+                  <DialogButton title={opt.price} onClick={opt.onBuy} />
                 </div>
               ))}
             </div>
