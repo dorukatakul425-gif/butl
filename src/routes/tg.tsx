@@ -15,7 +15,6 @@ export const Route = createFileRoute("/tg")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
-    scripts: [{ src: "https://telegram.org/js/telegram-web-app.js" }],
   }),
   component: TelegramEntry,
 });
