@@ -362,7 +362,7 @@
 }
 .tg-webapp .chat__safe-area {
   display: block;
-  height: var(--tg-safe-area-bottom, 0px);
+  height: max(var(--tg-safe-area-bottom, 0px), env(safe-area-inset-bottom, 0px));
 }
 .chat__info--gesture {
   align-items: flex-start;
