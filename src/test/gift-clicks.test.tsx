@@ -74,7 +74,8 @@ describe("gift dialog stays open", () => {
     act(() => { vi.advanceTimersByTime(1); });
     rerender(<SendGiftDialog {...props} receiverName="Oyuncu 7" />);
     act(() => { vi.advanceTimersByTime(1); });
-    expect(screen.getByRole("dialog").textContent).toContain("Oyuncu 7");
+    // Ciliz setHeader: alıcı adı artık çekmecenin dışındaki opak başlık şeridinde.
+    expect(document.body.textContent).toContain("Oyuncu 7");
   });
 });
 describe("gift music shortcuts", () => {
