@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useCilizAssets } from '@/components/decor/decor-selection';
 import { translate } from '@/lib/ciliz-assets';
 import { executeSourceFeature, useSourceFeatureSession, type SourceTableEntry } from '@/lib/source-feature-session';
+import { useIsChatAdmin } from '@/lib/room-session';
 import { SourceButtons } from '@/components/source-dialogs';
 import { SourceFeaturePopup } from './source-feature-popup';
 
@@ -30,6 +31,8 @@ function Stats({ men, women, timer }: { men: number; women: number; timer?: stri
 
 export function SourceChangeTable({ onClose }: { onClose: () => void }) {
   const assets = useCilizAssets(), session = useSourceFeatureSession();
+  // Ciliz ChangeTablePresenter: ID ile masa açma formu sadece yöneticilere görünür.
+  const isAdmin = useIsChatAdmin();
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [now, setNow] = useState(Date.now()), [info, setInfo] = useState<SourceTableEntry | null>(null);
   const [fullTable, setFullTable] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -71,7 +74,7 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
   return createPortal(<><SourceFeaturePopup title={t('dlg:change_table:title')} onClose={onClose} contentClass="popup__content--no-padding" footer={<div className="popup__footer change-table__x_popup__footer" />}>
     <div className={cls('', [isBrokenBorders ? '' : 'support-borders'])}>
       <div className={cls('random-button')} aria-disabled={busy || !session.viewerId} {...press(() => { if (session.viewerId) void change(); })}>{t('dlg:change_table:btn_random2')}</div>
-      {session.tables?.canViewById && <form className={cls('view-form')} onSubmit={e => { e.preventDefault(); const v = inputRef.current?.value ?? ''; if (/^\d+$/.test(v)) void change(String(Number(v))); }}>
+      {session.tables?.canViewById && isAdmin && <form className={cls('view-form')} onSubmit={e => { e.preventDefault(); const v = inputRef.current?.value ?? ''; if (/^\d+$/.test(v)) void change(String(Number(v))); }}>
         <label htmlFor="table-id" className={cls('subtitle', ['input'])}>Указать стол</label>
         <div className={cls('input-line')}><input type="number" id="table-id" className={cls('input')} placeholder="Id стола" step="1" min="0" ref={inputRef} required /><span className="validity" /><input className={cls('submit')} type="submit" value="Перейти" disabled={busy} /></div>
       </form>}
