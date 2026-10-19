@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { Button } from "@/components/ui/button";
 import type { GiftStoreItem } from "@/lib/gifts";
-import { AnimatedGiftTeaser } from "./animated-gift-teaser";
 
 // Markup and class names ported from SendGiftDialog.tsx (giftType 'gift', html5 layout) and Dialog.Header.
 const bem = (block: string) => (element?: string, mods: Array<string | false | undefined> = []) => {
@@ -172,7 +171,6 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
             </>
           )}
         </div>
-        <AnimatedGiftTeaser />
         {multiselect && (
           <div className={cls("multigift-btn-list")}>
             {selective ? (
