@@ -106,22 +106,10 @@ export const setBan = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     if (data.userId === context.userId) throw new Error("Kendini banlayamazsın");
     const admin = await assertAdmin(context);
-    // Original: ban / disabled_ban system lines appear in the target's room chat.
-    const { data: seat } = await admin.from("room_players").select("room_id").eq("user_id", data.userId).maybeSingle();
-    const { data: target } = await admin.from("profiles").select("name").eq("id", data.userId).maybeSingle();
-    const banLine = async (kind: "ban" | "disabled_ban") => {
-      let roomId = seat?.room_id as number | undefined;
-      if (!roomId) {
-        const { data: anyRoom } = await admin.from("rooms").select("id").order("id").limit(1).maybeSingle();
-        roomId = anyRoom?.id as number | undefined;
-      }
-      if (roomId) await admin.from("chat_messages").insert({ room_id: roomId, user_id: data.userId, text: (target?.name as string) ?? "?", kind });
-    };
     if (!data.banned) {
       await admin.from("user_bans").delete().eq("user_id", data.userId);
       const { error } = await admin.auth.admin.updateUserById(data.userId, { ban_duration: "none" });
       if (error) throw new Error(error.message);
-      await banLine("disabled_ban");
       return { banned: false };
     }
     const until = data.hours ? new Date(Date.now() + data.hours * 3600000).toISOString() : null;
@@ -133,7 +121,6 @@ export const setBan = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await admin.rpc("admin_revoke_sessions", { _user_id: data.userId });
     await admin.from("room_players").delete().eq("user_id", data.userId);
-    await banLine("ban");
     return { banned: true };
   });
 
