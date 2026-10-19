@@ -101,6 +101,21 @@ async function poll() {
   }
 }
 
+// Ciliz'deki gibi sıra sunucuda ilerler: oyuncuların ekranı arka planda
+// olsa bile masa donmaz. Her 2 saniyede tüm masaların saati işletilir.
+const SB_URL = process.env.SUPABASE_URL, SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (SB_URL && SB_KEY) {
+  setInterval(() => {
+    fetch(`${SB_URL.replace(/\/$/, "")}/rest/v1/rpc/tick_all_rooms`, {
+      method: "POST",
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+      body: "{}",
+    }).catch(() => undefined);
+  }, 2000);
+} else {
+  console.error("SUPABASE ayarları yok; masa saati (tick_all_rooms) çalışmayacak.");
+}
+
 console.log(`Bot başladı. Mini App: ${GAME_URL}`);
 await call("deleteWebhook", { drop_pending_updates: false }).catch(() => undefined);
 await poll();
