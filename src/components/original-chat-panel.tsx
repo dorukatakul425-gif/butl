@@ -432,6 +432,8 @@ export function OriginalChatPanel() {
         }}><img className="original-chat-control-image" src={giftIcon.url} width={26} height={26} alt="" /></Button>
         <Button variant="ghost" type="submit" className="original-chat-round original-chat-send" aria-label="Gönder"><img className="original-chat-control-image" src={sendIcon} width={26} height={26} alt="" /></Button>
       </form>
+      {/* Original chat__safe-area: white strip under the input, Telegram iOS only. */}
+      <div className="chat__safe-area" aria-hidden="true" />
       {assets && selected && <MessageActions assets={assets} blocked={blocked.has(selected.sender.id)} translationShown={Boolean(translations[selected.key]?.shown)} canTranslate={needsTranslation(selected.sender, VIEWER_LOCALE)} busy={menuBusy}
         onClose={() => setSelected(null)} onTranslate={() => { onTranslate(selected.key, selected.text); setSelected(null); }}
         onReport={() => { setReportMessage(selected); setSelected(null); }}
