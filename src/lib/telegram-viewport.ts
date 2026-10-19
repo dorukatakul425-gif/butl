@@ -12,6 +12,10 @@ interface TelegramWebApp {
   disableVerticalSwipes?: () => void;
   onEvent?: (event: string, cb: () => void) => void;
   openTelegramLink?: (url: string) => void;
+  /** Telegram WebApp 8.0+: system safe area (notch / gesture bar). */
+  safeAreaInset?: { top: number; bottom: number; left: number; right: number };
+  /** Telegram WebApp 8.0+: safe area minus Telegram's own UI (bottom bar). */
+  contentSafeAreaInset?: { top: number; bottom: number; left: number; right: number };
 }
 
 declare global {
@@ -87,6 +91,19 @@ export function iosAppSafeArea() {
 }
 
 /**
+ * Android (and other non-iOS) Telegram builds: the white strip under the chat
+ * input equals Telegram's contentSafeAreaInset.bottom (gesture/navigation
+ * bar), falling back to safeAreaInset.bottom. Pure for testing.
+ */
+export function telegramSafeAreaBottom(
+  webApp: Pick<TelegramWebApp, "platform" | "safeAreaInset" | "contentSafeAreaInset">,
+  iosBottom = 0,
+): number {
+  if (webApp.platform === "ios") return iosBottom;
+  return webApp.contentSafeAreaInset?.bottom ?? webApp.safeAreaInset?.bottom ?? 0;
+}
+
+/**
  * Sets up the Telegram viewport lock. Only runs inside the Mini App; the
  * website build is untouched. Returns a cleanup function.
  */
@@ -104,10 +121,21 @@ export function setupTelegramViewport(): () => void {
   root.classList.add("tg-webapp");
 
   // Original: Telegram iOS reserves a white strip under the chat input equal
-  // to the device home-indicator inset (chat__safe-area). Other platforms get
-  // no strip.
-  const safeArea = webApp.platform === "ios" ? iosAppSafeArea() : undefined;
-  if (safeArea) root.style.setProperty("--tg-safe-area-bottom", `${safeArea.bottom}px`);
+  // to the device home-indicator inset (chat__safe-area), from the original
+  // iosSafeArea device table. On Android the original Telegram build takes the
+  // same strip from Telegram's own contentSafeAreaInset/safeAreaInset (the
+  // gesture/navigation bar height), updating on safeAreaChanged events.
+  const applySafeAreaBottom = () => {
+    const bottom = telegramSafeAreaBottom(webApp, iosAppSafeArea()?.bottom ?? 0);
+    if (bottom > 0) {
+      root.style.setProperty("--tg-safe-area-bottom", `${bottom}px`);
+    } else {
+      root.style.removeProperty("--tg-safe-area-bottom");
+    }
+  };
+  applySafeAreaBottom();
+  webApp.onEvent?.("safeAreaChanged", applySafeAreaBottom);
+  webApp.onEvent?.("contentSafeAreaChanged", applySafeAreaBottom);
 
   // Stable height captured before the keyboard ever opens: the game keeps this
   // height while typing, so the table proportions never change.
