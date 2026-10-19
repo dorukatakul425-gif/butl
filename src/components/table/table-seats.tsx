@@ -246,6 +246,13 @@ export function TableSeats() {
     ids.forEach((id) => preloadSfx(assets.sfxUrl, id));
   }, [giftSeat, assets, giftItems]);
 
+  // Ciliz: hediye görselleri masada arka planda tek sırayla ısınır — karşı taraftan
+  // gelen hediye ilk kez yüklenirken takılmaz, iki tarafta da seri uçar.
+  useEffect(() => {
+    if (!activeTable || !assets) return;
+    for (const item of giftItems) void activeTable.preloadGift(item.gift).catch(() => {});
+  }, [activeTable, assets, giftItems]);
+
   const spent = useRef(0), localSent = useRef(new Set<string>());
   const send = useCallback(
     (item: GiftStoreItem) => {
