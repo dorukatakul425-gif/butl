@@ -9,6 +9,7 @@ import { OriginalTableHeader } from "@/components/original-table-header";
 import { OriginalChatPanel } from "@/components/original-chat-panel";
 import { TableSeats } from "@/components/table/table-seats";
 import { OriginalLoadingScreen } from "@/components/original-loading-screen";
+import { resetGameLoading } from "@/lib/game-loading";
 
 import { SourceConnectionScreen } from "@/components/table/source-connection-screen";
 import { SourceHeartBonus } from "@/components/table/source-heart-bonus";
@@ -47,6 +48,7 @@ function Index() {
     // Telegram first entry: gender/age setup must finish before the live room is mounted.
     if (auth.profile.profile_setup_done === false) return;
     let alive = true;
+    resetGameLoading();
     void joinRoom().then(() => { if (alive) setJoined(true); }).catch(() => { if (alive) setJoined(false); });
     // Closing the tab frees the seat at once, so others see the player leave immediately.
     const stopAchievements = startCloudAchievements();
@@ -60,9 +62,11 @@ function Index() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.ready, auth.session?.user.id, Boolean(auth.profile), auth.profile?.profile_setup_done]);
   if (auth.profile && auth.profile.profile_setup_done === false) return <ProfileSetupDialog onDone={() => undefined} />;
+  // Ciliz: girişte metin ekranı yok — yeşil yükleme ekranı masaya kadar açık kalır.
   if (!joined || !room.roomId) {
-    return <main className="grid min-h-dvh place-items-center bg-background p-6 text-center text-foreground">
-      <p>{room.error ?? "Masaya bağlanılıyor…"}</p>
+    return <main className="original-table-page" aria-label="Oyun yükleniyor">
+      <OriginalLoadingScreen />
+      {room.error && <p className="original-join-error">{room.error}</p>}
     </main>;
   }
   return (
