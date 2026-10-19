@@ -16,6 +16,7 @@ import { matchingTableEffects } from "@/lib/table-gift-effects";
 import { originalBottle, bottleArtwork } from "./original-bottle";
 import { TABLE_USER_KISS } from "@/lib/table-kiss-icon";
 import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
+import { cleanDisplayName } from "@/lib/display-name";
 
 // TableView seats (virtual 375px table space, origin at table centre).
 const SEATS: Array<[number, number]> = [
@@ -23,6 +24,8 @@ const SEATS: Array<[number, number]> = [
   [-40.5, 143.5], [-122.5, 124.5], [-137.5, 42.5], [-137.5, -38.5], [-122.5, -120.5], [-40.5, -140.5],
 ];
 const NAME_HEIGHT = 14;
+// Ciliz nameFrame genişliği: etiket fotoğraf genişliğini biraz aşabilir.
+const NAME_WIDTH = PHOTO + 16;
 const NAME_TEXT_STYLE = new TextStyle({
   align: "center",
   fill: "white",
@@ -264,12 +267,19 @@ class SeatView {
     // Empty server seat: nothing is drawn until a real player sits down.
     this.view.visible = !player.empty;
     if (player.empty) { this.current = "empty"; return; }
-    const key = `${player.name}|${player.photoUrl}|${player.frame}|${player.stone}|${Math.ceil(res * 2) / 2}`;
+    const key = `${player.name}|${player.age ?? 0}|${player.photoUrl}|${player.frame}|${player.stone}|${Math.ceil(res * 2) / 2}`;
     if (key === this.current) return;
     this.current = key;
     const id = ++this.updateId;
     this.nameText.resolution = Math.ceil(res);
-    this.nameText.text = player.name;
+    // Ciliz generateNames/updateNames: etiket "Ad, yaş"; emojiler gösterilmez,
+    // çerçeveye sığana kadar sondan kısaltılır (ellipsis eklenmez).
+    const chars = Array.from(cleanDisplayName(player.name));
+    const ageSuffix = player.age && player.age > 0 ? `, ${player.age}` : "";
+    for (let len = chars.length; len >= 0; len--) {
+      this.nameText.text = chars.slice(0, len).join("") + ageSuffix;
+      if (this.nameText.width + 4 <= NAME_WIDTH) break;
+    }
     const textWidth = this.nameText.width;
     this.stoneLeft.x = -textWidth / 2 - 1;
     this.stoneRight.x = textWidth / 2 + 1;
