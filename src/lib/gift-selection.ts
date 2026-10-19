@@ -38,6 +38,15 @@ export function selectGender(state: GiftTargetState, males: boolean[], male: boo
   return { ...state, selected };
 }
 
+/** Ciliz TablePresenter onuserphoto: aynı koltuğa ikinci dokunuş profil penceresini açar. */
+export type SeatTapAction = "gestures" | "own-profile" | "profile" | "gifts";
+export function seatTapAction(state: GiftTargetState, seat: number, viewerSeat: number, gesturesOpen: boolean): SeatTapAction {
+  if (seat === viewerSeat) return gesturesOpen ? "own-profile" : "gestures";
+  // Hediye panelinin tek alıcısı olan oyuncuya ikinci dokunuş: profil açılır.
+  if (!state.selective && state.receiver === seat) return "profile";
+  return "gifts";
+}
+
 /** giftStore.onsend -> viewerSendGift(tablePresenter.selectedUsers): solo sends to the receiver only. */
 export function giftReceivers(state: GiftTargetState): number[] {
   if (state.receiver === null) return [];
