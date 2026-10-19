@@ -50,12 +50,17 @@ function HtmlAudio({ url, startPosition, muted, volume, onReady, onProgress, onC
     };
     const pauseIntent = () => { manuallyPaused = true; };
     a.addEventListener("music:pause-intent", pauseIntent);
-    document.addEventListener("pointerdown", resume);
-    document.addEventListener("keydown", resume);
+    // Tarayıcı kuralı: ses ancak kullanıcı ekrana ilk dokunduğunda açılabilir.
+    // Capture aşaması + touchstart sayesinde baloncuklanmayı durduran oyun
+    // öğelerine dokunulsa bile ilk dokunuş müziği başlatır.
+    document.addEventListener("pointerdown", resume, true);
+    document.addEventListener("touchstart", resume, true);
+    document.addEventListener("keydown", resume, true);
     return () => {
       a.pause();
-      document.removeEventListener("pointerdown", resume);
-      document.removeEventListener("keydown", resume);
+      document.removeEventListener("pointerdown", resume, true);
+      document.removeEventListener("touchstart", resume, true);
+      document.removeEventListener("keydown", resume, true);
       a.removeEventListener("music:pause-intent", pauseIntent);
       a.removeEventListener("loadedmetadata", ready); a.removeEventListener("timeupdate", time); a.removeEventListener("ended", ended);
       a.removeEventListener("play", onPlay); a.removeEventListener("pause", onPause); a.removeEventListener("error", onError);
