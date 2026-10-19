@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as GameRouteImport } from './routes/game'
+import { Route as SakoRouteImport } from './routes/sako'
+import { Route as TgRouteImport } from './routes/tg'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +30,53 @@ const GameRoute = GameRouteImport.update({
   path: '/game',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SakoRoute = SakoRouteImport.update({
+  id: '/sako',
+  path: '/sako',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TgRoute = TgRouteImport.update({
+  id: '/tg',
+  path: '/tg',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/game': typeof GameRoute
+  '/sako': typeof SakoRoute
+  '/tg': typeof TgRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/game': typeof GameRoute
+  '/sako': typeof SakoRoute
+  '/tg': typeof TgRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/game': typeof GameRoute
+  '/sako': typeof SakoRoute
+  '/tg': typeof TgRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/game'
+  fullPaths: '/' | '/auth' | '/game' | '/sako' | '/tg'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/game'
-  id: '__root__' | '/' | '/auth' | '/game'
+  to: '/' | '/auth' | '/game' | '/sako' | '/tg'
+  id: '__root__' | '/' | '/auth' | '/game' | '/sako' | '/tg'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   GameRoute: typeof GameRoute
+  SakoRoute: typeof SakoRoute
+  TgRoute: typeof TgRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +102,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sako': {
+      id: '/sako'
+      path: '/sako'
+      fullPath: '/sako'
+      preLoaderRoute: typeof SakoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tg': {
+      id: '/tg'
+      path: '/tg'
+      fullPath: '/tg'
+      preLoaderRoute: typeof TgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +123,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   GameRoute: GameRoute,
+  SakoRoute: SakoRoute,
+  TgRoute: TgRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
