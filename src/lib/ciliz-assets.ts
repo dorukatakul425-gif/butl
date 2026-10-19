@@ -96,7 +96,14 @@ export interface CilizAssets {
 let assetsPromise: Promise<CilizAssets> | null = null;
 
 export function loadCilizAssets(): Promise<CilizAssets> {
-  if (!assetsPromise) {
+  if (assetsPromise) {
+    // Önbellekten dönüyoruz: "server"/"assets" aşamaları ilk yüklemede tamamlandı.
+    // Oyuna yeniden girilirken loading sıfırlanmış olabilir — aşamaları tekrar işaretle
+    // (idempotent), yoksa yükleme ekranı sonsuza kadar açık kalır.
+    assetsPromise.then(() => { completeLoadingStage("server"); completeLoadingStage("assets"); }, () => undefined);
+    return assetsPromise;
+  }
+  {
     assetsPromise = (async () => {
       const server = await (await fetch(SERVER_JSON_URL)).json();
       completeLoadingStage("server");
