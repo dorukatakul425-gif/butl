@@ -30,7 +30,39 @@ async function call(method, body) {
   return json.result;
 }
 
+// Stars ödemesi onaylandı: payload'daki paketi doğrula, kalbi oyuncunun hesabına ekle.
+async function handlePayment(message) {
+  const pay = message.successful_payment;
+  const chatId = message.chat?.id;
+  if (!pay || !chatId) return;
+  const m = /^hearts\.(\d+)\.(\d+)\.(\d+)$/.exec(pay.invoice_payload || "");
+  if (!m) return;
+  const [, , stars, tgId] = m;
+  const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) { console.error('SUPABASE ayarları yok; kalp eklenemedi.'); return; }
+  const res = await fetch(`${url.replace(/\/$/, '')}/rest/v1/rpc/credit_stars_purchase`, {
+    method: "POST",
+    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      p_telegram_id: Number(tgId),
+      p_stars: Number(stars),
+      p_charge_id: pay.telegram_payment_charge_id,
+    }),
+  });
+  if (!res.ok) { console.error('Kalp eklenemedi:', await res.text()); return; }
+  const got = await res.json();
+  if (got > 0) {
+    await call("sendMessage", { chat_id: chatId, text: `❤️ ${got} kalp hesabına eklendi. İyi oyunlar!` });
+  }
+}
+
+// Telegram ödeme öncesi onay sorar; paket bizim olduğu için doğrudan onaylıyoruz.
+async function handlePreCheckout(q) {
+  await call("answerPreCheckoutQuery", { pre_checkout_query_id: q.id, ok: true });
+}
+
 async function handleMessage(message) {
+  if (message.successful_payment) return handlePayment(message);
   const chatId = message.chat?.id;
   if (!chatId) return;
   const text = message.text || "";
@@ -56,10 +88,11 @@ async function poll() {
         TOKEN = next; offset = 0;
         await call('deleteWebhook', { drop_pending_updates: false });
       }
-      const updates = await call("getUpdates", { offset, timeout: 30, allowed_updates: ["message"] });
+      const updates = await call("getUpdates", { offset, timeout: 30, allowed_updates: ["message", "pre_checkout_query"] });
       for (const update of updates) {
         offset = update.update_id + 1;
         if (update.message) await handleMessage(update.message).catch(() => console.error('Telegram mesajı göndərilmədi.'));
+        if (update.pre_checkout_query) await handlePreCheckout(update.pre_checkout_query).catch(() => console.error('Ödeme ön onayı göndərilmədi.'));
       }
     } catch {
       console.error('Telegram bağlantısı alınmadı; yenidən yoxlanılır.');
