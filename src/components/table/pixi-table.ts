@@ -5,7 +5,7 @@ import { ASSETS_TO_VIRTUAL as ASSETS_K } from "@/lib/ciliz-assets";
 import { Application, BaseTexture, Container, MIPMAP_MODES, Rectangle, Sprite, Text, TextStyle, Texture, UPDATE_PRIORITY, type DisplayObject } from "pixi.js";
 import { TextureAtlas, TextureFilter } from "@pixi-spine/base";
 import { AtlasAttachmentLoader, SkeletonJson, Spine, type SkeletonData } from "@pixi-spine/runtime-3.8";
-import { bundleUrl, SPINE_DESIGN_TO_TABLE, tableFrameSize, VIRTUAL_SIZE, type CilizAssets, type CilizGift } from "@/lib/ciliz-assets";
+import { bundleUrl, hasWebP, SPINE_DESIGN_TO_TABLE, tableFrameSize, VIRTUAL_SIZE, type CilizAssets, type CilizGift } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
 import { type SentGift } from "@/lib/gifts";
 import type { SeatSelection } from "@/lib/gift-selection";
@@ -68,8 +68,10 @@ function loadSkeleton(assets: CilizAssets, name: string, tableSize: number) {
   let promise = skeletonCache.get(key);
   if (!promise) {
     promise = (async () => {
+      // Ciliz bundleImage: WebP destekleniyorsa .webp yüklenir; olmazsa .png'ye düşülür.
       const [img, raw] = await Promise.all([
-        loadImage(bundleUrl(assets, name, "png", tableSize)),
+        loadImage(bundleUrl(assets, name, hasWebP() ? "webp" : "png", tableSize))
+          .catch(() => loadImage(bundleUrl(assets, name, "png", tableSize))),
         fetch(bundleUrl(assets, name, "json", tableSize)).then((res) => {
           if (!res.ok) throw new Error(`Skeleton ${name}: ${res.status}`);
           return res.json();
@@ -301,7 +303,11 @@ class SeatView {
     const frame = player.frame ? assets.frames[player.frame] : undefined;
     if (frame) {
       try {
-        const skeleton = frame.spine ? await loadSkeleton(assets, frame.spine, tableSize) : undefined;
+        // Ciliz setFrame: spine yüklenemezse statik resme düşer (frame.image) —
+        // çerçeve asla tamamen kaybolmaz.
+        const skeleton = frame.spine
+          ? await loadSkeleton(assets, frame.spine, tableSize).catch(() => undefined)
+          : undefined;
         if (id !== this.updateId || this.disposed) return;
         if (skeleton) {
           this.frameContainer.addChild(spineFromSkeleton(skeleton, Boolean(frame.stick)));
