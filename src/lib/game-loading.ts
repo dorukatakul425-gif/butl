@@ -17,6 +17,12 @@ export function failGameLoading() {
   state = { ...state, error: true };
   listeners.forEach(listener => listener());
 }
+/** Oyuna her girişte yükleme ekranı baştan başlar (Ciliz splash her açılışta görünür). */
+export function resetGameLoading() {
+  completed.clear();
+  state = initial;
+  listeners.forEach(listener => listener());
+}
 export function useGameLoading() {
   return useSyncExternalStore(listener => { listeners.add(listener); return () => { listeners.delete(listener); }; }, () => state, () => initial);
 }
