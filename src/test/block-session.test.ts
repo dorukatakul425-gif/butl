@@ -1,3 +1,4 @@
+import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mock = vi.hoisted(() => ({ reads: [] as Array<(value: unknown) => void>, rpc: vi.fn(), callback: undefined as undefined | (() => void) }));
@@ -10,7 +11,7 @@ vi.mock('@/lib/supabase', () => ({ getSupabase: () => ({
   } }),
   removeChannel: vi.fn(),
 }) }));
-import { isUserBlocked, setUserBlocked, startCloudBlocks } from '@/lib/block-session';
+import { isUserBlocked, setUserBlocked, startCloudBlocks, useBlockedUsers } from '@/lib/block-session';
 
 let stop: (() => void) | undefined;
 afterEach(() => { stop?.(); mock.reads.length = 0; mock.rpc.mockReset(); });
@@ -47,5 +48,18 @@ describe('confirmed live ignore', () => {
     mock.reads.shift()?.({ data: [], error: null });
     await Promise.resolve();
     expect(isUserBlocked('other')).toBe(false);
+  });
+  it('does not notify subscribers when the server list is unchanged', async () => {
+    stop = startCloudBlocks('viewer');
+    mock.reads.shift()?.({ data: [{ blocked: 'other' }], error: null });
+    await Promise.resolve();
+    let renders = 0;
+    const { unmount } = renderHook(() => { renders++; return useBlockedUsers(); });
+    const before = renders;
+    mock.callback?.();
+    mock.reads.shift()?.({ data: [{ blocked: 'other' }], error: null });
+    await Promise.resolve();
+    expect(renders).toBe(before);
+    unmount();
   });
 });
