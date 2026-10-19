@@ -57,9 +57,6 @@
 .chat__action--vip {
   background-color: #fff4e6;
 }
-.chat__action--bottle {
-  background-color: #eef3ff;
-}
 .chat__action--rewarded-video {
   background-color: #e6faff;
 }
@@ -107,9 +104,6 @@
 .chat__btn-bg--vip {
   background-image: linear-gradient(to left, #fd9348, #fdc14e);
 }
-.chat__btn-bg--bottle {
-  background-image: linear-gradient(to left, #5b8def, #9cc0ff);
-}
 .chat__btn-bg--rewarded-video {
   background-image: linear-gradient(to left, #00b1e2, #78d4e7);
 }
@@ -137,12 +131,6 @@
   background-size: 34px 26px;
   height: 26px;
   width: 34px;
-}
-.chat__btn--bottle {
-  background-size: 16px 26px;
-  height: 26px;
-  width: 16px;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2226%22%20viewBox%3D%220%200%2016%2026%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20fill%3D%22%23FFF%22%20d%3D%22M6%200h4v3l1.5%201c1.2.8%202%202.1%202%203.5V23a3%203%200%200%201-3%203h-5a3%203%200%200%201-3-3V7.5c0-1.4.8-2.7%202-3.5L6%203V0z%22%2F%3E%3Cpath%20fill%3D%22%235b8def%22%20d%3D%22M3%2012h10v9a2%202%200%200%201-2%202H5a2%202%200%200%201-2-2v-9z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 }
 .chat__btn--rewarded-video {
   background-size: 28px 25px;
