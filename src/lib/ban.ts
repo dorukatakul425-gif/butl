@@ -2,7 +2,7 @@
 import { useSyncExternalStore } from "react";
 import { getSupabase } from "./supabase";
 
-export interface BanInfo { reason: string; banned_at: string; banned_until: string | null; username?: string }
+export interface BanInfo { reason: string; banned_at: string; banned_until: string | null; username?: string; male?: boolean | null }
 
 let ban: BanInfo | null = null;
 const listeners = new Set<() => void>();
@@ -12,6 +12,15 @@ export function useBan() {
   return useSyncExternalStore((cb) => { listeners.add(cb); return () => listeners.delete(cb); }, () => ban, () => null);
 }
 export const clearBan = () => set(null);
+
+/** Ciliz rule: remaining ban time rounds to minutes under 1 h, hours under 1 day, else days. */
+export function formatBanRemaining(ms: number): { value: number; unit: "dəqiqə" | "saat" | "gün" } {
+  const minutes = Math.ceil(ms / 60000);
+  if (minutes < 60) return { value: minutes, unit: "dəqiqə" };
+  const hours = Math.ceil(ms / 3600000);
+  if (hours < 24) return { value: hours, unit: "saat" };
+  return { value: Math.ceil(ms / 86400000), unit: "gün" };
+}
 
 /** Checks the signed-in player; signs them out when banned. */
 export async function checkOwnBan() {
