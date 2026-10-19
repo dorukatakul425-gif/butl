@@ -28,7 +28,7 @@ export interface ChatRow {
   receiver_id: string | null;
   text: string;
   kind?: string; // 'chat' | 'admin_chat' | 'ban' | 'disabled_ban'
-  payload?: { artist?: string; title?: string; key?: number };
+  payload?: { artist?: string; title?: string; key?: number; old?: string; new?: string };
   created_at: string;
   is_private?: boolean;
 }
@@ -141,6 +141,7 @@ let serverOffsetMs = 0;
 let channel: RealtimeChannel | null = null;
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 let seatMap = new Map<number, string>(); // server seat -> user id
+let viewerUserId: string | null = null; // auth id of the viewer (spectators have no seat row in the map)
 let generation = 0;
 let playerRead = 0;
 type PlayerRow = { seat: number; user_id: string; kisses?: number; profiles: Profile | null };
@@ -148,6 +149,8 @@ function mapPlayers(rows: PlayerRow[], mySeat: number) {
   const players: Array<Profile | null> = Array(12).fill(null);
   seatMap = new Map();
   for (const row of rows) {
+    // Seat -1 is an admin spectator (original goto_view_table): watches, never sits.
+    if (row.seat < 0) continue;
     seatMap.set(row.seat, row.user_id);
     // Original game_join: the seat's kiss counter comes from the server with the player.
     if (row.profiles) players[toDisplay(row.seat, mySeat)] = { ...row.profiles, table_kisses: row.kisses ?? 0 };
@@ -183,8 +186,7 @@ async function loadPlayers(roomId: number, mySeat: number) {
     .select("seat, user_id, kisses, profiles(*)")
     .eq("room_id", roomId);
   if (error || version !== generation || read !== playerRead || state.roomId !== roomId) return;
-  const viewerId = state.players[VIEWER_DISPLAY_SEAT]?.id;
-  if (viewerId && !(data ?? []).some(row => row.user_id === viewerId)) {
+  if (viewerUserId && !(data ?? []).some(row => row.user_id === viewerUserId)) {
     // The server removed our membership. Never leave a ghost seat able to send actions.
     set({ connected: false, error: 'Masadan ayrıldınız.', players: mapPlayers((data ?? []) as unknown as PlayerRow[], mySeat) });
     return;
@@ -242,6 +244,8 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
   }
   const roomId = Number(joined.room_id);
   const mySeat = Number(joined.seat);
+  // Admin spectator (seat -1): watch the table as-is, seat 0..11 keep their places.
+  const mapSeat = mySeat >= 0 ? mySeat : VIEWER_DISPLAY_SEAT;
   const version = generation;
   const current = () => version === generation && state.roomId === roomId;
   // Keep the previous rendered table until the destination snapshot is complete.
@@ -255,9 +259,10 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     throw new Error(message);
   }
   if (state.roomId !== roomId) resetRoomMusic();
-  set({ roomId, mySeat, room: initialRoom.data as unknown as RoomRow, players: mapPlayers(initialPlayers.data as unknown as PlayerRow[], mySeat), connected: false, error: null });
+  set({ roomId, mySeat, room: initialRoom.data as unknown as RoomRow, players: mapPlayers(initialPlayers.data as unknown as PlayerRow[], mapSeat), connected: false, error: null });
   applyRoom(initialRoom.data as unknown as RoomRow);
   const { data: auth } = await sb.auth.getUser();
+  viewerUserId = auth.user?.id ?? null;
   if (auth.user) installCloudFeatureSession(auth.user.id, switchRoom);
   const refreshRoom = async () => {
     const read = roomRevision.next();
@@ -272,13 +277,13 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
       (p) => { if (current()) { roomRevision.next(); applyRoom(p.new as RoomRow); } })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` },
-      () => { if (current()) { void loadPlayers(roomId, mySeat); nudgeRoom(); } })
+      () => { if (current()) { void loadPlayers(roomId, mapSeat); nudgeRoom(); } })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` },
-      (p) => { const old = p.old as { seat?: number; room_id?: number }; const next = p.new as { seat?: number; room_id?: number }; if (current() && (old.seat !== next.seat || old.room_id !== next.room_id || (p.old as { kisses?: number }).kisses !== (p.new as { kisses?: number }).kisses)) void loadPlayers(roomId, mySeat); })
+      (p) => { const old = p.old as { seat?: number; room_id?: number }; const next = p.new as { seat?: number; room_id?: number }; if (current() && (old.seat !== next.seat || old.room_id !== next.room_id || (p.old as { kisses?: number }).kisses !== (p.new as { kisses?: number }).kisses)) void loadPlayers(roomId, mapSeat); })
     .on("postgres_changes", { event: "DELETE", schema: "public", table: "room_players" },
       () => {
         // DELETE cannot be filtered reliably under RLS; old fields can be redacted.
-        if (current()) { void loadPlayers(roomId, mySeat); void refreshRoom(); }
+        if (current()) { void loadPlayers(roomId, mapSeat); void refreshRoom(); }
       })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `room_id=eq.${roomId}` },
       (p) => { if (current()) chatListeners.forEach((fn) => fn(p.new as ChatRow)); })
@@ -308,7 +313,7 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
       })
     .subscribe((status) => {
       if (!current()) return;
-      if (status === "SUBSCRIBED") { set({ connected: true, error: null }); void loadPlayers(roomId, mySeat); void refreshRoom(); nudgeRoom(); }
+      if (status === "SUBSCRIBED") { set({ connected: true, error: null }); void loadPlayers(roomId, mapSeat); void refreshRoom(); nudgeRoom(); }
       else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT")
         set({ connected: false, error: "Bağlantı kəsildi, yenidən qoşulunur..." });
     });
@@ -319,9 +324,9 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     void sb.rpc("heartbeat").then(async () => {
       if (!current()) return;
       await sb.rpc('kickout_refresh');
-      if (current()) { await sb.rpc("room_tick", { p_room: roomId }); void loadPlayers(roomId, mySeat); }
+      if (current()) { await sb.rpc("room_tick", { p_room: roomId }); void loadPlayers(roomId, mapSeat); }
     });
-    if (++pulse % 5 === 0) { void loadPlayers(roomId, mySeat); void refreshRoom(); }
+    if (++pulse % 5 === 0) { void loadPlayers(roomId, mapSeat); void refreshRoom(); }
     // A late keepalive leave_room from the previous page can delete the fresh seat: re-join when it is gone.
     if (pulse % 2 === 0) void sb.auth.getUser().then(async ({ data: u }) => {
       if (!u.user || !current()) return;
@@ -329,7 +334,7 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
       if (!missingErr && !mine && current()) void joinRoom().catch(() => undefined);
     });
   }, 2000);
-  await Promise.all([loadPlayers(roomId, mySeat), refreshRoom()]);
+  await Promise.all([loadPlayers(roomId, mapSeat), refreshRoom()]);
   nudgeRoom();
 }
 
