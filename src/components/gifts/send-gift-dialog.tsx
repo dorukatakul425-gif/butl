@@ -86,7 +86,7 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
 
 export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose, onLocked, onProfile, selective = false, multiselect }: SendGiftDialogProps) {
   const listRef = useRef<HTMLDivElement>(null);
-  const [box, setBox] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [box, setBox] = useState<{ top: number; left: number; width: number; header: number } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
 
   // DrawerTransition: the drawer covers the chat area.
@@ -97,7 +97,10 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
       const top = chat && chat.height > 120 ? chat.top : Math.round(window.innerHeight * 0.5);
       const left = chat ? chat.left : 0;
       const width = chat ? chat.width : window.innerWidth;
-      setBox({ top, left, width });
+      // Ciliz setHeader: dikey modda çekmecenin beyaz başlığı üst simge çubuğunun
+      // üzerine çıkar ve onu tamamen kaplar (yarı şeffaf üst üste binme olmaz).
+      const headerBar = document.querySelector(".original-table-header")?.getBoundingClientRect().height ?? 84;
+      setBox({ top, left, width, header: Math.min(headerBar, top) });
     };
     place();
     window.addEventListener("resize", place);
@@ -150,6 +153,40 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
   };
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif", pointerEvents: "none" }}>
+      {/* Ciliz setHeader: dikey modda çekmece başlığı üst simge çubuğunun üzerine
+          opak beyaz şerit olarak çıkar; simgeler başlığın altında kalır. */}
+      <div
+        className={`popup__header ${cls("x_header")} send-gift__x_header--teaser`}
+        style={{ position: "absolute", top: 0, left: box.left, width: Math.max(0, box.width - 30), height: box.header, paddingTop: "env(safe-area-inset-top, 0px)", boxSizing: "border-box", pointerEvents: "auto", zIndex: 2 }}
+      >
+        <div className={`popup__title popup__title--left ${cls("x_popup__title")}`}>
+          {selective && multiselect ? (
+            <div className={cls("multi-title")}>{multiselect.title}</div>
+          ) : (
+            <>
+            {onProfile && <div className={`${cls("btn", ["profile"])} ${showProfile ? "send-gift__show-profile" : ""}`} role="button" aria-label="Profil" onClick={(e) => { e.stopPropagation(); onProfile(); }} />}
+            <div className="send-gift__recipient">
+              <div className={cls("gift-title")}>{title.charAt(0).toLocaleUpperCase("tr") + title.slice(1)}</div>
+              <div className={`${cls("name")} ${showProfile ? "send-gift__show-name" : ""}`}>{receiverName}</div>
+            </div>
+            </>
+          )}
+        </div>
+        <AnimatedGiftTeaser />
+        {multiselect && (
+          <div className={cls("multigift-btn-list")}>
+            {selective ? (
+              <div className={cls("multigift-gender-list")}>
+                <div className={cls("btn", ["men"])} role="button" aria-label="Erkekleri seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectMen(); }} />
+                <div className={cls("btn", ["women"])} role="button" aria-label="Kadınları seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectWomen(); }} />
+                <div className={cls("btn", ["cancel"])} role="button" aria-label="Toplu seçimi iptal et" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(false); }} />
+              </div>
+            ) : (
+              <div className={cls("btn", ["add"])} role="button" aria-label="Toplu hediye" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(true); }} />
+            )}
+          </div>
+        )}
+      </div>
       <div
         role="dialog"
         aria-modal="true"
@@ -162,35 +199,6 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
           <div className="popup__close popup__close--drawer">
             <div className="popup__close-icon" />
           </div>
-        </div>
-        <div className={`popup__header ${cls("x_header")} send-gift__x_header--teaser`}>
-          <div className={`popup__title popup__title--left ${cls("x_popup__title")}`}>
-            {selective && multiselect ? (
-              <div className={cls("multi-title")}>{multiselect.title}</div>
-            ) : (
-              <>
-              {onProfile && <div className={`${cls("btn", ["profile"])} ${showProfile ? "send-gift__show-profile" : ""}`} role="button" aria-label="Profil" onClick={(e) => { e.stopPropagation(); onProfile(); }} />}
-              <div className="send-gift__recipient">
-                <div className={cls("gift-title")}>{title.charAt(0).toLocaleUpperCase("tr") + title.slice(1)}</div>
-                <div className={`${cls("name")} ${showProfile ? "send-gift__show-name" : ""}`}>{receiverName}</div>
-              </div>
-              </>
-            )}
-          </div>
-          <AnimatedGiftTeaser />
-          {multiselect && (
-            <div className={cls("multigift-btn-list")}>
-              {selective ? (
-                <div className={cls("multigift-gender-list")}>
-                  <div className={cls("btn", ["men"])} role="button" aria-label="Erkekleri seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectMen(); }} />
-                  <div className={cls("btn", ["women"])} role="button" aria-label="Kadınları seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectWomen(); }} />
-                  <div className={cls("btn", ["cancel"])} role="button" aria-label="Toplu seçimi iptal et" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(false); }} />
-                </div>
-              ) : (
-                <div className={cls("btn", ["add"])} role="button" aria-label="Toplu hediye" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(true); }} />
-              )}
-            </div>
-          )}
         </div>
         <div className={`popup__content popup__content--no-padding ${cls("x_popup__content")}`} style={{ flex: 1 }}>
           <div ref={listRef} className={cls("", ["gift"])}>
