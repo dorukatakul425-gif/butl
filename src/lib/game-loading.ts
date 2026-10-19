@@ -23,6 +23,10 @@ export function resetGameLoading() {
   state = initial;
   listeners.forEach(listener => listener());
 }
+/** Testler için anlık ilerleme/ready durumu. */
+export function getGameLoadingState() {
+  return state;
+}
 export function useGameLoading() {
   return useSyncExternalStore(listener => { listeners.add(listener); return () => { listeners.delete(listener); }; }, () => state, () => initial);
 }
