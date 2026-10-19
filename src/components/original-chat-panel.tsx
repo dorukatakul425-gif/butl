@@ -315,6 +315,8 @@ export function OriginalChatPanel() {
                   </div>
                 )}
               </div>
+              {/* Original ChatPresenter.chatMessage: green reply arrow only on messages addressed to the viewer; tap sets the sender as recipient and focuses the input. */}
+              {line.receiver?.id === VIEWER.id && <div className="chat__reply-button" role="button" aria-label="Yanıtla" onClick={e => { e.stopPropagation(); setReceiver(line.sender); inputRef.current?.focus(); }} />}
             </div>
           ) : line.kind === "action" ? (
             <div key={line.key} className={`chat__action chat__action--${line.style} chat__noselect`} role="button"
@@ -434,7 +436,7 @@ export function OriginalChatPanel() {
       </form>
       {/* Original chat__safe-area: white strip under the input, Telegram iOS only. */}
       <div className="chat__safe-area" aria-hidden="true" />
-      {assets && selected && <MessageActions assets={assets} blocked={blocked.has(selected.sender.id)} translationShown={Boolean(translations[selected.key]?.shown)} canTranslate={needsTranslation(selected.sender, VIEWER_LOCALE)} busy={menuBusy}
+      {assets && selected && <MessageActions assets={assets} blocked={blocked.has(selected.sender.id)} translationShown={Boolean(translations[selected.key]?.shown)} canTranslate={needsTranslation(selected.sender, VIEWER_LOCALE, selected.text)} busy={menuBusy}
         onClose={() => setSelected(null)} onTranslate={() => { onTranslate(selected.key, selected.text); setSelected(null); }}
         onReport={() => { setReportMessage(selected); setSelected(null); }}
         isOwn={Boolean(selected.sender.isViewer)}
