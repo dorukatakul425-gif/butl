@@ -42,24 +42,29 @@ beforeAll(async () => {
     INSERT INTO room_players(room_id, user_id, seat) VALUES (1, '${sender}', 1), (1, '${receiver}', 2);`);
   await db.exec(readFileSync(new URL('../../drizzle/migrations/0042_table_rules.sql', import.meta.url), 'utf8'));
   await db.exec(readFileSync(new URL('../../drizzle/migrations/0043_gift_receiver_effect.sql', import.meta.url), 'utf8'));
+  await db.exec(readFileSync(new URL('../../drizzle/migrations/0044_gift_points_not_kisses.sql', import.meta.url), 'utf8'));
 }, 30000);
 
 afterAll(async () => { await db?.close(); });
 
 describe('gift receiver effect (real game parity)', () => {
-  it('gives every placeholder gift a kiss payout equal to its heart price', async () => {
-    const r = await db.query<{ gift_type: string; price: number; kisses: number }>(
-      `SELECT gift_type, price, kisses FROM gift_prices ORDER BY gift_type`);
-    for (const row of r.rows) expect(row.kisses).toBe(row.price);
+  it('gifts pay points (hearts), never kisses — the kiss counter only grows on kisses', async () => {
+    const r = await db.query<{ gift_type: string; price: number; kisses: number; hearts: number }>(
+      `SELECT gift_type, price, kisses, hearts FROM gift_prices ORDER BY gift_type`);
+    for (const row of r.rows) {
+      expect(row.kisses).toBe(0);
+      expect(row.hearts).toBe(row.price);
+    }
   });
 
-  it('sending a gift raises the receiver profile and table kiss counters by the gift price', async () => {
+  it('sending a gift does NOT raise the receiver kiss counters, but pays the gift price as gold', async () => {
     await as(sender);
     await db.query(`SELECT public.send_gift('vodka', ARRAY['${receiver}']::uuid[], 0)`);
-    const p = await db.query<{ kisses: number }>(`SELECT kisses FROM profiles WHERE id = '${receiver}'`);
-    expect(p.rows[0]!.kisses).toBe(3);
+    const p = await db.query<{ kisses: number; gold: number }>(`SELECT kisses, gold FROM profiles WHERE id = '${receiver}'`);
+    expect(p.rows[0]!.kisses).toBe(0);
+    expect(p.rows[0]!.gold).toBe(103);
     const rp = await db.query<{ kisses: number }>(`SELECT kisses FROM room_players WHERE room_id = 1 AND user_id = '${receiver}'`);
-    expect(rp.rows[0]!.kisses).toBe(3);
+    expect(rp.rows[0]!.kisses).toBe(0);
   });
 
   it('the sender gains no kisses from their own gift', async () => {
