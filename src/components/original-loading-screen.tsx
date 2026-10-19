@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import pattern from "@/assets/ui_loading_pattern.svg";
+import logo from "@/assets/ui_loading_logo_en.svg";
 import { useGameLoading } from "@/lib/game-loading";
 import { unlockSfx } from "@/lib/sfx";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function OriginalLoadingScreen() {
   if (ready) return null;
   return <div className="original-loading-screen" aria-label="Spin the Bottle yükleniyor">
     <img ref={patternImage} className="original-loading-pattern" src={pattern} alt="" onLoad={artworkReady} onError={e=>{e.currentTarget.src=loadingPatternFallback;}} />
+    <img className="original-loading-logo" src={logo} alt="Spin The Bottle" />
     <div className="splash__bg" role="progressbar" aria-label="Oyun yükleniyor" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
       <div className="splash__bar" style={{ width: `${progress}%` }} />
     </div>
