@@ -12,6 +12,8 @@ interface TelegramWebApp {
   disableVerticalSwipes?: () => void;
   onEvent?: (event: string, cb: () => void) => void;
   openTelegramLink?: (url: string) => void;
+  /** Stars/fatura ödemesi: status "paid" | "cancelled" | "failed" | "pending". */
+  openInvoice?: (url: string, cb?: (status: string) => void) => void;
   /** Telegram WebApp 8.0+: system safe area (notch / gesture bar). */
   safeAreaInset?: { top: number; bottom: number; left: number; right: number };
   /** Telegram WebApp 8.0+: safe area minus Telegram's own UI (bottom bar). */
