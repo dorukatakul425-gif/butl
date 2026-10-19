@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { closedTarget, giftReceivers, openFor, seatSelection, selectGender, setSelective } from "@/lib/gift-selection";
+import { closedTarget, giftReceivers, openFor, seatSelection, seatTapAction, selectGender, setSelective } from "@/lib/gift-selection";
 
 const V = 5;
 const males = Array.from({ length: 12 }, (_, i) => i % 2 === 0);
@@ -37,5 +37,25 @@ describe("bulk gift selection", () => {
     s = setSelective(s, false);
     expect(giftReceivers(s)).toEqual([3]);
     expect(seatSelection(s, 3, V)).toBe("highlighted");
+  });
+});
+
+describe("seat tap actions (Ciliz onuserphoto)", () => {
+  it("first tap on another player opens the gift drawer", () => {
+    expect(seatTapAction(closedTarget, 2, V, false)).toBe("gifts");
+  });
+  it("second tap on the solo gift receiver opens their profile", () => {
+    expect(seatTapAction(openFor(closedTarget, 2, V), 2, V, false)).toBe("profile");
+  });
+  it("tapping a different player retargets the drawer instead of opening a profile", () => {
+    expect(seatTapAction(openFor(closedTarget, 2, V), 7, V, false)).toBe("gifts");
+  });
+  it("multiselect mode never opens the profile on tap", () => {
+    const s = setSelective(openFor(closedTarget, 2, V), true);
+    expect(seatTapAction(s, 2, V, false)).toBe("gifts");
+  });
+  it("own seat opens gestures; a second tap while open opens the own profile", () => {
+    expect(seatTapAction(closedTarget, V, V, false)).toBe("gestures");
+    expect(seatTapAction(closedTarget, V, V, true)).toBe("own-profile");
   });
 });
