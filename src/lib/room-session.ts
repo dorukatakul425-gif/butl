@@ -343,7 +343,7 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     });
 
   let pulse = 0;
-  // One 5s keepalive (seat stale limit is 20s). Round phases advance through
+  // One 5s keepalive (seat stale limit is 10s). Round phases advance through
   // the deadline timer in applyRoom, so this loop is only a fallback and does
   // not flood the table with writes/realtime events every 2s.
   heartbeatTimer = setInterval(() => {
