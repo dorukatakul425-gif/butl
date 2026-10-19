@@ -335,8 +335,12 @@
   min-height: 30px;
   max-height: none;
 }
-/* Original createBottleLine: old bottle grayscale, both rotated 45deg. */
+/* Original createBottleLine: 30x30 images, old bottle grayscale, both rotated 45deg. */
 .chat__bottle {
+  width: 30px;
+  height: 30px;
+  max-width: 30px;
+  object-fit: contain;
   margin-left: 15px;
   flex-shrink: 0;
   transform: rotate(45deg);
@@ -347,6 +351,18 @@
 .chat__bottle--old {
   filter: grayscale(100);
   margin: 0 4px 0 15px;
+}
+/* Original .chat__safe-area: white strip under the chat input. Only the
+   Telegram Mini App (iOS) sets --tg-safe-area-bottom; elsewhere it stays 0. */
+.chat__safe-area {
+  display: none;
+  width: 100%;
+  background-color: #fff;
+  flex-shrink: 0;
+}
+.tg-webapp .chat__safe-area {
+  display: block;
+  height: var(--tg-safe-area-bottom, 0px);
 }
 .chat__info--gesture {
   align-items: flex-start;
