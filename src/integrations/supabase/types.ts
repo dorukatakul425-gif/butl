@@ -641,7 +641,7 @@ export type Database = {
         Args: { p_frame: string; p_stone: string }
         Returns: undefined
       }
-      spin_bottle: { Args: never; Returns: boolean }
+      spin_bottle: { Args: never; Returns: number }
       top_players: {
         Args: { p_period?: string; p_section: string }
         Returns: {
