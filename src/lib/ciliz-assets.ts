@@ -158,9 +158,22 @@ function dpr() {
   return typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
 }
 
-export function bundleUrl(assets: CilizAssets, name: string, ext: "png" | "json", targetSize?: number) {
+export function bundleUrl(assets: CilizAssets, name: string, ext: "png" | "webp" | "json", targetSize?: number) {
   const bundle = pickBundle(assets, targetSize ?? VIRTUAL_SIZE * dpr());
   return bundle.url.replace("${name}", `${name}.${ext}`);
+}
+
+let webpSupport: boolean | null = null;
+/** Ciliz ImageMetaRegistry.bundleImage: WebP destekleniyorsa .webp, yoksa .png yüklenir. */
+export function hasWebP() {
+  if (webpSupport === null) {
+    try {
+      webpSupport = document.createElement("canvas").toDataURL("image/webp").indexOf("data:image/webp") === 0;
+    } catch {
+      webpSupport = false;
+    }
+  }
+  return webpSupport;
 }
 
 function virtualFrame(assets: CilizAssets, name: string) {
