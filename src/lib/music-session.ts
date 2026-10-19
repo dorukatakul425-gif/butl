@@ -47,7 +47,7 @@ export function pushSystemLine(style: ChatSystemLine["style"], text: string, mes
   return true;
 }
 export function pushHaremLine(line: Omit<ChatHaremLine, "kind" | "key">) {
-  set({ lines: [...state.lines, { kind: "harem", key: ++seq, ...line }] });
+  set({ lines: capLines([...state.lines, { kind: "harem", key: ++seq, ...line }]) });
 }
 
 interface State { song: PlayingSong | null; lines: ChatLine[]; muted: boolean; volume: number }
@@ -57,16 +57,19 @@ let state: State = { song: null, lines: [], muted: savedMusic === 0, volume: sav
 const listeners = new Set<() => void>();
 const set = (next: Partial<State>) => { state = { ...state, ...next }; listeners.forEach(l => l()); };
 let seq = 0;
+// Sohbet listesi sınırsız büyüyünce telefon kasmaya başlıyordu; Ciliz gibi son 100 satır tutulur.
+const MAX_CHAT_LINES = 100;
+const capLines = (lines: ChatLine[]) => (lines.length > MAX_CHAT_LINES ? lines.slice(lines.length - MAX_CHAT_LINES) : lines);
 
 /** Local chat only; real multiplayer transport is not configured. */
 export function pushKickoutLine(icon: ChatKickoutLine["icon"], sender: ChatUser, receiver: ChatUser, eventId: number) {
   if (state.lines.some(l => l.kind === "kickout" && l.eventId === eventId)) return;
-  set({ lines: [...state.lines, { kind: "kickout", key: ++seq, icon, sender, receiver, eventId }] });
+  set({ lines: capLines([...state.lines, { kind: "kickout", key: ++seq, icon, sender, receiver, eventId }]) });
 }
 export function pushTextLine(sender: ChatUser, text: string, receiver?: ChatUser, messageId?: number, isPrivate = false) {
   if (!text.trim()) return false;
   if (messageId !== undefined && state.lines.some(line => line.kind === 'text' && line.messageId === messageId)) return false;
-  set({ lines: [...state.lines, { kind: "text", key: ++seq, sender, text, ...(receiver ? { receiver } : {}), ...(messageId !== undefined ? { messageId } : {}), ...(isPrivate ? { private: true } : {}) }] });
+  set({ lines: capLines([...state.lines, { kind: "text", key: ++seq, sender, text, ...(receiver ? { receiver } : {}), ...(messageId !== undefined ? { messageId } : {}), ...(isPrivate ? { private: true } : {}) }]) });
   return true;
 }
 
@@ -77,7 +80,7 @@ export function removeTextLine(messageId: number) {
 
 export function pushActionLine(line: Omit<ChatActionLine, "kind" | "key">) {
   if (line.messageId !== undefined && state.lines.some(l => "messageId" in l && l.messageId === line.messageId)) return;
-  set({ lines: [...state.lines, { kind: "action", key: ++seq, ...line }] });
+  set({ lines: capLines([...state.lines, { kind: "action", key: ++seq, ...line }]) });
 }
 
 /** session.viewerSendMusic + ChatPresenter.music(): start the track for the table and log it in the chat. */
@@ -144,7 +147,7 @@ export function pushGiftLine(sender: ChatUser, receiver: ChatUser, gift: { type:
     lines.pop();
   }
   lines.push(line);
-  set({ lines });
+  set({ lines: capLines(lines) });
 }
 export const finishMusic = (key: number) => { if (state.song?.key === key) { sharedAudio?.pause(); set({ song: null }); } };
 export const setMusicMuted = (muted: boolean) => {
@@ -171,7 +174,7 @@ export function useMusicSession() {
 /** Music notices are independent from current playback and replay from chat_messages. */
 export function pushMusicHistoryLine(sender: MusicSender, artist: string, title: string, messageId: number, eventKey?: number) {
   if (state.lines.some(l => "messageId" in l && l.messageId === messageId)) return false;
-  set({ lines: [...state.lines, { kind: "music", key: ++seq, sender, artist, title, messageId, ...(eventKey !== undefined ? { eventKey } : {}) }] });
+  set({ lines: capLines([...state.lines, { kind: "music", key: ++seq, sender, artist, title, messageId, ...(eventKey !== undefined ? { eventKey } : {}) }]) });
   return true;
 }
 export function stampChatHistory(messageId: number, createdAt: string) {
