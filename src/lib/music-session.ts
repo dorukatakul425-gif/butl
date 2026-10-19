@@ -19,7 +19,7 @@ export interface ChatTextLine { kind: "text"; key: number; sender: ChatUser; rec
 export interface ChatKickoutLine { kind: "kickout"; key: number; icon: "kick" | "kicked" | "save"; sender: ChatUser; receiver: ChatUser; eventId: number }
 export type ChatActionPart = { text: string } | { user: ChatUser };
 /** ChatContent.pushActionLine: newcomer / birthday / vip / rewarded-video widget rows. */
-export interface ChatActionLine { kind: "action"; key: number; style: "newcomer" | "birthday" | "vip" | "rewarded-video"; icon: "gift" | "chat" | "vip" | "rewarded-video"; parts: ChatActionPart[]; sender?: ChatUser; seat?: number; messageId?: number; createdAt?: string }
+export interface ChatActionLine { kind: "action"; key: number; style: "newcomer" | "birthday" | "vip" | "rewarded-video" | "bottle"; icon: "gift" | "chat" | "vip" | "rewarded-video" | "bottle"; parts: ChatActionPart[]; sender?: ChatUser; seat?: number; messageId?: number; createdAt?: string }
 /** ChatView.createHaremLine: sender photo, harem icon, grey text with <heart>price, receiver photo. */
 export interface ChatHaremLine { kind: "harem"; key: number; icon: "harem_free" | "harem_busy"; sender: ChatUser; receiver: ChatUser; text: string; price: number }
 /** Original system lines: admin_chat (green 6fbf5c), ban / disabled_ban (red ff4545). */
