@@ -8,6 +8,8 @@ let mutation = 0;
 let mutationQueue: Promise<void> = Promise.resolve();
 const listeners = new Set<() => void>();
 const publish = (next: ReadonlySet<string>) => { blocked = next; listeners.forEach(fn => fn()); };
+// Değişmeyen listeyi yayınlamak tüm masa/sohbet abonelerini boşuna yeniden çizdiriyordu.
+const sameBlocked = (a: ReadonlySet<string>, b: ReadonlySet<string>) => a.size === b.size && [...a].every(v => b.has(v));
 
 /** Owner-scoped ignore state shared by table, profiles and chat. */
 export function startCloudBlocks(viewerId: string) {
@@ -21,7 +23,8 @@ export function startCloudBlocks(viewerId: string) {
     const revision = mutation;
     const { data, error } = await sb.from('user_blocks').select('blocked').eq('blocker', viewerId);
     if (error || current !== generation || request !== read || revision !== mutation) return;
-    publish(new Set((data ?? []).map(row => String(row.blocked))));
+    const next = new Set((data ?? []).map(row => String(row.blocked)));
+    if (!sameBlocked(next, blocked)) publish(next);
   };
   void load();
   const channel = sb.channel(`ignore-${viewerId}-${current}`)
