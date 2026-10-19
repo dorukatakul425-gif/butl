@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { chatMessageIsBold, chatNameClass } from "@/lib/chat-format";
 import { pushTextLine } from "@/lib/music-session";
 import { OriginalChatPanel } from "@/components/original-chat-panel";
+import { VIEWER } from "@/lib/viewer";
 
 vi.mock("@/components/decor/decor-selection", () => ({ useCilizAssets: () => null }));
 vi.mock('@/assets/original-chat-emoji.svg', () => ({ default: '/emoji.svg' }));
@@ -62,5 +63,17 @@ describe("text chat rendering", () => {
     expect(screen.getByText("Ayşe")).toHaveClass("chat__name-color--female");
     expect(screen.getByText("Premium")).toHaveClass("chat__premium-sender-name");
     expect(screen.getByText('<img src=x onerror="alert(1)">').querySelector("img")).toBeNull();
+  });
+  // Original ChatPresenter.chatMessage: the green reply arrow appears only on messages
+  // addressed to the viewer; tapping it addresses the sender and focuses the input.
+  it("shows the green reply arrow only on viewer-addressed messages, and tapping addresses the sender", () => {
+    pushTextLine({ id: "r1", name: "Aysel", photoUrl: "" }, "sana yazdim", { id: VIEWER.id, name: "Ben", photoUrl: "" });
+    pushTextLine({ id: "r2", name: "Elvin", photoUrl: "" }, "herkese merhaba");
+    pushTextLine({ id: "r3", name: "Aysel", photoUrl: "" }, "baskasina yazdim", { id: "someone-else", name: "Başkası", photoUrl: "" });
+    render(<OriginalChatPanel />);
+    const arrows = screen.getAllByRole("button", { name: "Yanıtla" });
+    expect(arrows).toHaveLength(1);
+    fireEvent.click(arrows[0]);
+    expect(screen.getByRole("textbox", { name: "Mesaj yaz" })).toHaveValue("Aysel, ");
   });
 });
