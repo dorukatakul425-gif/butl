@@ -473,7 +473,9 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   const layout = () => {
     const width = host.clientWidth;
     const height = host.clientHeight;
-    if (!width || !height) return;
+    // İlk girişte yerleşim henüz oturmamış olabilir; boyut 0 ise sonraki karede
+    // tekrar dene — yoksa masa boş kalır ve sayfayı yenilemek gerekir.
+    if (!width || !height) { if (!destroyed) requestAnimationFrame(layout); return; }
     // Boyut değişmediyse canvas'ı sıfırlayan resize çağrısını atla.
     if (width !== lastWidth || height !== lastHeight) {
       lastWidth = width;
