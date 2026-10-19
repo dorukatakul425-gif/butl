@@ -39,7 +39,7 @@ describe('Telegram login profile refresh', () => {
     expect((await fetchTelegramProfile('test-token', user)).bio).toBe('');
   });
   it('uses a stable id when Telegram username is removed', () => {
-    expect(telegramIdentity({...user,username:undefined}).username).toBe('tg42');
+    expect(telegramIdentity({ id: user.id, first_name: user.first_name }).username).toBe('tg42');
   });
   it('shows the display name, not the Telegram handle', () => {
     expect(telegramIdentity({ id: 42, first_name: 'Bey', username: 'other_handle' }).name).toBe('Bey');
