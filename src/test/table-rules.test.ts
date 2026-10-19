@@ -56,7 +56,7 @@ describe('table rules (real game parity)', () => {
     const r = await db.query<{ room_id: number; seat: number }>(`SELECT * FROM public.change_table(1)`);
     expect(r.rows).toEqual([{ room_id: 1, seat: -1 }]);
     const n = await db.query<{ n: number }>(`SELECT count(*)::int n FROM room_players WHERE room_id = 1`);
-    expect(n.rows[0].n).toBe(13);
+    expect(n.rows[0]!.n).toBe(13);
   });
 
   it('rejects a non-admin from a full table with table_full', async () => {
@@ -85,8 +85,8 @@ describe('table rules (real game parity)', () => {
     await db.query(`SELECT public.buy_bottle('standart')`);
     const r = await db.query<{ kind: string; payload: { old: string; new: string } }>(
       `SELECT kind, payload FROM chat_messages WHERE room_id = 2 ORDER BY id DESC LIMIT 1`);
-    expect(r.rows[0].kind).toBe('bottle');
-    expect(r.rows[0].payload).toEqual({ old: 'standart', new: 'standart' });
+    expect(r.rows[0]!.kind).toBe('bottle');
+    expect(r.rows[0]!.payload).toEqual({ old: 'standart', new: 'standart' });
   });
 
   it('credits the receiver the gift kiss and heart rewards', async () => {
@@ -96,9 +96,9 @@ describe('table rules (real game parity)', () => {
     const before = await db.query<{ kisses: number; gold: number }>(`SELECT kisses, gold FROM profiles WHERE id = '${other}'`);
     await db.query(`SELECT public.send_gift('rose', ARRAY['${other}']::uuid[], 0)`);
     const after = await db.query<{ kisses: number; gold: number }>(`SELECT kisses, gold FROM profiles WHERE id = '${other}'`);
-    expect(after.rows[0].kisses - before.rows[0].kisses).toBe(2);
-    expect(after.rows[0].gold - before.rows[0].gold).toBe(3);
+    expect(after.rows[0]!.kisses - before.rows[0]!.kisses).toBe(2);
+    expect(after.rows[0]!.gold - before.rows[0]!.gold).toBe(3);
     const seat = await db.query<{ kisses: number }>(`SELECT kisses FROM room_players WHERE room_id = 2 AND user_id = '${other}'`);
-    expect(seat.rows[0].kisses).toBe(2);
+    expect(seat.rows[0]!.kisses).toBe(2);
   });
 });
