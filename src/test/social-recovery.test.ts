@@ -16,7 +16,7 @@ afterEach(() => { mock.handlers = []; mock.status = null; vi.restoreAllMocks(); 
 describe('message subscription recovery', () => {
   it('delivers sender-side inserts from another signed-in device', () => {
     const stop = startSocial('me'); const received = vi.fn(); const off = onDirectMessage(received);
-    const handler = mock.handlers.find(h => h.filter.table === 'direct_messages' && h.filter.event === 'INSERT' && h.filter.filter === 'sender_id=eq.me');
+    const handler = mock.handlers.find(h => h.filter['table'] === 'direct_messages' && h.filter['event'] === 'INSERT' && h.filter['filter'] === 'sender_id=eq.me');
     const message = { id: 'real-id', sender_id: 'me', recipient_id: 'friend', body: 'hello', created_at: '2026-10-18T18:30:00Z', read_at: null };
     expect(handler).toBeDefined(); handler?.callback({ new: message });
     expect(received).toHaveBeenCalledWith(message, 'insert'); off(); stop();
@@ -31,7 +31,7 @@ describe('message subscription recovery', () => {
     let resolve: (value: { data: any[] }) => void = () => {};
     mock.profile = new Promise(done => { resolve = done; });
     const stop = startSocial('me');
-    const handler = mock.handlers.find(h => h.filter.table === 'friendships' && h.filter.filter === 'addressee_id=eq.me');
+    const handler = mock.handlers.find(h => h.filter['table'] === 'friendships' && h.filter['filter'] === 'addressee_id=eq.me');
     const notice = vi.spyOn(window, 'setTimeout');
     handler?.callback({ eventType: 'INSERT', new: { id: 'f', requester_id: 'other' } });
     stop(); resolve({ data: [{ id: 'other', name: 'Other' }] });
