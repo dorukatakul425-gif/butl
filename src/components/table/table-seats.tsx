@@ -19,7 +19,9 @@ import { completeLoadingStage, failGameLoading } from "@/lib/game-loading";
 import { setViewerKisses, useViewerProgress, VIEWER_GOLD } from "@/lib/viewer-progress";
 import { GIFT_SENT_EVENT, setSeatLocator } from "@/lib/interactive-hint-flags";
 import { OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
-import { onRoomGift, onRoomGesture, sendGesture, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat } from "@/lib/room-session";
+import { onRoomGift, onRoomGesture, sendGesture, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat, getRoom, onPremiumGift, premiumGiftInfo, sendPremiumGift, type PremiumGiftInfo } from "@/lib/room-session";
+import { armMessage, announceText, premiumReasonText, tapPremium, type ArmState } from "@/lib/premium-gifts";
+import { datRewardPop, premiumAnnounce, premiumToast } from "@/components/gifts/premium-fx";
 import { getSupabase, type Profile } from "@/lib/supabase";
 import { playerPhoto } from "@/lib/player-photo";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
@@ -333,6 +335,62 @@ export function TableSeats() {
     },
     [assets, target, room.players],
   );
+  // ureyimsen Zd: premium (DAT) list + balance come from premium_gift_info each time the drawer opens.
+  const [premiumInfo, setPremiumInfo] = useState<PremiumGiftInfo | null>(null);
+  const refreshPremium = useCallback(() => { void premiumGiftInfo().then(info => { if (info) setPremiumInfo(info); }); }, []);
+  const premiumItems = useMemo<GiftStoreItem[]>(() => {
+    if (!assets || !premiumInfo) return [];
+    return premiumInfo.gifts.flatMap(g => {
+      const gift = assets.gifts[g.type];
+      if (!gift || !gift.storeImage) return [];
+      return [{ type: g.type, name: g.name, image: gift.storeImage, price: g.dat, gift }];
+    });
+  }, [assets, premiumInfo]);
+  const armed = useRef<ArmState>({ type: null, at: 0 });
+  const premiumTap = useCallback((item: GiftStoreItem) => {
+    if (!assets) return;
+    unlockSfx();
+    const receivers = giftReceivers(target).map(seat => playersRef.current[seat]?.id).filter((id): id is string => Boolean(id));
+    if (!receivers.length) return;
+    const tap = tapPremium(armed.current, item.type, Date.now());
+    armed.current = tap.next;
+    if (!tap.send) { premiumToast(armMessage(item.name, item.price, receivers.length)); return; }
+    const seed = Math.floor(Math.random() * RAND_MOD);
+    void sendPremiumGift(item.type, receivers, seed).then(res => {
+      if (res.ok) { setPremiumInfo(info => info ? { ...info, dat: res.dat } : info); return; }
+      if (res.dat !== undefined) setPremiumInfo(info => info ? { ...info, dat: res.dat as number } : info);
+      premiumToast(premiumReasonText(res.reason));
+    });
+  }, [assets, target]);
+  // game_premium_gift / premium_gift_announce / premium_gift_reward: every table sees the banner,
+  // the room where it was sent animates the gift (boom2), other tables hear boom1.
+  useEffect(() => {
+    if (!assets) return;
+    return onPremiumGift(row => {
+      const me = playersRef.current[VIEWER_SEAT]?.id;
+      const here = getRoom().roomId === row.room_id;
+      premiumAnnounce(`👑 ${row.sender_name} → ${row.receiver_name}`, announceText(row));
+      if (!here) { void playSfx(assets.sfxUrl, "boom1"); }
+      else {
+        const from = displaySeatOf(row.sender_id), to = displaySeatOf(row.receiver_id);
+        const meta = assets.gifts[row.gift_type];
+        if (from >= 0 && to >= 0 && meta) void tableRef.current?.sendGift(from, to, createSentGift(assets, meta, row.seed));
+        void playSfx(assets.sfxUrl, "boom2");
+        const s = profileBySeat(from), r = profileBySeat(to);
+        const im = meta ? dialogImage(assets, meta.storeImage, 28, 28) : null;
+        pushGiftLine(
+          { id: row.sender_id, name: s?.name ?? row.sender_name, photoUrl: s?.photo_url || DEFAULT_PHOTO },
+          { id: row.receiver_id, name: r?.name ?? row.receiver_name, photoUrl: r?.photo_url || DEFAULT_PHOTO },
+          { type: row.gift_type, name: `${row.gift_name} · 💎 ${row.dat}`, image: im?.src ?? "", ...(im ? { width: im.width, height: im.height } : {}) },
+        );
+      }
+      if (me && row.receiver_id === me && row.sender_id !== me && row.reward_dat > 0) {
+        datRewardPop(row.reward_dat);
+        premiumToast(`🎁 ${row.sender_name} sənə ${row.gift_name} göndərdi: +${row.reward_dat} DAT`);
+        setPremiumInfo(info => info ? { ...info, dat: info.dat + row.reward_dat } : info);
+      }
+    });
+  }, [assets]);
   const preload = useCallback((item: GiftStoreItem) => {
     void tableRef.current?.preloadGift(item.gift).catch(error => console.warn(`Gift preload ${item.type}`, error));
   }, []);
@@ -387,6 +445,11 @@ export function TableSeats() {
           onProfile={() => { if (giftSeat !== null) { setProfileSeat(giftSeat); setTarget(closedTarget); } }}
           selective={target.selective}
           multiselect={multiselect}
+          vip={progress.vip}
+          premiumItems={premiumItems}
+          dat={premiumInfo?.dat ?? null}
+          onPremiumTap={premiumTap}
+          onPremiumOpen={refreshPremium}
         />
       )}
       {assets && response && (() => {

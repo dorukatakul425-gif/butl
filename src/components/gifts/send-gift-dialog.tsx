@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type SyntheticEvent } from "react";
 import { createPortal } from "react-dom";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { Button } from "@/components/ui/button";
 import type { GiftStoreItem } from "@/lib/gifts";
+import { clampGiftCount, readAutoMode } from "@/lib/premium-gifts";
 
 // Markup and class names ported from SendGiftDialog.tsx (giftType 'gift', html5 layout) and Dialog.Header.
 const bem = (block: string) => (element?: string, mods: Array<string | false | undefined> = []) => {
@@ -24,9 +25,56 @@ export interface SendGiftDialogProps {
   onProfile?: () => void;
   selective?: boolean;
   multiselect?: { title: string; onSelectState: (on: boolean) => void; onSelectMen: () => void; onSelectWomen: () => void };
+  /** GiftPanelToolbar: Avtomatik / Əl ilə is shown to VIP players only. */
+  vip?: boolean;
+  /** Zd.items: premium (DAT) gifts; the "💎 Premium" button appears only when the list is not empty. */
+  premiumItems?: GiftStoreItem[];
+  dat?: number | null;
+  onPremiumTap?: (item: GiftStoreItem) => void;
+  onPremiumOpen?: () => void;
 }
 
-function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: CilizAssets; item: GiftStoreItem; onSend: (item: GiftStoreItem) => void; onPreload: (item: GiftStoreItem) => void; onLocked?: ((item: GiftStoreItem) => void) | undefined }) {
+// ca: toolbar state shared by every open of the drawer (count resets per page load, mode is remembered).
+const toolbar = {
+  auto: (() => { try { return readAutoMode(typeof window !== "undefined" ? window.localStorage.getItem("giftAutoMode") : null); } catch { return true; } })(),
+  count: 1,
+  setAuto(on: boolean) { this.auto = on; try { window.localStorage.setItem("giftAutoMode", on ? "auto" : "manual"); } catch { /* ignore */ } },
+  setCount(v: unknown) { this.count = clampGiftCount(v); return this.count; },
+};
+
+function GiftPanelToolbar({ vip, premium, hasPremium, dat, auto, onPremium, onAuto }: { vip: boolean; premium: boolean; hasPremium: boolean; dat: number | null | undefined; auto: boolean; onPremium: (on: boolean) => void; onAuto: (on: boolean) => void }) {
+  const [count, setCount] = useState(toolbar.count);
+  const apply = (v: unknown) => setCount(toolbar.setCount(v));
+  const stop = (e: SyntheticEvent) => e.stopPropagation();
+  const btn = hasPremium && <button type="button" className={cls("premium-btn", [premium && "on"])} onClick={() => onPremium(!premium)}>{premium ? "← Adi" : "💎 Premium"}</button>;
+  if (premium) return (
+    <div className={cls("toolbar", ["premium"])} onTouchStart={stop} onMouseDown={stop}>
+      {btn}
+      <div className={cls("premium-info")}>{(dat !== null && dat !== undefined ? `💎 ${dat} DAT · ` : "") + "alıcı qiymətin yarısını DAT kimi alır"}</div>
+    </div>
+  );
+  return (
+    <div className={cls("toolbar")} onTouchStart={stop} onMouseDown={stop}>
+      {btn}
+      {vip && <div className={cls("mode")}>
+        <button type="button" className={cls("mode-btn", [auto && "on"])} onClick={() => onAuto(true)}>Avtomatik</button>
+        <button type="button" className={cls("mode-btn", [!auto && "on"])} onClick={() => onAuto(false)}>Əl ilə</button>
+      </div>}
+      <div className={cls("qty")}>
+        <span className={cls("qty-label")}>Say</span>
+        <button type="button" className={cls("qty-btn")} onClick={() => apply(count - 1)}>−</button>
+        <input className={cls("qty-input")} type="number" inputMode="numeric" min={1} max={100} value={count}
+          onChange={e => { const v = parseInt(e.currentTarget.value, 10); if (v >= 1) { toolbar.setCount(v); setCount(toolbar.count); } else setCount(e.currentTarget.value as unknown as number); }}
+          onBlur={e => apply(e.currentTarget.value)} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }} />
+        <button type="button" className={cls("qty-btn")} onClick={() => apply(count + 1)}>+</button>
+      </div>
+    </div>
+  );
+}
+
+function GiftItem({ assets, item, onSend, onPreload, onLocked, crystal = false, autoRepeat = true }: { assets: CilizAssets; item: GiftStoreItem; onSend: (item: GiftStoreItem) => void; onPreload: (item: GiftStoreItem) => void; onLocked?: ((item: GiftStoreItem) => void) | undefined; crystal?: boolean; autoRepeat?: boolean }) {
+  const run = useRef<{ left: number; timer?: number } | null>(null);
+  useEffect(() => () => { if (run.current) window.clearInterval(run.current.timer); }, []);
   const ref = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
   const img = dialogImage(assets, item.image, 60, 60);
@@ -54,8 +102,8 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
     observer.observe(element);
     return () => { observer.disconnect(); window.clearTimeout(timer); };
   }, [item, onPreload]);
-  const activate = () => {
-    if (item.lock) { onLocked?.(item); return; }
+  const showLeft = (n: number) => { const el = ref.current; if (!el) return; if (n > 0) el.setAttribute("data-left", String(n)); else el.removeAttribute("data-left"); };
+  const fire = () => {
     onSend(item);
     const el = ref.current;
     if (!el) return;
@@ -63,8 +111,24 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
     el.classList.add(cls("item", ["active"]).split(" ")[1] ?? "");
     timer.current = window.setTimeout(() => el.classList.remove("send-gift__item--active"), 500);
   };
+  // OpenedItem.onPress: "Say" > 1 sends that many gifts one after another (180 ms); a tap while running stops it.
+  const activate = () => {
+    if (item.lock) { onLocked?.(item); return; }
+    if (run.current) { window.clearInterval(run.current.timer); run.current = null; showLeft(0); return; }
+    const count = crystal ? 1 : toolbar.count;
+    if (count <= 1) { fire(); return; }
+    const state: { left: number; timer?: number } = { left: count };
+    run.current = state;
+    const step = () => {
+      if (run.current !== state) return;
+      fire(); state.left--; showLeft(state.left);
+      if (state.left <= 0) { window.clearInterval(state.timer); run.current = null; showLeft(0); }
+    };
+    state.timer = window.setInterval(step, 180);
+    step();
+  };
   return (
-    <div ref={ref} className={`${cls("item")} touch-manipulation`} data-code={item.type} title={item.name} onClick={() => { if (hold.current.tapped) { hold.current.tapped = false; return; } if (hold.current.fired || hold.current.moved) { hold.current.fired = false; hold.current.moved = false; return; } stopHold(); activate(); }} onPointerEnter={() => onPreload(item)} onPointerDown={e => { onPreload(item); stopHold(); hold.current.fired = false; hold.current.moved = false; hold.current.x = e.clientX; hold.current.y = e.clientY; if (item.lock) return; hold.current.delay = window.setTimeout(() => { hold.current.fired = true; activate(); hold.current.repeat = window.setInterval(activate, 120); }, 350); }} onPointerMove={e => { if (Math.abs(e.clientX - (hold.current.x ?? e.clientX)) > 8 || Math.abs(e.clientY - (hold.current.y ?? e.clientY)) > 8) { hold.current.moved = true; stopHold(); } }} onPointerUp={e => { stopHold(); if (e.pointerType !== "mouse" && !hold.current.fired && !hold.current.moved) { hold.current.tapped = true; activate(); } }} onPointerLeave={stopHold} onPointerCancel={() => { hold.current.moved = true; stopHold(); }} onContextMenu={e => e.preventDefault()} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
+    <div ref={ref} className={`${cls("item")} touch-manipulation`} data-code={item.type} title={item.name} onClick={() => { if (hold.current.tapped) { hold.current.tapped = false; return; } if (hold.current.fired || hold.current.moved) { hold.current.fired = false; hold.current.moved = false; return; } stopHold(); activate(); }} onPointerEnter={() => onPreload(item)} onPointerDown={e => { onPreload(item); stopHold(); hold.current.fired = false; hold.current.moved = false; hold.current.x = e.clientX; hold.current.y = e.clientY; if (item.lock || !autoRepeat) return; hold.current.delay = window.setTimeout(() => { hold.current.fired = true; fire(); hold.current.repeat = window.setInterval(fire, 120); }, 350); }} onPointerMove={e => { if (Math.abs(e.clientX - (hold.current.x ?? e.clientX)) > 8 || Math.abs(e.clientY - (hold.current.y ?? e.clientY)) > 8) { hold.current.moved = true; stopHold(); } }} onPointerUp={e => { stopHold(); if (e.pointerType !== "mouse" && !hold.current.fired && !hold.current.moved) { hold.current.tapped = true; activate(); } }} onPointerLeave={stopHold} onPointerCancel={() => { hold.current.moved = true; stopHold(); }} onContextMenu={e => e.preventDefault()} role="button" aria-label={item.name} tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }}>
       <div className={cls("image-block")}>
         <img className={cls("image", [item.lock && "locked"])} draggable={false} src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" loading="lazy" decoding="async" />
       </div>
@@ -75,7 +139,7 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
         </div>
       ) : (
         <div className={cls("subitem", [!item.price && "invisible"])}>
-          <div className={cls("icon", ["heart"])} />
+          <div className={cls("icon", [crystal ? "crystal" : "heart"])} />
           <div className={cls("price")}>{item.price}</div>
         </div>
       )}
@@ -83,7 +147,10 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked }: { assets: Ciliz
   );
 }
 
-export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose, onLocked, onProfile, selective = false, multiselect }: SendGiftDialogProps) {
+export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPreload, onClose, onLocked, onProfile, selective = false, multiselect, vip = false, premiumItems = [], dat, onPremiumTap, onPremiumOpen }: SendGiftDialogProps) {
+  const [premium, setPremium] = useState(false);
+  const [auto, setAuto] = useState(toolbar.auto);
+  useEffect(() => { if (!open) setPremium(false); else onPremiumOpen?.(); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const listRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState<{ top: number; left: number; width: number; header: number } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -134,7 +201,7 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
     const ro = new ResizeObserver(align);
     ro.observe(list);
     return () => ro.disconnect();
-  }, [open, box, items.length]);
+  }, [open, box, items.length, premium, premiumItems.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -199,16 +266,21 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
           </div>
         </div>
         <div className={`popup__content popup__content--no-padding ${cls("x_popup__content")}`} style={{ flex: 1 }}>
+          <GiftPanelToolbar vip={vip} premium={premium} hasPremium={premiumItems.length > 0} dat={dat} auto={auto}
+            onPremium={setPremium} onAuto={on => { toolbar.setAuto(on); setAuto(on); }} />
           <div ref={listRef} className={cls("", ["gift"])}>
-            {!selective && ([{ type: "video" as const, image: "g_video_v3", price: 9, label: "music:video" }, { type: "audio" as const, image: "g_music_v3", price: 5, label: "music:audio" }]).map(media => {
+            {premium && premiumItems.map(item => (
+              <GiftItem key={`p-${item.type}`} assets={assets} item={item} crystal autoRepeat={false} onSend={i => onPremiumTap?.(i)} onPreload={onPreload} />
+            ))}
+            {!premium && !selective && ([{ type: "video" as const, image: "g_video_v3", price: 9, label: "music:video" }, { type: "audio" as const, image: "g_music_v3", price: 5, label: "music:audio" }]).map(media => {
               const image = dialogImage(assets, media.image, 60, 60);
               return <Button key={media.type} variant="ghost" className={`${cls("item")} p-0 gap-0 whitespace-normal`} aria-label={translate(assets, media.label)} title={translate(assets, media.label)} onClick={() => openMusic(media.type)}>
                 <div className={cls("image-block")}><img className={cls("image")} src={image.src} width={image.width} height={image.height} alt="" crossOrigin="anonymous" /></div>
                 <div className={cls("subitem")}><div className={cls("icon", ["heart"])} /><div className={cls("price")}>{media.price}</div></div>
               </Button>;
             })}
-            {items.map((item) => (
-              <GiftItem key={item.type} assets={assets} item={item} onSend={onSend} onPreload={onPreload} onLocked={onLocked} />
+            {!premium && items.map((item) => (
+              <GiftItem key={item.type} assets={assets} item={item} autoRepeat={vip && auto} onSend={onSend} onPreload={onPreload} onLocked={onLocked} />
             ))}
           </div>
         </div>

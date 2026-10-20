@@ -145,6 +145,38 @@ export const onRoomGesture = (fn: (row: GestureRow) => void) => {
   gestureListeners.add(fn);
   return () => { gestureListeners.delete(fn); };
 };
+/** ureyimsen premium_gift_announce / game_premium_gift: one row per receiver, delivered to every table. */
+export interface PremiumGiftRow { id: number; room_id: number; sender_id: string; receiver_id: string; sender_name: string; receiver_name: string; gift_type: string; gift_name: string; dat: number; reward_dat: number; seed: number; created_at: string }
+const premiumListeners = new Set<(row: PremiumGiftRow) => void>();
+const premiumSeen = new Set<number>();
+export const onPremiumGift = (fn: (row: PremiumGiftRow) => void) => {
+  premiumListeners.add(fn);
+  return () => { premiumListeners.delete(fn); };
+};
+const emitPremium = (row: PremiumGiftRow) => {
+  if (!row || typeof row.id !== "number" || premiumSeen.has(row.id)) return;
+  premiumSeen.add(row.id);
+  if (premiumSeen.size > 500) premiumSeen.delete(premiumSeen.values().next().value as number);
+  premiumListeners.forEach((fn) => fn(row));
+};
+export interface PremiumGiftInfo { dat: number; gifts: Array<{ type: string; name: string; dat: number; reward_dat: number }> }
+export async function premiumGiftInfo(): Promise<PremiumGiftInfo | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb.rpc("premium_gift_info" as never);
+  if (error || !data) return null;
+  const d = data as unknown as PremiumGiftInfo;
+  return { dat: Number(d.dat) || 0, gifts: Array.isArray(d.gifts) ? d.gifts : [] };
+}
+export async function sendPremiumGift(giftType: string, receiverIds: string[], seed: number): Promise<{ ok: true; dat: number } | { ok: false; reason: string; dat?: number }> {
+  const sb = getSupabase();
+  if (!sb) return { ok: false, reason: "offline" };
+  const { data, error } = await sb.rpc("send_premium_gift" as never, { p_gift: giftType, p_receivers: receiverIds, p_seed: seed } as never);
+  if (error) return { ok: false, reason: error.message };
+  const d = (data ?? {}) as { ok?: boolean; dat?: number; reason?: string };
+  if (d.ok) return { ok: true, dat: Number(d.dat) || 0 };
+  return { ok: false, reason: d.reason ?? "failed", ...(d.dat !== undefined ? { dat: Number(d.dat) } : {}) };
+}
 export const onRoomGift = (fn: (row: GiftRow) => void) => {
   giftListeners.add(fn);
   return () => { giftListeners.delete(fn); };
@@ -329,6 +361,8 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
       (p) => { const row = p.new as KickoutEventRow; if (current() && acceptKickout(row.id)) kickoutListeners.forEach((fn) => fn(row)); })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "gift_events", filter: `room_id=eq.${roomId}` },
       (p) => { if (current()) emitGift(p.new as GiftRow); })
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "premium_gift_events" },
+      (p) => { if (current()) emitPremium(p.new as PremiumGiftRow); })
     .on("broadcast", { event: "gift" }, (m) => {
       if (!current()) return;
       const rows = (m["payload"] as { rows?: GiftRow[] } | undefined)?.rows;
