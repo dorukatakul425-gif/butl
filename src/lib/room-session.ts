@@ -84,6 +84,18 @@ const set = (next: Partial<RoomState>) => {
 
 const chatListeners = new Set<(row: ChatRow) => void>();
 const giftListeners = new Set<(row: GiftRow) => void>();
+/** Ciliz pushes every gift over the open socket instantly; DB INSERT feed is batched, so we fan out a
+ *  broadcast right after the server accepted the gift and dedupe it against the INSERT echo. */
+const seenGifts = new Set<string>();
+const giftKey = (r: Pick<GiftRow, "sender_id" | "receiver_id" | "seed" | "gift_type">) => `${r.sender_id}|${r.receiver_id}|${r.seed}|${r.gift_type}`;
+export function acceptGift(r: Pick<GiftRow, "sender_id" | "receiver_id" | "seed" | "gift_type">) {
+  const k = giftKey(r);
+  if (seenGifts.has(k)) return false;
+  seenGifts.add(k);
+  if (seenGifts.size > 512) { const f = seenGifts.values().next().value; if (f !== undefined) seenGifts.delete(f); }
+  return true;
+}
+const emitGift = (row: GiftRow) => { if (acceptGift(row)) giftListeners.forEach((fn) => fn(row)); };
 /** Server chat history: messages of this table from the last 24 hours, oldest first. */
 export const CHAT_HISTORY_HOURS = 24;
 export async function loadRoomChatHistory(roomId: number, now = Date.now()) {
@@ -316,7 +328,12 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "kickout_events", filter: `room_id=eq.${roomId}` },
       (p) => { const row = p.new as KickoutEventRow; if (current() && acceptKickout(row.id)) kickoutListeners.forEach((fn) => fn(row)); })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "gift_events", filter: `room_id=eq.${roomId}` },
-      (p) => { if (current()) giftListeners.forEach((fn) => fn(p.new as GiftRow)); })
+      (p) => { if (current()) emitGift(p.new as GiftRow); })
+    .on("broadcast", { event: "gift" }, (m) => {
+      if (!current()) return;
+      const rows = (m["payload"] as { rows?: GiftRow[] } | undefined)?.rows;
+      if (Array.isArray(rows)) rows.forEach((r) => { if (r && typeof r.sender_id === "string" && typeof r.gift_type === "string") emitGift(r); });
+    })
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "gesture_events", filter: `room_id=eq.${roomId}` },
       (p) => { if (current()) gestureListeners.forEach((fn) => fn(p.new as GestureRow)); })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" },
@@ -443,6 +460,13 @@ export async function sendGift(
   if (!sb) return { ok: false, reason: "offline" };
   const { data, error } = await sb.rpc("send_gift", { p_gift: giftType, p_receivers: receiverIds, p_seed: seed });
   if (error) return { ok: false, reason: error.message };
+  const { data: auth } = await sb.auth.getSession();
+  const me = auth.session?.user.id;
+  if (me && channel) {
+    const rows: GiftRow[] = receiverIds.map((rid) => ({ id: 0, sender_id: me, receiver_id: rid, gift_type: giftType, seed }));
+    rows.forEach((r) => { acceptGift(r); });
+    void channel.send({ type: "broadcast", event: "gift", payload: { rows } });
+  }
   return { ok: true, gold: Number(data ?? 0) };
 }
 
