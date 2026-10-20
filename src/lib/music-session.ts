@@ -33,17 +33,17 @@ export type ChatLine = ChatMusicLine | ChatGiftLine | ChatTextLine | ChatActionL
 /** Everyone at the table sees the bottle change: sender photo, old bottle, arrows, new bottle. */
 export function pushBottleLine(sender: ChatUser, oldImage: string, oldName: string, newImage: string, newName: string, messageId?: number) {
   if (messageId !== undefined && state.lines.some(l => l.kind === "bottle" && l.messageId === messageId)) return false;
-  set({ lines: [...state.lines, { kind: "bottle", key: ++seq, sender, oldImage, oldName, newImage, newName, ...(messageId !== undefined ? { messageId } : {}) }] });
+  set({ lines: capLines([...state.lines, { kind: "bottle", key: ++seq, sender, oldImage, oldName, newImage, newName, ...(messageId !== undefined ? { messageId } : {}) }]) });
   return true;
 }
 export function pushGestureLine(sender: ChatUser, gestureType: string, gestureName: string, image: string, eventId: number) {
   if (state.lines.some(l => l.kind === "gesture" && l.eventId === eventId)) return false;
-  set({ lines: [...state.lines, { kind: "gesture", key: ++seq, sender, gestureType, gestureName, image, eventId }] });
+  set({ lines: capLines([...state.lines, { kind: "gesture", key: ++seq, sender, gestureType, gestureName, image, eventId }]) });
   return true;
 }
 export function pushSystemLine(style: ChatSystemLine["style"], text: string, messageId?: number) {
   if (messageId !== undefined && state.lines.some(l => l.kind === "system" && l.messageId === messageId)) return false;
-  set({ lines: [...state.lines, { kind: "system", key: ++seq, style, text, ...(messageId !== undefined ? { messageId } : {}) }] });
+  set({ lines: capLines([...state.lines, { kind: "system", key: ++seq, style, text, ...(messageId !== undefined ? { messageId } : {}) }]) });
   return true;
 }
 export function pushHaremLine(line: Omit<ChatHaremLine, "kind" | "key">) {
