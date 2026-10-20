@@ -2,7 +2,7 @@
 // broadcast = chat, gifts, speaking levels, WebRTC signalling) + a WebRTC mesh for audio/video.
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 
-export const SEAT_COUNT = 8;
+export const SEAT_COUNT = 10;
 
 export type RoomMember = {
   id: string;
