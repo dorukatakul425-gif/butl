@@ -638,6 +638,7 @@ export type Database = {
       }
       server_now: { Args: never; Returns: string }
       my_gift_points: { Args: never; Returns: number }
+      gift_levels: { Args: { p_ids: string[] }; Returns: { id: string; points: number }[] }
       set_decor: {
         Args: { p_frame: string; p_stone: string }
         Returns: undefined

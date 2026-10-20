@@ -25,6 +25,8 @@ import { playerPhoto } from "@/lib/player-photo";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import ignoredPhoto from "@/assets/source-ignore-photo.svg";
 import { useBlockedUsers } from "@/lib/block-session";
+import { joinedIds, shouldPlayEntry, ENTRY_MIN, tier } from "@/lib/entry-fx";
+import { levelFromPoints } from "@/lib/top-level-activity";
 import { showSourceToast } from "@/components/source-dialogs";
 import { ProfileDialog } from "@/components/profile/profile-dialog";
 import { SourceGiftLockedDialog, OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT } from "@/components/source-dialogs";
@@ -234,6 +236,38 @@ export function TableSeats() {
     }
   }, [assets, giftItems, offerResponse]);
 
+  // ureyimsen Ud.entrance: realtime room_players INSERT reaches every client, so each one plays the newcomer's effect.
+  const entrySeen = useRef(new Map<string, number>());
+  const entryPrev = useRef<{ room: number | null; ids: Array<string | undefined> } | null>(null);
+  useEffect(() => {
+    if (!activeTable) return;
+    const ids = room.players.map(p => p?.id);
+    const prev = entryPrev.current;
+    entryPrev.current = { room: room.roomId, ids };
+    const me = room.players[VIEWER_SEAT]?.id;
+    let fresh: string[];
+    if (!prev || prev.room !== room.roomId) fresh = me ? [me] : [];
+    else fresh = joinedIds(prev.ids, ids);
+    if (!fresh.length) return;
+    const delay = !prev || prev.room !== room.roomId ? 900 : 0;
+    void (async () => {
+      const sb = getSupabase();
+      if (!sb) return;
+      const { data } = await sb.rpc("gift_levels", { p_ids: fresh });
+      for (const row of (data ?? []) as Array<{ id: string; points: number }>) {
+        const level = levelFromPoints(Number(row.points) || 0);
+        if (!shouldPlayEntry(entrySeen.current, row.id, level, Date.now())) continue;
+        window.setTimeout(() => {
+          const seat = displaySeatOf(row.id);
+          const prof = profileBySeat(seat);
+          if (seat < 0 || !prof) return;
+          if (level >= ENTRY_MIN) showEntryBanner(prof.name ?? "", level);
+          tableRef.current?.playEntry(seat, level, Boolean(prof.male));
+        }, delay + 350);
+      }
+    })();
+  }, [activeTable, room.players, room.roomId]);
+
   useEffect(() => {
     activeTable?.setSelection(Array.from({ length: 12 }, (_, seat) => seatSelection(target, seat, VIEWER_SEAT)));
   }, [activeTable, target]);
@@ -402,3 +436,28 @@ function buildPlayers(assets: CilizAssets, profiles: Array<Profile | null>, fram
   });
 }
 
+
+/** ureyimsen Ud.banner: top banner for gift level >= 10, 3.4s. */
+function showEntryBanner(name: string, level: number) {
+  const t = tier(level);
+  const el = document.createElement("div");
+  el.className = `glv-entry glv-entry--t${t.i}`;
+  el.style.setProperty("--glv-c1", t.c1);
+  el.style.setProperty("--glv-c2", t.c2);
+  el.style.setProperty("--glv-rim", t.rim);
+  const badge = document.createElement("div");
+  badge.className = "glv-entry__badge";
+  badge.textContent = `Lv ${level}`;
+  const text = document.createElement("div");
+  text.className = "glv-entry__text";
+  const n = document.createElement("div");
+  n.className = "glv-entry__name";
+  n.textContent = name;
+  const sub = document.createElement("div");
+  sub.className = "glv-entry__sub";
+  sub.textContent = `${t.name} · masaya daxil oldu`;
+  text.append(n, sub);
+  el.append(badge, text);
+  document.body.appendChild(el);
+  window.setTimeout(() => el.remove(), 3400);
+}

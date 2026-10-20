@@ -615,3 +615,10 @@
 .top-dlg__score--activity{white-space:nowrap;color:#16a34a}
 
 .source-tops-layer .top-dlg__score--activity, .source-tops-layer .top-dlg__score--glv { white-space:nowrap; }
+
+/* ureyimsen Ud.banner: gift-level entrance banner */
+.glv-entry{position:fixed;top:12px;left:50%;z-index:9999;display:flex;align-items:center;gap:8px;padding:6px 16px 6px 8px;border-radius:999px;border:2px solid var(--glv-rim);background:linear-gradient(90deg,var(--glv-c2),var(--glv-c1) 55%,var(--glv-c2));box-shadow:0 0 18px var(--glv-c1),0 4px 14px rgba(0,0,0,.35);transform:translateX(-50%);pointer-events:none;animation:glv-entry-in 3.4s ease forwards;font-family:inherit}
+.glv-entry__badge{min-width:44px;padding:3px 8px;border-radius:999px;background:var(--glv-c2);border:1px solid var(--glv-rim);color:#fff;font:800 12px/1.2 inherit;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.glv-entry__name{color:#fff;font-weight:800;font-size:14px;line-height:1.15;text-shadow:0 1px 3px rgba(0,0,0,.6);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.glv-entry__sub{color:var(--glv-rim);font-size:11px;font-weight:700;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.6);white-space:nowrap}
+@keyframes glv-entry-in{0%{opacity:0;transform:translate(-50%,-30px) scale(.8)}10%{opacity:1;transform:translate(-50%,0) scale(1.05)}16%{transform:translate(-50%,0) scale(1)}85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-20px)}}

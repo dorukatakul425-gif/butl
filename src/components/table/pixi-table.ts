@@ -18,6 +18,7 @@ import { originalBottle, bottleArtwork } from "./original-bottle";
 import { TABLE_USER_KISS } from "@/lib/table-kiss-icon";
 import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
 import { cleanDisplayName } from "@/lib/display-name";
+import { playEntryFx } from "@/components/table/entry-fx-pixi";
 
 // TableView seats (virtual 375px table space, origin at table centre).
 const SEATS: Array<[number, number]> = [
@@ -802,6 +803,13 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
         if (gestureViews.get(index) !== view) return;
         seat.setGestureShade(0); destroyView(view); gestureViews.delete(index);
       });
+    },
+    /** ureyimsen Ud.entryFx: gift-level entrance effect around the seat's photo. */
+    playEntry(index: number, level: number, male: boolean) {
+      const seat = seats[index];
+      if (!seat || destroyed || level < 1) return;
+      playEntryFx(seat.view, level, male, (d, step, done) => run(d, p => { step(p, p * d); }, done));
+      markDirty();
     },
     /** Late joiners: bottle already rests pointing at the last chosen seat. */
     pointBottle(to: number) {
