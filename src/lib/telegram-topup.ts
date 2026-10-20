@@ -4,7 +4,7 @@ export function telegramTopupUrl(amount: number, playerNo?: number | null) {
   return `https://t.me/deltagameadmin?text=${encodeURIComponent(text)}`;
 }
 
-/** Account linkage alone is not enough: the current launch must be inside Telegram. */
-export function shouldContactTelegramAdmin(insufficient: boolean, telegramId: number | null | undefined, initData: string | undefined) {
-  return insufficient && Boolean(telegramId && initData);
+/** Account linkage alone is enough: works inside Telegram and on the website (new tab). */
+export function shouldContactTelegramAdmin(insufficient: boolean, telegramId: number | null | undefined) {
+  return insufficient && Boolean(telegramId);
 }
