@@ -2,11 +2,12 @@ import autumnCenterUrl from "@/assets/original-table-autumn-center.png";
 const autumnCenter = { url: autumnCenterUrl };
 import { ASSETS_TO_VIRTUAL as ASSETS_K } from "@/lib/ciliz-assets";
 // Browser-only: rendered with PixiJS + Spine 3.8 exactly like TableView/TableUserView in preloader.js.
-import { Application, BaseTexture, Container, MIPMAP_MODES, Rectangle, Sprite, Text, TextStyle, Texture, UPDATE_PRIORITY, type DisplayObject } from "pixi.js";
+import { AnimatedSprite, Application, BaseTexture, Container, MIPMAP_MODES, Rectangle, Sprite, Text, TextStyle, Texture, UPDATE_PRIORITY, type DisplayObject } from "pixi.js";
 import { TextureAtlas, TextureFilter } from "@pixi-spine/base";
 import { AtlasAttachmentLoader, SkeletonJson, Spine, type SkeletonData } from "@pixi-spine/runtime-3.8";
 import { bundleUrl, hasWebP, SPINE_DESIGN_TO_TABLE, tableFrameSize, VIRTUAL_SIZE, type CilizAssets, type CilizGift } from "@/lib/ciliz-assets";
 import type { SeatPlayer } from "@/components/table/table-seats";
+import { customFrameLayout, getCustomFrame } from "@/lib/custom-frames";
 import { type SentGift } from "@/lib/gifts";
 import type { SeatSelection } from "@/lib/gift-selection";
 import type { CilizGesture } from "@/lib/gestures";
@@ -301,7 +302,10 @@ class SeatView {
 
     this.frameContainer.removeChildren().forEach((child) => child.destroy());
     const frame = player.frame ? assets.frames[player.frame] : undefined;
-    if (frame) {
+    if (frame?.custom && getCustomFrame(frame.custom)) {
+      // Ureyimsen setFrame: custom frames are an AnimatedSprite from the sprite sheet.
+      this.frameContainer.addChild(customFrameView(frame.custom));
+    } else if (frame) {
       try {
         // Ciliz setFrame: spine yüklenemezse statik resme düşer (frame.image) —
         // çerçeve asla tamamen kaybolmaz.
@@ -345,7 +349,7 @@ class SeatView {
 
   /** Çerçeve spine'ları ("stick") sonsuz döngüde oynar; biri varken sahne çizilmeye devam eder. */
   hasAnimatedFrame() {
-    return this.frameContainer.children.some(child => child instanceof Spine && child.autoUpdate);
+    return this.frameContainer.children.some(child => (child instanceof Spine && child.autoUpdate) || child instanceof AnimatedSprite);
   }
 
   private async sprite(assets: CilizAssets, name: string, tableSize: number, ax: number, ay: number) {
@@ -357,6 +361,39 @@ class SeatView {
     sprite.height = size.height;
     return sprite;
   }
+}
+
+// Ureyimsen hi.frameObjects / hi.pixiView: sheet textures are shared per frame key.
+const customFrameTextures = new Map<string, Array<{ texture: Texture; time: number }>>();
+function customFrameView(key: string) {
+  const frame = getCustomFrame(key)!;
+  let textures = customFrameTextures.get(key);
+  if (!textures) {
+    const meta = frame.meta;
+    const base = BaseTexture.from(frame.sheet);
+    textures = meta.delays.map((time, i) => ({
+      texture: new Texture(base, new Rectangle((i % meta.cols) * meta.width, Math.floor(i / meta.cols) * meta.height, meta.width, meta.height)),
+      time,
+    }));
+    customFrameTextures.set(key, textures);
+  }
+  const layout = customFrameLayout(frame);
+  const sprite = new AnimatedSprite(textures, false);
+  let last = 0;
+  const updateTransform = sprite.updateTransform;
+  sprite.updateTransform = function (this: AnimatedSprite) {
+    const now = performance.now();
+    if (last && now > last) this.update((60 * Math.min(now - last, 1000)) / 1000);
+    last = now;
+    updateTransform.call(this);
+  };
+  sprite.name = "custom-frame";
+  sprite.eventMode = "none";
+  sprite.loop = true;
+  sprite.scale.set(layout.s);
+  sprite.position.set(layout.left, layout.top);
+  sprite.play();
+  return sprite;
 }
 
 const STICK_SORT = { ava: 0, drink: 1, hat: 2 } as const;

@@ -1,6 +1,7 @@
 // Live game data, loaded directly from the game's own servers (same chain as preloader.js):
 // server.json -> assets.json -> bundle images / spine skeletons.
 import { completeLoadingStage, failGameLoading } from "./game-loading";
+import { customFrameUrl, injectCustomFrames } from "./custom-frames";
 import type { CilizGesture, GestureEntry } from "./gestures";
 const SERVER_JSON_URL = "https://cdn-s.ciliz.com/mobile/server.json";
 
@@ -17,6 +18,8 @@ export interface CilizFrame {
   stick?: boolean;
   storeImage: string;
   storeImage_v2: string;
+  /** Ureyimsen custom animated frame key (custom-frames registry). */
+  custom?: string;
 }
 export interface CilizStone {
   type: string;
@@ -109,7 +112,7 @@ export function loadCilizAssets(): Promise<CilizAssets> {
       completeLoadingStage("server");
       const json = await (await fetch(server.assets.url)).json();
       completeLoadingStage("assets");
-      return {
+      const result = {
         bottles: Object.fromEntries(Object.entries(json.bottles as Record<string, CilizBottle>).filter(([key]) => !key.startsWith('__'))),
         bottleStore: json.bottles.__store.flat(),
         bottle3d: json.bottle3d,
@@ -131,6 +134,8 @@ export function loadCilizAssets(): Promise<CilizAssets> {
         bundles: server.assets.bundles_v2.table,
         dialogBundles: server.assets.bundles_v2.dlg,
       } satisfies CilizAssets;
+      injectCustomFrames(result);
+      return result;
     })();
     assetsPromise.catch(() => {
       failGameLoading();
@@ -166,6 +171,8 @@ function dpr() {
 }
 
 export function bundleUrl(assets: CilizAssets, name: string, ext: "png" | "webp" | "json", targetSize?: number) {
+  const custom = customFrameUrl(name);
+  if (custom) return custom;
   const bundle = pickBundle(assets, targetSize ?? VIRTUAL_SIZE * dpr());
   return bundle.url.replace("${name}", `${name}.${ext}`);
 }
@@ -201,7 +208,7 @@ export function dialogImage(assets: CilizAssets, name: string, w?: number, h?: n
   const height = h ?? frame.height;
   const scale = frame.width && frame.height ? Math.min(width / frame.width, height / frame.height) : 1;
   return {
-    src: bundle.url.replace("${name}", `${name}.png`),
+    src: customFrameUrl(name) || bundle.url.replace("${name}", `${name}.png`),
     width: Math.round(scale * frame.width),
     height: Math.round(scale * frame.height),
   };

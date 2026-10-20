@@ -1,4 +1,5 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { levelFromPoints } from "@/lib/top-level-activity";
 import { getSupabase } from "@/lib/supabase";
 
 export interface DecorState {
@@ -51,4 +52,22 @@ function subscribe(listener: () => void) {
 
 export function useDecorState() {
   return useSyncExternalStore(subscribe, () => state, () => DEFAULT_STATE);
+}
+
+/** Viewer gift level from the server (hearts spent on gifts); refreshed whenever the dialog opens. */
+export function useGiftLevel(open: boolean) {
+  const [level, setLevel] = useState(0);
+  useEffect(() => {
+    if (!open) return;
+    const sb = getSupabase();
+    if (!sb) return;
+    let alive = true;
+    sb.rpc("my_gift_points").then(({ data, error }) => {
+      if (alive && !error) setLevel(levelFromPoints(Number(data) || 0));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [open]);
+  return level;
 }

@@ -637,6 +637,7 @@ export type Database = {
         Returns: number
       }
       server_now: { Args: never; Returns: string }
+      my_gift_points: { Args: never; Returns: number }
       set_decor: {
         Args: { p_frame: string; p_stone: string }
         Returns: undefined

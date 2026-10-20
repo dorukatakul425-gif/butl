@@ -1,3 +1,4 @@
+import { LEVEL_FRAMES, isLevelFrameOpen } from "@/lib/custom-frames";
 import { translate, type CilizAssets, type CilizFrame, type CilizStone } from "@/lib/ciliz-assets";
 
 export type DecorPrice = { type: "open"; price?: number } | { type: "lock" };
@@ -18,6 +19,8 @@ export interface DecorViewer {
   league: number;
   maxLeague: number;
   ownedItems: string[];
+  /** Gift level (hearts spent on gifts / 1400, max 100) — unlocks ureyimsen level frames. */
+  giftLevel?: number;
 }
 
 /** Port of DecorSelectionViewModel.Items from preloader.js. */
@@ -61,6 +64,22 @@ export function buildDecorItems(assets: CilizAssets, viewer: DecorViewer): Decor
       continue;
     }
     items.push(item);
+  }
+  // Ureyimsen DecorSelectionViewModel.levelItems(): animated frames unlocked by gift level.
+  const giftLevel = viewer.giftLevel ?? 0;
+  for (const entry of LEVEL_FRAMES) {
+    const frame = assets.frames[entry.key];
+    if (!frame) continue;
+    const open = isLevelFrameOpen(entry.level, giftLevel);
+    items.push({
+      type: entry.key,
+      frame,
+      stone: undefined,
+      price: open ? { type: "open" } : { type: "lock" },
+      title: `🏅 Səviyyə ${entry.level} ramkası`,
+      btnTitle: t("dlg:decor_selection:btn:apply"),
+      description: open ? `Hədiyyə səviyyən ${entry.level}-ə çatıb - ramka açıqdır` : `Hədiyyə səviyyəsi ${entry.level}-də açılır`,
+    });
   }
   return items;
 }
