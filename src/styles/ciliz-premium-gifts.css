@@ -61,3 +61,10 @@
 @keyframes premium-fx-spark{0%{opacity:1;-webkit-transform:rotate(var(--a)) translateX(10px) scale(1);transform:rotate(var(--a)) translateX(10px) scale(1)}100%{opacity:0;-webkit-transform:rotate(var(--a)) translateX(125px) scale(.3);transform:rotate(var(--a)) translateX(125px) scale(.3)}}
 @keyframes gift-notice-in{from{opacity:0;-webkit-transform:translateY(-8px) scale(.94);transform:translateY(-8px) scale(.94)}}
 @keyframes crystal-fx-up{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}30%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-160%) scale(.9)}}
+
+/* ureyimsen Fd: full-screen live gift video (alpha composed in WebGL). */
+.live-gift-fx{position:fixed;left:0;top:0;width:100vw;height:177.78vw;z-index:99999;pointer-events:none;opacity:0;transition:opacity .2s}
+.live-gift-fx--on{opacity:1}
+.live-gift-fx__canvas{width:100%;height:100%;display:block}
+.live-gift-fx__video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.live-gift-fx--boxed{-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}

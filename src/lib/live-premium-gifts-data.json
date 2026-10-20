@@ -1,0 +1,623 @@
+{
+ "live_6820": {
+  "name": "Balina Dalışı",
+  "effect_id": 8000,
+  "gift_id": 6820,
+  "icon": "/room-assets/live-gifts/icons/6820.webp",
+  "video": "/room-assets/live-gifts/8000.mp4",
+  "dat": 215,
+  "reward_dat": 107
+ },
+ "live_9468": {
+  "name": "Ritmik Ayı",
+  "effect_id": 8869,
+  "gift_id": 9468,
+  "icon": "/room-assets/live-gifts/icons/9468.webp",
+  "video": "/room-assets/live-gifts/8869.mp4",
+  "dat": 300,
+  "reward_dat": 150
+ },
+ "live_9532": {
+  "name": "Parlak Parla",
+  "effect_id": 7790,
+  "gift_id": 9532,
+  "icon": "/room-assets/live-gifts/icons/9532.webp",
+  "video": "/room-assets/live-gifts/7790.mp4",
+  "dat": 409,
+  "reward_dat": 204
+ },
+ "live_6646": {
+  "name": "Yavru Kedi Leon",
+  "effect_id": 7568,
+  "gift_id": 6646,
+  "icon": "/room-assets/live-gifts/icons/6646.webp",
+  "video": "/room-assets/live-gifts/7568.mp4",
+  "dat": 489,
+  "reward_dat": 244
+ },
+ "live_59994": {
+  "name": "Tezahürat Yapan Taraftarlar",
+  "effect_id": 16122,
+  "gift_id": 59994,
+  "icon": "/room-assets/live-gifts/icons/59994.webp",
+  "video": "/room-assets/live-gifts/16122.mp4",
+  "dat": 500,
+  "reward_dat": 250
+ },
+ "live_547121": {
+  "name": "Çöl Kurdu",
+  "effect_id": 33405,
+  "gift_id": 547121,
+  "icon": "/room-assets/live-gifts/icons/547121.webp",
+  "video": "/room-assets/live-gifts/33405.mp4",
+  "dat": 500,
+  "reward_dat": 250
+ },
+ "live_10588": {
+  "name": "Elmas Silah",
+  "effect_id": 7148,
+  "gift_id": 10588,
+  "icon": "/room-assets/live-gifts/icons/10588.webp",
+  "video": "/room-assets/live-gifts/7148.mp4",
+  "dat": 500,
+  "reward_dat": 250
+ },
+ "live_14384": {
+  "name": "Sage'in Serüveni",
+  "effect_id": 13850,
+  "gift_id": 14384,
+  "icon": "/room-assets/live-gifts/icons/14384.webp",
+  "video": "/room-assets/live-gifts/13850.mp4",
+  "dat": 500,
+  "reward_dat": 250
+ },
+ "live_10517": {
+  "name": "Çöl Kurdu",
+  "effect_id": 7118,
+  "gift_id": 10517,
+  "icon": "/room-assets/live-gifts/icons/10517.webp",
+  "video": "/room-assets/live-gifts/7118.mp4",
+  "dat": 550,
+  "reward_dat": 275
+ },
+ "live_8469": {
+  "name": "Kurt",
+  "effect_id": 6433,
+  "gift_id": 8469,
+  "icon": "/room-assets/live-gifts/icons/8469.webp",
+  "video": "/room-assets/live-gifts/6433.mp4",
+  "dat": 550,
+  "reward_dat": 275
+ },
+ "live_105610": {
+  "name": "Gol Tekrarı-ABD",
+  "effect_id": 23478,
+  "gift_id": 105610,
+  "icon": "/room-assets/live-gifts/icons/105610.webp",
+  "video": "/room-assets/live-gifts/23478.mp4",
+  "dat": 600,
+  "reward_dat": 300
+ },
+ "live_54727": {
+  "name": "Civciv İzdihamı",
+  "effect_id": 22207,
+  "gift_id": 54727,
+  "icon": "/room-assets/live-gifts/icons/54727.webp",
+  "video": "/room-assets/live-gifts/22207.mp4",
+  "dat": 600,
+  "reward_dat": 300
+ },
+ "live_10669": {
+  "name": "Gelecek Şehri",
+  "effect_id": 7183,
+  "gift_id": 10669,
+  "icon": "/room-assets/live-gifts/icons/10669.webp",
+  "video": "/room-assets/live-gifts/7183.mp4",
+  "dat": 600,
+  "reward_dat": 300
+ },
+ "live_10672": {
+  "name": "Yeni Şehirde Sam",
+  "effect_id": 7181,
+  "gift_id": 10672,
+  "icon": "/room-assets/live-gifts/icons/10672.webp",
+  "video": "/room-assets/live-gifts/7181.mp4",
+  "dat": 600,
+  "reward_dat": 300
+ },
+ "live_11585": {
+  "name": "Sıkı Çalış Daha Sıkı Eğlen",
+  "effect_id": 10724,
+  "gift_id": 11585,
+  "icon": "/room-assets/live-gifts/icons/11585.webp",
+  "video": "/room-assets/live-gifts/10724.mp4",
+  "dat": 600,
+  "reward_dat": 300
+ },
+ "live_59884": {
+  "name": "Yenilenmiş Zırh",
+  "effect_id": 23528,
+  "gift_id": 59884,
+  "icon": "/room-assets/live-gifts/icons/59884.webp",
+  "video": "/room-assets/live-gifts/23528.mp4",
+  "dat": 600,
+  "reward_dat": 300
+ },
+ "live_9467": {
+  "name": "Leopar Lili",
+  "effect_id": 6795,
+  "gift_id": 9467,
+  "icon": "/room-assets/live-gifts/icons/9467.webp",
+  "video": "/room-assets/live-gifts/6795.mp4",
+  "dat": 660,
+  "reward_dat": 330
+ },
+ "live_8916": {
+  "name": "Leon ve Lili",
+  "effect_id": 6609,
+  "gift_id": 8916,
+  "icon": "/room-assets/live-gifts/icons/8916.webp",
+  "video": "/room-assets/live-gifts/6609.mp4",
+  "dat": 970,
+  "reward_dat": 485
+ },
+ "live_13469": {
+  "name": "Henry",
+  "effect_id": 8947,
+  "gift_id": 13469,
+  "icon": "/room-assets/live-gifts/icons/13469.webp",
+  "video": "/room-assets/live-gifts/8947.mp4",
+  "dat": 1000,
+  "reward_dat": 500
+ },
+ "live_12922": {
+  "name": "Şahin",
+  "effect_id": 9651,
+  "gift_id": 12922,
+  "icon": "/room-assets/live-gifts/icons/12922.webp",
+  "video": "/room-assets/live-gifts/9651.mp4",
+  "dat": 1100,
+  "reward_dat": 550
+ },
+ "live_12680": {
+  "name": "Seviye Atlama Manzarası",
+  "effect_id": 11579,
+  "gift_id": 12680,
+  "icon": "/room-assets/live-gifts/icons/12680.webp",
+  "video": "/room-assets/live-gifts/11579.mp4",
+  "dat": 1300,
+  "reward_dat": 650
+ },
+ "live_946670": {
+  "name": "Gündüz Lansmanı",
+  "effect_id": 119075,
+  "gift_id": 946670,
+  "icon": "/room-assets/live-gifts/icons/946670.webp",
+  "video": "/room-assets/live-gifts/119075.mp4",
+  "dat": 1400,
+  "reward_dat": 700
+ },
+ "live_53761": {
+  "name": "Asya Çitası",
+  "effect_id": 21961,
+  "gift_id": 53761,
+  "icon": "/room-assets/live-gifts/icons/53761.webp",
+  "video": "/room-assets/live-gifts/21961.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_17446": {
+  "name": "Legendary Aegis",
+  "effect_id": 19752,
+  "gift_id": 17446,
+  "icon": "/room-assets/live-gifts/icons/17446.webp",
+  "video": "/room-assets/live-gifts/19752.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_101857": {
+  "name": "Fırtına Kılıcı",
+  "effect_id": 27366,
+  "gift_id": 101857,
+  "icon": "/room-assets/live-gifts/icons/101857.webp",
+  "video": "/room-assets/live-gifts/27366.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_19134": {
+  "name": "Paris",
+  "effect_id": 6718,
+  "gift_id": 19134,
+  "icon": "/room-assets/live-gifts/icons/19134.webp",
+  "video": "/room-assets/live-gifts/6718.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_8603": {
+  "name": "Leopar",
+  "effect_id": 13972,
+  "gift_id": 8603,
+  "icon": "/room-assets/live-gifts/icons/8603.webp",
+  "video": "/room-assets/live-gifts/13972.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_59710": {
+  "name": "Zamanı Geri Sarma Cihazı",
+  "effect_id": 23817,
+  "gift_id": 59710,
+  "icon": "/room-assets/live-gifts/icons/59710.webp",
+  "video": "/room-assets/live-gifts/23817.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_547119": {
+  "name": "Siyah Kurt",
+  "effect_id": 33401,
+  "gift_id": 547119,
+  "icon": "/room-assets/live-gifts/icons/547119.webp",
+  "video": "/room-assets/live-gifts/33401.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_18792": {
+  "name": "LNY At",
+  "effect_id": 21637,
+  "gift_id": 18792,
+  "icon": "/room-assets/live-gifts/icons/18792.webp",
+  "video": "/room-assets/live-gifts/21637.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_18337": {
+  "name": "Yenilmez Çekiç",
+  "effect_id": 21268,
+  "gift_id": 18337,
+  "icon": "/room-assets/live-gifts/icons/18337.webp",
+  "video": "/room-assets/live-gifts/21268.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_14562": {
+  "name": "Savaş Şampiyonu",
+  "effect_id": 8654,
+  "gift_id": 14562,
+  "icon": "/room-assets/live-gifts/icons/14562.webp",
+  "video": "/room-assets/live-gifts/8654.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_54539": {
+  "name": "Gelgit Çağıran Üçlü Mızrak",
+  "effect_id": 22067,
+  "gift_id": 54539,
+  "icon": "/room-assets/live-gifts/icons/54539.webp",
+  "video": "/room-assets/live-gifts/22067.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_54728": {
+  "name": "Sinsi Jokey",
+  "effect_id": 22270,
+  "gift_id": 54728,
+  "icon": "/room-assets/live-gifts/icons/54728.webp",
+  "video": "/room-assets/live-gifts/22270.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_8912": {
+  "name": "Gül Nebulası",
+  "effect_id": 6629,
+  "gift_id": 8912,
+  "icon": "/room-assets/live-gifts/icons/8912.webp",
+  "video": "/room-assets/live-gifts/6629.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_10670": {
+  "name": "Gelecek Yolculuğu",
+  "effect_id": 7185,
+  "gift_id": 10670,
+  "icon": "/room-assets/live-gifts/icons/10670.webp",
+  "video": "/room-assets/live-gifts/7185.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_11586": {
+  "name": "Parti Hiç Bitmesin",
+  "effect_id": 10495,
+  "gift_id": 11586,
+  "icon": "/room-assets/live-gifts/icons/11586.webp",
+  "video": "/room-assets/live-gifts/10495.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_12041": {
+  "name": "Alev Kuleleri",
+  "effect_id": 9623,
+  "gift_id": 12041,
+  "icon": "/room-assets/live-gifts/icons/12041.webp",
+  "video": "/room-assets/live-gifts/9623.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_13006": {
+  "name": "At",
+  "effect_id": 11175,
+  "gift_id": 13006,
+  "icon": "/room-assets/live-gifts/icons/13006.webp",
+  "video": "/room-assets/live-gifts/11175.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_13008": {
+  "name": "Kar Leoparı",
+  "effect_id": 11385,
+  "gift_id": 13008,
+  "icon": "/room-assets/live-gifts/icons/13008.webp",
+  "video": "/room-assets/live-gifts/11385.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_972120": {
+  "name": "Kar Ayı Şemsiyesi",
+  "effect_id": 113874,
+  "gift_id": 972120,
+  "icon": "/room-assets/live-gifts/icons/972120.webp",
+  "video": "/room-assets/live-gifts/113874.mp4",
+  "dat": 1500,
+  "reward_dat": 750
+ },
+ "live_105817": {
+  "name": "Stad",
+  "effect_id": 23552,
+  "gift_id": 105817,
+  "icon": "/room-assets/live-gifts/icons/105817.webp",
+  "video": "/room-assets/live-gifts/23552.mp4",
+  "dat": 1600,
+  "reward_dat": 800
+ },
+ "live_9466": {
+  "name": "Lunapark",
+  "effect_id": 6797,
+  "gift_id": 9466,
+  "icon": "/room-assets/live-gifts/icons/9466.webp",
+  "video": "/room-assets/live-gifts/6797.mp4",
+  "dat": 1700,
+  "reward_dat": 850
+ },
+ "live_59885": {
+  "name": "Zırh Dünyaya Karşı",
+  "effect_id": 23757,
+  "gift_id": 59885,
+  "icon": "/room-assets/live-gifts/icons/59885.webp",
+  "video": "/room-assets/live-gifts/23757.mp4",
+  "dat": 1900,
+  "reward_dat": 950
+ },
+ "live_115549": {
+  "name": "Red Devil Corgi",
+  "effect_id": 23765,
+  "gift_id": 115549,
+  "icon": "/room-assets/live-gifts/icons/115549.webp",
+  "video": "/room-assets/live-gifts/23765.mp4",
+  "dat": 2000,
+  "reward_dat": 1000
+ },
+ "live_677594": {
+  "name": "Corgi's Drone Show",
+  "effect_id": 33335,
+  "gift_id": 677594,
+  "icon": "/room-assets/live-gifts/icons/677594.webp",
+  "video": "/room-assets/live-gifts/33335.mp4",
+  "dat": 2000,
+  "reward_dat": 1000
+ },
+ "live_10022": {
+  "name": "Gyeongbokgung",
+  "effect_id": 7016,
+  "gift_id": 10022,
+  "icon": "/room-assets/live-gifts/icons/10022.webp",
+  "video": "/room-assets/live-gifts/7016.mp4",
+  "dat": 2000,
+  "reward_dat": 1000
+ },
+ "live_12853": {
+  "name": "Seviye Gemisi",
+  "effect_id": 12230,
+  "gift_id": 12853,
+  "icon": "/room-assets/live-gifts/icons/12853.webp",
+  "video": "/room-assets/live-gifts/12230.mp4",
+  "dat": 2100,
+  "reward_dat": 1050
+ },
+ "live_18338": {
+  "name": "Siber Kükreyiş",
+  "effect_id": 21267,
+  "gift_id": 18338,
+  "icon": "/room-assets/live-gifts/icons/18338.webp",
+  "video": "/room-assets/live-gifts/21267.mp4",
+  "dat": 2600,
+  "reward_dat": 1300
+ },
+ "live_59711": {
+  "name": "Işık Kalesi",
+  "effect_id": 23816,
+  "gift_id": 59711,
+  "icon": "/room-assets/live-gifts/icons/59711.webp",
+  "video": "/room-assets/live-gifts/23816.mp4",
+  "dat": 2600,
+  "reward_dat": 1300
+ },
+ "live_101862": {
+  "name": "Skyforge Kalesi",
+  "effect_id": 27368,
+  "gift_id": 101862,
+  "icon": "/room-assets/live-gifts/icons/101862.webp",
+  "video": "/room-assets/live-gifts/27368.mp4",
+  "dat": 2600,
+  "reward_dat": 1300
+ },
+ "live_54540": {
+  "name": "Denizaltı Krallığı",
+  "effect_id": 22084,
+  "gift_id": 54540,
+  "icon": "/room-assets/live-gifts/icons/54540.webp",
+  "video": "/room-assets/live-gifts/22084.mp4",
+  "dat": 2600,
+  "reward_dat": 1300
+ },
+ "live_7400": {
+  "name": "Adam'ın Hayali",
+  "effect_id": 7797,
+  "gift_id": 7400,
+  "icon": "/room-assets/live-gifts/icons/7400.webp",
+  "video": "/room-assets/live-gifts/7797.mp4",
+  "dat": 2600,
+  "reward_dat": 1300
+ },
+ "live_972130": {
+  "name": "Kardan Doğan Rin",
+  "effect_id": 114102,
+  "gift_id": 972130,
+  "icon": "/room-assets/live-gifts/icons/972130.webp",
+  "video": "/room-assets/live-gifts/114102.mp4",
+  "dat": 2600,
+  "reward_dat": 1300
+ },
+ "live_7610": {
+  "name": "Ejderha Alevi",
+  "effect_id": 23504,
+  "gift_id": 7610,
+  "icon": "/room-assets/live-gifts/icons/7610.webp",
+  "video": "/room-assets/live-gifts/23504.mp4",
+  "dat": 2700,
+  "reward_dat": 1350
+ },
+ "live_17710": {
+  "name": "Topluluk Efsaneleri",
+  "effect_id": 19898,
+  "gift_id": 17710,
+  "icon": "/room-assets/live-gifts/icons/17710.webp",
+  "video": "/room-assets/live-gifts/19898.mp4",
+  "dat": 3000,
+  "reward_dat": 1500
+ },
+ "live_10065": {
+  "name": "Gorilla",
+  "effect_id": 6461,
+  "gift_id": 10065,
+  "icon": "/room-assets/live-gifts/icons/10065.webp",
+  "video": "/room-assets/live-gifts/6461.mp4",
+  "dat": 3000,
+  "reward_dat": 1500
+ },
+ "live_6369": {
+  "name": "Aslan",
+  "effect_id": 6585,
+  "gift_id": 6369,
+  "icon": "/room-assets/live-gifts/icons/6369.webp",
+  "video": "/room-assets/live-gifts/6585.mp4",
+  "dat": 3000,
+  "reward_dat": 1500
+ },
+ "live_8624": {
+  "name": "Zeus",
+  "effect_id": 6401,
+  "gift_id": 8624,
+  "icon": "/room-assets/live-gifts/icons/8624.webp",
+  "video": "/room-assets/live-gifts/6401.mp4",
+  "dat": 3400,
+  "reward_dat": 1700
+ },
+ "live_7823": {
+  "name": "Leon ve Aslan",
+  "effect_id": 7575,
+  "gift_id": 7823,
+  "icon": "/room-assets/live-gifts/icons/7823.webp",
+  "video": "/room-assets/live-gifts/7575.mp4",
+  "dat": 3400,
+  "reward_dat": 1700
+ },
+ "live_8651": {
+  "name": "Savaşan Şahin",
+  "effect_id": 23503,
+  "gift_id": 8651,
+  "icon": "/room-assets/live-gifts/icons/8651.webp",
+  "video": "/room-assets/live-gifts/23503.mp4",
+  "dat": 4000,
+  "reward_dat": 2000
+ },
+ "live_8582": {
+  "name": "TikTok Stars",
+  "effect_id": 7383,
+  "gift_id": 8582,
+  "icon": "/room-assets/live-gifts/icons/8582.webp",
+  "video": "/room-assets/live-gifts/7383.mp4",
+  "dat": 4000,
+  "reward_dat": 2000
+ },
+ "live_9092": {
+  "name": "Ateş Anka kuşu",
+  "effect_id": 6669,
+  "gift_id": 9092,
+  "icon": "/room-assets/live-gifts/icons/9092.webp",
+  "video": "/room-assets/live-gifts/6669.mp4",
+  "dat": 4200,
+  "reward_dat": 2100
+ },
+ "live_9427": {
+  "name": "Kanatlı At",
+  "effect_id": 8883,
+  "gift_id": 9427,
+  "icon": "/room-assets/live-gifts/icons/9427.webp",
+  "video": "/room-assets/live-gifts/8883.mp4",
+  "dat": 4300,
+  "reward_dat": 2150
+ },
+ "live_59712": {
+  "name": "Kral Leonardo",
+  "effect_id": 23815,
+  "gift_id": 59712,
+  "icon": "/room-assets/live-gifts/icons/59712.webp",
+  "video": "/room-assets/live-gifts/23815.mp4",
+  "dat": 4300,
+  "reward_dat": 2150
+ },
+ "live_54541": {
+  "name": "Efsane Marcellus",
+  "effect_id": 22064,
+  "gift_id": 54541,
+  "icon": "/room-assets/live-gifts/icons/54541.webp",
+  "video": "/room-assets/live-gifts/22064.mp4",
+  "dat": 4300,
+  "reward_dat": 2150
+ },
+ "live_972138": {
+  "name": "Yuki'nin Nöbeti",
+  "effect_id": 114225,
+  "gift_id": 972138,
+  "icon": "/room-assets/live-gifts/icons/972138.webp",
+  "video": "/room-assets/live-gifts/114225.mp4",
+  "dat": 4300,
+  "reward_dat": 2150
+ },
+ "live_101868": {
+  "name": "Valerian Yemini",
+  "effect_id": 27367,
+  "gift_id": 101868,
+  "icon": "/room-assets/live-gifts/icons/101868.webp",
+  "video": "/room-assets/live-gifts/27367.mp4",
+  "dat": 4400,
+  "reward_dat": 2200
+ },
+ "live_18339": {
+  "name": "Şampiyon Julius",
+  "effect_id": 21266,
+  "gift_id": 18339,
+  "icon": "/room-assets/live-gifts/icons/18339.webp",
+  "video": "/room-assets/live-gifts/21266.mp4",
+  "dat": 4400,
+  "reward_dat": 2200
+ }
+}

@@ -22,6 +22,8 @@ import { OPEN_GIFT_FOR_SEAT_EVENT } from "@/lib/chat-promos";
 import { onRoomGift, onRoomGesture, sendGesture, sendGift as sendGiftRpc, useRoom, displaySeatOf, profileBySeat, getRoom, onPremiumGift, premiumGiftInfo, sendPremiumGift, type PremiumGiftInfo } from "@/lib/room-session";
 import { armMessage, announceText, premiumReasonText, tapPremium, type ArmState } from "@/lib/premium-gifts";
 import { datRewardPop, premiumAnnounce, premiumToast } from "@/components/gifts/premium-fx";
+import { playLiveGiftVideo, preloadLiveGiftVideo } from "@/components/gifts/live-gift-video-fx";
+import { livePremiumGift } from "@/lib/live-premium-gifts";
 import { getSupabase, type Profile } from "@/lib/supabase";
 import { playerPhoto } from "@/lib/player-photo";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
@@ -341,6 +343,9 @@ export function TableSeats() {
   const premiumItems = useMemo<GiftStoreItem[]>(() => {
     if (!assets || !premiumInfo) return [];
     return premiumInfo.gifts.flatMap(g => {
+      // Zd.items: live gifts show their own icon (no atlas entry).
+      const live = livePremiumGift(g.type);
+      if (live) return [{ type: g.type, name: g.name, image: live.icon, icon: live.icon, price: g.dat, gift: {} as GiftStoreItem["gift"] }];
       const gift = assets.gifts[g.type];
       if (!gift || !gift.storeImage) return [];
       return [{ type: g.type, name: g.name, image: gift.storeImage, price: g.dat, gift }];
@@ -370,7 +375,18 @@ export function TableSeats() {
       const me = playersRef.current[VIEWER_SEAT]?.id;
       const here = getRoom().roomId === row.room_id;
       premiumAnnounce(`👑 ${row.sender_name} → ${row.receiver_name}`, announceText(row));
+      const live = livePremiumGift(row.gift_type);
       if (!here) { void playSfx(assets.sfxUrl, "boom1"); }
+      else if (live) {
+        // game_live_gift: chat line + full-screen video with sound for everyone at the table.
+        const s = profileBySeat(displaySeatOf(row.sender_id)), r = profileBySeat(displaySeatOf(row.receiver_id));
+        pushGiftLine(
+          { id: row.sender_id, name: s?.name ?? row.sender_name, photoUrl: s?.photo_url || DEFAULT_PHOTO },
+          { id: row.receiver_id, name: r?.name ?? row.receiver_name, photoUrl: r?.photo_url || DEFAULT_PHOTO },
+          { type: row.gift_type, name: `${row.gift_name} · 💎 ${row.dat}`, image: live.icon, width: 28, height: 28 },
+        );
+        playLiveGiftVideo({ video: live.video, icon: live.icon, name: row.gift_name, dat: row.dat });
+      }
       else {
         const from = displaySeatOf(row.sender_id), to = displaySeatOf(row.receiver_id);
         const meta = assets.gifts[row.gift_type];
@@ -392,6 +408,8 @@ export function TableSeats() {
     });
   }, [assets]);
   const preload = useCallback((item: GiftStoreItem) => {
+    const live = livePremiumGift(item.type);
+    if (live) { preloadLiveGiftVideo(live.video); return; }
     void tableRef.current?.preloadGift(item.gift).catch(error => console.warn(`Gift preload ${item.type}`, error));
   }, []);
   const close = useCallback(() => setTarget(closedTarget), []);

@@ -50,6 +50,8 @@ export interface GiftStoreItem {
   image: string;
   price: number;
   gift: CilizGift;
+  /** Live premium gifts carry their own icon URL instead of an atlas image. */
+  icon?: string;
   /** gifts.__store unlock conditions: vip_s needs VIP, kisses_s needs that many kisses. */
   lock?: { kind: "vip" } | { kind: "kisses"; need: number } | undefined;
 }

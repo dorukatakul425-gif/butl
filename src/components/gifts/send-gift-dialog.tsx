@@ -77,7 +77,7 @@ function GiftItem({ assets, item, onSend, onPreload, onLocked, crystal = false, 
   useEffect(() => () => { if (run.current) window.clearInterval(run.current.timer); }, []);
   const ref = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
-  const img = dialogImage(assets, item.image, 60, 60);
+  const img = item.icon ? { src: item.icon, width: 60, height: 60 } : dialogImage(assets, item.image, 60, 60);
   const hold = useRef<{ delay?: number; repeat?: number; fired: boolean; x?: number; y?: number; moved?: boolean; tapped?: boolean }>({ fired: false });
   const stopHold = () => { window.clearTimeout(hold.current.delay); window.clearInterval(hold.current.repeat); };
   useEffect(() => () => { window.clearTimeout(timer.current); stopHold(); }, []);

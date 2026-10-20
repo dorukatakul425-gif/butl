@@ -44,6 +44,7 @@
 
 - Live voice rooms join as listeners and capture microphone only on seating; reuse transceivers, serialize generation-scoped websocket signaling and recover incomplete peers on reconnect so promotion and network changes do not silently lose audio.
 - Issue short-lived TURN credentials through an authenticated server function; keep the shared relay secret only in VPS server configuration, so restrictive mobile networks work without exposing permanent relay access.
+- Premium live gifts (live_*) are DAT-only via send_premium_gift; their catalogue/media are static repo assets and the table plays the alpha video for every room member from premium_gift_events.
 - Live gifts use acknowledged room broadcasts with IDs/start timestamps; only catalogued media is rendered, and VPS media references resolve to the confirmed hosted asset origin.
 
 - Keep browser language/appearance preferences in the versioned app-preferences store, with SSR-safe Azerbaijani/light defaults and storage-event synchronization; exclude /game from appearance and translations to preserve the existing game.
