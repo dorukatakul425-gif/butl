@@ -74,3 +74,5 @@
 - Insufficient-DAT contact requires both a Telegram-linked account and current Mini App initData; open a targeted draft using the selected DAT price, never send as the player or change website purchase handling.
 - Gift coming-soon countdowns use one fixed campaign deadline shared by website and Telegram, never a per-visit or storage-derived start; expiry remains zero and never enables unimplemented purchases.
 - Telegram-only Puanlar sections (level, activity) use top_players_extra and server-counted activity_ping minutes; level is derived client-side from gift-heart points so the threshold lives in one helper.
+- Extend ordinary gift-store membership from the captured source catalog while preserving live vendor media definitions and existing authoritative prices; SQL additions must mirror client additions so every displayed gift can be purchased.
+- Entrance particles are derived from server gift levels and gender, never selected frames; cancel delayed and active effects when their room, renderer or occupant changes to prevent seat-reuse leakage.

@@ -2,6 +2,7 @@
 // server.json -> assets.json -> bundle images / spine skeletons.
 import { completeLoadingStage, failGameLoading } from "./game-loading";
 import { customFrameUrl, injectCustomFrames } from "./custom-frames";
+import { injectSourceNormalGifts } from "./source-normal-gifts";
 import type { CilizGesture, GestureEntry } from "./gestures";
 const SERVER_JSON_URL = "https://cdn-s.ciliz.com/mobile/server.json";
 
@@ -135,6 +136,7 @@ export function loadCilizAssets(): Promise<CilizAssets> {
         dialogBundles: server.assets.bundles_v2.dlg,
       } satisfies CilizAssets;
       injectCustomFrames(result);
+      injectSourceNormalGifts(result);
       return result;
     })();
     assetsPromise.catch(() => {

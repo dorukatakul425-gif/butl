@@ -1,0 +1,6705 @@
+{
+  "provenance": "ureyimsen.com/game-v2 runtime gifts.__store, captured 2026-10-20; non-premium additions only",
+  "entries": [
+    {
+      "id": "3september"
+    },
+    {
+      "id": "abcbook"
+    },
+    {
+      "id": "amurchik"
+    },
+    {
+      "id": "angelgift"
+    },
+    {
+      "id": "apple"
+    },
+    {
+      "id": "armytea"
+    },
+    {
+      "id": "astronaut"
+    },
+    {
+      "id": "astronomy"
+    },
+    {
+      "id": "babycocktail"
+    },
+    {
+      "id": "baloon"
+    },
+    {
+      "id": "banana"
+    },
+    {
+      "id": "baranki"
+    },
+    {
+      "id": "baseball1"
+    },
+    {
+      "id": "baseball2"
+    },
+    {
+      "id": "baseball3"
+    },
+    {
+      "id": "baseball4"
+    },
+    {
+      "id": "baseball5"
+    },
+    {
+      "id": "baseball6"
+    },
+    {
+      "id": "baseballde"
+    },
+    {
+      "id": "baseballtr"
+    },
+    {
+      "id": "baseballua"
+    },
+    {
+      "id": "baseballus"
+    },
+    {
+      "id": "batmanhat"
+    },
+    {
+      "id": "bayanist"
+    },
+    {
+      "id": "bbq"
+    },
+    {
+      "id": "bear6"
+    },
+    {
+      "id": "berries"
+    },
+    {
+      "id": "bikinibottom"
+    },
+    {
+      "id": "bikinitop"
+    },
+    {
+      "id": "bomb"
+    },
+    {
+      "id": "boxingglove"
+    },
+    {
+      "id": "brainicecream"
+    },
+    {
+      "id": "bretzel"
+    },
+    {
+      "id": "budenovka"
+    },
+    {
+      "id": "builderhat"
+    },
+    {
+      "id": "camera"
+    },
+    {
+      "id": "candle"
+    },
+    {
+      "id": "canteen"
+    },
+    {
+      "id": "caviar"
+    },
+    {
+      "id": "chemistry"
+    },
+    {
+      "id": "cherrypie"
+    },
+    {
+      "id": "chess"
+    },
+    {
+      "id": "chinese"
+    },
+    {
+      "id": "chocolate"
+    },
+    {
+      "id": "christmasball"
+    },
+    {
+      "id": "christmasbell"
+    },
+    {
+      "id": "christmassock"
+    },
+    {
+      "id": "clover"
+    },
+    {
+      "id": "clownhat"
+    },
+    {
+      "id": "colamentos"
+    },
+    {
+      "id": "comet"
+    },
+    {
+      "id": "compass"
+    },
+    {
+      "id": "cook"
+    },
+    {
+      "id": "cooler"
+    },
+    {
+      "id": "cosmohelmet"
+    },
+    {
+      "id": "cuckooclock"
+    },
+    {
+      "id": "darthvader"
+    },
+    {
+      "id": "deerhorns"
+    },
+    {
+      "id": "diamond"
+    },
+    {
+      "id": "diamondgift"
+    },
+    {
+      "id": "dinosaur"
+    },
+    {
+      "id": "djcap"
+    },
+    {
+      "id": "donut"
+    },
+    {
+      "id": "doshirak"
+    },
+    {
+      "id": "dove"
+    },
+    {
+      "id": "drinkaz"
+    },
+    {
+      "id": "drinkby"
+    },
+    {
+      "id": "drinkge"
+    },
+    {
+      "id": "drinkkg"
+    },
+    {
+      "id": "drinkkz"
+    },
+    {
+      "id": "drinkru"
+    },
+    {
+      "id": "drinkua"
+    },
+    {
+      "id": "drinkus"
+    },
+    {
+      "id": "drinkuz"
+    },
+    {
+      "id": "ears9b"
+    },
+    {
+      "id": "ears9c"
+    },
+    {
+      "id": "eastercake"
+    },
+    {
+      "id": "easteregg"
+    },
+    {
+      "id": "eggplant"
+    },
+    {
+      "id": "eggsbasket"
+    },
+    {
+      "id": "eggskiss"
+    },
+    {
+      "id": "elephant"
+    },
+    {
+      "id": "elvis"
+    },
+    {
+      "id": "extinguisher"
+    },
+    {
+      "id": "faberge"
+    },
+    {
+      "id": "fern"
+    },
+    {
+      "id": "fire"
+    },
+    {
+      "id": "firehorse"
+    },
+    {
+      "id": "fireman"
+    },
+    {
+      "id": "flagby"
+    },
+    {
+      "id": "flagca"
+    },
+    {
+      "id": "flagde"
+    },
+    {
+      "id": "flages"
+    },
+    {
+      "id": "flagge"
+    },
+    {
+      "id": "flaghr"
+    },
+    {
+      "id": "flagkg"
+    },
+    {
+      "id": "flagkz"
+    },
+    {
+      "id": "flagru"
+    },
+    {
+      "id": "flagtr"
+    },
+    {
+      "id": "flagua"
+    },
+    {
+      "id": "flagus"
+    },
+    {
+      "id": "flaguz"
+    },
+    {
+      "id": "flowerwreath"
+    },
+    {
+      "id": "football"
+    },
+    {
+      "id": "footballcup"
+    },
+    {
+      "id": "fruitbasket2"
+    },
+    {
+      "id": "fruitbasket3"
+    },
+    {
+      "id": "fruitbasket4"
+    },
+    {
+      "id": "funnyanimal"
+    },
+    {
+      "id": "gascan"
+    },
+    {
+      "id": "ghost"
+    },
+    {
+      "id": "gingy"
+    },
+    {
+      "id": "glintwein"
+    },
+    {
+      "id": "globe"
+    },
+    {
+      "id": "goldpot"
+    },
+    {
+      "id": "goldstar"
+    },
+    {
+      "id": "grog"
+    },
+    {
+      "id": "groundhog"
+    },
+    {
+      "id": "guitar"
+    },
+    {
+      "id": "hatservice"
+    },
+    {
+      "id": "hatvdv"
+    },
+    {
+      "id": "heartlock"
+    },
+    {
+      "id": "helmet"
+    },
+    {
+      "id": "hockey1"
+    },
+    {
+      "id": "hockey2"
+    },
+    {
+      "id": "hockey3"
+    },
+    {
+      "id": "hockey4"
+    },
+    {
+      "id": "hockeycup"
+    },
+    {
+      "id": "holigrenade"
+    },
+    {
+      "id": "hotdog"
+    },
+    {
+      "id": "japaneseroll"
+    },
+    {
+      "id": "japaneseset"
+    },
+    {
+      "id": "japanesesushi"
+    },
+    {
+      "id": "kinder"
+    },
+    {
+      "id": "leaf"
+    },
+    {
+      "id": "leninbadge"
+    },
+    {
+      "id": "lenincap"
+    },
+    {
+      "id": "lepricon"
+    },
+    {
+      "id": "liberty"
+    },
+    {
+      "id": "lionet"
+    },
+    {
+      "id": "lipstick"
+    },
+    {
+      "id": "louboutin"
+    },
+    {
+      "id": "lovecompote"
+    },
+    {
+      "id": "lovepotion"
+    },
+    {
+      "id": "magichat"
+    },
+    {
+      "id": "mandarin"
+    },
+    {
+      "id": "manygifts2"
+    },
+    {
+      "id": "manygifts3"
+    },
+    {
+      "id": "manygifts4"
+    },
+    {
+      "id": "mardigrasmask"
+    },
+    {
+      "id": "maroccantea"
+    },
+    {
+      "id": "medicalmask"
+    },
+    {
+      "id": "meldonium"
+    },
+    {
+      "id": "menorah"
+    },
+    {
+      "id": "meteorit"
+    },
+    {
+      "id": "migalka"
+    },
+    {
+      "id": "minerhat"
+    },
+    {
+      "id": "mosque"
+    },
+    {
+      "id": "mushroomsbasket"
+    },
+    {
+      "id": "nokia"
+    },
+    {
+      "id": "nytree1"
+    },
+    {
+      "id": "oilbarrel"
+    },
+    {
+      "id": "ololosh"
+    },
+    {
+      "id": "olympichat"
+    },
+    {
+      "id": "olympmedal"
+    },
+    {
+      "id": "olympwreath"
+    },
+    {
+      "id": "orange"
+    },
+    {
+      "id": "orangutan"
+    },
+    {
+      "id": "owl"
+    },
+    {
+      "id": "painterhat"
+    },
+    {
+      "id": "palette"
+    },
+    {
+      "id": "pancake"
+    },
+    {
+      "id": "pancakes"
+    },
+    {
+      "id": "panda"
+    },
+    {
+      "id": "paperhat"
+    },
+    {
+      "id": "peach"
+    },
+    {
+      "id": "perfume"
+    },
+    {
+      "id": "petcat"
+    },
+    {
+      "id": "petdog"
+    },
+    {
+      "id": "phdhat"
+    },
+    {
+      "id": "picnic"
+    },
+    {
+      "id": "pillow"
+    },
+    {
+      "id": "pinguin"
+    },
+    {
+      "id": "piratecanon"
+    },
+    {
+      "id": "pirateflag"
+    },
+    {
+      "id": "pirateparrot"
+    },
+    {
+      "id": "piratespot"
+    },
+    {
+      "id": "pirateswords"
+    },
+    {
+      "id": "plaguemask"
+    },
+    {
+      "id": "polaroid"
+    },
+    {
+      "id": "pomegranate"
+    },
+    {
+      "id": "popcorn"
+    },
+    {
+      "id": "pumpkin"
+    },
+    {
+      "id": "pumpkinpie"
+    },
+    {
+      "id": "random"
+    },
+    {
+      "id": "redwig"
+    },
+    {
+      "id": "reindeer"
+    },
+    {
+      "id": "rocket"
+    },
+    {
+      "id": "romanticcandle"
+    },
+    {
+      "id": "rosep"
+    },
+    {
+      "id": "roser"
+    },
+    {
+      "id": "rosew"
+    },
+    {
+      "id": "royalslug"
+    },
+    {
+      "id": "rzdtea"
+    },
+    {
+      "id": "safari"
+    },
+    {
+      "id": "sakura1"
+    },
+    {
+      "id": "salute"
+    },
+    {
+      "id": "samovar"
+    },
+    {
+      "id": "santa"
+    },
+    {
+      "id": "seafish"
+    },
+    {
+      "id": "seashell"
+    },
+    {
+      "id": "seastar"
+    },
+    {
+      "id": "seeds"
+    },
+    {
+      "id": "shashlik"
+    },
+    {
+      "id": "skateboard"
+    },
+    {
+      "id": "sleephat"
+    },
+    {
+      "id": "smile"
+    },
+    {
+      "id": "smilecup"
+    },
+    {
+      "id": "snegurka"
+    },
+    {
+      "id": "snowball"
+    },
+    {
+      "id": "snowdrops"
+    },
+    {
+      "id": "snowman1"
+    },
+    {
+      "id": "sofa"
+    },
+    {
+      "id": "spacecocktail"
+    },
+    {
+      "id": "spaghetti"
+    },
+    {
+      "id": "sponge"
+    },
+    {
+      "id": "springcocktail"
+    },
+    {
+      "id": "springwreath"
+    },
+    {
+      "id": "squirrel"
+    },
+    {
+      "id": "sturmtruppen"
+    },
+    {
+      "id": "submarine"
+    },
+    {
+      "id": "sunflower"
+    },
+    {
+      "id": "superbowlball"
+    },
+    {
+      "id": "superbowlcap"
+    },
+    {
+      "id": "swimmers"
+    },
+    {
+      "id": "tankhelmet"
+    },
+    {
+      "id": "tarantula"
+    },
+    {
+      "id": "taxi"
+    },
+    {
+      "id": "teapot"
+    },
+    {
+      "id": "tearssnake"
+    },
+    {
+      "id": "theatremask"
+    },
+    {
+      "id": "thermos"
+    },
+    {
+      "id": "toiletpaper1"
+    },
+    {
+      "id": "touristmug"
+    },
+    {
+      "id": "trashcan2"
+    },
+    {
+      "id": "trashcan3"
+    },
+    {
+      "id": "trashcan4"
+    },
+    {
+      "id": "trout"
+    },
+    {
+      "id": "trumpet"
+    },
+    {
+      "id": "tub"
+    },
+    {
+      "id": "turkey"
+    },
+    {
+      "id": "tyrolhat"
+    },
+    {
+      "id": "ufo"
+    },
+    {
+      "id": "unclesam"
+    },
+    {
+      "id": "valenok"
+    },
+    {
+      "id": "valentine"
+    },
+    {
+      "id": "venus"
+    },
+    {
+      "id": "watermelon"
+    },
+    {
+      "id": "weight"
+    },
+    {
+      "id": "whistle"
+    },
+    {
+      "id": "winterhat"
+    },
+    {
+      "id": "witch"
+    },
+    {
+      "id": "wreath"
+    },
+    {
+      "id": "wreathorange"
+    },
+    {
+      "id": "wreathroses"
+    },
+    {
+      "id": "wreathviolets"
+    },
+    {
+      "id": "zucchini"
+    }
+  ],
+  "gifts": {
+    "3september": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "3september"
+      ],
+      "flyImages": [
+        "g_3september"
+      ],
+      "spine": [
+        "s_3september"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_3september"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_3september",
+      "storePrice": 1,
+      "type": "3september"
+    },
+    "abcbook": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_abcbook_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_abcbook_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_abcbook_v2",
+      "storePrice": 1,
+      "type": "abcbook"
+    },
+    "amurchik": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "kissing2"
+      ],
+      "flyImages": [
+        "g_amurchik"
+      ],
+      "spine": [
+        "s_amurchik"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_amurchik"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_amurchik",
+      "storePrice": 2,
+      "type": "amurchik"
+    },
+    "angelgift": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "empty"
+      ],
+      "flyImages": [
+        "g_angelgift"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_angelgift"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_angelgift",
+      "storePrice": 1,
+      "type": "angelgift"
+    },
+    "apple": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_apple"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_apple"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_apple",
+      "storePrice": 1,
+      "type": "apple"
+    },
+    "armytea": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_armytea"
+      ],
+      "startSounds": [
+        "coffee"
+      ],
+      "stickImages": [
+        "g_armytea"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_armytea",
+      "storePrice": 1,
+      "type": "armytea"
+    },
+    "astronaut": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "empty"
+      ],
+      "flyImages": [
+        "g_astronaut",
+        "g_astronaut_ch",
+        "g_astronaut_eu",
+        "g_astronaut_ru",
+        "g_astronaut_us"
+      ],
+      "spine": [
+        "s_astronaut",
+        "s_astronaut_ch",
+        "s_astronaut_eu",
+        "s_astronaut_ru",
+        "s_astronaut_us"
+      ],
+      "startSounds": [
+        "astro"
+      ],
+      "stickImages": [
+        "g_astronaut",
+        "g_astronaut_ch",
+        "g_astronaut_eu",
+        "g_astronaut_ru",
+        "g_astronaut_us"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_astronaut",
+      "storePrice": 1,
+      "type": "astronaut"
+    },
+    "astronomy": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_astronomy_v3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_astronomy_v3"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_astronomy_v3",
+      "storePrice": 2,
+      "type": "astronomy"
+    },
+    "babycocktail": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_babycocktail"
+      ],
+      "spine": [
+        "s_babycocktail"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_babycocktail"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_babycocktail",
+      "storePrice": 2,
+      "type": "babycocktail"
+    },
+    "baloon": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "empty"
+      ],
+      "flyImages": [
+        "g_baloon1",
+        "g_baloon2",
+        "g_baloon3"
+      ],
+      "spine": [
+        "s_baloon1",
+        "s_baloon2",
+        "s_baloon3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baloon1",
+        "g_baloon2",
+        "g_baloon3"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_baloon1",
+      "storePrice": 1,
+      "type": "baloon"
+    },
+    "banana": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "monkey"
+      ],
+      "flyImages": [
+        "g_banana"
+      ],
+      "spine": [
+        "s_banana_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_banana"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_banana",
+      "storePrice": 1,
+      "type": "banana"
+    },
+    "baranki": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baranki_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baranki_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baranki_v2",
+      "storePrice": 2,
+      "type": "baranki"
+    },
+    "baseball1": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseball1"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseball1"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseball1",
+      "storePrice": 2,
+      "type": "baseball1"
+    },
+    "baseball2": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseball2_v3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseball2_v3"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseball2_v3",
+      "storePrice": 2,
+      "type": "baseball2"
+    },
+    "baseball3": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseball3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseball3"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseball3",
+      "storePrice": 2,
+      "type": "baseball3"
+    },
+    "baseball4": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseball4"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseball4"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseball4",
+      "storePrice": 2,
+      "type": "baseball4"
+    },
+    "baseball5": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseball5"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseball5"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseball5",
+      "storePrice": 2,
+      "type": "baseball5"
+    },
+    "baseball6": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseball6"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseball6"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseball6",
+      "storePrice": 2,
+      "type": "baseball6"
+    },
+    "baseballde": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseballde_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseballde_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseballde_v2",
+      "storePrice": 2,
+      "type": "baseballde"
+    },
+    "baseballtr": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseballtr_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseballtr_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseballtr_v2",
+      "storePrice": 2,
+      "type": "baseballtr"
+    },
+    "baseballua": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseballua_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseballua_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseballua_v2",
+      "storePrice": 2,
+      "type": "baseballua"
+    },
+    "baseballus": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_baseballus_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_baseballus_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_baseballus_v2",
+      "storePrice": 2,
+      "type": "baseballus"
+    },
+    "batmanhat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_batmanhat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_batmanhat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_batmanhat",
+      "storePrice": 2,
+      "type": "batmanhat"
+    },
+    "bayanist": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_bayanist_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_bayanist_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_bayanist_v2",
+      "storePrice": 2,
+      "type": "bayanist"
+    },
+    "bbq": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_bbq"
+      ],
+      "spine": [
+        "s_bbq"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_bbq"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_bbq",
+      "storePrice": 1,
+      "type": "bbq"
+    },
+    "bear6": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_bear6"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_bear6"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_bear6",
+      "storePrice": 1,
+      "type": "bear6"
+    },
+    "berries": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_berries_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_berries_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_berries_v2",
+      "storePrice": 1,
+      "type": "berries"
+    },
+    "bikinibottom": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_bikinibottom1",
+        "g_bikinibottom2"
+      ],
+      "startSounds": [
+        "whistle"
+      ],
+      "stickImages": [
+        "g_bikinibottom1",
+        "g_bikinibottom2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_bikinibottom2",
+      "storePrice": 2,
+      "type": "bikinibottom"
+    },
+    "bikinitop": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_bikinitop1",
+        "g_bikinitop2"
+      ],
+      "startSounds": [
+        "whistle"
+      ],
+      "stickImages": [
+        "g_bikinitop1",
+        "g_bikinitop2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_bikinitop2",
+      "storePrice": 2,
+      "type": "bikinitop"
+    },
+    "bomb": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "boom1",
+        "boom2"
+      ],
+      "flyImages": [
+        "g_bomb2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_bomb3",
+        "g_bomb4",
+        "g_bomb5",
+        "g_bomb6"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_bomb1",
+      "storePrice": 1,
+      "type": "bomb"
+    },
+    "boxingglove": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "punch1",
+        "punch2"
+      ],
+      "flyImages": [
+        "g_boxingglove1",
+        "g_boxingglove2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_boxingglove1",
+        "g_boxingglove2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_boxingglove1",
+      "storePrice": 1,
+      "type": "boxingglove"
+    },
+    "brainicecream": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_brainicecream_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_brainicecream_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_brainicecream_v2",
+      "storePrice": 1,
+      "type": "brainicecream"
+    },
+    "bretzel": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_bretzel"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_bretzel"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_bretzel",
+      "storePrice": 1,
+      "type": "bretzel"
+    },
+    "budenovka": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_budenovka_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_budenovka_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_budenovka_v2",
+      "storePrice": 2,
+      "type": "budenovka"
+    },
+    "builderhat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_builderhat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_builderhat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_builderhat",
+      "storePrice": 2,
+      "type": "builderhat"
+    },
+    "camera": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_camera"
+      ],
+      "spine": [
+        "s_camera"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_camera"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_camera",
+      "storePrice": 1,
+      "type": "camera"
+    },
+    "candle": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_candle_v2"
+      ],
+      "spine": [
+        "s_candle_v2"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_candle_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_candle_v2",
+      "storePrice": 1,
+      "type": "candle"
+    },
+    "canteen": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_canteen_v2"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_canteen_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_canteen_v2",
+      "storePrice": 1,
+      "type": "canteen"
+    },
+    "caviar": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_caviar"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_caviar"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_caviar",
+      "storePrice": 1,
+      "type": "caviar"
+    },
+    "chemistry": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_chemistry_v2"
+      ],
+      "spine": [
+        "s_chemistry_v2"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_chemistry_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_chemistry_v2",
+      "storePrice": 1,
+      "type": "chemistry"
+    },
+    "cherrypie": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_cherrypie"
+      ],
+      "spine": [
+        "s_cherrypie"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_cherrypie"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_cherrypie",
+      "storePrice": 2,
+      "type": "cherrypie"
+    },
+    "chess": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "horse"
+      ],
+      "flyImages": [
+        "g_chess"
+      ],
+      "spine": [
+        "s_chess"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_chess"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_chess",
+      "storePrice": 1,
+      "type": "chess"
+    },
+    "chinese": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_chinese"
+      ],
+      "spine": [
+        "s_chinese"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_chinese"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_chinese",
+      "storePrice": 1,
+      "type": "chinese"
+    },
+    "chocolate": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "snow4"
+      ],
+      "flyImages": [
+        "g_chocolate"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_chocolate"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_chocolate",
+      "storePrice": 1,
+      "type": "chocolate"
+    },
+    "christmasball": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_christmasball"
+      ],
+      "spine": [
+        "s_christmasball"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_christmasball"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_christmasball",
+      "storePrice": 1,
+      "type": "christmasball"
+    },
+    "christmasbell": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_christmasbell2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_christmasbell2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_christmasbell1",
+      "storePrice": 2,
+      "type": "christmasbell"
+    },
+    "christmassock": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_christmassock2_v2"
+      ],
+      "startSounds": [
+        "bells"
+      ],
+      "stickImages": [
+        "g_christmassock2_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_christmassock1_v2",
+      "storePrice": 2,
+      "type": "christmassock"
+    },
+    "clover": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_clover1",
+        "g_clover2",
+        "g_clover3",
+        "g_clover4"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_clover1",
+        "g_clover2",
+        "g_clover3",
+        "g_clover4"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_clover1",
+      "storePrice": 1,
+      "type": "clover"
+    },
+    "clownhat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_clownhat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_clownhat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_clownhat",
+      "storePrice": 2,
+      "type": "clownhat"
+    },
+    "colamentos": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "colamentos"
+      ],
+      "flyImages": [
+        "g_colamentos1"
+      ],
+      "spine": [
+        "s_colamentos"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_colamentos2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_colamentos",
+      "storePrice": 2,
+      "type": "colamentos"
+    },
+    "comet": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "boom1",
+        "boom2"
+      ],
+      "flyImages": [
+        "g_comet2",
+        "g_comet3",
+        "g_comet4",
+        "g_comet5"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_comet6"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_comet1",
+      "storePrice": 1,
+      "type": "comet",
+      "vfx": "magic"
+    },
+    "compass": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_compass"
+      ],
+      "spine": [
+        "s_compass"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_compass"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_compass",
+      "storePrice": 1,
+      "type": "compass"
+    },
+    "cook": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_cook_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_cook_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_cook_v2",
+      "storePrice": 2,
+      "type": "cook",
+      "vkMedia": "photo17075769_457239607"
+    },
+    "cooler": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_cooler_v2"
+      ],
+      "spine": [
+        "s_cooler_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_cooler_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_cooler_v2",
+      "storePrice": 1,
+      "type": "cooler"
+    },
+    "cosmohelmet": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_cosmohelmet_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_cosmohelmet_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_cosmohelmet_v2",
+      "storePrice": 2,
+      "type": "cosmohelmet"
+    },
+    "cuckooclock": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "cuckoo"
+      ],
+      "flyImages": [
+        "g_cuckooclock"
+      ],
+      "spine": [
+        "s_cuckooclock_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_cuckooclock"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_cuckooclock",
+      "storePrice": 1,
+      "type": "cuckooclock"
+    },
+    "darthvader": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_darthvader"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_darthvader"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_darthvader",
+      "storePrice": 2,
+      "type": "darthvader"
+    },
+    "deerhorns": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_deerhorns"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_deerhorns"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_deerhorns",
+      "storePrice": 2,
+      "type": "deerhorns"
+    },
+    "diamond": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_diamond"
+      ],
+      "spine": [
+        "s_diamond"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_diamond"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_diamond",
+      "storePrice": 1,
+      "type": "diamond"
+    },
+    "diamondgift": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_diamondgift"
+      ],
+      "spine": [
+        "s_diamond"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_diamondgift"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_diamondgift",
+      "storePrice": 1,
+      "type": "diamondgift"
+    },
+    "dinosaur": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "clang"
+      ],
+      "flyImages": [
+        "g_dinosaur"
+      ],
+      "spine": [
+        "s_dinosaur"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_dinosaur"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_dinosaur",
+      "storePrice": 2,
+      "type": "dinosaur"
+    },
+    "djcap": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_djcap"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_djcap"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_djcap",
+      "storePrice": 2,
+      "type": "djcap"
+    },
+    "donut": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_donut1",
+        "g_donut2",
+        "g_donut3",
+        "g_donut4",
+        "g_donut5",
+        "g_donut6",
+        "g_donut7",
+        "g_donut8"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_donut1",
+        "g_donut2",
+        "g_donut3",
+        "g_donut4",
+        "g_donut5",
+        "g_donut6",
+        "g_donut7",
+        "g_donut8"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_donut1",
+      "storePrice": 1,
+      "type": "donut"
+    },
+    "doshirak": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_doshirak1"
+      ],
+      "spine": [
+        "s_doshirak"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_doshirak2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_doshirak1",
+      "storePrice": 1,
+      "type": "doshirak"
+    },
+    "dove": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_dove"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_dove"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_dove",
+      "storePrice": 1,
+      "type": "dove"
+    },
+    "drinkaz": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_drinkaz"
+      ],
+      "spine": [
+        "s_drinkaz"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_drinkaz"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_drinkaz",
+      "storePrice": 1,
+      "type": "drinkaz"
+    },
+    "drinkby": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_drinkby"
+      ],
+      "spine": [
+        "s_drinkby"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_drinkby"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_drinkby",
+      "storePrice": 1,
+      "type": "drinkby"
+    },
+    "drinkge": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_drinkge"
+      ],
+      "spine": [
+        "s_drinkge"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_drinkge"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_drinkge",
+      "storePrice": 1,
+      "type": "drinkge"
+    },
+    "drinkkg": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_drinkkg"
+      ],
+      "spine": [
+        "s_drinkkg"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_drinkkg"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_drinkkg",
+      "storePrice": 1,
+      "type": "drinkkg"
+    },
+    "drinkkz": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_drinkkz"
+      ],
+      "spine": [
+        "s_drinkkz"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_drinkkz"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_drinkkz",
+      "storePrice": 1,
+      "type": "drinkkz"
+    },
+    "drinkru": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_drinkru"
+      ],
+      "spine": [
+        "s_drinkru"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_drinkru"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_drinkru",
+      "storePrice": 1,
+      "type": "drinkru"
+    },
+    "drinkua": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_drinkua"
+      ],
+      "spine": [
+        "s_drinkua"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_drinkua"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_drinkua",
+      "storePrice": 1,
+      "type": "drinkua"
+    },
+    "drinkus": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_drinkus"
+      ],
+      "spine": [
+        "s_drinkus"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_drinkus"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_drinkus",
+      "storePrice": 1,
+      "type": "drinkus"
+    },
+    "drinkuz": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_drinkuz"
+      ],
+      "spine": [
+        "s_drinkuz"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_drinkuz"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_drinkuz",
+      "storePrice": 1,
+      "type": "drinkuz"
+    },
+    "ears9b": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_ears9b"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_ears9b"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_ears9b",
+      "storePrice": 2,
+      "type": "ears9b"
+    },
+    "ears9c": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_ears9c"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_ears9c"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_ears9c",
+      "storePrice": 2,
+      "type": "ears9c"
+    },
+    "eastercake": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_eastercake1",
+        "g_eastercake2",
+        "g_eastercake3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_eastercake1",
+        "g_eastercake2",
+        "g_eastercake3"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_eastercake1",
+      "storePrice": 1,
+      "type": "eastercake"
+    },
+    "easteregg": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_easteregg1",
+        "g_easteregg2",
+        "g_easteregg3",
+        "g_easteregg4",
+        "g_easteregg5",
+        "g_easteregg6"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_easteregg1",
+        "g_easteregg2",
+        "g_easteregg3",
+        "g_easteregg4",
+        "g_easteregg5",
+        "g_easteregg6"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_easteregg1",
+      "storePrice": 1,
+      "type": "easteregg"
+    },
+    "eggplant": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "eggplant"
+      ],
+      "flyImages": [
+        "g_eggplant_v2"
+      ],
+      "spine": [
+        "s_eggplant"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_eggplant_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_eggplant_v2",
+      "storePrice": 1,
+      "type": "eggplant"
+    },
+    "eggsbasket": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_eggsbasket_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_eggsbasket_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_eggsbasket_v2",
+      "storePrice": 1,
+      "type": "eggsbasket"
+    },
+    "eggskiss": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "kissing2"
+      ],
+      "flyImages": [
+        "g_eggskiss"
+      ],
+      "spine": [
+        "s_eggskiss"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_eggskiss"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_eggskiss",
+      "storePrice": 2,
+      "type": "eggskiss"
+    },
+    "elephant": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "dance"
+      ],
+      "flyImages": [
+        "g_elephant"
+      ],
+      "spine": [
+        "s_elephant"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_elephant"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_elephant",
+      "storePrice": 1,
+      "type": "elephant"
+    },
+    "elvis": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_elvis2_v2"
+      ],
+      "startSounds": [
+        "bells"
+      ],
+      "stickImages": [
+        "g_elvis2_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_elvis1_v2",
+      "storePrice": 2,
+      "type": "elvis"
+    },
+    "extinguisher": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_extinguisher"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_extinguisher"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_extinguisher",
+      "storePrice": 1,
+      "type": "extinguisher"
+    },
+    "faberge": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_faberge"
+      ],
+      "spine": [
+        "s_faberge"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_faberge"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_faberge",
+      "storePrice": 1,
+      "type": "faberge"
+    },
+    "fern": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_fern"
+      ],
+      "spine": [
+        "s_fern"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_fern"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_fern",
+      "storePrice": 1,
+      "type": "fern"
+    },
+    "fire": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_fire_v2"
+      ],
+      "spine": [
+        "s_fire_v2"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_fire_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_fire_v2",
+      "storePrice": 1,
+      "type": "fire"
+    },
+    "firehorse": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "horse"
+      ],
+      "flyImages": [
+        "g_firehorse"
+      ],
+      "spine": [
+        "s_firehorse"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_firehorse"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_firehorse",
+      "storePrice": 3,
+      "type": "firehorse"
+    },
+    "fireman": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_fireman"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_fireman"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_fireman",
+      "storePrice": 2,
+      "type": "fireman"
+    },
+    "flagby": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagby"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagby"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagby",
+      "storePrice": 1,
+      "type": "flagby"
+    },
+    "flagca": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagca"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagca"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagca",
+      "storePrice": 1,
+      "type": "flagca"
+    },
+    "flagde": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagde"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagde"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagde",
+      "storePrice": 1,
+      "type": "flagde"
+    },
+    "flages": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flages"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flages"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flages",
+      "storePrice": 1,
+      "type": "flages"
+    },
+    "flagge": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagge"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagge"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagge",
+      "storePrice": 1,
+      "type": "flagge"
+    },
+    "flaghr": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flaghr"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flaghr"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flaghr",
+      "storePrice": 1,
+      "type": "flaghr"
+    },
+    "flagkg": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagkg"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagkg"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagkg",
+      "storePrice": 1,
+      "type": "flagkg"
+    },
+    "flagkz": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagkz"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagkz"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagkz",
+      "storePrice": 1,
+      "type": "flagkz"
+    },
+    "flagru": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagru"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagru"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagru",
+      "storePrice": 1,
+      "type": "flagru"
+    },
+    "flagtr": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagtr"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagtr"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagtr",
+      "storePrice": 1,
+      "type": "flagtr"
+    },
+    "flagua": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagua"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagua"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagua",
+      "storePrice": 1,
+      "type": "flagua"
+    },
+    "flagus": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flagus"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flagus"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flagus",
+      "storePrice": 1,
+      "type": "flagus"
+    },
+    "flaguz": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_flaguz"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flaguz"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_flaguz",
+      "storePrice": 1,
+      "type": "flaguz"
+    },
+    "flowerwreath": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_flowerwreath_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_flowerwreath_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_flowerwreath_v2",
+      "storePrice": 2,
+      "type": "flowerwreath"
+    },
+    "football": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_football"
+      ],
+      "spine": [
+        "s_football_v2"
+      ],
+      "startSounds": [
+        "football"
+      ],
+      "stickImages": [
+        "g_football"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_football",
+      "storePrice": 1,
+      "type": "football"
+    },
+    "footballcup": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_footballcup"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_footballcup"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_footballcup",
+      "storePrice": 1,
+      "type": "footballcup"
+    },
+    "fruitbasket2": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_fruitbasket2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_fruitbasket2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_fruitbasket2",
+      "storePrice": 2,
+      "type": "fruitbasket2"
+    },
+    "fruitbasket3": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_fruitbasket3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_fruitbasket3"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_fruitbasket3",
+      "storePrice": 2,
+      "type": "fruitbasket3"
+    },
+    "fruitbasket4": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_fruitbasket4"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_fruitbasket4"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_fruitbasket4",
+      "storePrice": 2,
+      "type": "fruitbasket4"
+    },
+    "funnyanimal": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_funnyanimal"
+      ],
+      "spine": [
+        "s_funnyanimal"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_funnyanimal"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_funnyanimal",
+      "storePrice": 1,
+      "type": "funnyanimal"
+    },
+    "gascan": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_gascan_1",
+        "g_gascan_2",
+        "g_gascan_3"
+      ],
+      "spine": [
+        "s_gascan_1",
+        "s_gascan_2",
+        "s_gascan_3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_gascan_1",
+        "g_gascan_2",
+        "g_gascan_3"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_gascan_3",
+      "storePrice": 3,
+      "type": "gascan"
+    },
+    "ghost": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_ghost1_v2",
+        "g_ghost2_v2",
+        "g_ghost3_v2",
+        "g_ghost4_v2"
+      ],
+      "startSounds": [
+        "ghost"
+      ],
+      "stickImages": [
+        "g_ghost1_v2",
+        "g_ghost2_v2",
+        "g_ghost3_v2",
+        "g_ghost4_v2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_ghost1_v2",
+      "storePrice": 1,
+      "type": "ghost"
+    },
+    "gingy": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_gingy"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_gingy"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_gingy",
+      "storePrice": 1,
+      "type": "gingy"
+    },
+    "glintwein": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_glintwein"
+      ],
+      "spine": [
+        "s_glintwein"
+      ],
+      "startSounds": [
+        "coffee"
+      ],
+      "stickImages": [
+        "g_glintwein"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_glintwein",
+      "storePrice": 1,
+      "type": "glintwein"
+    },
+    "globe": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_globe_v2"
+      ],
+      "spine": [
+        "s_globe"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_globe_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_globe_v2",
+      "storePrice": 1,
+      "type": "globe"
+    },
+    "goldpot": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_goldpot"
+      ],
+      "spine": [
+        "s_goldpot"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_goldpot"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_goldpot",
+      "storePrice": 1,
+      "type": "goldpot"
+    },
+    "goldstar": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_goldstar"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_goldstar"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_goldstar",
+      "storePrice": 1,
+      "type": "goldstar"
+    },
+    "grog": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_grog"
+      ],
+      "spine": [
+        "s_grog"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_grog"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_grog",
+      "storePrice": 1,
+      "type": "grog"
+    },
+    "groundhog": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_groundhog"
+      ],
+      "spine": [
+        "s_groundhog"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_groundhog"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_groundhog",
+      "storePrice": 1,
+      "type": "groundhog"
+    },
+    "guitar": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_guitar2"
+      ],
+      "startSounds": [
+        "guitar"
+      ],
+      "stickImages": [
+        "g_guitar2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_guitar1",
+      "storePrice": 1,
+      "type": "guitar"
+    },
+    "hatservice": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_hatservice_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_hatservice_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_hatservice_v2",
+      "storePrice": 2,
+      "type": "hatservice"
+    },
+    "hatvdv": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_hatvdv_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_hatvdv_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_hatvdv_v2",
+      "storePrice": 2,
+      "type": "hatvdv"
+    },
+    "heartlock": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_heartlock"
+      ],
+      "spine": [
+        "s_heartlock"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_heartlock"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_heartlock",
+      "storePrice": 1,
+      "type": "heartlock"
+    },
+    "helmet": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_helmet_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_helmet_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_helmet_v2",
+      "storePrice": 2,
+      "type": "helmet"
+    },
+    "hockey1": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_hockey1"
+      ],
+      "startSounds": [
+        "hockey"
+      ],
+      "stickImages": [
+        "g_hockey1"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_hockey1",
+      "storePrice": 2,
+      "type": "hockey1"
+    },
+    "hockey2": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_hockey2"
+      ],
+      "startSounds": [
+        "hockey"
+      ],
+      "stickImages": [
+        "g_hockey2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_hockey2",
+      "storePrice": 2,
+      "type": "hockey2"
+    },
+    "hockey3": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_hockey3"
+      ],
+      "startSounds": [
+        "hockey"
+      ],
+      "stickImages": [
+        "g_hockey3"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_hockey3",
+      "storePrice": 2,
+      "type": "hockey3"
+    },
+    "hockey4": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_hockey4"
+      ],
+      "startSounds": [
+        "hockey"
+      ],
+      "stickImages": [
+        "g_hockey4"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_hockey4",
+      "storePrice": 2,
+      "type": "hockey4"
+    },
+    "hockeycup": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_hockeycup"
+      ],
+      "spine": [
+        "s_hockeycup"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_hockeycup"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_hockeycup",
+      "storePrice": 1,
+      "type": "hockeycup"
+    },
+    "holigrenade": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "boom1",
+        "boom2"
+      ],
+      "flyImages": [
+        "g_holigrenade1_v2",
+        "g_holigrenade1_v2",
+        "g_holigrenade1_v2",
+        "g_holigrenade1_v2",
+        "g_holigrenade1_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_holigrenade2_v2",
+        "g_holigrenade3_v2",
+        "g_holigrenade4_v2",
+        "g_holigrenade5_v2",
+        "g_holigrenade6_v2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_holigrenade1_v2",
+      "storePrice": 1,
+      "type": "holigrenade"
+    },
+    "hotdog": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_hotdog"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_hotdog"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_hotdog",
+      "storePrice": 1,
+      "type": "hotdog"
+    },
+    "japaneseroll": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_japaneseroll"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_japaneseroll"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_japaneseroll",
+      "storePrice": 1,
+      "type": "japaneseroll"
+    },
+    "japaneseset": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_japaneseset"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_japaneseset"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_japaneseset",
+      "storePrice": 1,
+      "type": "japaneseset"
+    },
+    "japanesesushi": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_japanesesushi"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_japanesesushi"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_japanesesushi",
+      "storePrice": 1,
+      "type": "japanesesushi"
+    },
+    "kinder": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "snow2"
+      ],
+      "flyImages": [
+        "g_kinder1_v2"
+      ],
+      "spine": [
+        "s_kinder2_v2",
+        "s_kinder3_v2",
+        "s_kinder4_v2",
+        "s_kinder5_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_kinder2_v2",
+        "g_kinder3_v2",
+        "g_kinder4_v2",
+        "g_kinder5_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_kinder1_v2",
+      "storePrice": 1,
+      "type": "kinder"
+    },
+    "leaf": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_leaf1_v2",
+        "g_leaf2_v2",
+        "g_leaf3_v2",
+        "g_leaf4_v2",
+        "g_leaf5_v2",
+        "g_leaf6_v2",
+        "g_leaf7_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_leaf1_v2",
+        "g_leaf2_v2",
+        "g_leaf3_v2",
+        "g_leaf4_v2",
+        "g_leaf5_v2",
+        "g_leaf6_v2",
+        "g_leaf7_v2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_leaf1_v2",
+      "storePrice": 1,
+      "type": "leaf"
+    },
+    "leninbadge": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_leninbadge1",
+        "g_leninbadge2",
+        "g_leninbadge3",
+        "g_leninbadge4"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_leninbadge1",
+        "g_leninbadge2",
+        "g_leninbadge3",
+        "g_leninbadge4"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_leninbadge1",
+      "storePrice": 1,
+      "type": "leninbadge"
+    },
+    "lenincap": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_lenincap_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_lenincap_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_lenincap_v2",
+      "storePrice": 2,
+      "type": "lenincap"
+    },
+    "lepricon": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_lepricon"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_lepricon"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_lepricon",
+      "storePrice": 2,
+      "type": "lepricon"
+    },
+    "liberty": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_liberty"
+      ],
+      "spine": [
+        "s_liberty"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_liberty"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_liberty",
+      "storePrice": 1,
+      "type": "liberty"
+    },
+    "lionet": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "empty"
+      ],
+      "flyImages": [
+        "g_lionet"
+      ],
+      "spine": [
+        "s_lionet"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_lionet"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_lionet",
+      "storePrice": 2,
+      "type": "lionet"
+    },
+    "lipstick": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_lipstick"
+      ],
+      "spine": [
+        "s_lipstick"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_lipstick"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_lipstick",
+      "storePrice": 1,
+      "type": "lipstick"
+    },
+    "louboutin": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_louboutin"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_louboutin"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_louboutin",
+      "storePrice": 3,
+      "type": "louboutin"
+    },
+    "lovecompote": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_lovecompote"
+      ],
+      "spine": [
+        "s_lovecompote"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_lovecompote"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_lovecompote",
+      "storePrice": 3,
+      "type": "lovecompote"
+    },
+    "lovepotion": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_lovepotion_v2"
+      ],
+      "spine": [
+        "s_lovepotion_v2"
+      ],
+      "startSounds": [
+        "coffee"
+      ],
+      "stickImages": [
+        "g_lovepotion_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_lovepotion_v2",
+      "storePrice": 1,
+      "type": "lovepotion"
+    },
+    "magichat": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_magichat1"
+      ],
+      "spine": [
+        "s_magichat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_magichat2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_magichat1",
+      "storePrice": 1,
+      "type": "magichat"
+    },
+    "mandarin": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "empty"
+      ],
+      "flyImages": [
+        "g_mandarin1"
+      ],
+      "spine": [
+        "s_mandarin"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_mandarin2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_mandarin1",
+      "storePrice": 1,
+      "type": "mandarin"
+    },
+    "manygifts2": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "pillow"
+      ],
+      "flyImages": [
+        "g_manygifts2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_manygifts2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_manygifts2",
+      "storePrice": 2,
+      "type": "manygifts2"
+    },
+    "manygifts3": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "pillow"
+      ],
+      "flyImages": [
+        "g_manygifts3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_manygifts3"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_manygifts3",
+      "storePrice": 2,
+      "type": "manygifts3"
+    },
+    "manygifts4": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "pillow"
+      ],
+      "flyImages": [
+        "g_manygifts4"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_manygifts4"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_manygifts4",
+      "storePrice": 2,
+      "type": "manygifts4"
+    },
+    "mardigrasmask": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_mardigrasmask"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_mardigrasmask"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_mardigrasmask",
+      "storePrice": 2,
+      "type": "mardigrasmask"
+    },
+    "maroccantea": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_maroccantea"
+      ],
+      "spine": [
+        "s_maroccantea"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_maroccantea"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_maroccantea",
+      "storePrice": 1,
+      "type": "maroccantea"
+    },
+    "medicalmask": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_medicalmask1",
+        "g_medicalmask2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_medicalmask1",
+        "g_medicalmask2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_medicalmask1",
+      "storePrice": 1,
+      "type": "medicalmask"
+    },
+    "meldonium": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_meldonium"
+      ],
+      "spine": [
+        "s_meldonium"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_meldonium"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_meldonium",
+      "storePrice": 1,
+      "type": "meldonium"
+    },
+    "menorah": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_menorah1"
+      ],
+      "spine": [
+        "s_menorah"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_menorah2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_menorah2",
+      "storePrice": 1,
+      "type": "menorah"
+    },
+    "meteorit": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "boom1",
+        "boom2"
+      ],
+      "flyImages": [
+        "g_meteorit2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_meteorit3",
+        "g_meteorit4"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_meteorit1",
+      "storePrice": 1,
+      "type": "meteorit"
+    },
+    "migalka": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_migalka"
+      ],
+      "spine": [
+        "s_migalka"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_migalka"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_migalka",
+      "storePrice": 2,
+      "type": "migalka"
+    },
+    "minerhat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_minerhat"
+      ],
+      "spine": [
+        "s_minerhat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_minerhat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_minerhat",
+      "storePrice": 2,
+      "type": "minerhat"
+    },
+    "mosque": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_mosque"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_mosque"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_mosque",
+      "storePrice": 1,
+      "type": "mosque"
+    },
+    "mushroomsbasket": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_mushroomsbasket"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_mushroomsbasket"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_mushroomsbasket",
+      "storePrice": 1,
+      "type": "mushroomsbasket"
+    },
+    "nokia": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "nokia"
+      ],
+      "flyImages": [
+        "g_nokia"
+      ],
+      "spine": [
+        "s_nokia"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_nokia"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_nokia",
+      "storePrice": 2,
+      "type": "nokia"
+    },
+    "nytree1": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_nytree1"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_nytree1"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_nytree1",
+      "storePrice": 1,
+      "type": "nytree1"
+    },
+    "oilbarrel": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_oilbarrel"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_oilbarrel"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_oilbarrel",
+      "storePrice": 1,
+      "type": "oilbarrel"
+    },
+    "ololosh": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_ololosh_v2"
+      ],
+      "spine": [
+        "s_ololosh_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_ololosh_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_ololosh_v2",
+      "storePrice": 2,
+      "type": "ololosh"
+    },
+    "olympichat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_olympichat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_olympichat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_olympichat",
+      "storePrice": 2,
+      "type": "olympichat"
+    },
+    "olympmedal": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_olympmedal1",
+        "g_olympmedal2",
+        "g_olympmedal3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_olympmedal1",
+        "g_olympmedal2",
+        "g_olympmedal3"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_olympmedal1",
+      "storePrice": 1,
+      "type": "olympmedal"
+    },
+    "olympwreath": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_olympwreath"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_olympwreath"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_olympwreath",
+      "storePrice": 2,
+      "type": "olympwreath"
+    },
+    "orange": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tomato1",
+        "tomato2"
+      ],
+      "flyImages": [
+        "g_orange1"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_orange2",
+        "g_orange3",
+        "g_orange4",
+        "g_orange5"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_orange1",
+      "storePrice": 1,
+      "type": "orange"
+    },
+    "orangutan": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "empty"
+      ],
+      "flyImages": [
+        "g_orangutan"
+      ],
+      "spine": [
+        "s_orangutan"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_orangutan"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_orangutan",
+      "storePrice": 1,
+      "type": "orangutan"
+    },
+    "owl": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_owl"
+      ],
+      "spine": [
+        "s_owl"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_owl"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_owl",
+      "storePrice": 1,
+      "type": "owl"
+    },
+    "painterhat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_painterhat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_painterhat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_painterhat",
+      "storePrice": 2,
+      "type": "painterhat"
+    },
+    "palette": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_palette"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_palette"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_palette",
+      "storePrice": 1,
+      "type": "palette"
+    },
+    "pancake": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_pancake1_v2",
+        "g_pancake2_v2",
+        "g_pancake3_v2",
+        "g_pancake4_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_pancake1_v2",
+        "g_pancake2_v2",
+        "g_pancake3_v2",
+        "g_pancake4_v2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_pancake1_v2",
+      "storePrice": 1,
+      "type": "pancake"
+    },
+    "pancakes": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_pancakes"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_pancakes"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_pancakes",
+      "storePrice": 1,
+      "type": "pancakes"
+    },
+    "panda": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_panda_v2"
+      ],
+      "spine": [
+        "s_panda_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_panda_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_panda_v2",
+      "storePrice": 1,
+      "type": "panda"
+    },
+    "paperhat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_paperhat_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_paperhat_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_paperhat_v2",
+      "storePrice": 2,
+      "type": "paperhat"
+    },
+    "peach": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "whistle"
+      ],
+      "flyImages": [
+        "g_peach"
+      ],
+      "spine": [
+        "s_peach"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_peach"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_peach",
+      "storePrice": 1,
+      "type": "peach"
+    },
+    "perfume": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "spray"
+      ],
+      "flyImages": [
+        "g_perfume"
+      ],
+      "spine": [
+        "s_perfume"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_perfume"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_perfume",
+      "storePrice": 1,
+      "type": "perfume"
+    },
+    "petcat": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "cat"
+      ],
+      "flyImages": [
+        "g_petcat_v2"
+      ],
+      "spine": [
+        "s_petcat_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_petcat_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_petcat_v2",
+      "storePrice": 3,
+      "type": "petcat"
+    },
+    "petdog": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_petdog_v2"
+      ],
+      "spine": [
+        "s_petdog_v2"
+      ],
+      "startSounds": [
+        "dog",
+        "bark"
+      ],
+      "stickImages": [
+        "g_petdog_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_petdog_v2",
+      "storePrice": 3,
+      "type": "petdog"
+    },
+    "phdhat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_phdhat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_phdhat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_phdhat_store",
+      "storePrice": 2,
+      "type": "phdhat"
+    },
+    "picnic": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_picnic"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_picnic"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_picnic",
+      "storePrice": 1,
+      "type": "picnic"
+    },
+    "pillow": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "pillow"
+      ],
+      "flyImages": [
+        "g_pillow"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_pillow"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_pillow",
+      "storePrice": 1,
+      "type": "pillow"
+    },
+    "pinguin": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "empty"
+      ],
+      "flyImages": [
+        "g_pinguin"
+      ],
+      "spine": [
+        "s_pinguin"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_pinguin"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_pinguin",
+      "storePrice": 1,
+      "type": "pinguin"
+    },
+    "piratecanon": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_piratecanon"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_piratecanon"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_piratecanon",
+      "storePrice": 1,
+      "type": "piratecanon"
+    },
+    "pirateflag": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_pirateflag"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_pirateflag"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_pirateflag",
+      "storePrice": 1,
+      "type": "pirateflag"
+    },
+    "pirateparrot": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_pirateparrot"
+      ],
+      "spine": [
+        "s_pirateparrot"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_pirateparrot"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_pirateparrot",
+      "storePrice": 1,
+      "type": "pirateparrot"
+    },
+    "piratespot": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_piratespot"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_piratespot"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_piratespot",
+      "storePrice": 1,
+      "type": "piratespot"
+    },
+    "pirateswords": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_pirateswords"
+      ],
+      "spine": [
+        "s_pirateswords_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_pirateswords"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_pirateswords",
+      "storePrice": 1,
+      "type": "pirateswords"
+    },
+    "plaguemask": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_plaguemask"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_plaguemask"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_plaguemask_store",
+      "storePrice": 2,
+      "type": "plaguemask"
+    },
+    "polaroid": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_polaroid1",
+        "g_polaroid2",
+        "g_polaroid3",
+        "g_polaroid4",
+        "g_polaroid5"
+      ],
+      "spine": [
+        "s_polaroid1",
+        "s_polaroid2",
+        "s_polaroid3",
+        "s_polaroid4",
+        "s_polaroid5"
+      ],
+      "startSounds": [
+        "photo"
+      ],
+      "stickImages": [
+        "g_polaroid1",
+        "g_polaroid2",
+        "g_polaroid3",
+        "g_polaroid4",
+        "g_polaroid5"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_polaroid",
+      "storePrice": 1,
+      "type": "polaroid"
+    },
+    "pomegranate": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_pomegranate"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_pomegranate"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_pomegranate",
+      "storePrice": 1,
+      "type": "pomegranate"
+    },
+    "popcorn": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "popcorn"
+      ],
+      "flyImages": [
+        "g_popcorn1",
+        "g_popcorn2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_popcorn1",
+        "g_popcorn2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_popcorn1",
+      "storePrice": 1,
+      "type": "popcorn"
+    },
+    "pumpkin": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_pumpkin1_v2",
+        "g_pumpkin2_v2",
+        "g_pumpkin3_v2",
+        "g_pumpkin4_v2"
+      ],
+      "startSounds": [
+        "witch_laughter_1",
+        "witch_laughter_2"
+      ],
+      "stickImages": [
+        "g_pumpkin1_v2",
+        "g_pumpkin2_v2",
+        "g_pumpkin3_v2",
+        "g_pumpkin4_v2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_pumpkin1_v2",
+      "storePrice": 1,
+      "type": "pumpkin"
+    },
+    "pumpkinpie": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_pumpkinpie"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_pumpkinpie"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_pumpkinpie",
+      "storePrice": 1,
+      "type": "pumpkinpie"
+    },
+    "random": {
+      "category": "random",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_dice"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_dice"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_dice",
+      "storePrice": 1,
+      "type": "random"
+    },
+    "redwig": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_redwig2"
+      ],
+      "startSounds": [
+        "scissors"
+      ],
+      "stickImages": [
+        "g_redwig2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_redwig1",
+      "storePrice": 2,
+      "type": "redwig"
+    },
+    "reindeer": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_reindeer_v2"
+      ],
+      "spine": [
+        "s_reindeer_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_reindeer_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_reindeer_v2",
+      "storePrice": 1,
+      "type": "reindeer"
+    },
+    "rocket": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_rocket"
+      ],
+      "spine": [
+        "s_rocket"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_rocket"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_rocket",
+      "storePrice": 1,
+      "type": "rocket"
+    },
+    "romanticcandle": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_romanticcandle1_v3"
+      ],
+      "spine": [
+        "s_romanticcandle"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_romanticcandle2_v3"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_romanticcandle2_v3",
+      "storePrice": 1,
+      "type": "romanticcandle"
+    },
+    "rosep": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_rose7_v2",
+        "g_rose8_v2",
+        "g_rose9_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_rose7_v2",
+        "g_rose8_v2",
+        "g_rose9_v2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_rose7_v2",
+      "storePrice": 1,
+      "type": "rosep"
+    },
+    "roser": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_rose4_v2",
+        "g_rose5_v2",
+        "g_rose6_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_rose4_v2",
+        "g_rose5_v2",
+        "g_rose6_v2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_rose4_v2",
+      "storePrice": 1,
+      "type": "roser"
+    },
+    "rosew": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_rose1_v2",
+        "g_rose2_v2",
+        "g_rose3_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_rose1_v2",
+        "g_rose2_v2",
+        "g_rose3_v2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_rose1_v2",
+      "storePrice": 1,
+      "type": "rosew"
+    },
+    "royalslug": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "slug1"
+      ],
+      "flyImages": [
+        "g_slug_4_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_slug_4_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_slug_1_v2",
+      "storePrice": 2,
+      "type": "royalslug"
+    },
+    "rzdtea": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_rzdtea"
+      ],
+      "spine": [
+        "s_rzdtea"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_rzdtea"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_rzdtea",
+      "storePrice": 1,
+      "type": "rzdtea"
+    },
+    "safari": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_safari"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_safari"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_safari",
+      "storePrice": 2,
+      "type": "safari"
+    },
+    "sakura1": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_sakura1"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_sakura1"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_sakura1",
+      "storePrice": 1,
+      "type": "sakura1"
+    },
+    "salute": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "boom1",
+        "boom2"
+      ],
+      "flyImages": [
+        "g_salute2",
+        "g_salute3",
+        "g_salute4"
+      ],
+      "spine": [
+        "s_salute2",
+        "s_salute3",
+        "s_salute4"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_salute5",
+        "g_salute6",
+        "g_salute7"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_salute1",
+      "storePrice": 1,
+      "type": "salute",
+      "vfx": "magic"
+    },
+    "samovar": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_samovar_v2"
+      ],
+      "spine": [
+        "s_samovar_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_samovar_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_samovar_v2",
+      "storePrice": 1,
+      "type": "samovar"
+    },
+    "santa": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_santa_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_santa_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_santa_v2",
+      "storePrice": 2,
+      "type": "santa"
+    },
+    "seafish": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_seafish1",
+        "g_seafish2",
+        "g_seafish3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_seafish1",
+        "g_seafish2",
+        "g_seafish3"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_seafish1",
+      "storePrice": 1,
+      "type": "seafish"
+    },
+    "seashell": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_seashell1",
+        "g_seashell2",
+        "g_seashell3",
+        "g_seashell4",
+        "g_seashell5",
+        "g_seashell6",
+        "g_seashell7"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_seashell1",
+        "g_seashell2",
+        "g_seashell3",
+        "g_seashell4",
+        "g_seashell5",
+        "g_seashell6",
+        "g_seashell7"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_seashell1",
+      "storePrice": 1,
+      "type": "seashell"
+    },
+    "seastar": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_seastar1",
+        "g_seastar2",
+        "g_seastar3",
+        "g_seastar4",
+        "g_seastar5"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_seastar1",
+        "g_seastar2",
+        "g_seastar3",
+        "g_seastar4",
+        "g_seastar5"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_seastar1",
+      "storePrice": 1,
+      "type": "seastar"
+    },
+    "seeds": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_seeds"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_seeds"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_seeds",
+      "storePrice": 1,
+      "type": "seeds"
+    },
+    "shashlik": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_shashlik"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_shashlik"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_shashlik",
+      "storePrice": 1,
+      "type": "shashlik"
+    },
+    "skateboard": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_skateboard"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_skateboard"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_skateboard",
+      "storePrice": 1,
+      "type": "skateboard"
+    },
+    "sleephat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_sleephat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_sleephat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_sleephat",
+      "storePrice": 2,
+      "type": "sleephat"
+    },
+    "smile": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_smile1",
+        "g_smile2",
+        "g_smile3",
+        "g_smile4"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_smile1",
+        "g_smile2",
+        "g_smile3",
+        "g_smile4"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_smile1",
+      "storePrice": 1,
+      "type": "smile"
+    },
+    "smilecup": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_smilecup"
+      ],
+      "spine": [
+        "s_smilecup"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_smilecup"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_smilecup",
+      "storePrice": 1,
+      "type": "smilecup"
+    },
+    "snegurka": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_snegurka"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_snegurka"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_snegurka",
+      "storePrice": 2,
+      "type": "snegurka"
+    },
+    "snowball": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "snow2",
+        "snow3",
+        "snow4"
+      ],
+      "flyImages": [
+        "g_snowball1",
+        "g_snowball1",
+        "g_snowball1",
+        "g_snowball1"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_snowball2",
+        "g_snowball3",
+        "g_snowball4",
+        "g_snowball5"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_snowball1",
+      "storePrice": 1,
+      "type": "snowball"
+    },
+    "snowdrops": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_snowdrops_v2"
+      ],
+      "spine": [
+        "s_snowdrops_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_snowdrops_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_snowdrops_v2",
+      "storePrice": 1,
+      "type": "snowdrops"
+    },
+    "snowman1": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_snowman1"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_snowman1"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_snowman1",
+      "storePrice": 1,
+      "type": "snowman1"
+    },
+    "sofa": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_sofa"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_sofa"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_sofa",
+      "storePrice": 1,
+      "type": "sofa"
+    },
+    "spacecocktail": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_spacecocktail"
+      ],
+      "spine": [
+        "s_spacecocktail"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_spacecocktail"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_spacecocktail",
+      "storePrice": 1,
+      "type": "spacecocktail"
+    },
+    "spaghetti": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "slug1"
+      ],
+      "flyImages": [
+        "g_spaghetti2"
+      ],
+      "spine": [
+        "s_spaghetti"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_spaghetti3"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_spaghetti1",
+      "storePrice": 2,
+      "type": "spaghetti"
+    },
+    "sponge": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "sponge"
+      ],
+      "flyImages": [
+        "g_sponge_green",
+        "g_sponge_violet",
+        "g_sponge_yellow"
+      ],
+      "spine": [
+        "s_sponge_green",
+        "s_sponge_violet",
+        "s_sponge_yellow"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_sponge_green",
+        "g_sponge_violet",
+        "g_sponge_yellow"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_sponge",
+      "storePrice": 1,
+      "type": "sponge"
+    },
+    "springcocktail": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_springcocktail"
+      ],
+      "spine": [
+        "s_springcocktail"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_springcocktail"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_springcocktail",
+      "storePrice": 1,
+      "type": "springcocktail"
+    },
+    "springwreath": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_springwreath"
+      ],
+      "spine": [
+        "s_springwreath"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_springwreath"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_springwreath",
+      "storePrice": 2,
+      "type": "springwreath"
+    },
+    "squirrel": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_squirrel_v2"
+      ],
+      "spine": [
+        "s_squirrel_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_squirrel_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_squirrel_v2",
+      "storePrice": 1,
+      "type": "squirrel"
+    },
+    "sturmtruppen": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_sturmtruppen"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_sturmtruppen"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_sturmtruppen",
+      "storePrice": 2,
+      "type": "sturmtruppen"
+    },
+    "submarine": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "guitar"
+      ],
+      "flyImages": [
+        "g_submarine"
+      ],
+      "spine": [
+        "s_submarine"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_submarine"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_submarine",
+      "storePrice": 1,
+      "type": "submarine"
+    },
+    "sunflower": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_sunflower_v2"
+      ],
+      "spine": [
+        "s_sunflower_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_sunflower_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_sunflower_v2",
+      "storePrice": 2,
+      "type": "sunflower"
+    },
+    "superbowlball": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_superbowlball_2020"
+      ],
+      "startSounds": [
+        "football"
+      ],
+      "stickImages": [
+        "g_superbowlball_2020"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_superbowlball_2020",
+      "storePrice": 1,
+      "type": "superbowlball"
+    },
+    "superbowlcap": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_superbowlcap_2020"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_superbowlcap_2020"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_superbowlcap_2020",
+      "storePrice": 2,
+      "type": "superbowlcap"
+    },
+    "swimmers": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_swimmers1",
+        "g_swimmers2"
+      ],
+      "startSounds": [
+        "whistle"
+      ],
+      "stickImages": [
+        "g_swimmers1",
+        "g_swimmers2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_swimmers1",
+      "storePrice": 2,
+      "type": "swimmers"
+    },
+    "tankhelmet": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_tankhelmet_2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_tankhelmet_2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_tankhelmet_1",
+      "storePrice": 2,
+      "type": "tankhelmet"
+    },
+    "tarantula": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_tarantula"
+      ],
+      "spine": [
+        "s_tarantula"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_tarantula"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_tarantula",
+      "storePrice": 1,
+      "type": "tarantula"
+    },
+    "taxi": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_taxi"
+      ],
+      "spine": [
+        "s_taxi"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_taxi"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_taxi",
+      "storePrice": 2,
+      "type": "taxi"
+    },
+    "teapot": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_teapot"
+      ],
+      "spine": [
+        "s_teapot"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_teapot"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_teapot",
+      "storePrice": 1,
+      "type": "teapot"
+    },
+    "tearssnake": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_tearssnake"
+      ],
+      "spine": [
+        "s_tearssnake"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_tearssnake"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_tearssnake",
+      "storePrice": 1,
+      "type": "tearssnake"
+    },
+    "theatremask": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_theatremask1",
+        "g_theatremask2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_theatremask1",
+        "g_theatremask2"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_theatremask1",
+      "storePrice": 1,
+      "type": "theatremask"
+    },
+    "thermos": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_thermos"
+      ],
+      "startSounds": [
+        "pouring_water_glass"
+      ],
+      "stickImages": [
+        "g_thermos"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_thermos",
+      "storePrice": 1,
+      "type": "thermos"
+    },
+    "toiletpaper1": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_toiletpaper1"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_toiletpaper1"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_toiletpaper1",
+      "storePrice": 1,
+      "type": "toiletpaper1"
+    },
+    "touristmug": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_touristmug"
+      ],
+      "startSounds": [
+        "coffee"
+      ],
+      "stickImages": [
+        "g_touristmug"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_touristmug",
+      "storePrice": 1,
+      "type": "touristmug"
+    },
+    "trashcan2": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "door_open"
+      ],
+      "flyImages": [
+        "g_trashcan2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_trashcan2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_trashcan2",
+      "storePrice": 2,
+      "type": "trashcan2"
+    },
+    "trashcan3": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "door_open"
+      ],
+      "flyImages": [
+        "g_trashcan3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_trashcan3"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_trashcan3",
+      "storePrice": 2,
+      "type": "trashcan3"
+    },
+    "trashcan4": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "door_open"
+      ],
+      "flyImages": [
+        "g_trashcan4"
+      ],
+      "spine": [
+        "s_trash"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_trashcan4"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_trashcan4",
+      "storePrice": 2,
+      "type": "trashcan4"
+    },
+    "trout": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tomato1",
+        "tomato2"
+      ],
+      "flyImages": [
+        "g_trout"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_trout"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_trout",
+      "storePrice": 1,
+      "type": "trout"
+    },
+    "trumpet": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "trumpet"
+      ],
+      "flyImages": [
+        "g_trumpet"
+      ],
+      "spine": [
+        "s_trumpet"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_trumpet"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_trumpet",
+      "storePrice": 2,
+      "type": "trumpet"
+    },
+    "tub": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tub"
+      ],
+      "flyImages": [
+        "g_tub1"
+      ],
+      "spine": [
+        "s_tub"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_tub2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_tub2",
+      "storePrice": 2,
+      "type": "tub"
+    },
+    "turkey": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_turkey"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_turkey"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_turkey",
+      "storePrice": 1,
+      "type": "turkey"
+    },
+    "tyrolhat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_tyrolhat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_tyrolhat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_tyrolhat",
+      "storePrice": 2,
+      "type": "tyrolhat"
+    },
+    "ufo": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_ufo"
+      ],
+      "spine": [
+        "s_ufo"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_ufo"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_ufo",
+      "storePrice": 1,
+      "type": "ufo"
+    },
+    "unclesam": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_unclesam"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_unclesam"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_unclesam",
+      "storePrice": 2,
+      "type": "unclesam"
+    },
+    "valenok": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "punch1",
+        "punch2"
+      ],
+      "flyImages": [
+        "g_valenok",
+        "g_valenok2",
+        "g_valenok3"
+      ],
+      "spine": [
+        "s_valenok",
+        "s_valenok2",
+        "s_valenok3"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_valenok",
+        "g_valenok2",
+        "g_valenok3"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_valenok_store",
+      "storePrice": 1,
+      "type": "valenok"
+    },
+    "valentine": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_valentine2",
+        "g_valentine3",
+        "g_valentine4",
+        "g_valentine5"
+      ],
+      "spine": [
+        "s_valentine2",
+        "s_valentine3",
+        "s_valentine4",
+        "s_valentine5"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_valentine6",
+        "g_valentine7",
+        "g_valentine8",
+        "g_valentine9"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_valentine1",
+      "storePrice": 1,
+      "type": "valentine"
+    },
+    "venus": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_venus_v2"
+      ],
+      "spine": [
+        "s_venus"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_venus_v2"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_venus_v2",
+      "storePrice": 1,
+      "type": "venus"
+    },
+    "watermelon": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "light_tap"
+      ],
+      "flyImages": [
+        "g_watermelon1",
+        "g_watermelon2",
+        "g_watermelon3",
+        "g_watermelon4"
+      ],
+      "startSounds": [
+        "slug1"
+      ],
+      "stickImages": [
+        "g_watermelon1",
+        "g_watermelon2",
+        "g_watermelon3",
+        "g_watermelon4"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_watermelon1",
+      "storePrice": 1,
+      "type": "watermelon"
+    },
+    "weight": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "beer_tap"
+      ],
+      "flyImages": [
+        "g_weight"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_weight"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_weight",
+      "storePrice": 1,
+      "type": "weight"
+    },
+    "whistle": {
+      "category": "gift",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "whistle2"
+      ],
+      "flyImages": [
+        "g_whistle",
+        "g_whistle2",
+        "g_whistle3",
+        "g_whistle4"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_whistle",
+        "g_whistle2",
+        "g_whistle3",
+        "g_whistle4"
+      ],
+      "stickPoint": "ava",
+      "storeImage": "g_whistle",
+      "storePrice": 1,
+      "type": "whistle"
+    },
+    "winterhat": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_winterhat"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_winterhat"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_winterhat",
+      "storePrice": 2,
+      "type": "winterhat"
+    },
+    "witch": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_witch_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_witch_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_witch_v2",
+      "storePrice": 2,
+      "type": "witch"
+    },
+    "wreath": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_wreath_v2"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_wreath_v2"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_wreath_v2",
+      "storePrice": 2,
+      "type": "wreath"
+    },
+    "wreathorange": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_wreathorange"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_wreathorange"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_wreathorange",
+      "storePrice": 2,
+      "type": "wreathorange"
+    },
+    "wreathroses": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_wreathroses"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_wreathroses"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_wreathroses",
+      "storePrice": 2,
+      "type": "wreathroses"
+    },
+    "wreathviolets": {
+      "category": "hat",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_wreathviolets"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_wreathviolets"
+      ],
+      "stickPoint": "hat",
+      "storeImage": "g_wreathviolets",
+      "storePrice": 2,
+      "type": "wreathviolets"
+    },
+    "zucchini": {
+      "category": "drink",
+      "chatIcon": "gift",
+      "finishSounds": [
+        "tick"
+      ],
+      "flyImages": [
+        "g_zucchini"
+      ],
+      "spine": [
+        "s_zucchini"
+      ],
+      "startSounds": [
+        "snow"
+      ],
+      "stickImages": [
+        "g_zucchini"
+      ],
+      "stickPoint": "drink",
+      "storeImage": "g_zucchini",
+      "storePrice": 1,
+      "type": "zucchini"
+    }
+  }
+}

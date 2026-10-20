@@ -19,6 +19,7 @@ import { TABLE_USER_KISS } from "@/lib/table-kiss-icon";
 import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
 import { cleanDisplayName } from "@/lib/display-name";
 import { playEntryFx } from "@/components/table/entry-fx-pixi";
+import { entryParticipantCurrent } from "@/lib/entry-fx-lifetime";
 
 // TableView seats (virtual 375px table space, origin at table centre).
 const SEATS: Array<[number, number]> = [
@@ -367,7 +368,8 @@ class SeatView {
 // Ureyimsen hi.frameObjects / hi.pixiView: sheet textures are shared per frame key.
 const customFrameTextures = new Map<string, Array<{ texture: Texture; time: number }>>();
 function customFrameView(key: string) {
-  const frame = getCustomFrame(key)!;
+  const frame = getCustomFrame(key);
+  if (!frame) throw new Error("Custom frame unavailable");
   let textures = customFrameTextures.get(key);
   if (!textures) {
     const meta = frame.meta;
@@ -642,13 +644,13 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     const [flyView, stickView] = await Promise.all([
       createGiftView(assets, gift.flyImage, gift.spine, false, tableSize()),
       !gift.spine && gift.stickImage !== gift.flyImage ? createGiftView(assets, gift.stickImage, undefined, true, tableSize()) : undefined,
-      gift.vfx ? effects.preload(gift.vfx) : undefined,
+      gift.vfx ? effects.preload(gift.vfx).catch(() => undefined) : undefined,
     ]);
     if (!valid()) { destroyView(flyView); if (stickView) destroyView(stickView); return; }
     // Upload in the background: the flight starts immediately, textures upload on first render.
     void app.renderer.plugins["prepare"].upload(flyView);
     if (stickView) void app.renderer.plugins["prepare"].upload(stickView);
-    if (gift.vfx) void effects.prepare(app.renderer, gift.vfx);
+    if (gift.vfx) void effects.prepare(app.renderer, gift.vfx).catch(() => undefined);
     activate(flyView);
     const src = { x: sender.view.x, y: sender.view.y, scale: GIFT_SCALE, rotation: 0 };
     flyView.position.set(src.x, src.y);
@@ -805,11 +807,16 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       });
     },
     /** ureyimsen Ud.entryFx: gift-level entrance effect around the seat's photo. */
-    playEntry(index: number, level: number, male: boolean) {
+    playEntry(index: number, level: number, male: boolean, roomCurrent: () => boolean = () => true) {
       const seat = seats[index];
-      if (!seat || destroyed || level < 1) return;
-      playEntryFx(seat.view, level, male, (d, step, done) => run(d, p => { step(p, p * d); }, done));
+      const playerId = players[index]?.id;
+      if (!seat || destroyed || level < 1 || !playerId || players[index]?.empty) return false;
+      const expected = { roomId: 0, table: seat.view, playerId };
+      const valid = () => !destroyed && roomCurrent() && !players[index]?.empty && entryParticipantCurrent(expected,
+        { roomId: 0, table: seat.view, playerId: players[index]?.id });
+      playEntryFx(seat.view, level, male, (d, step, done) => run(d, p => { step(p, p * d); }, done), valid);
       markDirty();
+      return true;
     },
     /** Late joiners: bottle already rests pointing at the last chosen seat. */
     pointBottle(to: number) {

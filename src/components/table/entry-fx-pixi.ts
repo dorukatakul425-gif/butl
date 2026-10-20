@@ -10,7 +10,8 @@ const cached = (key: string, draw: (ctx: CanvasRenderingContext2D) => void, size
   if (hit && !hit.baseTexture.destroyed) return hit;
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Entry effect canvas unavailable");
   ctx.translate(size / 2, size / 2);
   draw(ctx);
   const tex = Texture.from(canvas);
@@ -22,20 +23,21 @@ const cached = (key: string, draw: (ctx: CanvasRenderingContext2D) => void, size
 function fxTex(kind: "glow" | "rays", color: string) {
   return cached(kind + color, (ctx) => {
     if (kind === "glow") {
-      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 64);
-      g.addColorStop(0, "#ffffff"); g.addColorStop(0.25, color); g.addColorStop(1, color + "00");
-      ctx.fillStyle = g; ctx.fillRect(-64, -64, 128, 128);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 128);
+      g.addColorStop(0, color); g.addColorStop(0.35, color + "aa"); g.addColorStop(1, color + "00");
+      ctx.fillStyle = g; ctx.fillRect(-128, -128, 256, 256);
     } else {
-      const g = ctx.createRadialGradient(0, 0, 8, 0, 0, 64);
-      g.addColorStop(0, color); g.addColorStop(1, color + "00");
-      ctx.fillStyle = g;
-      for (let i = 0; i < 12; i++) {
-        ctx.save(); ctx.rotate((i / 12) * Math.PI * 2);
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-7, -64); ctx.lineTo(7, -64); ctx.closePath(); ctx.fill();
-        ctx.restore();
+      for (let i = 0; i < 18; i++) {
+        const angle = i / 18 * Math.PI * 2;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 128, angle, angle + Math.PI / 36);
+        ctx.closePath(); ctx.fillStyle = color; ctx.fill();
       }
+      ctx.globalCompositeOperation = "destination-in";
+      const g = ctx.createRadialGradient(0, 0, 20.48, 0, 0, 128);
+      g.addColorStop(0, "rgba(0,0,0,.9)"); g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g; ctx.fillRect(-128, -128, 256, 256);
     }
-  }, 128);
+  }, 256);
 }
 
 const sprite = (tex: Texture, size: number) => {
@@ -127,10 +129,12 @@ function attach(seat: Container, back: Container, front: Container) {
   seat.addChild(front);
 }
 
-export function playEntryFx(seat: Container, level: number, male: boolean, animate: Animate) {
+export function playEntryFx(seat: Container, level: number, male: boolean, animate: Animate, valid: () => boolean = () => !seat.destroyed) {
   const lv = Math.max(1, Math.min(ENTRY_MAX, level | 0));
   const t = tier(lv);
-  const [kind, motion] = ENTRY_STYLES[t.i] ?? ENTRY_STYLES[0]!;
+  const style = ENTRY_STYLES[t.i] ?? ENTRY_STYLES[0];
+  if (!style) return;
+  const [kind, motion] = style;
   const Ht = Math.min(lv, ENTRY_BASE_MAX) / ENTRY_BASE_MAX;
   const Jt = Math.max(0, lv - ENTRY_BASE_MAX) / (ENTRY_MAX - ENTRY_BASE_MAX);
   const K = 0.35 + 0.65 * Ht + 0.3 * Jt;
@@ -158,18 +162,21 @@ export function playEntryFx(seat: Container, level: number, male: boolean, anima
   };
   for (let i = 0; i < count; i++) {
     const size = (10 + 10 * Math.random()) * (0.8 + 0.6 * K) * (kind === "coin" || kind === "shard" ? 1.1 : 1);
-    addPart(kind, colors[i % 3]!, size, undefined, motion === "orbit" || motion === "runes" ? 0 : (i / count) * dur * 0.55);
+    addPart(kind, colors[i % 3] ?? t.c1, size, undefined, motion === "orbit" || motion === "runes" ? 0 : (i / count) * dur * 0.55);
   }
   if (Jt > 0) {
-    const [k2, m2] = EXTRA_STYLES[Math.min(EXTRA_STYLES.length - 1, Math.floor((lv - 51) / 10))]!;
+    const extra = EXTRA_STYLES[Math.min(EXTRA_STYLES.length - 1, Math.floor((lv - 51) / 10))];
+    if (!extra) return;
+    const [k2, m2] = extra;
     const n = Math.round(10 + 26 * Jt);
-    for (let i = 0; i < n; i++) addPart(k2, colors[(i + 1) % 3]!, (9 + 8 * Math.random()) * (0.9 + 0.5 * Jt), m2, m2 === "orbit" || m2 === "runes" ? 0 : (i / n) * dur * 0.55);
+    for (let i = 0; i < n; i++) addPart(k2, colors[(i + 1) % 3] ?? t.rim, (9 + 8 * Math.random()) * (0.9 + 0.5 * Jt), m2, m2 === "orbit" || m2 === "runes" ? 0 : (i / n) * dur * 0.55);
   }
   const wingViews = motion === "wings" || lv >= 81 ? wings(9, male, 34, 2, 0.16) : [];
   wingViews.forEach((w) => back.addChild(w));
   attach(seat, back, front);
   animate(dur, (p, time) => {
     if (back.destroyed) return;
+    if (!valid()) { back.destroy({ children: true }); if (!front.destroyed) front.destroy({ children: true }); return; }
     const fade = p < 0.08 ? p / 0.08 : p > 0.82 ? (1 - p) / 0.18 : 1;
     back.alpha = fade;
     glow.alpha = 0.6 + 0.4 * Math.sin(5 * time);
@@ -194,11 +201,11 @@ export function playEntryFx(seat: Container, level: number, male: boolean, anima
       else if (m === "wings") { const d = q * (90 + 110 * K) * s.v; s.x = Math.cos(s.a0) * d; s.y = Math.sin(s.a0) * d * 0.8 - 20 + 50 * q * q; s.rotation = s.spin * time; }
     }
   }, () => { if (!back.destroyed) back.destroy({ children: true }); if (!front.destroyed) front.destroy({ children: true }); });
-  themeFx(seat, male, lv, dur, K, animate);
+  themeFx(seat, male, lv, dur, K, animate, valid);
 }
 
 /** Ud.themeFx: male = black/gold feathers falling, female = hearts and pink sparkles rising; small wings below level 81. */
-function themeFx(seat: Container, male: boolean, lv: number, dur: number, K: number, animate: Animate) {
+function themeFx(seat: Container, male: boolean, lv: number, dur: number, K: number, animate: Animate, valid: () => boolean) {
   const back = new Container(), front = new Container();
   back.eventMode = front.eventMode = "none";
   type T = Sprite & { m: "fall" | "rise"; a0: number; v: number; d: number; spin: number };
@@ -216,6 +223,7 @@ function themeFx(seat: Container, male: boolean, lv: number, dur: number, K: num
   attach(seat, back, front);
   animate(dur, (p, time) => {
     if (back.destroyed) return;
+    if (!valid()) { back.destroy({ children: true }); if (!front.destroyed) front.destroy({ children: true }); return; }
     const fade = p < 0.08 ? p / 0.08 : p > 0.85 ? (1 - p) / 0.15 : 1;
     for (const s of items) {
       const q = (time - s.d) / (0.6 * dur);

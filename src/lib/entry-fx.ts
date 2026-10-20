@@ -34,7 +34,8 @@ export interface Tier { i: number; name: string; c1: string; c2: string; rim: st
 export function tier(level: number): Tier {
   const z = Math.max(1, level | 0);
   const i = z <= ENTRY_BASE_MAX ? Math.min(9, Math.floor(z / 5)) : Math.min(TIERS.length - 1, 10 + Math.floor((z - ENTRY_BASE_MAX - 1) / 5));
-  const t = TIERS[i]!;
+  const t = TIERS[i];
+  if (!t) throw new Error("Entry tier unavailable");
   return { i, name: t[0], c1: t[1], c2: t[2], rim: t[3], emblem: t[4] };
 }
 

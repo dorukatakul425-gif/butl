@@ -25,7 +25,9 @@ import { playerPhoto } from "@/lib/player-photo";
 import { DEFAULT_PHOTO } from "@/lib/ciliz-default-photo";
 import ignoredPhoto from "@/assets/source-ignore-photo.svg";
 import { useBlockedUsers } from "@/lib/block-session";
-import { joinedIds, shouldPlayEntry, ENTRY_MIN, tier } from "@/lib/entry-fx";
+import { joinedIds, ENTRY_MIN, tier } from "@/lib/entry-fx";
+import { entryParticipantCurrent } from "@/lib/entry-fx-lifetime";
+import { entryBadge } from "@/lib/entry-badge";
 import { levelFromPoints } from "@/lib/top-level-activity";
 import { showSourceToast } from "@/components/source-dialogs";
 import { ProfileDialog } from "@/components/profile/profile-dialog";
@@ -43,7 +45,7 @@ export interface SeatPlayer {
   /** Server profile fields (age, city, zodiac index 0-11). */
   age?: number;
   city?: string;
-  zodiac?: number;
+  zodiac?: number | undefined;
   /** No player at this server seat. */
   empty?: boolean;
   /** Paid VIP period still running (profiles.vip_until in the future). */
@@ -237,8 +239,13 @@ export function TableSeats() {
   }, [assets, giftItems, offerResponse]);
 
   // ureyimsen Ud.entrance: realtime room_players INSERT reaches every client, so each one plays the newcomer's effect.
-  const entrySeen = useRef(new Map<string, number>());
   const entryPrev = useRef<{ room: number | null; ids: Array<string | undefined> } | null>(null);
+  const entryRoom = useRef(room.roomId); entryRoom.current = room.roomId;
+  const entryTimers = useRef(new Set<number>());
+  useEffect(() => () => {
+    entryTimers.current.forEach(timer => window.clearTimeout(timer));
+    entryTimers.current.clear();
+  }, [activeTable, room.roomId]);
   useEffect(() => {
     if (!activeTable) return;
     const ids = room.players.map(p => p?.id);
@@ -256,16 +263,24 @@ export function TableSeats() {
       const { data } = await sb.rpc("gift_levels", { p_ids: fresh });
       for (const row of (data ?? []) as Array<{ id: string; points: number }>) {
         const level = levelFromPoints(Number(row.points) || 0);
-        if (!shouldPlayEntry(entrySeen.current, row.id, level, Date.now())) continue;
-        window.setTimeout(() => {
+        if (level < 1) continue;
+        const expected = { roomId: room.roomId, table: activeTable, playerId: row.id };
+        let attempts = 0;
+        const tryEntry = () => {
           const seat = displaySeatOf(row.id);
           const prof = profileBySeat(seat);
-          if (seat < 0 || !prof) return;
-          if (level >= ENTRY_MIN) showEntryBanner(prof.name ?? "", level);
-          tableRef.current?.playEntry(seat, level, Boolean(prof.male));
-        }, delay + 350);
+          if (!entryParticipantCurrent(expected, { roomId: entryRoom.current, table: tableRef.current, playerId: prof?.id })) return;
+          if (activeTable.playEntry(seat, level, Boolean(prof?.male), () => entryRoom.current === expected.roomId && tableRef.current === expected.table)) {
+            if (level >= ENTRY_MIN) showEntryBanner(prof?.name ?? "", level);
+          } else if (++attempts < 10) schedule(tryEntry, 250);
+        };
+        schedule(tryEntry, delay + 350);
       }
     })();
+    function schedule(callback: () => void, ms: number) {
+      const timer = window.setTimeout(() => { entryTimers.current.delete(timer); callback(); }, ms);
+      entryTimers.current.add(timer);
+    }
   }, [activeTable, room.players, room.roomId]);
 
   useEffect(() => {
@@ -445,9 +460,10 @@ function showEntryBanner(name: string, level: number) {
   el.style.setProperty("--glv-c1", t.c1);
   el.style.setProperty("--glv-c2", t.c2);
   el.style.setProperty("--glv-rim", t.rim);
-  const badge = document.createElement("div");
+  const badge = document.createElement("img");
   badge.className = "glv-entry__badge";
-  badge.textContent = `Lv ${level}`;
+  badge.src = entryBadge(level);
+  badge.alt = `Lv ${level}`;
   const text = document.createElement("div");
   text.className = "glv-entry__text";
   const n = document.createElement("div");
