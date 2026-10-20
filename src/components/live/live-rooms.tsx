@@ -3,7 +3,7 @@
 // Titles are checked against the az/tr/ru/en banned-word list (client + DB trigger).
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { Camera, Crown, Search, Users, X, Plus, ChevronLeft, AlertTriangle, Mic } from "lucide-react";
+import { Camera, Crown, Lock, Search, Users, X, Plus, ChevronLeft, AlertTriangle, Mic } from "lucide-react";
 import { usePreferences, type Language } from "@/lib/app-preferences";
 import { getSupabase } from "@/lib/supabase";
 import { checkProfanity, PROFANITY_WARNING } from "@/lib/profanity";
@@ -16,6 +16,8 @@ export type VoiceRoomRow = {
   name: string;
   cover: string;
   photo?: string | null;
+  locked_seats?: number[] | null;
+  has_password?: boolean | null;
   owner_id: string;
   created_at: string;
 };
@@ -37,7 +39,8 @@ export const roomPhoto = (r: Pick<VoiceRoomRow, "photo">) => r.photo || TELEGRAM
 
 type Me = { id: string; name: string; photo: string | null };
 type LobbyEntry = { room: string; name: string; photo: string | null };
-export const ROOM_COLS = "id,code,name,cover,photo,owner_id,created_at";
+export const ROOM_COLS = "id,code,name,cover,photo,owner_id,created_at,locked_seats,has_password";
+const COLS_MID = "id,code,name,cover,photo,owner_id,created_at";
 const COLS_OLD = "id,code,name,cover,owner_id,created_at";
 
 const T: Record<string, Record<Language, string>> = {
@@ -60,6 +63,10 @@ const T: Record<string, Record<Language, string>> = {
   busy: { az: "Yaradılır…", tr: "Oluşturuluyor…", ru: "Создаём…", en: "Creating…" },
   notFound: { az: "Bu ID ilə otaq tapılmadı", tr: "Bu ID ile oda bulunamadı", ru: "Комната не найдена", en: "Room not found" },
   voiceOnly: { az: "Yalnız səsli söhbət", tr: "Sadece sesli sohbet", ru: "Только голос", en: "Voice only" },
+  pwAsk: { az: "Otaq şifrəsi", tr: "Oda şifresi", ru: "Пароль комнаты", en: "Room password" },
+  wrongPw: { az: "Şifrə yanlışdır", tr: "Şifre yanlış", ru: "Неверный пароль", en: "Wrong password" },
+  kicked: { az: "Otaq sahibi səni otaqdan çıxarıb. Yenidən girmək olar:", tr: "Oda sahibi seni odadan attı. Tekrar girebilirsin:", ru: "Владелец удалил вас. Снова можно через", en: "The owner removed you. You can rejoin in" },
+  min: { az: "dəq sonra", tr: "dk sonra", ru: "мин", en: "min" },
   badImg: { az: "Şəkil yüklənmədi", tr: "Fotoğraf yüklenemedi", ru: "Не удалось загрузить фото", en: "Couldn't load photo" },
 };
 
@@ -108,6 +115,7 @@ export function LiveRooms({ me, defaultPhoto, onClose }: { me: Me; defaultPhoto:
     const sb = getSupabase();
     if (!sb) return;
     let res: { data: unknown[] | null; error: { message: string } | null } = await sb.from("voice_rooms").select(ROOM_COLS).order("created_at", { ascending: false }).limit(60);
+    if (res.error) res = await sb.from("voice_rooms").select(COLS_MID).order("created_at", { ascending: false }).limit(60);
     if (res.error) res = await sb.from("voice_rooms").select(COLS_OLD).order("created_at", { ascending: false }).limit(60);
     if (res.error) { setErr(res.error.message); return; }
     const list = (res.data ?? []) as VoiceRoomRow[];
@@ -191,8 +199,25 @@ export function LiveRooms({ me, defaultPhoto, onClose }: { me: Me; defaultPhoto:
     const sb = getSupabase();
     if (!code || !sb) return;
     const { data } = await sb.from("voice_rooms").select(ROOM_COLS).eq("code", code).maybeSingle();
-    if (data) setActive(data as VoiceRoomRow);
+    if (data) void enter(data as VoiceRoomRow);
     else setErr(t("notFound"));
+  };
+
+  const [pwFor, setPwFor] = useState<VoiceRoomRow | null>(null);
+  const [pw, setPw] = useState("");
+  const enter = async (r: VoiceRoomRow, pass?: string) => {
+    const sb = getSupabase();
+    if (!sb) return;
+    setErr("");
+    const { data, error } = await sb.rpc("voice_room_enter", { p_room: r.id, p_pass: pass ?? null });
+    if (error) { if (!r.has_password) setActive(r); else setErr(error.message); return; }
+    const res = String(data ?? "ok");
+    if (res === "ok") { setPwFor(null); setPw(""); setActive(r); }
+    else if (res === "password") { setPwFor(r); if (pass !== undefined) setErr(t("wrongPw")); }
+    else if (res.startsWith("kicked:")) {
+      const mins = Math.max(1, Math.ceil((Number(res.slice(7)) * 1000 - Date.now()) / 60000));
+      setErr(`${t("kicked")} ${mins} ${t("min")}`);
+    } else setErr(t("notFound"));
   };
 
   const pickPhoto = async (f?: File) => {
@@ -249,10 +274,11 @@ export function LiveRooms({ me, defaultPhoto, onClose }: { me: Me; defaultPhoto:
             : shown.map((r, i) => {
               const n = inside[r.id]?.length ?? 0;
               return (
-                <button key={r.id} type="button" className="lv-card" style={{ animationDelay: `${i * 35}ms` }} onClick={() => setActive(r)}>
+                <button key={r.id} type="button" className="lv-card" style={{ animationDelay: `${i * 35}ms` }} onClick={() => void enter(r)}>
                   <span className="lv-cover">
                     <img src={roomPhoto(r)} alt="" loading="lazy" />
                     <span className="lv-live">LIVE</span>
+                    {r.has_password && <span className="lv-lock"><Lock size={13} /></span>}
                     <span className={`lv-count${n ? " on" : ""}`}><Users size={13} />{n}</span>
                   </span>
                   <span className="lv-info">
@@ -264,6 +290,22 @@ export function LiveRooms({ me, defaultPhoto, onClose }: { me: Me; defaultPhoto:
             })}
       </div>
 
+      {pwFor && (
+        <div className="vr-sheet-wrap" onClick={(e) => { if (e.target === e.currentTarget) { setPwFor(null); setErr(""); } }}>
+          <div className="vr-sheet lv-sheet">
+            <div className="vr-sheet-head">
+              <h3><Lock size={16} /> {roomTitle(pwFor.name)}</h3>
+              <button type="button" className="vr-icon" onClick={() => { setPwFor(null); setErr(""); }} aria-label="Close"><X size={18} /></button>
+            </div>
+            <label className="vr-field">
+              {t("pwAsk")}
+              <input type="password" value={pw} maxLength={32} autoFocus onChange={(e) => { setPw(e.target.value); setErr(""); }} onKeyDown={(e) => { if (e.key === "Enter" && pw) void enter(pwFor, pw); }} />
+            </label>
+            {err && <p className="lv-warn" role="alert"><AlertTriangle size={15} />{err}</p>}
+            <button type="button" className="vr-primary" disabled={!pw} onClick={() => void enter(pwFor, pw)}>{t("enter")}</button>
+          </div>
+        </div>
+      )}
       {creating && (
         <div className="vr-sheet-wrap" onClick={(e) => { if (e.target === e.currentTarget) setCreating(false); }}>
           <div className="vr-sheet lv-sheet">
@@ -316,6 +358,7 @@ const LV_STYLES = `
 .lv-cover img{width:100%;height:100%;object-fit:cover;display:block;}
 .lv-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(oklch(0 0 0 / .1),transparent 40%,oklch(.16 .01 260 / .95));}
 .lv-live{position:absolute;z-index:1;top:10px;left:10px;padding:4px 11px;border-radius:12px;font-size:11px;font-weight:900;letter-spacing:.08em;background:oklch(.64 .21 18);color:oklch(1 0 0);box-shadow:0 3px 10px oklch(.5 .2 18 / .5);}
+.lv-lock{position:absolute;z-index:1;top:38px;left:10px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:oklch(.12 .01 260 / .85);color:oklch(.85 .14 75);}
 .lv-count{position:absolute;z-index:1;top:10px;right:10px;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:12px;font-size:12px;font-weight:850;font-family:ui-monospace,monospace;background:oklch(.12 .01 260 / .85);border:1px solid oklch(1 0 0 / .08);color:oklch(.95 0 0);}
 .lv-count svg{color:oklch(.8 .01 260)}.lv-count.on svg{color:oklch(.78 .17 155)}
 .lv-info{display:flex;flex-direction:column;gap:6px;padding:10px 14px 14px;min-width:0;}
