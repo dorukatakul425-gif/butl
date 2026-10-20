@@ -480,3 +480,16 @@ input, textarea, [contenteditable="true"] {
 .user-profile__stats-item-title--glv{color:#b14dff}
 .user-profile__stats-icon--activity{background-repeat:no-repeat;background-position:center;background-size:contain;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%2322c55e'/%3E%3Ccircle cx='12' cy='12' r='7.5' fill='%23fff'/%3E%3Cpath d='M12 7v5.2l3.4 2' stroke='%2316a34a' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
 .user-profile__stats-item-title--activity{color:#16a34a}
+
+/* Reference settings extensions keep the existing popup rows and checkbox skin. */
+.settings__icon--chatbg::after { content: '▧'; }
+.settings__icon--chatfont::after { content: 'Aa'; }
+.settings__icon--premiumfx::after { content: '✦'; }
+.settings__icon--chatgestures::after { content: '☺'; }
+.settings__icon--kissfreeze::after { content: '♥'; }
+.settings__icon--blocklist::after { content: '⊘'; }
+.settings__icon--admincontact::after { content: '✉'; }
+.settings__icon--exit::after { content: '⇥'; }
+.settings__icon:is(.settings__icon--chatbg,.settings__icon--chatfont,.settings__icon--premiumfx,.settings__icon--chatgestures,.settings__icon--kissfreeze,.settings__icon--blocklist,.settings__icon--admincontact,.settings__icon--exit) { display: inline-flex; align-items: center; justify-content: center; font-size: 22px; color: #8eae56; }
+.source-settings-layer .settings__x_popup__content { max-height: 75vh; overflow-y: auto; }
+.source-settings-layer .settings__item[aria-pressed=true] { font-weight: bold; }

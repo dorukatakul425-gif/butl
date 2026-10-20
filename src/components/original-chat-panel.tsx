@@ -1,3 +1,4 @@
+import { useChatPreferences } from "@/lib/chat-preferences";
 import { setUserBlocked, useBlockedUsers } from "@/lib/block-session";
 import { MessageActions } from '@/components/chat/message-actions';
 import type { ChatTextLine } from '@/lib/music-session';
@@ -38,6 +39,7 @@ const profileUser = (p: Profile) => ({ id: p.id, name: p.name, photoUrl: playerP
 
 /** Original chat area: MediaPanel (video, music), chat body with info lines, input at bottom (source order). */
 export function OriginalChatPanel() {
+  const preferences = useChatPreferences();
   const assets = useCilizAssets();
   const session = useMusicSession();
   const blocked = useBlockedUsers();
@@ -283,7 +285,7 @@ export function OriginalChatPanel() {
   };
 
   return (
-    <section ref={sectionRef} className="original-chat chat" aria-label="Sohbet">
+    <section ref={sectionRef} className="original-chat chat" style={{ background: preferences.background === "default" ? undefined : preferences.background, fontFamily: preferences.font }} aria-label="Sohbet">
       {showScrollBtn && <div className="chat__scroll-btn" role="button" style={{ bottom: 50 }} onClick={followEnd}><div className="chat__scroll-btn-icon" /><div>{assets ? translate(assets, "chat:scroll:text") : "Yeni mesajlar"}</div></div>}
       <div ref={scrollRef} onScroll={onChatScroll} className="original-chat-scroll chat__scroll">
         <div className={`chat__body${small ? " chat__small" : ""}`}>
@@ -355,14 +357,14 @@ export function OriginalChatPanel() {
               <div className="chat__icon chat__icon--arrows" />
               {line.newImage && <img className="chat__bottle" src={line.newImage} width={30} height={30} title={line.newName} alt="" crossOrigin="anonymous" />}
             </div>
-          ) : line.kind === "gesture" ? (
+          ) : line.kind === "gesture" ? (preferences.smileys ? (
             <div key={line.key} className="chat__info chat__info--multiline chat__info--gesture chat__noselect">
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
               <div className="chat__gesture-icons">
                 <img className="chat__gesture" src={line.image} width={40} height={40} title={line.gestureName} alt="" crossOrigin="anonymous" />
               </div>
             </div>
-          ) : line.kind === "harem" ? (
+          ) : null) : line.kind === "harem" ? (
             <div key={line.key} className="chat__info chat__info--multiline chat__noselect">
               <div className="chat__photo" style={{ backgroundImage: `url('${line.sender.photoUrl}')` }} title={line.sender.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.sender.id }))} />
               <div className={`chat__icon chat__icon--${line.icon}`} />
@@ -410,7 +412,7 @@ export function OriginalChatPanel() {
         if (id) window.dispatchEvent(new CustomEvent('source:open-profile', { detail: id }));
       }} />}
       <InteractiveHints />
-      {emojiOpen && assets && <EmojiPicker size={emojiSize} vip={vip} lockText={translate(assets, "chat:emoji:hint")} activateText={translate(assets, "chat:emoji:activate")}
+      {preferences.smileys && emojiOpen && assets && <EmojiPicker size={emojiSize} vip={vip} lockText={translate(assets, "chat:emoji:hint")} activateText={translate(assets, "chat:emoji:activate")}
         onPick={pickEmoji} onBecomeVip={() => { setEmojiOpen(false); openVip(); }} />}
       <form className="original-chat-input" onSubmit={(e) => {
         e.preventDefault();
@@ -426,7 +428,7 @@ export function OriginalChatPanel() {
             if (prefix && !e.target.value.startsWith(prefix)) setReceiver(undefined);
             setText(prefix && e.target.value.startsWith(prefix) ? e.target.value.slice(prefix.length) : e.target.value);
           }} />
-        <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji js-emoji" onClick={toggleEmoji} aria-expanded={emojiOpen} aria-label="Emoji"><img className="original-chat-control-image" src={emojiIcon} width={26} height={26} alt="" /></Button>
+        <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji js-emoji" disabled={!preferences.smileys} onClick={toggleEmoji} aria-expanded={emojiOpen} aria-label="Emoji"><img className="original-chat-control-image" src={emojiIcon} width={26} height={26} alt="" /></Button>
         <Button variant="ghost" type="button" className="original-chat-round original-chat-gift" aria-label="Hediye" onClick={() => {
           const seat = receiver ? displaySeatOf(receiver.id) : undefined;
           if (seat === undefined || seat < 0) { showSourceToast(receiver && assets ? translate(assets, 'warning:offline_gift:desc') : 'Hediye göndermek için bir oyuncu seçin.'); return; }

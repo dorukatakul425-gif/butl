@@ -1,3 +1,4 @@
+import { useGameSettings } from "./game-settings";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { loadCilizAssets, translate, type CilizAssets } from "@/lib/ciliz-assets";
@@ -71,7 +72,8 @@ function Simple({ item, close }: { item: Extract<SettingsItem, { type: "simple" 
   );
 }
 
-function SettingsPopup({ title, items, phase, onClose, info, sliders }: {
+function SettingsPopup({ title, items, phase, onClose, info, sliders, children }: {
+  children?: import("react").ReactNode;
   title: string; items: SettingsItem[]; phase: "show" | "hide" | null; onClose: () => void;
   info?: { icons: string[]; id: string; onCopy: () => void };
   sliders?: { sfx: number; music: number };
@@ -95,6 +97,7 @@ function SettingsPopup({ title, items, phase, onClose, info, sliders }: {
           </div>
           <div className={`${popup("content", ["center"])} ${cls("x_popup__content")}`}>
             <div className={cls("")}>
+              {children}
               {items.map((item) => item.type === "slider"
                 ? <Slider key={item.icon} icon={item.icon} name={item.name} value={item.icon === "sound" ? sliders?.sfx ?? 0 : sliders?.music ?? 0} onChange={item.onChange} />
                 : item.type === 'checkbox' ? <div className={cls('checkbox-item')} key={item.icon}><div className={cls('checkbox-title')}><div className={cls('icon', [item.icon])} /><span className={cls('item-name')}>{item.name}</span></div><label className="checkbox settings__x_checkbox"><input className="checkbox__input" type="checkbox" aria-label={item.name} checked={item.enabled} disabled={item.busy} onChange={e => item.onChange(e.target.checked)} /><span className="checkbox__label" /></label></div>
@@ -118,6 +121,7 @@ type View = "settings" | "contacts" | "report" | "profile" | null;
 
 export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const session = useSourceFeatureSession();
+  const game = useGameSettings(session.viewerId, open);
   const [view, setView] = useState<View>(null);
   const [assets, setAssets] = useState<CilizAssets | null>(null);
   const { mounted, phase } = usePopupPhase(open);
@@ -127,6 +131,7 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
   useEffect(() => {
     if (open && !assets) loadCilizAssets().then(setAssets).catch(() => undefined);
   }, [open, assets]);
+  if (game.child) return <SettingsPopup title={game.childTitle} items={[]} phase="show" onClose={() => { game.setChild(null); setView(null); onClose(); }}>{game.content}</SettingsPopup>;
   if (!assets || (!mounted && view === "settings") || !view) return null;
   const t = (key: string) => translate(assets, key);
   const platform = "html5";
@@ -165,6 +170,8 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
     onProfile: () => setView("profile"),
     onContacts: () => setView("contacts"),
   });
+  items.splice(2, 0, ...game.items);
+  items.push(...game.tail);
   const copyId = async () => {
     const value = idCopyValue(platform, social, viewerId);
     try { await navigator.clipboard.writeText(value); showSourceToast(t("dlg:settings:id_toast")); } catch { showSourceToast(value); }

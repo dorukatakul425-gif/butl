@@ -1,3 +1,4 @@
+import { getChatPreferences } from "@/lib/chat-preferences";
 // ureyimsen Pd (gift notices under the chat top), Zd.announce queue and Dd (+N crystal pop), DAT edition.
 const MAX = 3;
 let box: HTMLDivElement | null = null;
@@ -22,6 +23,7 @@ function place() {
 if (typeof window !== "undefined") window.addEventListener("resize", place);
 
 export function addNotice(el: HTMLElement, ms: number) {
+  if (!getChatPreferences().premium) return;
   if (!box || !box.isConnected) { box = document.createElement("div"); box.className = "gift-notices"; document.body.appendChild(box); }
   place();
   box.appendChild(el);
@@ -39,6 +41,7 @@ export function premiumToast(text: string) {
 const queue: Array<{ title: string; text: string }> = [];
 let showing = false;
 export function premiumAnnounce(title: string, text: string) {
+  if (!getChatPreferences().premium) return;
   queue.push({ title, text });
   while (queue.length > 3) queue.shift();
   if (!showing) next();
@@ -58,6 +61,7 @@ function next() {
 
 /** Dd.show: big "+N" pop for the receiver. */
 export function datRewardPop(n: number) {
+  if (!getChatPreferences().premium) return;
   const el = document.createElement("div");
   el.className = "crystal-fx";
   el.textContent = `+${n} DAT`;
