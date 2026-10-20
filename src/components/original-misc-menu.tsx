@@ -8,12 +8,15 @@ import decor from "@/assets/original-menu-decor.svg";
 import boosters from "@/assets/original-menu-boosters.svg";
 import { useCilizAssets } from '@/components/decor/decor-selection';
 import { translate } from '@/lib/ciliz-assets';
+import "@/styles/table-bg.css";
 
 // MiscMenuPresenter order, MiscMenuDialog geometry and the live assets.json Turkish strings.
 const items = [
   { id: "achievements", title: "Başarılar", key: 'table:hint:achievement', icon: achievements },
   { id: "tops", title: "Puanlar", key: 'table:hint:top', icon: tops },
   { id: "bottle", title: "Şişe", key: 'table:menu:change_bottle', icon: bottle },
+  // ureyimsen: "Masa fonu" sits between bottle and decor (preloader_new.js misc menu items).
+  { id: "tablebg", title: "Masa fonu", key: '', icon: bottle },
   { id: "decor", title: "Stil", key: 'table:menu:decor', icon: decor },
   { id: "boosters", title: "Booster'lar", key: 'table:menu:boosters', icon: boosters },
 ] as const;
@@ -109,7 +112,7 @@ export function OriginalMiscMenu({ open, triggerRef, onClose, onSelect }: Origin
       {items.map((item) => (
         <Button key={item.id} type="button" variant="ghost" className="original-misc-menu-item" onClick={() => { onClose(); onSelect?.(item.id); }}>
           <span className="original-misc-menu-icon"><span aria-hidden="true" className={`original-misc-menu-image--${item.id}`} /></span>
-          {assets ? translate(assets, item.key) : item.title}
+          {assets && item.key ? translate(assets, item.key) : item.title}
         </Button>
       ))}
     </div>,

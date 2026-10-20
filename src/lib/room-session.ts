@@ -8,6 +8,8 @@ import { applyRoomMusic, resetRoomMusic, type RoomMusic } from "./music-session"
 import { DEFAULT_PHOTO } from "./ciliz-default-photo";
 import { installCloudFeatureSession } from "./cloud-feature-session";
 import { selectBottle } from "./bottle-game";
+import { setCurrentTableBg, tableBgName } from "./table-bg";
+import { showSourceToast } from "@/components/source-dialogs";
 import { emitServerHeartAward, luckyBonusAmount } from "./game-session";
 import { eventDeduper, haremTransition, revisionGuard } from './live-event-guards';
 
@@ -22,6 +24,8 @@ export interface RoomRow {
   phase_at: string;
   music?: RoomMusic | null;
   bottle?: string;
+  table_bg?: string;
+  table_bg_by?: string | null;
 }
 export interface ChatRow {
   id: number;
@@ -225,12 +229,20 @@ function schedulePhaseDeadline(room: RoomRow) {
 
 function applyRoom(room: RoomRow) {
   if (room.id !== state.roomId) return;
+  const prevBg = state.room && state.room.id === room.id ? state.room.table_bg ?? "" : null;
   schedulePhaseDeadline(room);
   const changed =
     !state.room || state.room.phase !== room.phase || state.room.round !== room.round;
   set({ room, ...(changed ? { phaseReceivedAt: Date.now() } : {}) });
   // The table bottle is room state: whoever buys it, everyone sees it.
   selectBottle(room.bottle || "standart");
+  // Masa fonu is room state too; announce changes made by someone else (original vd.announce).
+  const nextBg = room.table_bg ?? "";
+  setCurrentTableBg(nextBg);
+  if (prevBg !== null && prevBg !== nextBg && room.table_bg_by && room.table_bg_by !== state.players[VIEWER_DISPLAY_SEAT]?.id) {
+    const who = state.players.find((x) => x?.id === room.table_bg_by)?.name ?? "";
+    showSourceToast(`🎨 ${who} masa fonunu dəyişdi: ${tableBgName(nextBg)}`);
+  }
   const music = room.music;
   if (music) {
     const p = state.players.find((x) => x?.id === music.sender);

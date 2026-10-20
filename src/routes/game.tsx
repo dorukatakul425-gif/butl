@@ -18,6 +18,8 @@ import { startCloudBlocks } from "@/lib/block-session";
 import { SourceHaremNotice } from '@/components/table/source-harem-notice';
 import { ProfileSetupDialog } from "@/components/profile/profile-setup-dialog";
 import { getSupabase } from "@/lib/supabase";
+import { tableBgUrl, useTableBg } from "@/lib/table-bg";
+import "@/styles/table-bg.css";
 
 export const Route = createFileRoute("/game")({
   head: () => ({
@@ -37,6 +39,7 @@ function Index() {
   const auth = useAuth();
   const navigate = useNavigate();
   const room = useRoom();
+  const tableBg = useTableBg();
   const [joined, setJoined] = useState(false);
   // Telegram Mini App only: keep the table height stable while the chat
   // keyboard opens (original client's expand + keyboard scroll behavior).
@@ -79,6 +82,7 @@ function Index() {
       <div className="original-game">
         <div className="original-table">
           <img className="original-table-wood" src={woodTable} alt="Oyunun sunucusundan alınan orijinal ahşap masa" />
+          {tableBg && <img key={tableBg} className="original-table-bg-image" src={tableBgUrl(tableBg)} alt="" />}
           <TableSeats />
           <OriginalTableHeader />
         </div>

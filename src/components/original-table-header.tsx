@@ -6,8 +6,8 @@ import { getPendingGold, subscribePendingGold } from "@/lib/game-session";
 import { OPEN_TOPS_EVENT, OPEN_VIP_EVENT, OPEN_BANK_EVENT, OPEN_DECOR_EVENT, SourceToastHost, showSourceToast } from "@/components/source-dialogs";
 import { VipDialog } from "@/components/bank/vip-dialog";
 import { useCilizAssets } from "@/components/decor/decor-selection";
-import backgroundUp from "@/assets/ui_btn_bg_up.svg";
-import backgroundDown from "@/assets/ui_btn_bg_down.svg";
+import defaultBackgroundUp from "@/assets/ui_btn_bg_up.svg";
+import defaultBackgroundDown from "@/assets/ui_btn_bg_down.svg";
 import heartUp from "@/assets/ui_btn_gold_add_heart_up.svg";
 import heartDown from "@/assets/ui_btn_gold_add_heart_down.svg";
 import menu from "@/assets/ui_btn_misc_menu.svg";
@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { OriginalMiscMenu } from "@/components/original-misc-menu";
 import { DecorSelection } from "@/components/decor/decor-selection";
 import { BottleSelection } from "@/components/table/bottle-selection";
+import { TableBgDialog } from "@/components/table/table-bg-dialog";
+import { headerBtnSvg, useTableBg } from "@/lib/table-bg";
 import { BankDialog } from "@/components/bank/bank-dialog";
 import { SourceTopsDialog } from "@/components/table/source-tops-dialog";
 import { SourceBoostersDialog } from "@/components/table/source-boosters-dialog";
@@ -38,6 +40,7 @@ const middleIcons = [
 ];
 
 function OriginalIcon({ asset, label, kind, onClick }: (typeof middleIcons)[number] & { onClick?: (() => void) | undefined }) {
+  const [backgroundUp, backgroundDown] = useHeaderSkin();
   if (onClick) return <Button variant="ghost" onClick={onClick} aria-label={label} title={label} className={`original-header-button original-icon-${kind}`}>
     <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
     <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
@@ -54,7 +57,15 @@ function OriginalIcon({ asset, label, kind, onClick }: (typeof middleIcons)[numb
   );
 }
 
+/** applyHeaderSkin: header buttons take the colours of the chosen table background. */
+function useHeaderSkin(): [string, string] {
+  const bg = useTableBg();
+  return [headerBtnSvg(bg, false) ?? defaultBackgroundUp, headerBtnSvg(bg, true) ?? defaultBackgroundDown];
+}
+
 export function OriginalTableHeader() {
+  const [backgroundUp, backgroundDown] = useHeaderSkin();
+  const [tableBgOpen, setTableBgOpen] = useState(false);
   const navigate = useNavigate();
   const room = useRoom();
   const pending = useSyncExternalStore(subscribePendingGold, getPendingGold, () => 0);
@@ -90,6 +101,7 @@ export function OriginalTableHeader() {
   const onMenuSelect = useCallback((id: string) => {
     if (id === "decor") setDecorOpen(true);
     if (id === "bottle") setBottleOpen(true);
+    if (id === "tablebg") setTableBgOpen(true);
     if (id === "tops") setTopsOpen(true);
     if (id === "boosters") setBoostersOpen(true);
     if (id === "achievements") setAchievementsOpen(true);
@@ -145,6 +157,7 @@ export function OriginalTableHeader() {
       <OriginalMiscMenu open={menuOpen} triggerRef={menuTriggerRef} onClose={closeMenu} onSelect={onMenuSelect} />
       <DecorSelection open={decorOpen} onClose={closeDecor} />
       <BottleSelection open={bottleOpen} onClose={closeBottle} />
+      {tableBgOpen && <TableBgDialog onClose={() => setTableBgOpen(false)} />}
       <BankDialog open={bankOpen} onClose={closeBank} isVip onVip={() => setVipOpen(true)} />
       {vipOpen && vipAssets && <VipDialog assets={vipAssets} onClose={() => setVipOpen(false)} onBought={closeBank} />}
       <SourceToastHost />

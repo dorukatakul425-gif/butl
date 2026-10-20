@@ -76,3 +76,4 @@
 - Telegram-only Puanlar sections (level, activity) use top_players_extra and server-counted activity_ping minutes; level is derived client-side from gift-heart points so the threshold lives in one helper.
 - Extend ordinary gift-store membership from the captured source catalog while preserving live vendor media definitions and existing authoritative prices; SQL additions must mirror client additions so every displayed gift can be purchased.
 - Entrance particles are derived from server gift levels and gender, never selected frames; cancel delayed and active effects when their room, renderer or occupant changes to prevent seat-reuse leakage.
+- Table backgrounds (Masa fonu) are room state on rooms.table_bg, bought only through the set_table_bg RPC that validates the fixed list and charges DAT atomically; clients render the bundled /room-assets/table-bg images and header skins from that state, so nobody can set a background for free.
