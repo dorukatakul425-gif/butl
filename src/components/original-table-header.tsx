@@ -28,6 +28,7 @@ import { SourceAchievementsDialog } from "@/components/table/source-achievements
 import { SettingsDialog } from '@/components/settings/settings-dialog';
 import { SourceSeasonDialog } from '@/components/table/source-season-dialogs';
 import { SourceLeagueButton } from '@/components/table/source-league-button';
+import { SeasonPassButton } from '@/components/table/season-pass-button';
 import { SourceChangeTable } from '@/components/table/source-change-table';
 import { TableIdChip } from '@/components/table/table-id-chip';
 import { useRoom, VIEWER_DISPLAY_SEAT } from '@/lib/room-session';
@@ -122,6 +123,7 @@ export function OriginalTableHeader() {
       <output className="original-header-balance" aria-label="Kalp bakiyesi" aria-live="polite" style={{ width: `${String(gold ?? '—').length}ch` }}>{gold ?? '—'}</output>
       </div>
       <div className="original-header-middle">
+        <SeasonPassButton skin={[backgroundUp, backgroundDown]} />
         <SourceLeagueButton onClick={() => setSeason('league')} />
         {middleIcons.map((icon) => icon.kind === "menu" ? (
           <Button key={icon.label} ref={menuTriggerRef} type="button" variant="ghost"
