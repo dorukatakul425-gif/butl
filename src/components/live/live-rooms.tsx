@@ -1,11 +1,13 @@
-import { translate, usePreferences } from "@/lib/app-preferences";
-// "Canlı" lobby: active voice/video rooms with live member counts (Realtime presence),
-// room creation and join-by-ID. Opening a room mounts the full-screen VoiceRoom.
+// "Canlı" lobby: voice-only live rooms in a 2-column photo grid. Room list + who is inside update
+// instantly for everyone over the Realtime websocket (presence = members, broadcast = room changes).
+// Titles are checked against the az/tr/ru/en banned-word list (client + DB trigger).
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { Mic, Video } from "lucide-react";
-import { IconBack, IconPlus, IconSearch, IconMic, IconVideo, IconUsers, IconHeadphones, IconCrown, IconHash, IconFlame } from "@/components/ui-icons";
+import { Camera, Crown, Search, Users, X, Plus, ChevronLeft, AlertTriangle, Mic } from "lucide-react";
+import { usePreferences, type Language } from "@/lib/app-preferences";
 import { getSupabase } from "@/lib/supabase";
+import { checkProfanity, PROFANITY_WARNING } from "@/lib/profanity";
+import { TELEGRAM_NO_PHOTO } from "@/lib/player-photo";
 import { VoiceRoom, VR_STYLES } from "./voice-room";
 
 export type VoiceRoomRow = {
@@ -13,6 +15,7 @@ export type VoiceRoomRow = {
   code: number;
   name: string;
   cover: string;
+  photo?: string | null;
   owner_id: string;
   created_at: string;
 };
@@ -25,54 +28,98 @@ export const ROOM_COVERS = [
   { key: "ocean", emoji: "🌊" },
 ] as const;
 export const coverOf = (k: string) => ROOM_COVERS.find((c) => c.key === k) ?? ROOM_COVERS[0];
-// Room kind is carried by an invisible trailing marker in the name, so no schema change is needed
-// (works on Lovable Cloud and the VPS database as-is).
-export type RoomKind = "voice" | "video";
-const VIDEO_MARK = "\u2060";
-export const roomKind = (name: string): RoomKind => (name.endsWith(VIDEO_MARK) ? "video" : "voice");
-export const roomTitle = (name: string) => name.replaceAll(VIDEO_MARK, "");
-export const withKind = (title: string, kind: RoomKind) =>
-  kind === "video" ? `${roomTitle(title).slice(0, 39)}${VIDEO_MARK}` : roomTitle(title).slice(0, 40);
+export type RoomKind = "voice";
+const OLD_VIDEO_MARK = "\u2060";
+export const roomKind = (_name: string): RoomKind => "voice";
+export const roomTitle = (name: string) => name.replaceAll(OLD_VIDEO_MARK, "");
+export const withKind = (title: string, _kind: RoomKind = "voice") => roomTitle(title).trim().slice(0, 40);
+export const roomPhoto = (r: Pick<VoiceRoomRow, "photo">) => r.photo || TELEGRAM_NO_PHOTO;
 
 type Me = { id: string; name: string; photo: string | null };
 type LobbyEntry = { room: string; name: string; photo: string | null };
-const COLS = "id,code,name,cover,owner_id,created_at";
+export const ROOM_COLS = "id,code,name,cover,photo,owner_id,created_at";
+const COLS_OLD = "id,code,name,cover,owner_id,created_at";
 
-export function LiveRooms({
-  me,
-  defaultPhoto,
-  onClose,
-}: {
-  me: Me;
-  defaultPhoto: string;
-  onClose: () => void;
-}) {
-  usePreferences();
+const T: Record<string, Record<Language, string>> = {
+  title: { az: "Canlı otaqlar", tr: "Canlı odalar", ru: "Живые комнаты", en: "Live rooms" },
+  talking: { az: "nəfər danışır", tr: "kişi konuşuyor", ru: "говорят", en: "talking" },
+  create: { az: "Yarat", tr: "Oluştur", ru: "Создать", en: "Create" },
+  mine: { az: "Otağım", tr: "Odam", ru: "Моя", en: "My room" },
+  search: { az: "Otaq adı və ya ID", tr: "Oda adı veya ID", ru: "Название или ID", en: "Room name or ID" },
+  join: { az: "Qoşul", tr: "Katıl", ru: "Войти", en: "Join" },
+  empty: { az: "Hələ aktiv otaq yoxdur", tr: "Henüz aktif oda yok", ru: "Пока нет комнат", en: "No live rooms yet" },
+  first: { az: "İlk səsli otağı sən yarat!", tr: "İlk sesli odayı sen oluştur!", ru: "Создай первую голосовую комнату!", en: "Start the first voice room!" },
+  newRoom: { az: "Səsli otaq yarat", tr: "Sesli oda oluştur", ru: "Создать голосовую комнату", en: "Create voice room" },
+  edit: { az: "Otağını aç", tr: "Odanı aç", ru: "Открыть комнату", en: "Open your room" },
+  name: { az: "Otaq adı", tr: "Oda adı", ru: "Название", en: "Room name" },
+  photo: { az: "Otaq şəkli", tr: "Oda fotoğrafı", ru: "Фото комнаты", en: "Room photo" },
+  pick: { az: "Şəkil seç", tr: "Fotoğraf seç", ru: "Выбрать фото", en: "Choose photo" },
+  remove: { az: "Sil", tr: "Kaldır", ru: "Удалить", en: "Remove" },
+  go: { az: "Yarat və gir", tr: "Oluştur ve gir", ru: "Создать и войти", en: "Create & enter" },
+  enter: { az: "Otağa gir", tr: "Odaya gir", ru: "Войти", en: "Enter" },
+  busy: { az: "Yaradılır…", tr: "Oluşturuluyor…", ru: "Создаём…", en: "Creating…" },
+  notFound: { az: "Bu ID ilə otaq tapılmadı", tr: "Bu ID ile oda bulunamadı", ru: "Комната не найдена", en: "Room not found" },
+  voiceOnly: { az: "Yalnız səsli söhbət", tr: "Sadece sesli sohbet", ru: "Только голос", en: "Voice only" },
+  badImg: { az: "Şəkil yüklənmədi", tr: "Fotoğraf yüklenemedi", ru: "Не удалось загрузить фото", en: "Couldn't load photo" },
+};
+
+/** Downscale a picked image to a small JPEG data URL (≤ ~120 KB) for the room cover. */
+export async function compressRoomPhoto(file: File, max = 540): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = rej;
+      i.src = url;
+    });
+    const s = Math.min(1, max / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * s);
+    c.height = Math.round(img.height * s);
+    c.getContext("2d")?.drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.78);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+export function LiveRooms({ me, defaultPhoto, onClose }: { me: Me; defaultPhoto: string; onClose: () => void }) {
+  const { language } = usePreferences();
+  const t = (k: keyof typeof T) => T[k]?.[language] ?? T[k]?.az ?? "";
   const [rooms, setRooms] = useState<VoiceRoomRow[] | null>(null);
+  const [owners, setOwners] = useState<Record<string, string>>({});
   const [inside, setInside] = useState<Record<string, LobbyEntry[]>>({});
   const [active, setActive] = useState<VoiceRoomRow | null>(null);
   const [creating, setCreating] = useState(false);
-  const [name, setName] = useState(`${me.name} otağı`.slice(0, 40));
-  const [cover, setCover] = useState<string>("emerald");
-  const [kind, setKind] = useState<RoomKind>("voice");
+  const [name, setName] = useState(`${me.name}`.slice(0, 40));
+  const [photo, setPhoto] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | RoomKind>("all");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const lobby = useRef<RealtimeChannel | null>(null);
   const activeRef = useRef<VoiceRoomRow | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   activeRef.current = active;
+  const bad = !checkProfanity(name).clean;
+  const warning = PROFANITY_WARNING[language] ?? PROFANITY_WARNING.az;
 
   const load = useCallback(async () => {
     const sb = getSupabase();
     if (!sb) return;
-    const { data, error } = await sb
-      .from("voice_rooms")
-      .select(COLS)
-      .order("created_at", { ascending: false })
-      .limit(60);
-    if (error) setErr(error.message);
-    else setRooms(data as VoiceRoomRow[]);
+    let res: { data: unknown[] | null; error: { message: string } | null } = await sb.from("voice_rooms").select(ROOM_COLS).order("created_at", { ascending: false }).limit(60);
+    if (res.error) res = await sb.from("voice_rooms").select(COLS_OLD).order("created_at", { ascending: false }).limit(60);
+    if (res.error) { setErr(res.error.message); return; }
+    const list = (res.data ?? []) as VoiceRoomRow[];
+    setRooms(list);
+    const ids = Array.from(new Set(list.map((r) => r.owner_id)));
+    if (ids.length) {
+      const { data } = await sb.from("profiles").select("id,name,username").in("id", ids);
+      const map: Record<string, string> = {};
+      for (const p of (data ?? []) as Array<{ id: string; name: string | null; username: string | null }>)
+        map[p.id] = p.username || p.name || "";
+      setOwners(map);
+    }
   }, []);
 
   useEffect(() => {
@@ -94,9 +141,9 @@ export function LiveRooms({
       if (s === "SUBSCRIBED" && activeRef.current)
         void ch.track({ room: activeRef.current.id, name: me.name, photo: me.photo });
     });
-    const t = window.setInterval(() => void load(), 20000);
+    const tm = window.setInterval(() => void load(), 30000);
     return () => {
-      window.clearInterval(t);
+      window.clearInterval(tm);
       lobby.current = null;
       void sb.removeChannel(ch);
     };
@@ -106,39 +153,33 @@ export function LiveRooms({
     (inRoom: boolean) => {
       const ch = lobby.current;
       if (!ch) return;
-      if (inRoom && activeRef.current)
-        void ch.track({ room: activeRef.current.id, name: me.name, photo: me.photo });
+      if (inRoom && activeRef.current) void ch.track({ room: activeRef.current.id, name: me.name, photo: me.photo });
       else void ch.untrack();
     },
     [me.name, me.photo],
   );
+  const announce = () => void lobby.current?.send({ type: "broadcast", event: "rooms", payload: {} });
+  const mine = rooms?.find((r) => r.owner_id === me.id);
 
-  const announce = () =>
-    void lobby.current?.send({ type: "broadcast", event: "rooms", payload: {} });
+  const openCreate = () => {
+    if (mine) { setName(roomTitle(mine.name)); setPhoto(mine.photo ?? null); }
+    setErr("");
+    setCreating(true);
+  };
 
   const create = async () => {
     const sb = getSupabase();
-    if (!sb || !name.trim()) return;
+    const title = withKind(name);
+    if (!sb || !title) return;
+    if (!checkProfanity(title).clean) { setErr(warning); return; }
     setBusy(true);
     setErr("");
-    const mine = rooms?.find((r) => r.owner_id === me.id);
+    const row = { name: title, photo };
     const res = mine
-      ? await sb
-          .from("voice_rooms")
-          .update({ name: withKind(name.trim(), kind), cover })
-          .eq("id", mine.id)
-          .select(COLS)
-          .single()
-      : await sb
-          .from("voice_rooms")
-          .insert({ owner_id: me.id, name: withKind(name.trim(), kind), cover })
-          .select(COLS)
-          .single();
+      ? await sb.from("voice_rooms").update(row).eq("id", mine.id).select(ROOM_COLS).single()
+      : await sb.from("voice_rooms").insert({ owner_id: me.id, ...row }).select(ROOM_COLS).single();
     setBusy(false);
-    if (res.error) {
-      setErr(res.error.message);
-      return;
-    }
+    if (res.error) { setErr(/banned_word/.test(res.error.message) ? warning : res.error.message); return; }
     setCreating(false);
     announce();
     await load();
@@ -147,170 +188,104 @@ export function LiveRooms({
 
   const joinById = async () => {
     const code = Number(query.replace(/\D/g, ""));
-    if (!code) return;
     const sb = getSupabase();
-    if (!sb) return;
-    const { data } = await sb.from("voice_rooms").select(COLS).eq("code", code).maybeSingle();
+    if (!code || !sb) return;
+    const { data } = await sb.from("voice_rooms").select(ROOM_COLS).eq("code", code).maybeSingle();
     if (data) setActive(data as VoiceRoomRow);
-    else setErr(translate("Bu ID ilə otaq tapılmadı"));
+    else setErr(t("notFound"));
   };
 
-  const list = (rooms ?? [])
-    .filter(
-      (r) =>
-        !query ||
-        roomTitle(r.name).toLowerCase().includes(query.toLowerCase()) ||
-        String(r.code).includes(query.replace(/\D/g, "") || "~"),
-    )
+  const pickPhoto = async (f?: File) => {
+    if (!f) return;
+    try { setPhoto(await compressRoomPhoto(f)); } catch { setErr(t("badImg")); }
+  };
+
+  const shown = (rooms ?? [])
+    .filter((r) => !query || roomTitle(r.name).toLowerCase().includes(query.toLowerCase()) || String(r.code).includes(query.replace(/\D/g, "") || "~"))
     .sort((a, b) => (inside[b.id]?.length ?? 0) - (inside[a.id]?.length ?? 0));
-  const mine = rooms?.find((r) => r.owner_id === me.id);
-  const shownRooms = filter === "all" ? list : list.filter((r) => roomKind(r.name) === filter);
 
   if (active)
     return (
       <VoiceRoom
         room={active}
         me={me}
+        ownerName={owners[active.owner_id] || (active.owner_id === me.id ? me.name : "")}
         defaultPhoto={defaultPhoto}
         onPresence={onPresence}
-        onLeave={() => {
-          setActive(null);
-          announce();
-          void load();
-        }}
+        onLeave={() => { setActive(null); announce(); void load(); }}
       />
     );
 
+  const totalInside = Object.values(inside).reduce((n, a) => n + a.length, 0);
   return (
-    <div className="lr vr" role="dialog" aria-modal="true" aria-label={translate("Canlı otaqlar")}>
-      <style>
-        {VR_STYLES}
-        {LR_STYLES}
-      </style>
-      <header className="lx-top">
-        <button type="button" className="lx-ic" onClick={onClose} aria-label={translate("Geri")}><IconBack size={20} /></button>
-        <div className="lx-title">
-          <h2>{translate("Canlı otaqlar")}</h2>
-          <p><i />{Object.values(inside).reduce((n, a) => n + a.length, 0)} {translate("nəfər danışır")} · {(rooms ?? []).length} {translate("otaq")}</p>
+    <div className="lv" role="dialog" aria-modal="true" aria-label={t("title")}>
+      <style>{VR_STYLES}{LV_STYLES}</style>
+      <header className="lv-top">
+        <button type="button" className="lv-ic" onClick={onClose} aria-label="Back"><ChevronLeft size={22} /></button>
+        <div className="lv-title">
+          <h2>{t("title")}</h2>
+          <p><i />{totalInside} {t("talking")} · {(rooms ?? []).length}</p>
         </div>
-        <button type="button" className="lx-new" onClick={() => {
-            if (mine) { setKind(roomKind(mine.name)); setName(roomTitle(mine.name)); setCover(mine.cover); }
-            setCreating(true);
-          }}><IconPlus size={17} />{mine ? translate("Otağım") : translate("Yarat")}</button>
+        <button type="button" className="lv-new" onClick={openCreate}><Plus size={17} />{mine ? t("mine") : t("create")}</button>
       </header>
-      <div className="lx-search">
-        <IconSearch size={17} />
-        <input value={query} onChange={(e) => { setQuery(e.target.value); setErr(""); }} onKeyDown={(e) => { if (e.key === "Enter") void joinById(); }} placeholder={translate("Otaq adı və ya ID")} inputMode="search" />
-        {/^\d{4,}$/.test(query.trim()) && <button type="button" onClick={() => void joinById()}>{translate("Qoşul")}</button>}
+      <div className="lv-search">
+        <Search size={17} />
+        <input value={query} onChange={(e) => { setQuery(e.target.value); setErr(""); }} onKeyDown={(e) => { if (e.key === "Enter") void joinById(); }} placeholder={t("search")} inputMode="search" />
+        {/^\d{4,}$/.test(query.trim()) && <button type="button" onClick={() => void joinById()}>{t("join")}</button>}
       </div>
-      <div className="lx-filters" role="tablist">
-        {(["all", "voice", "video"] as const).map((f) => (
-          <button key={f} type="button" role="tab" aria-selected={filter === f} className={filter === f ? "on" : ""} onClick={() => setFilter(f)}>
-            {f === "all" ? <IconFlame size={15} /> : f === "voice" ? <IconMic size={15} /> : <IconVideo size={15} />}
-            {f === "all" ? translate("Hamısı") : f === "voice" ? translate("Səsli") : translate("Görüntülü")}
-          </button>
-        ))}
-      </div>
-      {err && <p className="vr-err lr-pad">{err}</p>}
-      <div className="lx-list">
-        {rooms === null ? (
-          Array.from({ length: 5 }, (_, i) => <div key={i} className="lx-card lx-skel" />)
-        ) : shownRooms.length === 0 ? (
-          <div className="lx-empty">
-            <span className="lx-empty-ic"><IconHeadphones size={34} /></span>
-            <strong>{translate("Hələ aktiv otaq yoxdur.")}</strong>
-            <p>{translate("İlk otağı sən yarat!")}</p>
-            <button type="button" className="lx-new" onClick={() => setCreating(true)}><IconPlus size={17} />{translate("Yarat")}</button>
-          </div>
-        ) : (
-          shownRooms.map((r, i) => {
-            const people = inside[r.id] ?? [];
-            const c = coverOf(r.cover);
-            const video = roomKind(r.name) === "video";
-            const live = people.length > 0;
-            return (
-              <button key={r.id} type="button" className={`lx-card vr-cover-${c.key}${live ? " live" : ""}`} style={{ animationDelay: `${i * 40}ms` }} onClick={() => setActive(r)}>
-                <span className="lx-cover"><span className="lx-emoji">{c.emoji}</span>{live && <span className="lx-live"><i />{translate("CANLI")}</span>}</span>
-                <span className="lx-info">
-                  <span className="lx-name"><strong>{roomTitle(r.name)}</strong>{r.owner_id === me.id && <IconCrown size={14} className="lx-crown" />}</span>
-                  <span className="lx-meta">
-                    <span className="lx-tag">{video ? <IconVideo size={12} /> : <IconMic size={12} />}{video ? translate("Görüntülü") : translate("Səsli")}</span>
-                    <span className="lx-id"><IconHash size={11} />{r.code}</span>
+      {err && !creating && <p className="lv-err">{err}</p>}
+      <div className="lv-grid">
+        {rooms === null
+          ? Array.from({ length: 6 }, (_, i) => <div key={i} className="lv-card lv-skel" />)
+          : shown.length === 0
+            ? (
+              <div className="lv-empty">
+                <span><Mic size={34} /></span>
+                <strong>{t("empty")}</strong>
+                <p>{t("first")}</p>
+                <button type="button" className="lv-new" onClick={openCreate}><Plus size={17} />{t("create")}</button>
+              </div>
+            )
+            : shown.map((r, i) => {
+              const n = inside[r.id]?.length ?? 0;
+              return (
+                <button key={r.id} type="button" className="lv-card" style={{ animationDelay: `${i * 35}ms` }} onClick={() => setActive(r)}>
+                  <span className="lv-cover">
+                    <img src={roomPhoto(r)} alt="" loading="lazy" />
+                    <span className="lv-live">LIVE</span>
+                    <span className={`lv-count${n ? " on" : ""}`}><Users size={13} />{n}</span>
                   </span>
-                  <span className="lx-faces">
-                    {people.slice(0, 5).map((p, k) => <img key={k} src={p.photo || defaultPhoto} alt={p.name} />)}
-                    {people.length > 5 && <b>+{people.length - 5}</b>}
-                    {!live && <em>{translate("Boşdur — ilk sən qoşul")}</em>}
+                  <span className="lv-info">
+                    <strong>{roomTitle(r.name)}</strong>
+                    <span className="lv-owner"><Crown size={14} />@{owners[r.owner_id] ?? ""}</span>
                   </span>
-                </span>
-                <span className="lx-side">
-                  <span className="lx-count"><IconUsers size={14} />{people.length}</span>
-                  {live ? <span className="lr-wave"><i /><i /><i /></span> : <span className="lx-join">{translate("Gir")}</span>}
-                </span>
-              </button>
-            );
-          })
-        )}
+                </button>
+              );
+            })}
       </div>
 
       {creating && (
-        <div
-          className="vr-sheet-wrap"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setCreating(false);
-          }}
-        >
-          <div className="vr-sheet">
+        <div className="vr-sheet-wrap" onClick={(e) => { if (e.target === e.currentTarget) setCreating(false); }}>
+          <div className="vr-sheet lv-sheet">
             <div className="vr-sheet-head">
-              <h3>{mine ? translate("Otağını aç") : "Yeni otaq yarat"}</h3>
+              <h3>{mine ? t("edit") : t("newRoom")}</h3>
+              <button type="button" className="vr-icon" onClick={() => setCreating(false)} aria-label="Close"><X size={18} /></button>
             </div>
-            <div className={`lr-preview vr-cover-${cover}`}>
-              <span>{coverOf(cover).emoji}</span>
-              <div>
-                <strong>{roomTitle(name) || translate("Otaq adı")}</strong>
-                <small>
-                  {kind === "video" ? <Video size={11} /> : <Mic size={11} />}{" "}
-                  {kind === "video" ? translate("Görüntülü otaq") : translate("Səsli otaq")}
-                </small>
-              </div>
-            </div>
-            <span className="vr-field">{translate("Otaq növü")}</span>
-            <div className="lr-kinds">
-              <button type="button" className={kind === "voice" ? "on" : ""} onClick={() => setKind("voice")}>
-                <Mic size={18} />
-                <b>{translate("Səsli otaq")}</b>
-                <small>{translate("Yuvarlaq yerlər, səs")}</small>
-              </button>
-              <button type="button" className={kind === "video" ? "on" : ""} onClick={() => setKind("video")}>
-                <Video size={18} />
-                <b>{translate("Görüntülü otaq")}</b>
-                <small>{translate("Böyük kamera pəncərələri")}</small>
-              </button>
-            </div>
+            <button type="button" className="lv-photo" onClick={() => fileRef.current?.click()}>
+              <img src={photo || TELEGRAM_NO_PHOTO} alt="" />
+              <span className="lv-photo-cta"><Camera size={16} />{t("pick")}</span>
+              <span className="lv-photo-live">LIVE</span>
+            </button>
+            {photo && <button type="button" className="lv-link" onClick={() => setPhoto(null)}>{t("remove")}</button>}
+            <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { void pickPhoto(e.target.files?.[0]); e.target.value = ""; }} />
             <label className="vr-field">
-              {translate("Otaq adı")}<input value={roomTitle(name)} onChange={(e) => setName(e.target.value)} maxLength={39} />
+              {t("name")}
+              <input className={bad ? "lv-bad" : ""} value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} maxLength={40} aria-invalid={bad} />
             </label>
-            <span className="vr-field">{translate("Otaq şəkli")}</span>
-            <div className="vr-covers">
-              {ROOM_COVERS.map((c) => (
-                <button
-                  key={c.key}
-                  type="button"
-                  className={`vr-cover-pick vr-cover-${c.key}${cover === c.key ? " on" : ""}`}
-                  onClick={() => setCover(c.key)}
-                  aria-label={c.key}
-                >
-                  {c.emoji}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="vr-primary"
-              disabled={busy || !name.trim()}
-              onClick={() => void create()}
-            >
-              {busy ? translate("Yaradılır…") : mine ? translate("Otağa gir") : translate("Yarat və gir")}
+            {(bad || err) && <p className="lv-warn" role="alert"><AlertTriangle size={15} />{bad ? warning : err}</p>}
+            <p className="lv-hint"><Mic size={13} />{t("voiceOnly")}</p>
+            <button type="button" className="vr-primary" disabled={busy || !name.trim() || bad} onClick={() => void create()}>
+              {busy ? t("busy") : mine ? t("enter") : t("go")}
             </button>
           </div>
         </div>
@@ -319,81 +294,49 @@ export function LiveRooms({
   );
 }
 
-const LR_STYLES = `
-.lx-top{display:flex;align-items:center;gap:12px;padding:6px 16px 12px;}
-.lx-ic{all:unset;cursor:pointer;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--vr-surface);border:1px solid var(--vr-line);backdrop-filter:blur(10px);flex-shrink:0;}
-.lx-ic:active,.lx-new:active{transform:scale(.92);}
-.lx-title{flex:1;min-width:0;}.lx-title h2{margin:0;font-size:22px;font-weight:850;letter-spacing:-.3px;}
-.lx-title p{margin:2px 0 0;font-size:11.5px;color:var(--vr-dim);display:flex;align-items:center;gap:6px;}
-.lx-title p i{width:7px;height:7px;border-radius:50%;background:var(--vr-live);box-shadow:0 0 0 3px oklch(.75 .18 150 / .25);animation:vr-pulse 1.6s infinite;}
-.lx-new{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:850;height:40px;padding:0 16px;border-radius:20px;background:linear-gradient(135deg,var(--vr-accent),oklch(.7 .2 30));color:oklch(.2 .05 50);box-shadow:0 6px 18px oklch(.7 .18 50 / .35);transition:transform .15s;}
-.lx-search{margin:0 16px 10px;display:flex;align-items:center;gap:10px;height:46px;padding:0 6px 0 16px;border-radius:23px;background:var(--vr-surface);border:1px solid var(--vr-line);color:var(--vr-dim);backdrop-filter:blur(10px);}
-.lx-search input{all:unset;flex:1;font-size:14.5px;color:var(--vr-ink);}
-.lx-search button{all:unset;cursor:pointer;font-size:12.5px;font-weight:850;height:34px;padding:0 14px;border-radius:17px;background:var(--vr-accent);color:oklch(.25 .05 60);}
-.lx-filters{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none;}
-.lx-filters button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:17px;font-size:13px;font-weight:750;color:var(--vr-dim);background:var(--vr-surface);border:1px solid var(--vr-line);white-space:nowrap;transition:all .2s;}
-.lx-filters button.on{background:var(--vr-ink);color:var(--vr-bg);border-color:transparent;}
-.lx-list{flex:1;overflow-y:auto;padding:0 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
-.lx-card{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;align-items:center;gap:14px;padding:12px;border-radius:22px;background:linear-gradient(135deg,var(--vr-surface),oklch(1 0 0 / .04));border:1px solid var(--vr-line);backdrop-filter:blur(12px);animation:lx-in .4s cubic-bezier(.2,.9,.3,1) both;transition:transform .15s;-webkit-tap-highlight-color:transparent;}
-.lx-card:active{transform:scale(.98);}
-.lx-card.live{border-color:oklch(.75 .18 150 / .45);box-shadow:0 8px 26px oklch(.6 .18 150 / .18);}
-.lx-skel{height:94px;animation:lx-shimmer 1.2s ease-in-out infinite alternate;}
-.lx-cover{position:relative;flex-shrink:0;width:70px;height:70px;border-radius:20px;display:grid;place-items:center;background:var(--cover);box-shadow:inset 0 0 0 1px oklch(1 0 0 / .18);}
-.lx-emoji{font-size:32px;filter:drop-shadow(0 3px 6px oklch(0 0 0 / .3));}
-.lx-live{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:3px;font-size:8.5px;font-weight:900;letter-spacing:.06em;padding:3px 7px;border-radius:8px;background:oklch(.62 .22 25);color:oklch(1 0 0);box-shadow:0 2px 8px oklch(.5 .2 25 / .5);}
-.lx-live i{width:5px;height:5px;border-radius:50%;background:oklch(1 0 0);animation:vr-pulse 1.2s infinite;}
-.lx-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
-.lx-name{display:flex;align-items:center;gap:5px;min-width:0;}
-.lx-name strong{font-size:15.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.lx-crown{color:var(--vr-accent);flex-shrink:0;}
-.lx-meta{display:flex;align-items:center;gap:6px;}
-.lx-tag,.lx-id{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:750;height:20px;padding:0 8px;border-radius:10px;background:oklch(1 0 0 / .1);color:var(--vr-dim);}
-.lx-faces{display:flex;align-items:center;padding-left:7px;min-height:24px;}
-.lx-faces img{width:24px;height:24px;border-radius:50%;object-fit:cover;margin-left:-7px;border:2px solid var(--vr-bg);}
-.lx-faces b{margin-left:-7px;height:24px;min-width:24px;padding:0 5px;box-sizing:border-box;border-radius:12px;display:grid;place-items:center;font-size:10px;background:var(--vr-accent);color:oklch(.25 .05 60);border:2px solid var(--vr-bg);}
-.lx-faces em{font-size:11px;color:var(--vr-dim);font-style:normal;margin-left:-7px;}
-.lx-side{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;}
-.lx-count{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:850;}
-.lx-join{font-size:11.5px;font-weight:850;height:26px;padding:0 12px;border-radius:13px;display:grid;place-items:center;background:var(--vr-ink);color:var(--vr-bg);}
-.lx-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:60px 20px;color:var(--vr-dim);}
-.lx-empty-ic{display:grid;place-items:center;width:80px;height:80px;border-radius:50%;background:var(--vr-surface);border:1px solid var(--vr-line);color:var(--vr-ink);margin-bottom:6px;}
-.lx-empty strong{color:var(--vr-ink);font-size:16px;}.lx-empty p{margin:0 0 8px;font-size:13px;}
-@keyframes lx-in{from{transform:translateY(14px);opacity:0;}}
-@keyframes lx-shimmer{from{opacity:.45;}to{opacity:.9;}}
-@media(prefers-reduced-motion:reduce){.lx-card{animation:none;}}
-.lr{overflow:hidden;}
-.lr-top{display:flex;align-items:center;gap:12px;padding:6px 16px 12px;}
-.lr-top>div{flex:1}.lr-top h2{margin:0;font-size:20px;font-weight:800;}
-.lr-top p{margin:2px 0 0;font-size:11px;color:var(--vr-dim);display:flex;align-items:center;gap:6px;}
-.lr-top p i{width:6px;height:6px;border-radius:50%;background:var(--vr-live);animation:vr-pulse 1.6s infinite;}
-.lr-new{all:unset;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:800;padding:9px 14px;border-radius:20px;background:linear-gradient(140deg,var(--vr-accent),var(--vr-accent2));color:oklch(.2 .04 30);}
-.lr-search{margin:0 16px 10px;display:flex;align-items:center;gap:8px;height:42px;padding:0 6px 0 14px;border-radius:14px;background:var(--vr-surface);border:1px solid var(--vr-line);color:var(--vr-dim);}
-.lr-search input{all:unset;flex:1;font-size:14px;color:var(--vr-ink);}
-.lr-search button{all:unset;cursor:pointer;font-size:12px;font-weight:800;padding:6px 12px;border-radius:10px;background:var(--vr-accent);color:oklch(.25 .05 60);}
-.lr-pad{padding:0 16px;}
-.lr-list{flex:1;overflow-y:auto;padding:0 16px 20px;display:flex;flex-direction:column;gap:10px;}
-.lr-card{all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;padding:10px;border-radius:18px;background:var(--vr-surface);border:1px solid var(--vr-line);animation:vr-msg .3s ease-out both;transition:transform .15s;}
-.lr-card:active{transform:scale(.98);}
-.lr-cover{position:relative;flex-shrink:0;width:62px;height:62px;border-radius:16px;display:grid;place-items:center;font-size:28px;background:var(--cover);}
-.lr-live{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;letter-spacing:.06em;padding:2px 6px;border-radius:6px;background:oklch(.6 .22 25);color:oklch(1 0 0);}
-.lr-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
-.lr-info strong{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.lr-info small{font-size:11px;color:var(--vr-dim);}
-.lr-faces{display:flex;align-items:center;padding-left:6px;min-height:22px;}
-.lr-faces img{width:22px;height:22px;border-radius:50%;object-fit:cover;margin-left:-6px;border:2px solid oklch(.22 .04 290);}
-.lr-faces em{font-size:10.5px;color:var(--vr-dim);font-style:normal;margin-left:-6px;}
-.lr-count{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:800;}
-.lr-count svg{display:inline}
-.lr-wave{display:flex;gap:2px;align-items:flex-end;height:10px;}
-.lr-wave i{width:3px;border-radius:2px;background:var(--vr-accent);animation:vr-eq .6s ease-in-out infinite alternate;}
-.lr-wave i:nth-child(2){animation-delay:.2s}.lr-wave i:nth-child(3){animation-delay:.4s}
-.lr-empty{flex:1;display:grid;place-items:center;text-align:center;padding:60px 0;color:var(--vr-dim);font-size:13px;}
-.lr-empty span{font-size:44px;}
-.lr-preview{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--vr-surface);}
-.lr-preview>span{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:26px;background:var(--cover);}
-.lr-kinds{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.lr-kinds button{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:3px;padding:12px;border-radius:16px;background:var(--vr-surface);border:1.5px solid var(--vr-line);transition:border-color .2s,background .2s;}
-.lr-kinds button.on{border-color:var(--vr-accent);background:oklch(.78 .16 70 / .14);}
-.lr-kinds b{font-size:13px}.lr-kinds small{font-size:10.5px;color:var(--vr-dim);}
-.lr-preview strong{display:block;font-size:15px}.lr-preview small{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--vr-dim);}
+const LV_STYLES = `
+.lv{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:oklch(.13 .01 260);color:oklch(.97 0 0);font-family:'Manrope',system-ui,sans-serif;padding-top:max(10px,env(safe-area-inset-top));}
+.lv *{box-sizing:border-box;}
+.lv button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.lv-top{display:flex;align-items:center;gap:12px;padding:6px 16px 12px;}
+.lv-ic{all:unset;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:oklch(1 0 0 / .07);border:1px solid oklch(1 0 0 / .1);}
+.lv-title{flex:1;min-width:0}.lv-title h2{margin:0;font-size:22px;font-weight:850;letter-spacing:-.3px;}
+.lv-title p{margin:2px 0 0;font-size:11.5px;color:oklch(.75 .01 260);display:flex;align-items:center;gap:6px;}
+.lv-title p i{width:7px;height:7px;border-radius:50%;background:oklch(.78 .17 155);animation:vr-pulse 1.6s infinite;}
+.lv-new{all:unset;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border-radius:20px;font-size:13.5px;font-weight:850;background:oklch(.64 .21 18);color:oklch(1 0 0);box-shadow:0 6px 18px oklch(.6 .2 18 / .4);}
+.lv-new:active,.lv-ic:active,.lv-card:active{transform:scale(.96);}
+.lv-search{margin:0 16px 12px;display:flex;align-items:center;gap:10px;height:46px;padding:0 6px 0 16px;border-radius:23px;background:oklch(1 0 0 / .06);border:1px solid oklch(1 0 0 / .1);color:oklch(.7 .01 260);}
+.lv-search input{all:unset;flex:1;font-size:14.5px;color:oklch(.97 0 0);}
+.lv-search button{all:unset;height:34px;padding:0 14px;border-radius:17px;font-size:12.5px;font-weight:850;background:oklch(.64 .21 18);color:oklch(1 0 0);}
+.lv-err{margin:0 16px 10px;font-size:12.5px;color:oklch(.75 .17 25);}
+.lv-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start;padding:0 14px calc(24px + env(safe-area-inset-bottom));overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.lv-card{all:unset;display:flex;flex-direction:column;border-radius:22px;overflow:hidden;background:oklch(.16 .01 260);border:1.5px solid oklch(1 0 0 / .09);box-shadow:0 10px 26px oklch(0 0 0 / .35);animation:lv-in .4s cubic-bezier(.2,.9,.3,1) both;transition:transform .15s;}
+.lv-skel{aspect-ratio:.82;animation:lv-sh 1.2s ease-in-out infinite alternate;}
+.lv-cover{position:relative;display:block;aspect-ratio:1/1;background:oklch(.22 .01 260);}
+.lv-cover img{width:100%;height:100%;object-fit:cover;display:block;}
+.lv-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(oklch(0 0 0 / .1),transparent 40%,oklch(.16 .01 260 / .95));}
+.lv-live{position:absolute;z-index:1;top:10px;left:10px;padding:4px 11px;border-radius:12px;font-size:11px;font-weight:900;letter-spacing:.08em;background:oklch(.64 .21 18);color:oklch(1 0 0);box-shadow:0 3px 10px oklch(.5 .2 18 / .5);}
+.lv-count{position:absolute;z-index:1;top:10px;right:10px;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:12px;font-size:12px;font-weight:850;font-family:ui-monospace,monospace;background:oklch(.12 .01 260 / .85);border:1px solid oklch(1 0 0 / .08);color:oklch(.95 0 0);}
+.lv-count svg{color:oklch(.8 .01 260)}.lv-count.on svg{color:oklch(.78 .17 155)}
+.lv-info{display:flex;flex-direction:column;gap:6px;padding:10px 14px 14px;min-width:0;}
+.lv-info strong{font-size:16px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lv-owner{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:oklch(.8 .14 75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lv-owner svg{flex-shrink:0;fill:currentColor;}
+.lv-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:60px 20px;color:oklch(.72 .01 260);}
+.lv-empty>span{display:grid;place-items:center;width:80px;height:80px;border-radius:50%;background:oklch(1 0 0 / .06);color:oklch(.95 0 0);margin-bottom:6px;}
+.lv-empty strong{color:oklch(.97 0 0);font-size:16px}.lv-empty p{margin:0 0 8px;font-size:13px;}
+.lv-sheet{gap:10px;}
+.lv-photo{all:unset;position:relative;display:block;width:150px;aspect-ratio:1;margin:0 auto;border-radius:22px;overflow:hidden;border:1.5px solid oklch(1 0 0 / .15);}
+.lv-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+.lv-photo-cta{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;font-size:12px;font-weight:800;background:oklch(0 0 0 / .55);color:oklch(1 0 0);}
+.lv-photo-live{position:absolute;top:8px;left:8px;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:900;letter-spacing:.08em;background:oklch(.64 .21 18);color:oklch(1 0 0);}
+.lv-link{all:unset;cursor:pointer;align-self:center;font-size:12px;font-weight:800;color:oklch(.75 .17 25);}
+.lv-bad{border-color:oklch(.65 .22 25) !important;box-shadow:0 0 0 3px oklch(.65 .22 25 / .25);}
+.lv-warn{display:flex;align-items:flex-start;gap:8px;margin:0;padding:10px 12px;border-radius:14px;font-size:12.5px;font-weight:700;line-height:1.35;background:oklch(.65 .22 25 / .15);color:oklch(.85 .1 25);border:1px solid oklch(.65 .22 25 / .4);animation:lv-shake .35s;}
+.lv-warn svg{flex-shrink:0;margin-top:1px}
+.lv-hint{display:flex;align-items:center;gap:6px;margin:0;font-size:11.5px;color:oklch(.75 .01 260);}
+@keyframes lv-in{from{transform:translateY(14px);opacity:0}}
+@keyframes lv-sh{from{opacity:.4}to{opacity:.85}}
+@keyframes lv-shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media(prefers-reduced-motion:reduce){.lv-card{animation:none}}
 `;
