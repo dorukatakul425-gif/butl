@@ -7,6 +7,7 @@ cd "$APP_DIR"
 git pull --ff-only
 bash deploy/vps/migrate.sh
 docker compose -f /opt/butl-supabase/docker-compose.yml restart rest >/dev/null
+bash deploy/vps/voice-turn.sh
 bash deploy/vps/build.sh
 systemctl restart butl
 # Oyun servisi de butl.env'i okusun (TELEGRAM_BOT_TOKEN vb. sunucu fonksiyonlarına ulaşsın).

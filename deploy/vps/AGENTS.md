@@ -3,3 +3,4 @@
 - Mark only Source-listed migrations embedded in the bootstrap snapshot, then apply the remaining files with migrate.sh; this prevents fresh installs silently skipping newer features.
 - Caddy serves built public files from a copied static dir (deploy/vps/caddy.sh, run after every build); Node only renders pages, so asset delivery never depends on the Node server's file paths.
 - Provision the bot's restricted backend environment from the existing game service without printing values; the shared token resolver requires the same backend/key so admin rotation reaches the polling bot without restarting the website.
+- Provision the authenticated coturn relay during VPS updates; keep its shared secret in root-only server configuration and issue expiring credentials to signed-in clients, so mobile NAT traversal never relies only on public STUN.

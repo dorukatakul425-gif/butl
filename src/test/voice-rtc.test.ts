@@ -18,10 +18,14 @@ function harness(id = "a") {
 function track(kind = "audio") { return { kind, enabled: true, stop: vi.fn() }; }
 function stream(tracks = [track()]) { return { getTracks: () => tracks, getAudioTracks: () => tracks.filter(t => t.kind === "audio"), getVideoTracks: () => tracks.filter(t => t.kind === "video"), addTrack: (t: ReturnType<typeof track>) => tracks.push(t) }; }
 let gum: ReturnType<typeof vi.fn>;
+let peers: any[];
 beforeEach(() => {
+  peers = [];
   gum = vi.fn(async () => stream());
   Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: gum } });
   vi.stubGlobal("RTCPeerConnection", class {
+    constructor() { peers.push(this); }
+    connectionState = "new";
     localDescription: any;
     transceivers: any[] = [];
     addTransceiver(t: string | { kind: string }) { this.transceivers.push({ receiver: { track: { kind: typeof t === "string" ? t : t.kind } }, sender: { replaceTrack: vi.fn(async () => undefined) } }); }
@@ -87,5 +91,41 @@ describe("live voice room requirements", () => {
     const x = harness(); await connect(x); let resolve: (s: any) => void = () => undefined;
     gum.mockImplementationOnce(() => new Promise(r => { resolve = r; })); const sitting = x.client.setSeat(0);
     await x.client.leave(); const late = stream(); resolve(late); expect(await sitting).toBe(false); expect(late.getTracks()[0]!.stop).toHaveBeenCalled(); expect(x.client.me.seat).toBeNull();
+  });
+  it("rebuilds incomplete peers after websocket reconnect but preserves connected audio", async () => {
+    const x = harness(); await connect(x);
+    x.setState({ b: [{ id: "b", seat: null, joinedAt: 0 }] });
+    x.callbacks.get("presence:sync")?.();
+    await vi.waitFor(() => expect(peers).toHaveLength(1));
+    await x.callbacks.get("status")?.("SUBSCRIBED");
+    await vi.waitFor(() => expect(peers).toHaveLength(2));
+    peers[1].connectionState = "connected";
+    await x.callbacks.get("status")?.("SUBSCRIBED");
+    expect(peers).toHaveLength(2);
+    await x.client.leave();
+  });
+  it("retries a lost acknowledged offer rather than leaving the listener silent", async () => {
+    vi.useFakeTimers();
+    try {
+      const x = harness(); await connect(x);
+      x.channel.send.mockResolvedValueOnce("timed out");
+      x.setState({ b: [{ id: "b", seat: null, joinedAt: 0 }] });
+      x.callbacks.get("presence:sync")?.();
+      await vi.advanceTimersByTimeAsync(1600);
+      expect(peers).toHaveLength(2);
+      expect(x.channel.send.mock.calls.filter(c => (c as unknown[])[0] && ((c as unknown[])[0] as any).payload?.type === "offer")).toHaveLength(2);
+      await x.client.leave();
+    } finally { vi.useRealTimers(); }
+  });
+  it("never publishes an offer whose creation completes after leaving", async () => {
+    const x = harness(); await connect(x);
+    let resolve: (s: any) => void = () => undefined;
+    const offer = vi.spyOn(RTCPeerConnection.prototype, "createOffer").mockImplementation(() => new Promise(r => { resolve = r; }));
+    x.setState({ b: [{ id: "b", seat: null, joinedAt: 0 }] });
+    x.callbacks.get("presence:sync")?.();
+    await x.client.leave(); resolve({ type: "offer", sdp: "late" });
+    await Promise.resolve(); await Promise.resolve();
+    expect(x.channel.send.mock.calls.some(c => ((c as unknown[])[0] as any).payload?.type === "offer")).toBe(false);
+    offer.mockRestore();
   });
 });

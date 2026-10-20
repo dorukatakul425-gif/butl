@@ -52,3 +52,7 @@
 
 - [x] Chat reply arrow (Ciliz parity): green arrow on viewer-addressed messages, tap addresses sender; translate option fixed in message actions (deployed)
 - [x] Performance parity with Ciliz: dirty-frame Pixi rendering (no GPU draw when scene idle), antialias off + DPR cap 2 on mobile, canvas resize guard, chat capped at 100 lines, expiry scan 1s→15s, block list republish only on change (deployed)
+
+## Live voice reliability
+- [ ] Fix websocket negotiation recovery and mobile audio playback; provision authenticated TURN relay on VPS.
+- [ ] Verify audio transmission using real browser peers and deployed relay.

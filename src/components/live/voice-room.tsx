@@ -1,3 +1,6 @@
+import { useServerFn } from "@tanstack/react-start";
+import { getVoiceIceServers } from "@/lib/voice-turn.functions";
+import { RemoteAudio } from "./remote-audio";
 import { translate, usePreferences } from "@/lib/app-preferences";
 // Full-screen live voice/video room: header (cover, ID, settings, exit), tables with seats and
 // speaking animations in the middle, chat + gift/send controls at the bottom.
@@ -104,18 +107,6 @@ function GiftPlayback({ gift, muted, onDone }: { gift: RoomGift; muted: boolean;
 type Me = { id: string; name: string; photo: string | null };
 type Flying = RoomGift & { x: number; y: number };
 
-function RemoteAudio({ stream, muted }: { stream: MediaStream; muted: boolean }) {
-  usePreferences();
-  const ref = useRef<HTMLAudioElement>(null);
-  useEffect(() => {
-    if (ref.current && ref.current.srcObject !== stream) {
-      ref.current.srcObject = stream;
-      void ref.current.play().catch(() => undefined);
-    }
-  }, [stream]);
-  return <audio ref={ref} autoPlay muted={muted} />;
-}
-
 export function VoiceRoom({
   room: initial,
   me,
@@ -155,6 +146,11 @@ export function VoiceRoom({
   const [menuOpen, setMenuOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [speakerOff, setSpeakerOff] = useState(false);
+  const [blockedAudio, setBlockedAudio] = useState<Set<string>>(new Set());
+  const fetchIce = useServerFn(getVoiceIceServers);
+  const onAudioBlocked = useCallback((id: string, blocked: boolean) => setBlockedAudio(prev => {
+    const next = new Set(prev); if (blocked) next.add(id); else next.delete(id); return next;
+  }), []);
   const [chatHidden, setChatHidden] = useState(false);
   const [flying, setFlying] = useState<Flying[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -240,7 +236,7 @@ export function VoiceRoom({
     c.ownerId = room.owner_id;
     c.locked = new Set(room.locked_seats ?? []);
     client.current = c;
-    void c.start();
+    void fetchIce().then(servers => c.start(servers)).catch(() => c.start());
     return () => {
       onPresence(false);
       client.current = null;
@@ -453,7 +449,7 @@ export function VoiceRoom({
       {Object.entries(streams)
         .filter(([id]) => id !== me.id)
         .map(([id, s]) => (
-          <RemoteAudio key={id} stream={s} muted={speakerOff} />
+          <RemoteAudio key={id} id={id} stream={s} muted={speakerOff} onBlocked={onAudioBlocked} />
         ))}
       <header className="vr-head">
         <button type="button" className="vr-head-ava" onClick={copyId} aria-label="ID">
@@ -603,6 +599,7 @@ export function VoiceRoom({
           <i className="vr-burst" />
         </span>
       ))}
+      {!speakerOff && [...blockedAudio].some(id => streams[id]) && <Button variant="ghost" className="vr-sound-recover" aria-label={translate("Səsi aç")} onClick={() => window.dispatchEvent(new Event("voice-audio-resume"))}><Volume2 size={20} /></Button>}
       {videoGift && <GiftPlayback key={videoGift.id} gift={videoGift} muted={speakerOff} onDone={() => setGiftQueue(q => q.slice(1))} />}
       {toast && (
         <div className="vr-toast" role="status">

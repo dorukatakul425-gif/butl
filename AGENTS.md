@@ -42,7 +42,8 @@
 - Root prints the inspector notice once client-side; no DevTools detection or execution/input blocking, to preserve operation.
 - VPS hosting lives only in deploy/vps (subdirectories have their own AGENTS.md to read first); never change Lovable's .env/vite config for it, so both targets work.
 
-- Live voice rooms join with presence only; acquire microphone on seating and camera on explicit seated action, reusing sendrecv transceivers so listener promotion requires no schema change.
+- Live voice rooms join as listeners and capture microphone only on seating; reuse transceivers, serialize generation-scoped websocket signaling and recover incomplete peers on reconnect so promotion and network changes do not silently lose audio.
+- Issue short-lived TURN credentials through an authenticated server function; keep the shared relay secret only in VPS server configuration, so restrictive mobile networks work without exposing permanent relay access.
 - Live gifts use acknowledged room broadcasts with IDs/start timestamps; only catalogued media is rendered, and VPS media references resolve to the confirmed hosted asset origin.
 
 - Keep browser language/appearance preferences in the versioned app-preferences store, with SSR-safe Azerbaijani/light defaults and storage-event synchronization; exclude /game from appearance and translations to preserve the existing game.

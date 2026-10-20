@@ -53,16 +53,17 @@ type Signal = {
   type: "offer" | "answer" | "ice";
   sdp?: RTCSessionDescriptionInit;
   ice?: RTCIceCandidateInit;
+  negotiation?: string;
 };
 
-function iceServers(): RTCIceServer[] {
+export function iceServers(): RTCIceServer[] {
   const list: RTCIceServer[] = [
     { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
   ];
   const turn = import.meta.env["VITE_TURN_URL"] as string | undefined;
   if (turn)
     list.push({
-      urls: turn.split(","),
+      urls: turn.split(",").map(url => url.trim()).filter(Boolean),
       username: (import.meta.env["VITE_TURN_USERNAME"] as string | undefined) ?? "",
       credential: (import.meta.env["VITE_TURN_CREDENTIAL"] as string | undefined) ?? "",
     });
@@ -76,6 +77,10 @@ export class VoiceRoomClient {
   local: MediaStream | null = null;
   private ch: RealtimeChannel | null = null;
   private pcs = new Map<string, RTCPeerConnection>();
+  private iceConfig = iceServers();
+  private retries = new Map<string, number>();
+  private signalJobs = new Map<string, Promise<void>>();
+  private negotiations = new Map<string, string>();
   private remoteStreams = new Map<string, MediaStream>();
   private pendingIce = new Map<string, RTCIceCandidateInit[]>();
   private members: RoomMember[] = [];
@@ -101,7 +106,8 @@ export class VoiceRoomClient {
     this.me = { ...me, seat: null, mic: false, cam: false, joinedAt: Date.now() };
   }
 
-  async start() {
+  async start(servers?: RTCIceServer[]) {
+    if (servers?.length) this.iceConfig = servers;
     this.h.onStatus("connecting");
     if (this.closed) return;
     const ch = this.sb.channel(`vroom:${this.roomId}`, {
@@ -109,7 +115,13 @@ export class VoiceRoomClient {
     });
     this.ch = ch;
     ch.on("presence", { event: "sync" }, () => this.sync());
-    ch.on("broadcast", { event: "signal" }, ({ payload }) => void this.onSignal(payload as Signal));
+    ch.on("broadcast", { event: "signal" }, ({ payload }) => {
+      const s = payload as Signal;
+      if (!s || s.to !== this.me.id || !s.from || s.from === this.me.id) return;
+      const job = (this.signalJobs.get(s.from) ?? Promise.resolve()).then(() => this.onSignal(s)).catch(() => undefined);
+      this.signalJobs.set(s.from, job);
+      void job.finally(() => { if (this.signalJobs.get(s.from) === job) this.signalJobs.delete(s.from); });
+    });
     ch.on("broadcast", { event: "chat" }, ({ payload }) => this.h.onChat(payload as RoomChat));
     ch.on("broadcast", { event: "gift" }, ({ payload }) => this.receiveGift(payload as RoomGift));
     ch.on("broadcast", { event: "speak" }, ({ payload }) => {
@@ -142,6 +154,10 @@ export class VoiceRoomClient {
         if (this.closed) { await ch.untrack(); return; }
         this.ready = result === "ok";
         this.h.onStatus(this.ready ? "live" : "error");
+        if (this.ready) {
+          for (const [id, pc] of this.pcs) if (pc.connectionState !== "connected") this.drop(id);
+          this.sync();
+        }
       } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") { this.ready = false; this.h.onStatus("error"); }
     });
   }
@@ -221,7 +237,10 @@ export class VoiceRoomClient {
     const local = this.local;
     await Promise.all([...this.pcs.values()].flatMap(pc => pc.getTransceivers().map(tr => {
       const track = local?.getTracks().find(t => t.kind === tr.receiver.track.kind) ?? null;
-      return tr.sender.replaceTrack(track).catch(() => undefined);
+      return tr.sender.replaceTrack(track).catch(() => {
+        const entry = [...this.pcs].find(([, current]) => current === pc);
+        if (entry) { this.drop(entry[0]); this.sync(); }
+      });
     })));
   }
   private releaseMedia() {
@@ -317,9 +336,10 @@ export class VoiceRoomClient {
     this.h.onMembers(list);
   }
 
-  private makePc(id: string) {
+  private makePc(id: string, negotiation: string) {
     this.drop(id);
-    const pc = new RTCPeerConnection({ iceServers: iceServers() });
+    const pc = new RTCPeerConnection({ iceServers: this.iceConfig });
+    this.negotiations.set(id, negotiation);
     this.pcs.set(id, pc);
     for (const kind of ["audio", "video"]) {
       const track = this.local?.getTracks().find(t => t.kind === kind);
@@ -331,6 +351,7 @@ export class VoiceRoomClient {
           to: id,
           from: this.me.id,
           type: "ice",
+          negotiation,
           ice: e.candidate.toJSON(),
         } satisfies Signal);
     };
@@ -341,26 +362,52 @@ export class VoiceRoomClient {
       this.h.onStream(id, stream);
     };
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === "failed" && this.me.id < id && !this.closed) void this.call(id);
+      if (pc.connectionState === "connected") {
+        const timer = this.retries.get(id);
+        if (timer) window.clearTimeout(timer);
+        this.retries.delete(id);
+      } else if (pc.connectionState === "failed" || pc.connectionState === "disconnected") this.scheduleRetry(id, pc, 2000);
     };
     return pc;
   }
 
+  private scheduleRetry(id: string, pc: RTCPeerConnection, delay = 10000) {
+    if (this.closed || this.retries.has(id) || this.me.id > id) return;
+    const timer = window.setTimeout(() => {
+      this.retries.delete(id);
+      if (this.closed || this.pcs.get(id) !== pc || pc.connectionState === "connected") return;
+      this.drop(id);
+      if (this.ready && this.members.some(m => m.id === id)) void this.call(id);
+    }, delay);
+    this.retries.set(id, timer);
+  }
+
   private async call(id: string) {
-    const pc = this.makePc(id);
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    this.send("signal", {
-      to: id,
-      from: this.me.id,
-      type: "offer",
-      sdp: pc.localDescription!.toJSON(),
-    } satisfies Signal);
+    if (this.closed || !this.ready || this.pcs.has(id)) return;
+    const negotiation = uid();
+    const pc = this.makePc(id, negotiation);
+    this.scheduleRetry(id, pc);
+    try {
+      const offer = await pc.createOffer();
+      if (this.closed || this.pcs.get(id) !== pc) return;
+      await pc.setLocalDescription(offer);
+      if (this.closed || this.pcs.get(id) !== pc || !pc.localDescription) return;
+      const result = await this.ch?.send({ type: "broadcast", event: "signal", payload: {
+        to: id, from: this.me.id, type: "offer", negotiation, sdp: pc.localDescription.toJSON(),
+      } satisfies Signal });
+      if (result !== "ok") {
+        const timer = this.retries.get(id);
+        if (timer) window.clearTimeout(timer);
+        this.retries.delete(id);
+        this.scheduleRetry(id, pc, 1500);
+      }
+    } catch { this.scheduleRetry(id, pc, 1500); }
   }
 
   private async flushIce(id: string, pc: RTCPeerConnection) {
-    const q = this.pendingIce.get(id) ?? [];
-    this.pendingIce.delete(id);
+    const key = `${id}:${this.negotiations.get(id) ?? "legacy"}`;
+    const q = this.pendingIce.get(key) ?? [];
+    this.pendingIce.delete(key);
     for (const c of q) await pc.addIceCandidate(c).catch(() => undefined);
   }
 
@@ -368,26 +415,38 @@ export class VoiceRoomClient {
     if (s.to !== this.me.id || this.closed) return;
     try {
       if (s.type === "offer" && s.sdp) {
-        const pc = this.makePc(s.from);
+        if (s.from > this.me.id) return;
+        const negotiation = s.negotiation ?? "legacy";
+        const queued = this.pendingIce.get(`${s.from}:${negotiation}`);
+        const pc = this.makePc(s.from, negotiation);
+        if (queued) this.pendingIce.set(`${s.from}:${negotiation}`, queued);
         await pc.setRemoteDescription(s.sdp);
+        if (this.closed || this.pcs.get(s.from) !== pc) return;
         await this.flushIce(s.from, pc);
         const answer = await pc.createAnswer();
+        if (this.closed || this.pcs.get(s.from) !== pc) return;
         await pc.setLocalDescription(answer);
+        if (this.closed || this.pcs.get(s.from) !== pc || !pc.localDescription) return;
         this.send("signal", {
           to: s.from,
           from: this.me.id,
           type: "answer",
-          sdp: pc.localDescription!.toJSON(),
+          negotiation,
+          sdp: pc.localDescription.toJSON(),
         } satisfies Signal);
       } else if (s.type === "answer" && s.sdp) {
         const pc = this.pcs.get(s.from);
-        if (!pc || pc.signalingState !== "have-local-offer") return;
+        if (!pc || pc.signalingState !== "have-local-offer" || (s.negotiation && s.negotiation !== this.negotiations.get(s.from))) return;
         await pc.setRemoteDescription(s.sdp);
         await this.flushIce(s.from, pc);
       } else if (s.type === "ice" && s.ice) {
         const pc = this.pcs.get(s.from);
+        if (pc && s.negotiation && s.negotiation !== this.negotiations.get(s.from)) return;
         if (pc?.remoteDescription) await pc.addIceCandidate(s.ice).catch(() => undefined);
-        else this.pendingIce.set(s.from, [...(this.pendingIce.get(s.from) ?? []), s.ice]);
+        else {
+          const key = `${s.from}:${s.negotiation ?? "legacy"}`;
+          this.pendingIce.set(key, [...(this.pendingIce.get(key) ?? []), s.ice].slice(-64));
+        }
       }
     } catch (e) {
       console.warn("voice signal", e);
@@ -395,6 +454,11 @@ export class VoiceRoomClient {
   }
 
   private drop(id: string) {
+    const timer = this.retries.get(id);
+    if (timer) window.clearTimeout(timer);
+    this.retries.delete(id);
+    this.negotiations.delete(id);
+    for (const key of this.pendingIce.keys()) if (key.startsWith(`${id}:`)) this.pendingIce.delete(key);
     const pc = this.pcs.get(id);
     if (!pc) return;
     pc.onicecandidate = null;
