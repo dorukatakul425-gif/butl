@@ -56,7 +56,7 @@ describe("live voice room requirements", () => {
   });
   it("does not seat occupied or out-of-range seats", async () => {
     const x = harness("z"); await connect(x); x.setState({ other: [{ id: "a", seat: 3, joinedAt: 0 }] }); x.callbacks.get("presence:sync")?.();
-    expect(await x.client.setSeat(3)).toBe(false); expect(await x.client.setSeat(8)).toBe(false); expect(gum).not.toHaveBeenCalled(); await x.client.leave();
+    expect(await x.client.setSeat(3)).toBe(false); expect(await x.client.setSeat(10)).toBe(false); expect(gum).not.toHaveBeenCalled(); await x.client.leave();
   });
   it("sends a single acknowledged gift to sender and all room listeners with same ID/start time", async () => {
     const a = harness(), b = harness("b"); await connect(a); await connect(b);
