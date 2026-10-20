@@ -173,7 +173,7 @@ export function dismissNotice(id: string) {
 }
 
 // ---------- data ----------
-async function ensureProfiles(ids: string[]) {
+export async function ensureProfiles(ids: string[]) {
   const gen = generation;
   const sb = getSupabase();
   const missing = [...new Set(ids)].filter(id => !state.profiles[id]);
