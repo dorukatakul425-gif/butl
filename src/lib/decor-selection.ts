@@ -70,7 +70,8 @@ export function buildDecorItems(assets: CilizAssets, viewer: DecorViewer): Decor
   for (const entry of LEVEL_FRAMES) {
     const frame = assets.frames[entry.key];
     if (!frame) continue;
-    const open = isLevelFrameOpen(entry.level, giftLevel);
+    const granted = viewer.ownedItems.includes(entry.key);
+    const open = granted || isLevelFrameOpen(entry.level, giftLevel);
     items.push({
       type: entry.key,
       frame,
@@ -78,7 +79,7 @@ export function buildDecorItems(assets: CilizAssets, viewer: DecorViewer): Decor
       price: open ? { type: "open" } : { type: "lock" },
       title: `🏅 Səviyyə ${entry.level} ramkası`,
       btnTitle: t("dlg:decor_selection:btn:apply"),
-      description: open ? `Hədiyyə səviyyən ${entry.level}-ə çatıb - ramka açıqdır` : `Hədiyyə səviyyəsi ${entry.level}-də açılır`,
+      description: granted ? "Admin tərəfindən sənə verilib - ramka açıqdır" : open ? `Hədiyyə səviyyən ${entry.level}-ə çatıb - ramka açıqdır` : `Hədiyyə səviyyəsi ${entry.level}-də açılır`,
     });
   }
   return items;

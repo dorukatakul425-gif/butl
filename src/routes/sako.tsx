@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { TelegramNotifications } from "@/components/admin/telegram-notifications";
 import { TelegramBotSettings } from '@/components/admin/telegram-bot-settings';
 import { Input } from "@/components/ui/input";
+import { PlayerLevelPanel } from "@/components/admin/player-level-panel";
 import { useAuth } from "@/lib/auth";
 import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setKisses, setBan, listReports, resolveReport, listStatusReviews, reviewStatus, sendBroadcast, listRoomsAdmin, viewRoomAdmin } from "@/lib/admin.functions";
 
@@ -238,6 +239,7 @@ function PlayerRow({ p }: { p: Player }) {
   const ban = useServerFn(setBan);
   const [open, setOpen] = useState(false);
   const [kissOpen, setKissOpen] = useState(false);
+  const [levelOpen, setLevelOpen] = useState(false);
   const [kissValue, setKissValue] = useState("");
   const [field, setField] = useState<"gold" | "tokens" | "dat">("gold");
   const [amount, setAmount] = useState("");
@@ -275,6 +277,7 @@ function PlayerRow({ p }: { p: Player }) {
         </div>
         <Button size="sm" variant="outline" onClick={() => setOpen(!open)}>Balans</Button>
         <Button size="sm" variant="outline" onClick={() => setKissOpen(!kissOpen)}>Öpüş</Button>
+        <Button size="sm" variant="outline" onClick={() => setLevelOpen(!levelOpen)}>Səviyyə / Ramka</Button>
         <Button size="sm" variant={p.banned ? "secondary" : "destructive"} disabled={banM.isPending}
           onClick={() => { if (p.banned) { if (confirm("Qadağa ləğv edilsin?")) banM.mutate(); } else setBanOpen(!banOpen); }}>
           {p.banned ? "Qadağanı ləğv et" : "Qadağan et"}
@@ -317,6 +320,7 @@ function PlayerRow({ p }: { p: Player }) {
           <Button size="sm" disabled={!kissValue || kissM.isPending} onClick={() => kissM.mutate()}>Təyin et</Button>
         </div>
       )}
+      {levelOpen && <PlayerLevelPanel userId={p.id} />}
       {msg && <p className="mt-2 text-xs text-muted-foreground">{msg}</p>}
     </div>
   );

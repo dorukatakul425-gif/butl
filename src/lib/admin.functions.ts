@@ -346,3 +346,42 @@ export const replaceTelegramBotToken = createServerFn({ method: 'POST' })
     if (error) throw new Error('Bot ayarları saxlanmadı.');
     return { ok: true };
   });
+
+const LevelInput = z.object({ userId: z.string().uuid(), level: z.number().int().min(0).max(100) });
+
+/** Admin: player's gift level and individually granted level frames. */
+export const getPlayerLevel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const [{ data: pts, error }, { data: prof }] = await Promise.all([
+      admin.rpc("gift_points_of", { p_user: data.userId }),
+      admin.from("profiles").select("owned_items, frame").eq("id", data.userId).single(),
+    ]);
+    if (error) throw new Error(error.message);
+    const points = Number(pts) || 0;
+    return { points, level: Math.min(100, Math.floor(points / 1400)), owned: ((prof?.owned_items ?? []) as string[]).filter((i) => i.startsWith("cf_")), frame: (prof?.frame ?? "") as string };
+  });
+
+/** Admin: set an exact gift level (1400 points per level, max 100). */
+export const setGiftLevel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => LevelInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const { data: level, error } = await admin.rpc("admin_set_gift_level", { _user_id: data.userId, _level: data.level });
+    if (error) throw new Error(error.message);
+    return { level: level as number };
+  });
+
+/** Admin: give or take one animated level frame regardless of level. */
+export const grantFrame = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ userId: z.string().uuid(), frame: z.string().regex(/^cf_\d+$/), give: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await assertAdmin(context);
+    const { data: owned, error } = await admin.rpc("admin_grant_frame", { _user_id: data.userId, _frame: data.frame, _give: data.give });
+    if (error) throw new Error(error.message);
+    return { owned: ((owned ?? []) as string[]).filter((i) => i.startsWith("cf_")) };
+  });
