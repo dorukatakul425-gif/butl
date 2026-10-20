@@ -1,6 +1,7 @@
 // Live room transport: Realtime websocket channel (presence = members/seats/mic/cam,
 // broadcast = chat, gifts, speaking levels, WebRTC signalling) + a WebRTC mesh for audio/video.
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
+import { isLiveGift } from "@/lib/live-gifts";
 
 export const SEAT_COUNT = 10;
 
@@ -24,8 +25,16 @@ export type RoomChat = {
   gift?: string;
   to?: string | null;
   toName?: string;
+  count?: number | undefined;
+  comboId?: string | undefined;
 };
-export type RoomGift = { id: string; from: string; to: string | null; gift: string; name?: string; at?: number };
+export type RoomGift = { id: string; from: string; to: string | null; gift: string; name?: string; photo?: string | null; toName?: string | undefined; at?: number; count?: number | undefined; comboId?: string | undefined };
+/** Owner moderation messages. kick is double-checked against the server kick list by the target. */
+export type RoomMod =
+  | { type: "kick"; from: string; target: string; until: number }
+  | { type: "unseat"; from: string; target: string }
+  | { type: "invite"; from: string; target: string; seat: number | null; name: string }
+  | { type: "invite_reply"; from: string; target: string; accept: boolean; name: string };
 
 type Handlers = {
   onMembers: (m: RoomMember[]) => void;
@@ -35,6 +44,7 @@ type Handlers = {
   onGift: (g: RoomGift) => void;
   onRoom: (type: "updated" | "closed") => void;
   onStatus: (s: "connecting" | "live" | "error") => void;
+  onMod?: (m: RoomMod) => void;
 };
 
 type Signal = {
@@ -78,6 +88,9 @@ export class VoiceRoomClient {
   private seenGifts = new Set<string>();
   private departed = new Map<string, number>();
   private closed = false;
+  /** Seats the owner has locked; nobody can sit there. */
+  locked = new Set<number>();
+  ownerId = "";
 
   constructor(
     private sb: SupabaseClient,
@@ -106,6 +119,14 @@ export class VoiceRoomClient {
     ch.on("broadcast", { event: "room" }, ({ payload }) =>
       this.h.onRoom((payload as { type: "updated" | "closed" }).type),
     );
+    ch.on("broadcast", { event: "mod" }, ({ payload }) => {
+      const m = payload as RoomMod;
+      if (!m || this.closed) return;
+      if (m.type === "invite_reply") { if (m.target === this.me.id) this.h.onMod?.(m); return; }
+      if (m.target !== this.me.id || !this.ownerId || m.from !== this.ownerId) return;
+      if (m.type === "unseat" && this.me.seat !== null) void this.setSeat(null);
+      this.h.onMod?.(m);
+    });
     ch.on("broadcast", { event: "departure" }, ({ payload }) => {
       const p = payload as { id?: string; joinedAt?: number };
       if (p.id && p.id !== this.me.id) {
@@ -177,7 +198,7 @@ export class VoiceRoomClient {
       this.retrack();
       return true;
     }
-    if (!Number.isInteger(seat) || seat < 0 || seat >= SEAT_COUNT || this.mediaBusy || this.members.some(m => m.id !== this.me.id && m.seat === seat)) return false;
+    if (!Number.isInteger(seat) || seat < 0 || seat >= SEAT_COUNT || this.mediaBusy || this.locked.has(seat) || this.members.some(m => m.id !== this.me.id && m.seat === seat)) return false;
     this.mediaBusy = true;
     try {
       if (!this.hasAudio()) {
@@ -228,22 +249,25 @@ export class VoiceRoomClient {
     this.h.onChat(msg);
     this.send("chat", msg);
   }
-  async sendGift(to: RoomMember | null, gift: string) {
-    if (!this.ready || this.closed || !this.ch || gift !== "video") return false;
-    const g: RoomGift = { id: uid(), from: this.me.id, name: this.me.name, to: to?.id ?? null, gift, at: Date.now() + 700 };
+  async sendGift(to: RoomMember | null, gift: string, combo?: { id: string; count: number }) {
+    if (!this.ready || this.closed || !this.ch || !isLiveGift(gift)) return false;
+    const g: RoomGift = { id: uid(), from: this.me.id, name: this.me.name, photo: this.me.photo, to: to?.id ?? null, toName: to?.name, gift, at: Date.now() + (gift === "video" ? 700 : 0), count: combo?.count ?? 1, comboId: combo?.id };
     const result = await this.ch.send({ type: "broadcast", event: "gift", payload: g });
     if (result !== "ok" || this.closed) return false;
     this.receiveGift(g);
-    const msg: RoomChat = { id: g.id, from: this.me.id, name: this.me.name, photo: this.me.photo, text: "", at: g.at ?? Date.now(), kind: "gift", gift, to: g.to, toName: to?.name ?? "hamıya" };
+    const msg: RoomChat = { id: g.id, from: this.me.id, name: this.me.name, photo: this.me.photo, text: "", at: g.at ?? Date.now(), kind: "gift", gift, to: g.to, toName: to?.name ?? "", count: g.count, comboId: g.comboId };
     this.h.onChat(msg);
     this.send("chat", msg);
     return true;
   }
   private receiveGift(g: RoomGift) {
-    if (this.closed || g.gift !== "video" || !g.id || this.seenGifts.has(g.id)) return;
+    if (this.closed || !isLiveGift(g.gift) || !g.id || this.seenGifts.has(g.id)) return;
     this.seenGifts.add(g.id);
     if (this.seenGifts.size > 200) { const first = this.seenGifts.values().next().value; if (first) this.seenGifts.delete(first); }
     this.h.onGift(g);
+  }
+  sendMod(m: RoomMod) {
+    this.send("mod", m);
   }
   notifyRoom(type: "updated" | "closed") {
     this.send("room", { type });
