@@ -12,13 +12,14 @@ import {
   MicOff,
   Send,
   Settings,
-  Video,
-  VideoOff,
+  Camera,
+  Users,
+  AlertTriangle,
+  LogIn,
   X,
   Trash2,
   Check,
   Bell,
-  ChevronLeft,
   Maximize2,
   Minimize2,
   MoreHorizontal,
@@ -35,15 +36,9 @@ import {
   type RoomGift,
   type RoomMember,
 } from "@/lib/voice-rtc";
-import {
-  ROOM_COVERS,
-  coverOf,
-  roomKind,
-  roomTitle,
-  withKind,
-  type RoomKind,
-  type VoiceRoomRow,
-} from "./live-rooms";
+import { coverOf, roomTitle, withKind, roomPhoto, compressRoomPhoto, ROOM_COLS, type VoiceRoomRow } from "./live-rooms";
+import { checkProfanity, PROFANITY_WARNING } from "@/lib/profanity";
+import { TELEGRAM_NO_PHOTO } from "@/lib/player-photo";
 import { Button } from "@/components/ui/button";
 import giftArtwork from "@/assets/gifts/pegasus.jpg.asset.json";
 import giftClip from "@/assets/gifts/pegasus.mp4.asset.json";
@@ -100,14 +95,6 @@ function GiftPlayback({ gift, muted, onDone }: { gift: RoomGift; muted: boolean;
 type Me = { id: string; name: string; photo: string | null };
 type Flying = RoomGift & { x: number; y: number };
 
-function VideoTile({ stream, muted }: { stream: MediaStream; muted: boolean }) {
-  usePreferences();
-  const ref = useRef<HTMLVideoElement>(null);
-  useEffect(() => {
-    if (ref.current && ref.current.srcObject !== stream) ref.current.srcObject = stream;
-  }, [stream]);
-  return <video ref={ref} autoPlay playsInline muted={muted} />;
-}
 function RemoteAudio({ stream, muted }: { stream: MediaStream; muted: boolean }) {
   usePreferences();
   const ref = useRef<HTMLAudioElement>(null);
@@ -123,12 +110,14 @@ function RemoteAudio({ stream, muted }: { stream: MediaStream; muted: boolean })
 export function VoiceRoom({
   room: initial,
   me,
+  ownerName = "",
   defaultPhoto,
   onLeave,
   onPresence,
 }: {
   room: VoiceRoomRow;
   me: Me;
+  ownerName?: string;
   defaultPhoto: string;
   onLeave: () => void;
   onPresence: (inRoom: boolean) => void;
@@ -166,6 +155,7 @@ export function VoiceRoom({
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState("");
   const client = useRef<VoiceRoomClient | null>(null);
+  const seenRef = useRef<Set<string> | null>(null);
   const seatRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const chatRef = useRef<HTMLDivElement>(null);
   const isOwner = room.owner_id === me.id;
@@ -183,7 +173,16 @@ export function VoiceRoom({
       return;
     }
     const c = new VoiceRoomClient(sb, room.id, me, {
-      onMembers: setMembers,
+      onMembers: (list) => {
+        const prev = seenRef.current;
+        if (prev) {
+          const joined = list.filter((m) => !prev.has(m.id) && m.id !== me.id);
+          if (joined.length)
+            setChat((c) => [...c.slice(-80), ...joined.map((m) => ({ id: `join-${m.id}-${Date.now()}`, from: m.id, name: m.name, photo: m.photo, text: "", at: Date.now(), kind: "system" as const, to: "join" }))]);
+        }
+        seenRef.current = new Set(list.map((m) => m.id));
+        setMembers(list);
+      },
       onStream: (id, s) =>
         setStreams((prev) => {
           const n = { ...prev };
@@ -202,7 +201,7 @@ export function VoiceRoom({
         } else
           void sb
             .from("voice_rooms")
-            .select("id,code,name,cover,owner_id,created_at")
+            .select(ROOM_COLS)
             .eq("id", room.id)
             .maybeSingle()
             .then(({ data }) => {
@@ -252,7 +251,6 @@ export function VoiceRoom({
   }, [members]);
   const listeners = members.filter((m) => m.seat === null);
   const cover = coverOf(room.cover);
-  const kind = roomKind(room.name);
 
   const send = () => {
     const t = text.trim();
@@ -264,11 +262,6 @@ export function VoiceRoom({
     const c = client.current;
     if (!c || c.me.seat === null) { flash(translate("Əvvəlcə masaya otur")); return; }
     if (!c.toggleMic()) flash(translate("Mikrofona icazə verilməyib"));
-  };
-  const toggleCam = async () => {
-    const c = client.current;
-    if (!c || c.me.seat === null) { flash(translate("Əvvəlcə masaya otur")); return; }
-    if (!await c.toggleCam()) flash(translate("Kameraya icazə verilməyib"));
   };
   const sit = async (seat: number) => {
     if (seatBusy) return;
@@ -289,15 +282,13 @@ export function VoiceRoom({
     const m = bySeat.get(i);
     const lvl = m ? (levels[m.id] ?? 0) : 0;
     const speaking = Boolean(m && m.mic && lvl > 0);
-    const stream = m ? streams[m.id] : undefined;
-    const camOn = Boolean(m && m.cam && stream);
     return (
       <div
         key={i}
         ref={(el) => {
           seatRefs.current[i] = el;
         }}
-        className={`vr-seat${m ? " taken" : ""}${speaking ? " speaking" : ""}${m?.id === me.id ? " me" : ""}${camOn ? " cam" : ""}`}
+        className={`vr-seat${m ? " taken" : ""}${speaking ? " speaking" : ""}${m?.id === me.id ? " me" : ""}`}
         style={{ ["--lvl" as string]: String(lvl) }}
       >
         {m ? (
@@ -306,17 +297,14 @@ export function VoiceRoom({
             <span className="vr-ring r2" />
             <span className="vr-ring r3" />
             <div className="vr-ava">
-              {camOn && stream ? (
-                <VideoTile stream={stream} muted />
-              ) : (
-                <img src={m.photo || defaultPhoto} alt={m.name} />
-              )}
+              <img src={m.photo || defaultPhoto} alt={m.name} />
             </div>
             {!m.mic && (
               <span className="vr-muted">
                 <MicOff size={11} />
               </span>
             )}
+            <span className="vr-numchip">{i + 1}</span>
             {m.id === room.owner_id && <span className="vr-crown">👑</span>}
             <span className="vr-name">{m.id === me.id ? translate("Sən") : m.name}</span>
             <span className="vr-eq" aria-hidden="true">
@@ -334,10 +322,10 @@ export function VoiceRoom({
             onClick={() => void sit(i)}
             aria-label={`${i + 1}. yerə otur`}
           >
+            <span className="vr-numchip">{i + 1}</span>
             <span className="vr-plus">
-              <Plus size={30} strokeWidth={1.6} />
+              <Plus size={26} strokeWidth={2} />
             </span>
-            <span className="vr-num">{i + 1}</span>
           </button>
         )}
       </div>
@@ -347,11 +335,11 @@ export function VoiceRoom({
   const owner = members.find((m) => m.id === room.owner_id);
   return (
     <div
-      className={`vr vr-kind-${kind} vr-cover-${cover.key}`}
+      className={`vr vr-kind-voice vr-cover-${cover.key}`}
       role="dialog"
       aria-modal="true"
       aria-label={roomTitle(room.name)}
-      style={{ backgroundImage: `url(${roomBg})` }}
+      style={{ backgroundImage: `url(${room.photo || roomBg})` }}
     >
       <style>{VR_STYLES}</style>
       <div className="vr-sky" aria-hidden="true" />
@@ -360,36 +348,21 @@ export function VoiceRoom({
         .map(([id, s]) => (
           <RemoteAudio key={id} stream={s} muted={speakerOff} />
         ))}
-      <header className="vr-top">
-        <button type="button" className="vr-back" onClick={onLeave} aria-label={translate("Otaqdan çıx")}>
-          <ChevronLeft size={26} />
+      <header className="vr-head">
+        <button type="button" className="vr-head-ava" onClick={copyId} aria-label="ID">
+          <img src={room.photo || owner?.photo || TELEGRAM_NO_PHOTO} alt="" />
         </button>
-        <div className="vr-plate">
-          <div className="vr-room-ava">
-            <span>{cover.emoji}</span>
-          </div>
-          <div className="vr-title">
-            <strong>{roomTitle(room.name)}</strong>
-            <button type="button" className="vr-id" onClick={copyId}>
-              ID:{room.code} {copied ? <Check size={11} /> : <Copy size={11} />}
-            </button>
-          </div>
-          <span className="vr-kind-badge">{kind === "video" ? <Video size={14} /> : <Mic size={14} />}</span>
-        </div>
-        <div className="vr-top-right">
-          <span className="vr-host">
-            <img src={owner?.photo || defaultPhoto} alt="" />
-          </span>
-          <button
-            type="button"
-            className="vr-dots"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Menyu"
-          >
-            <MoreHorizontal size={22} />
+        <div className="vr-head-text">
+          <strong>@{ownerName || owner?.name || roomTitle(room.name)}</strong>
+          <button type="button" className="vr-head-id" onClick={copyId}>
+            {translate("OTAQ ID")}: <b>{room.code}</b>{copied ? <Check size={12} /> : null}
           </button>
         </div>
+        <span className="vr-head-pill"><Users size={16} />{members.length}</span>
+        <button type="button" className="vr-head-pill vr-head-more" onClick={() => setMenuOpen(true)} aria-label="Menyu"><MoreHorizontal size={18} /></button>
+        <button type="button" className="vr-head-pill" onClick={onLeave} aria-label={translate("Otaqdan çıx")}><LogOut size={18} /></button>
       </header>
+      <div className="vr-roomname">{roomTitle(room.name)}</div>
       {status !== "live" && (
         <div className="vr-subrow">
           <span className={`vr-status ${status}`}>
@@ -422,7 +395,12 @@ export function VoiceRoom({
 
       <div className={`vr-chat${chatHidden ? " hidden" : ""}`} ref={chatRef}>
         {chat.map((m) =>
-          m.kind === "system" ? (
+          m.kind === "system" && m.to === "join" ? (
+            <div key={m.id} className="vr-msg join">
+              <span className="vr-msg-ico"><LogIn size={16} /></span>
+              <p><b>@{m.name}</b> {translate("otağa daxil oldu.")}</p>
+            </div>
+          ) : m.kind === "system" ? (
             <div key={m.id} className="vr-msg sys">
               <span className="vr-msg-ico">
                 <Bell size={15} />
@@ -480,14 +458,6 @@ export function VoiceRoom({
           aria-label="Mikrofon"
         >
           {meMember?.mic ? <Mic size={24} /> : <MicOff size={24} />}
-        </button>
-        <button
-          type="button"
-          className={`vr-tool${meMember?.cam ? " on" : ""}`}
-          onClick={toggleCam}
-          aria-label="Kamera"
-        >
-          {meMember?.cam ? <Video size={23} /> : <VideoOff size={23} />}
         </button>
         <div className="vr-input">
           <button type="button" className="vr-emo" onClick={() => setEmojiOpen((v) => !v)} aria-label="Emoji">
@@ -655,30 +625,33 @@ function RoomSettings({
   onSaved: (r: VoiceRoomRow) => void;
   onDeleted: () => void;
 }) {
-  usePreferences();
+  const { language } = usePreferences();
   const [name, setName] = useState(roomTitle(room.name));
-  const [cover, setCover] = useState(room.cover);
-  const [kind, setKind] = useState<RoomKind>(roomKind(room.name));
+  const [photo, setPhoto] = useState<string | null>(room.photo ?? null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const warning = PROFANITY_WARNING[language] ?? PROFANITY_WARNING.az;
+  const bad = !checkProfanity(name).clean;
   const save = async () => {
     const sb = getSupabase();
     if (!sb || !name.trim()) return;
+    if (bad) { setErr(warning); return; }
     setBusy(true);
     setErr("");
     const { data, error } = await sb
       .from("voice_rooms")
-      .update({ name: withKind(name.trim(), kind), cover })
+      .update({ name: withKind(name), photo })
       .eq("id", room.id)
-      .select("id,code,name,cover,owner_id,created_at")
+      .select(ROOM_COLS)
       .single();
     setBusy(false);
-    if (error) setErr(error.message);
+    if (error) setErr(/banned_word/.test(error.message) ? warning : error.message);
     else onSaved(data as VoiceRoomRow);
   };
   const remove = async () => {
     const sb = getSupabase();
-    if (!sb || !window.confirm("Otaq silinsin?")) return;
+    if (!sb || !window.confirm(translate("Otaq silinsin?"))) return;
     setBusy(true);
     const { error } = await sb.from("voice_rooms").delete().eq("id", room.id);
     setBusy(false);
@@ -686,47 +659,23 @@ function RoomSettings({
     else onDeleted();
   };
   return (
-    <div
-      className="vr-sheet-wrap"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
+    <div className="vr-sheet-wrap" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="vr-sheet">
         <div className="vr-sheet-head">
           <h3>{translate("Otaq ayarları")}</h3>
-          <button type="button" className="vr-icon" onClick={onClose} aria-label={translate("Bağla")}>
-            <X size={18} />
-          </button>
+          <button type="button" className="vr-icon" onClick={onClose} aria-label={translate("Bağla")}><X size={18} /></button>
         </div>
-        <label className="vr-field">
-          {translate("Otaq adı")}<input value={name} onChange={(e) => setName(e.target.value)} maxLength={39} />
-        </label>
-        <span className="vr-field">{translate("Otaq növü")}</span>
-        <div className="vr-kinds">
-          <button type="button" className={kind === "voice" ? "on" : ""} onClick={() => setKind("voice")}>
-            <Mic size={16} /> {translate("Səsli")}</button>
-          <button type="button" className={kind === "video" ? "on" : ""} onClick={() => setKind("video")}>
-            <Video size={16} /> {translate("Görüntülü")}</button>
-        </div>
-        <span className="vr-field">{translate("Otaq şəkli")}</span>
-        <div className="vr-covers">
-          {ROOM_COVERS.map((c) => (
-            <button
-              key={c.key}
-              type="button"
-              className={`vr-cover-pick vr-cover-${c.key}${cover === c.key ? " on" : ""}`}
-              onClick={() => setCover(c.key)}
-              aria-label={c.key}
-            >
-              {c.emoji}
-            </button>
-          ))}
-        </div>
-        {err && <p className="vr-err">{err}</p>}
-        <button type="button" className="vr-primary" disabled={busy} onClick={save}>
-          Yadda saxla
+        <button type="button" className="lv-photo" onClick={() => fileRef.current?.click()}>
+          <img src={roomPhoto({ photo })} alt="" />
+          <span className="lv-photo-cta"><Camera size={16} />{translate("Otaq şəkli")}</span>
         </button>
+        {photo && <button type="button" className="lv-link" onClick={() => setPhoto(null)}>✕</button>}
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) try { setPhoto(await compressRoomPhoto(f)); } catch { /* ignore */ } }} />
+        <label className="vr-field">
+          {translate("Otaq adı")}<input className={bad ? "lv-bad" : ""} value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} maxLength={40} />
+        </label>
+        {(bad || err) && <p className="lv-warn" role="alert"><AlertTriangle size={15} />{bad ? warning : err}</p>}
+        <button type="button" className="vr-primary" disabled={busy || bad} onClick={save}>{translate("Yadda saxla")}</button>
         <button type="button" className="vr-danger" disabled={busy} onClick={remove}>
           <Trash2 size={15} />
           {translate("Otağı bağla və sil")}</button>
@@ -878,4 +827,26 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 @keyframes vr-fly{0%{transform:translate(50vw,100dvh) translate(-50%,-50%) scale(.4);opacity:0}15%{opacity:1}55%{transform:translate(var(--tx),var(--ty)) translate(-50%,-50%) scale(1.5)}75%{transform:translate(var(--tx),var(--ty)) translate(-50%,-50%) scale(1.2) rotate(-8deg)}100%{transform:translate(var(--tx),calc(var(--ty) - 40px)) translate(-50%,-50%) scale(.6);opacity:0}}
 @keyframes vr-burst{0%,50%{opacity:0;box-shadow:0 0 0 0 oklch(.78 .16 70 / .9)}55%{opacity:1}100%{opacity:0;box-shadow:0 0 0 60px oklch(.78 .16 70 / 0)}}
 @media(prefers-reduced-motion:reduce){.vr *,.vr{animation:none!important;transition:none!important}}
+
+.vr-head{display:flex;align-items:center;gap:10px;margin:0 10px;padding:10px 10px 10px 12px;border-radius:20px;background:oklch(.17 .015 260 / .82);backdrop-filter:blur(14px);border:1px solid oklch(1 0 0 / .08);box-shadow:0 10px 30px oklch(0 0 0 / .35);}
+.vr-head-ava{all:unset;flex-shrink:0;width:46px;height:46px;border-radius:14px;overflow:hidden;box-shadow:0 0 0 2px oklch(.8 .14 75 / .7);}
+.vr-head-ava img{width:100%;height:100%;object-fit:cover;display:block;}
+.vr-head-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.vr-head-text strong{font-size:16px;font-weight:850;color:oklch(.82 .14 75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vr-head-id{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.12em;color:oklch(.72 .01 260);}
+.vr-head-id b{font-family:ui-monospace,monospace;font-size:14px;letter-spacing:.06em;color:oklch(.8 .18 155);}
+.vr-head-pill{all:unset;cursor:pointer;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:42px;height:42px;padding:0 10px;border-radius:14px;font-size:14px;font-weight:850;background:oklch(.12 .01 260 / .8);border:1px solid oklch(1 0 0 / .07);}
+.vr-head-pill:active{transform:scale(.93);}
+.vr-roomname{align-self:center;margin:8px 0 2px;padding:4px 14px;border-radius:12px;font-size:12.5px;font-weight:800;background:oklch(0 0 0 / .35);backdrop-filter:blur(8px);max-width:80%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vr.vr-kind-voice{background-size:cover;background-position:center;}
+.vr.vr-kind-voice .vr-sky{background:linear-gradient(oklch(.1 .01 260 / .55),oklch(.1 .01 260 / .35) 40%,oklch(.08 .01 260 / .8));}
+.vr .vr-seats{grid-template-columns:repeat(5,minmax(0,1fr));gap:34px 4px;max-width:440px;padding:14px 10px 0;}
+.vr .vr-seat{width:min(16.5vw,66px);}
+.vr-numchip{position:absolute;z-index:4;top:-9px;left:50%;transform:translateX(-50%);min-width:22px;height:18px;padding:0 6px;border-radius:9px;display:grid;place-items:center;font-size:10.5px;font-weight:900;font-family:ui-monospace,monospace;background:oklch(.16 .01 260 / .95);border:1px solid oklch(1 0 0 / .14);color:oklch(.95 0 0);box-shadow:0 3px 8px oklch(0 0 0 / .4);}
+.vr .vr-empty{background:radial-gradient(circle at 50% 28%,oklch(.42 .09 165 / .75),oklch(.2 .05 175 / .85));border:1.5px solid oklch(.75 .15 160 / .35);color:oklch(.82 .17 155);box-shadow:inset 0 2px 0 oklch(1 0 0 / .12),0 8px 18px oklch(0 0 0 / .4),0 0 0 4px oklch(.7 .15 160 / .08);}
+.vr .vr-empty:not(:disabled):hover{box-shadow:inset 0 2px 0 oklch(1 0 0 / .12),0 8px 18px oklch(0 0 0 / .4),0 0 18px oklch(.75 .17 155 / .45);}
+.vr .vr-empty:disabled{opacity:.6;}
+.vr-msg.join{align-items:center;border-radius:16px;background:oklch(.15 .01 260 / .8);border:1px solid oklch(1 0 0 / .08);animation:vr-msg .3s ease-out both;}
+.vr-msg.join .vr-msg-ico{color:oklch(.8 .18 155);background:transparent;display:grid;place-items:center;}
+.vr-msg.join b{color:oklch(.8 .18 155);margin-right:4px;}
 `;
