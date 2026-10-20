@@ -19,6 +19,7 @@ import { TABLE_USER_KISS } from "@/lib/table-kiss-icon";
 import { spinAngle, leftRight, SPIN_SECONDS, CENTER_SECONDS, RETURN_SECONDS, CENTER_PLAYER_SCALE } from "@/lib/bottle-game";
 import { cleanDisplayName } from "@/lib/display-name";
 import { playEntryFx } from "@/components/table/entry-fx-pixi";
+import { playPremiumFinish, premiumStickAlive } from "@/components/table/premium-gift-fx-pixi";
 import { entryParticipantCurrent } from "@/lib/entry-fx-lifetime";
 
 // TableView seats (virtual 375px table space, origin at table centre).
@@ -626,6 +627,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     // GiftAnimations.onStick()
     hideGifts(receiver, gift.stickPoint, gift.stickPoint === "ava" ? 8 : 0, 2);
     receiver.sticks.push({ gift, view });
+    premiumStickAlive(gift.type, view);
     startTableEffects();
   };
 
@@ -682,7 +684,13 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       void stickGift(receiver, gift, stickView ?? flyView, valid);
     });
     const finishSec = gift.spine ? gift.spineFinishSec || FLY_SEC : FLY_SEC;
-    after(finishSec, () => { if (valid()) options.playSfx?.(gift.finishSound); });
+    after(finishSec, () => {
+      if (!valid()) return;
+      options.playSfx?.(gift.finishSound);
+      // GiftAnimations: p1_firework → Ga.burst, p2_/p6_/p7x_ → Fa.play on the receiver.
+      const target = { d: receiver.view, get _invalid() { return !valid(); } };
+      playPremiumFinish(gift.type, target);
+    });
   };
 
   const observer = new ResizeObserver(layout);

@@ -3,6 +3,7 @@
 import { completeLoadingStage, failGameLoading } from "./game-loading";
 import { customFrameUrl, injectCustomFrames } from "./custom-frames";
 import { injectSourceNormalGifts } from "./source-normal-gifts";
+import { injectSourcePremiumGifts, premiumImageUrl } from "./source-premium-gifts";
 import type { CilizGesture, GestureEntry } from "./gestures";
 const SERVER_JSON_URL = "https://cdn-s.ciliz.com/mobile/server.json";
 
@@ -137,6 +138,7 @@ export function loadCilizAssets(): Promise<CilizAssets> {
       } satisfies CilizAssets;
       injectCustomFrames(result);
       injectSourceNormalGifts(result);
+      injectSourcePremiumGifts(result);
       return result;
     })();
     assetsPromise.catch(() => {
@@ -176,6 +178,8 @@ export function bundleUrl(assets: CilizAssets, name: string, ext: "png" | "webp"
   const custom = customFrameUrl(name);
   if (custom) return custom;
   const bundle = pickBundle(assets, targetSize ?? VIRTUAL_SIZE * dpr());
+  const premium = ext === "json" ? "" : premiumImageUrl(bundle.url, name);
+  if (premium) return premium;
   return bundle.url.replace("${name}", `${name}.${ext}`);
 }
 
@@ -210,7 +214,7 @@ export function dialogImage(assets: CilizAssets, name: string, w?: number, h?: n
   const height = h ?? frame.height;
   const scale = frame.width && frame.height ? Math.min(width / frame.width, height / frame.height) : 1;
   return {
-    src: customFrameUrl(name) || bundle.url.replace("${name}", `${name}.png`),
+    src: customFrameUrl(name) || premiumImageUrl(bundle.url, name) || bundle.url.replace("${name}", `${name}.png`),
     width: Math.round(scale * frame.width),
     height: Math.round(scale * frame.height),
   };

@@ -20,7 +20,7 @@ const cached = (key: string, draw: (ctx: CanvasRenderingContext2D) => void, size
 };
 
 /** Rd.tex("glow"|"rays", color) */
-function fxTex(kind: "glow" | "rays", color: string) {
+export function fxTex(kind: "glow" | "rays", color: string) {
   return cached(kind + color, (ctx) => {
     if (kind === "glow") {
       const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 128);
@@ -40,6 +40,7 @@ function fxTex(kind: "glow" | "rays", color: string) {
   }, 256);
 }
 
+export const fxSprite = (tex: Texture, size: number) => sprite(tex, size);
 const sprite = (tex: Texture, size: number) => {
   const s = new Sprite(tex);
   s.anchor.set(0.5);
@@ -48,7 +49,7 @@ const sprite = (tex: Texture, size: number) => {
 };
 
 /** Ud.ptex — particle textures. */
-function ptex(kind: Particle, color: string) {
+export function ptex(kind: Particle, color: string) {
   return cached(kind + color, (c) => {
     const star = (n: number, r1: number, r2: number) => {
       c.beginPath();
@@ -124,7 +125,7 @@ function wings(count: number, male: boolean, size0: number, step: number, rot: n
 }
 
 /** Ud.attach: back layer under the photo, front layer above. */
-function attach(seat: Container, back: Container, front: Container) {
+export function attach(seat: Container, back: Container, front: Container) {
   seat.addChildAt(back, 0);
   seat.addChild(front);
 }
