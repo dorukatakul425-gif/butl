@@ -67,7 +67,7 @@ describe("live voice room requirements", () => {
     expect(a.h.onGift).toHaveBeenCalledTimes(1); expect(b.h.onGift).toHaveBeenCalledTimes(1); expect(b.h.onGift).toHaveBeenCalledWith(a.h.onGift.mock.calls[0]![0]); await a.client.leave(); await b.client.leave();
   });
   it("does not show failed or fake gifts as successfully sent", async () => {
-    const x = harness(); await connect(x); expect(await x.client.sendGift(null, "rose")).toBe(false);
+    const x = harness(); await connect(x); expect(await x.client.sendGift(null, "not-a-gift")).toBe(false);
     x.channel.send.mockResolvedValueOnce("timed out"); expect(await x.client.sendGift(null, "video")).toBe(false); expect(x.h.onGift).not.toHaveBeenCalled(); await x.client.leave();
   });
   it("removes a departing user immediately before presence catches up", async () => {
