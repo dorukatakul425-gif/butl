@@ -1,10 +1,9 @@
 import { translate, usePreferences } from "@/lib/app-preferences";
 // Full-screen live voice/video room: header (cover, ID, settings, exit), tables with seats and
 // speaking animations in the middle, chat + gift/send controls at the bottom.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Copy,
-  Music2,
   Gift,
   Plus,
   LogOut,
@@ -27,7 +26,15 @@ import {
   UserRound,
   Volume2,
   VolumeX,
+  Lock,
+  Unlock,
+  ArrowDownToLine,
+  UserX,
+  UserPlus,
+  KeyRound,
 } from "lucide-react";
+import { giftByKey, type LiveGift } from "@/lib/live-gifts";
+import { GiftSheet, GiftBanners, GiftScene, GIFT_FX_STYLES, type Banner } from "./live-gift-fx";
 import { getSupabase } from "@/lib/supabase";
 import {
   SEAT_COUNT,
@@ -35,6 +42,7 @@ import {
   type RoomChat,
   type RoomGift,
   type RoomMember,
+  type RoomMod,
 } from "@/lib/voice-rtc";
 import { coverOf, roomTitle, withKind, roomPhoto, compressRoomPhoto, ROOM_COLS, type VoiceRoomRow } from "./live-rooms";
 import { checkProfanity, PROFANITY_WARNING } from "@/lib/profanity";
@@ -51,8 +59,9 @@ const ASSET_ORIGIN = "https://id-preview--88e024e4-bf42-4edc-bea3-5e35357c10f2.l
 const VIDEO_GIFT_URL = new URL(giftClip.url, ASSET_ORIGIN).href;
 const VIDEO_GIFT_FALLBACK = new URL(giftFallback.url, ASSET_ORIGIN).href;
 const VIDEO_GIFT_ARTWORK = new URL(giftArtwork.url, ASSET_ORIGIN).href;
-const GIFTS = [{ key: "video", name: "Peqas", artwork: VIDEO_GIFT_ARTWORK, sound: true }];
-const giftEmoji = (_k?: string) => "🎁";
+const giftEmoji = (k?: string) => giftByKey(k)?.icon ?? "🎁";
+const KICK_MINUTES = [5, 30, 60, 1440];
+type SeatSheet = { seat: number | null; member: RoomMember | null };
 
 function GiftPlayback({ gift, muted, onDone }: { gift: RoomGift; muted: boolean; onDone: () => void }) {
   usePreferences();
@@ -148,8 +157,13 @@ export function VoiceRoom({
   const [speakerOff, setSpeakerOff] = useState(false);
   const [chatHidden, setChatHidden] = useState(false);
   const [flying, setFlying] = useState<Flying[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [scenes, setScenes] = useState<RoomGift[]>([]);
+  const [seatSheet, setSeatSheet] = useState<SeatSheet | null>(null);
+  const [audienceOpen, setAudienceOpen] = useState(false);
+  const [invite, setInvite] = useState<{ seat: number | null; name: string } | null>(null);
+  const [entering, setEntering] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [giftQueue, setGiftQueue] = useState<RoomGift[]>([]);
-  const [giftBusy, setGiftBusy] = useState(false);
   const [seatBusy, setSeatBusy] = useState(false);
   const videoGift = giftQueue[0];
   const [copied, setCopied] = useState(false);
@@ -177,6 +191,11 @@ export function VoiceRoom({
         const prev = seenRef.current;
         if (prev) {
           const joined = list.filter((m) => !prev.has(m.id) && m.id !== me.id);
+          const last = joined[joined.length - 1];
+          if (last) {
+            setEntering({ id: `${last.id}-${Date.now()}`, name: last.name, photo: last.photo });
+            window.setTimeout(() => setEntering((e) => (e && e.name === last.name ? null : e)), 2600);
+          }
           if (joined.length)
             setChat((c) => [...c.slice(-80), ...joined.map((m) => ({ id: `join-${m.id}-${Date.now()}`, from: m.id, name: m.name, photo: m.photo, text: "", at: Date.now(), kind: "system" as const, to: "join" }))]);
         }
@@ -192,7 +211,15 @@ export function VoiceRoom({
         }),
       onSpeaking: (id, level) =>
         setLevels((prev) => (prev[id] === level ? prev : { ...prev, [id]: level })),
-      onChat: (m) => setChat((prev) => [...prev.slice(-80), m]),
+      onChat: (m) =>
+        setChat((prev) => {
+          if (m.kind === "gift" && m.comboId) {
+            const i = prev.findIndex((x) => x.comboId === m.comboId);
+            if (i >= 0) { const n = prev.slice(); n[i] = { ...prev[i]!, count: Math.max(prev[i]!.count ?? 1, m.count ?? 1) }; return n; }
+          }
+          return [...prev.slice(-80), m];
+        }),
+      onMod: (m) => void handleMod(m),
       onGift: (g) => launchGift(g),
       onRoom: (type) => {
         if (type === "closed") {
@@ -210,6 +237,8 @@ export function VoiceRoom({
       },
       onStatus: (s) => { setStatus(s); onPresence(s === "live"); },
     });
+    c.ownerId = room.owner_id;
+    c.locked = new Set(room.locked_seats ?? []);
     client.current = c;
     void c.start();
     return () => {
@@ -224,11 +253,34 @@ export function VoiceRoom({
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
   }, [chat.length]);
 
+  useEffect(() => {
+    if (client.current) client.current.locked = new Set(room.locked_seats ?? []);
+  }, [room.locked_seats]);
+
+  async function handleMod(m: RoomMod) {
+    const sb = getSupabase();
+    if (m.type === "kick") {
+      if (!sb) return;
+      const { data } = await sb.from("voice_room_kicks").select("until").eq("room_id", room.id).eq("user_id", me.id).maybeSingle();
+      if (!data || new Date((data as { until: string }).until).getTime() < Date.now()) return;
+      flash(translate("Otaq sahibi səni otaqdan çıxardı"));
+      window.setTimeout(() => onLeave(), 1300);
+    } else if (m.type === "unseat") flash(translate("Otaq sahibi səni izləyici etdi"));
+    else if (m.type === "invite") setInvite({ seat: m.seat, name: m.name });
+    else if (m.type === "invite_reply") flash(`${m.name}: ${m.accept ? translate("dəvəti qəbul etdi") : translate("dəvəti rədd etdi")}`);
+  }
+
   function launchGift(g: RoomGift) {
-    if (g.gift === "video") {
+    const def = giftByKey(g.gift);
+    if (!def) return;
+    if (def.tier === "video") {
       setGiftQueue(prev => [...prev, g]);
       return;
     }
+    const key = g.comboId ?? g.id;
+    setBanners((prev) => [...prev.filter((b) => b.key !== key), { ...g, key, until: Date.now() + 3200 }].slice(-3));
+    window.setTimeout(() => setBanners((prev) => prev.filter((b) => b.key !== key || b.until > Date.now())), 3300);
+    if (def.tier === "medium" || def.tier === "big") setScenes((prev) => (def.tier === "medium" && prev.length > 2 ? prev : [...prev, g]));
     window.requestAnimationFrame(() => {
       const ms = membersRef.current.find((m) => m.id === g.to);
       const el = ms?.seat != null ? seatRefs.current[ms.seat] : null;
@@ -239,6 +291,7 @@ export function VoiceRoom({
       window.setTimeout(() => setFlying((prev) => prev.filter((f) => f.id !== g.id)), 2300);
     });
   }
+  const doneScene = useCallback(() => setScenes((q) => q.slice(1)), []);
   const membersRef = useRef<RoomMember[]>([]);
   membersRef.current = members;
 
@@ -257,6 +310,58 @@ export function VoiceRoom({
     if (!t || !client.current) return;
     client.current.sendChat(t.slice(0, 300));
     setText("");
+  };
+  const toggleLock = async (seat: number) => {
+    const sb = getSupabase();
+    if (!sb || !isOwner) return;
+    const cur = new Set(room.locked_seats ?? []);
+    if (cur.has(seat)) cur.delete(seat); else cur.add(seat);
+    const next = [...cur].sort((a, b) => a - b);
+    const { data, error } = await sb.from("voice_rooms").update({ locked_seats: next }).eq("id", room.id).select(ROOM_COLS).single();
+    if (error) { flash(error.message); return; }
+    setRoom(data as VoiceRoomRow);
+    client.current?.notifyRoom("updated");
+  };
+  const kick = async (m: RoomMember, minutes: number) => {
+    const sb = getSupabase();
+    if (!sb || !isOwner) return;
+    const { data, error } = await sb.rpc("kick_voice_member", { p_room: room.id, p_user: m.id, p_minutes: minutes });
+    if (error) { flash(error.message); return; }
+    client.current?.sendMod({ type: "kick", from: me.id, target: m.id, until: new Date(String(data)).getTime() });
+    flash(`${m.name} ${translate("otaqdan çıxarıldı")}`);
+  };
+  const unseat = (m: RoomMember) => {
+    client.current?.sendMod({ type: "unseat", from: me.id, target: m.id });
+    flash(`${m.name} ${translate("izləyiciyə endirildi")}`);
+  };
+  const inviteTo = (m: RoomMember, seat: number | null) => {
+    client.current?.sendMod({ type: "invite", from: me.id, target: m.id, seat, name: me.name });
+    flash(`${m.name} ${translate("yerə dəvət edildi")}`);
+  };
+  const answerInvite = async (accept: boolean) => {
+    const inv = invite;
+    setInvite(null);
+    const c = client.current;
+    if (!c || !inv) return;
+    c.sendMod({ type: "invite_reply", from: me.id, target: room.owner_id, accept, name: me.name });
+    if (!accept) return;
+    const taken = new Set(membersRef.current.filter((x) => x.seat !== null && x.id !== me.id).map((x) => x.seat));
+    let seat = inv.seat !== null && !taken.has(inv.seat) ? inv.seat : null;
+    if (seat === null) for (let i = 0; i < SEAT_COUNT; i++) if (!taken.has(i) && !c.locked.has(i)) { seat = i; break; }
+    if (seat === null) { flash(translate("Boş yer yoxdur")); return; }
+    c.locked.delete(seat);
+    await sit(seat);
+  };
+  const onSeatTap = (i: number) => {
+    const m = bySeat.get(i) ?? null;
+    const locked = (room.locked_seats ?? []).includes(i);
+    if (!m && !isOwner) {
+      if (locked) flash(translate("Bu yer kilidlidir"));
+      else void sit(i);
+      return;
+    }
+    if (m && m.id === me.id) { setSeatSheet({ seat: i, member: m }); return; }
+    setSeatSheet({ seat: i, member: m });
   };
   const toggleMic = () => {
     const c = client.current;
@@ -289,6 +394,7 @@ export function VoiceRoom({
           seatRefs.current[i] = el;
         }}
         className={`vr-seat${m ? " taken" : ""}${speaking ? " speaking" : ""}${m?.id === me.id ? " me" : ""}`}
+        onClick={m ? () => onSeatTap(i) : undefined}
         style={{ ["--lvl" as string]: String(lvl) }}
       >
         {m ? (
@@ -319,12 +425,13 @@ export function VoiceRoom({
             type="button"
             className="vr-empty"
             disabled={seatBusy || status !== "live"}
-            onClick={() => void sit(i)}
-            aria-label={`${i + 1}. yerə otur`}
+            onClick={() => onSeatTap(i)}
+            aria-label={`${i + 1}`}
+            data-locked={(room.locked_seats ?? []).includes(i) || undefined}
           >
             <span className="vr-numchip">{i + 1}</span>
             <span className="vr-plus">
-              <Plus size={26} strokeWidth={2} />
+              {(room.locked_seats ?? []).includes(i) ? <Lock size={18} strokeWidth={2.4} /> : <Plus size={22} strokeWidth={2} />}
             </span>
           </button>
         )}
@@ -341,7 +448,7 @@ export function VoiceRoom({
       aria-label={roomTitle(room.name)}
       style={{ backgroundImage: `url(${room.photo || roomBg})` }}
     >
-      <style>{VR_STYLES}</style>
+      <style>{VR_STYLES}{GIFT_FX_STYLES}</style>
       <div className="vr-sky" aria-hidden="true" />
       {Object.entries(streams)
         .filter(([id]) => id !== me.id)
@@ -358,11 +465,13 @@ export function VoiceRoom({
             {translate("OTAQ ID")}: <b>{room.code}</b>{copied ? <Check size={12} /> : null}
           </button>
         </div>
-        <span className="vr-head-pill"><Users size={16} />{members.length}</span>
-        <button type="button" className="vr-head-pill vr-head-more" onClick={() => setMenuOpen(true)} aria-label="Menyu"><MoreHorizontal size={18} /></button>
-        <button type="button" className="vr-head-pill" onClick={onLeave} aria-label={translate("Otaqdan çıx")}><LogOut size={18} /></button>
+        <div className="vr-head-right">
+          <button type="button" className="vr-head-pill" onClick={() => setAudienceOpen(true)} aria-label={translate("İzləyicilər")}><Users size={14} />{members.length}</button>
+          <button type="button" className="vr-head-pill" onClick={() => setMenuOpen(true)} aria-label="Menyu"><MoreHorizontal size={16} /></button>
+          <button type="button" className="vr-head-pill" onClick={onLeave} aria-label={translate("Otaqdan çıx")}><LogOut size={15} /></button>
+        </div>
       </header>
-      <div className="vr-roomname">{roomTitle(room.name)}</div>
+      <div className="vr-roomname">{room.has_password && <Lock size={11} />}{roomTitle(room.name)}</div>
       {status !== "live" && (
         <div className="vr-subrow">
           <span className={`vr-status ${status}`}>
@@ -386,10 +495,10 @@ export function VoiceRoom({
             <button type="button" className="vr-pill vr-stand" onClick={() => client.current?.setSeat(null)}>
               {translate("Yerdən qalx")}</button>
           )}
-          <span className="vr-pill">
-            <UserRound size={16} />
+          <button type="button" className="vr-pill" onClick={() => setAudienceOpen(true)} aria-label={translate("İzləyicilər")}>
+            <UserRound size={15} />
             {listeners.length}
-          </span>
+          </button>
         </div>
       </main>
 
@@ -412,7 +521,7 @@ export function VoiceRoom({
               <span className="vr-msg-ico">{giftEmoji(m.gift)}</span>
               <p>
                 <b>{m.from === me.id ? translate("Sən") : m.name}</b> →{" "}
-                <b>{m.to === me.id ? translate("sənə") : m.toName}</b> {translate("hədiyyə göndərdi")}</p>
+                <b>{m.to === me.id ? translate("sənə") : m.toName || translate("hamıya")}</b> {giftByKey(m.gift)?.icon}{(m.count ?? 1) > 1 && <em className="vr-x"> x{m.count}</em>}</p>
             </div>
           ) : (
             <div key={m.id} className="vr-msg">
@@ -501,63 +610,99 @@ export function VoiceRoom({
         </div>
       )}
 
+      <GiftBanners banners={banners} defaultPhoto={defaultPhoto} meId={me.id} />
+      {scenes[0] && <GiftScene key={scenes[0].id} gift={scenes[0]} onDone={doneScene} />}
+      {entering && (
+        <div key={entering.id} className="vr-enter"><img src={entering.photo || defaultPhoto} alt="" /><b>@{entering.name}</b> {translate("otağa daxil oldu.")}</div>
+      )}
       {giftOpen && (
-        <div
-          className="vr-sheet-wrap"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setGiftOpen(false);
+        <GiftSheet
+          members={members}
+          meId={me.id}
+          defaultPhoto={defaultPhoto}
+          initialTo={giftTo}
+          disabled={status !== "live"}
+          onClose={() => setGiftOpen(false)}
+          onSend={async (to: RoomMember | null, g: LiveGift, combo) => {
+            const c = client.current;
+            if (!c) return false;
+            const ok = await c.sendGift(to, g.key, combo);
+            if (!ok) flash(translate("Hədiyyə göndərilmədi. Bağlantını yoxla."));
+            return ok;
           }}
-        >
-          <div className="vr-sheet vr-gift-sheet">
-            <div className="vr-sheet-head">
-              <h3><Gift size={18} /> {translate("Hədiyyələr")}</h3>
-              <button
-                type="button"
-                className="vr-icon"
-                onClick={() => setGiftOpen(false)}
-                aria-label={translate("Bağla")}
-              >
-                <X size={18} />
+        />
+      )}
+      {seatSheet && (
+        <div className="vr-sheet-wrap" onClick={(e) => { if (e.target === e.currentTarget) setSeatSheet(null); }}>
+          <div className="vr-sheet vr-menu vr-seat-menu">
+            {seatSheet.member ? (
+              <div className="vr-who"><img src={seatSheet.member.photo || defaultPhoto} alt="" /><b>{seatSheet.member.id === me.id ? translate("Sən") : seatSheet.member.name}</b>{seatSheet.seat !== null && <span>#{seatSheet.seat + 1}</span>}</div>
+            ) : (
+              <div className="vr-who"><b>#{(seatSheet.seat ?? 0) + 1}</b></div>
+            )}
+            {!seatSheet.member && seatSheet.seat !== null && (
+              <button type="button" onClick={() => { const s = seatSheet.seat!; setSeatSheet(null); void sit(s); }}><Mic size={17} /> {translate("Bu yerə otur")}</button>
+            )}
+            {isOwner && !seatSheet.member && seatSheet.seat !== null && (
+              <button type="button" onClick={() => { const s = seatSheet.seat!; setSeatSheet(null); void toggleLock(s); }}>
+                {(room.locked_seats ?? []).includes(seatSheet.seat) ? <><Unlock size={17} /> {translate("Kilidi aç")}</> : <><Lock size={17} /> {translate("Yeri kilidlə")}</>}
               </button>
-            </div>
-            <div className="vr-to">
-              <button
-                type="button"
-                className={giftTo === null ? "on" : ""}
-                onClick={() => setGiftTo(null)}
-              >
-                <span className="vr-all">🎉</span>{translate("Hamıya")}</button>
-              {members
-                .filter((m) => m.id !== me.id)
-                .map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    className={giftTo === m.id ? "on" : ""}
-                    onClick={() => setGiftTo(m.id)}
-                  >
-                    <img src={m.photo || defaultPhoto} alt="" />
-                    {m.name}
-                  </button>
+            )}
+            {isOwner && !seatSheet.member && seatSheet.seat !== null && listeners.filter((l) => l.id !== me.id).length > 0 && (
+              <div className="vr-invite-list">
+                <small>{translate("Yerə dəvət et")}</small>
+                {listeners.filter((l) => l.id !== me.id).map((l) => (
+                  <button key={l.id} type="button" onClick={() => { inviteTo(l, seatSheet.seat); setSeatSheet(null); }}><img src={l.photo || defaultPhoto} alt="" />{l.name}<UserPlus size={15} /></button>
                 ))}
+              </div>
+            )}
+            {seatSheet.member && seatSheet.member.id !== me.id && (
+              <button type="button" onClick={() => { setGiftTo(seatSheet.member!.id); setSeatSheet(null); setGiftOpen(true); }}><Gift size={17} /> {translate("Hədiyyə göndər")}</button>
+            )}
+            {seatSheet.member && seatSheet.member.id === me.id && (
+              <button type="button" onClick={() => { setSeatSheet(null); void client.current?.setSeat(null); }}><ArrowDownToLine size={17} /> {translate("Yerdən qalx")}</button>
+            )}
+            {isOwner && seatSheet.member && seatSheet.member.id !== me.id && (
+              <>
+                {seatSheet.member.seat !== null ? (
+                  <button type="button" onClick={() => { unseat(seatSheet.member!); setSeatSheet(null); }}><ArrowDownToLine size={17} /> {translate("İzləyiciyə endir")}</button>
+                ) : (
+                  <button type="button" onClick={() => { inviteTo(seatSheet.member!, null); setSeatSheet(null); }}><UserPlus size={17} /> {translate("Yerə dəvət et")}</button>
+                )}
+                <div className="vr-kick">
+                  <small><UserX size={14} /> {translate("Müvəqqəti çıxar")}</small>
+                  <div>{KICK_MINUTES.map((mn) => (
+                    <button key={mn} type="button" className="danger" onClick={() => { void kick(seatSheet.member!, mn); setSeatSheet(null); }}>{mn >= 60 ? `${mn / 60} ${translate("saat")}` : `${mn} ${translate("dəq")}`}</button>
+                  ))}</div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      {audienceOpen && (
+        <div className="vr-sheet-wrap" onClick={(e) => { if (e.target === e.currentTarget) setAudienceOpen(false); }}>
+          <div className="vr-sheet vr-audience">
+            <div className="vr-sheet-head"><h3><Users size={16} /> {translate("İzləyicilər")} · {members.length}</h3>
+              <button type="button" className="vr-icon" onClick={() => setAudienceOpen(false)} aria-label={translate("Bağla")}><X size={16} /></button></div>
+            <div className="vr-aud-list">
+              {[...members].sort((a, b) => (a.seat ?? 99) - (b.seat ?? 99)).map((m) => (
+                <button key={m.id} type="button" onClick={() => { setAudienceOpen(false); setSeatSheet({ seat: m.seat, member: m }); }}>
+                  <img src={m.photo || defaultPhoto} alt="" />
+                  <span>{m.id === me.id ? translate("Sən") : m.name}{m.id === room.owner_id && " 👑"}</span>
+                  <i>{m.seat !== null ? `#${m.seat + 1}` : translate("izləyici")}</i>
+                </button>
+              ))}
             </div>
-            <div className="vr-gift-tabs"><span>{translate("SƏSLİ")}</span></div>
-            <div className="vr-gifts">
-              {GIFTS.map(g => <div key={g.key} className="vr-gift-item">
-                <div className="vr-gift-art"><img src={g.artwork} alt={g.name} /><span className="vr-gift-sound" title={translate("Səsli hədiyyə")}><Music2 size={14} /></span></div>
-                <strong>{g.name}</strong>
-                <Button variant="ghost" className="vr-gift-send" disabled={giftBusy || status !== "live"} onClick={async () => {
-                  const c = client.current;
-                  if (!c || giftBusy) return;
-                  setGiftBusy(true);
-                  try {
-                    const sent = await c.sendGift(members.find(m => m.id === giftTo) ?? null, g.key);
-                    if (sent) setGiftOpen(false);
-                    else flash(translate("Hədiyyə göndərilmədi. Bağlantını yoxla."));
-                  } finally { setGiftBusy(false); }
-                }}>{giftBusy ? translate("Göndərilir…") : translate("Göndər")}</Button>
-              </div>)}
-            </div>
+          </div>
+        </div>
+      )}
+      {invite && (
+        <div className="vr-sheet-wrap vr-center">
+          <div className="vr-invite">
+            <UserPlus size={26} />
+            <p><b>@{invite.name}</b> {translate("səni")} {invite.seat !== null ? `#${invite.seat + 1} ` : ""}{translate("yerə dəvət edir")}</p>
+            <div><button type="button" onClick={() => void answerInvite(false)}>{translate("Rədd et")}</button><button type="button" className="ok" onClick={() => void answerInvite(true)}>{translate("Qəbul et")}</button></div>
           </div>
         </div>
       )}
@@ -628,6 +773,8 @@ function RoomSettings({
   const { language } = usePreferences();
   const [name, setName] = useState(roomTitle(room.name));
   const [photo, setPhoto] = useState<string | null>(room.photo ?? null);
+  const [pass, setPass] = useState("");
+  const [passOn, setPassOn] = useState(Boolean(room.has_password));
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -645,9 +792,19 @@ function RoomSettings({
       .eq("id", room.id)
       .select(ROOM_COLS)
       .single();
+    if (error) { setBusy(false); setErr(/banned_word/.test(error.message) ? warning : error.message); return; }
+    let saved = data as VoiceRoomRow;
+    if (!passOn && room.has_password) {
+      const r = await sb.rpc("set_voice_room_password", { p_room: room.id, p_pass: "" });
+      if (r.error) { setBusy(false); setErr(r.error.message); return; }
+      saved = { ...saved, has_password: false };
+    } else if (passOn && pass.trim()) {
+      const r = await sb.rpc("set_voice_room_password", { p_room: room.id, p_pass: pass.trim() });
+      if (r.error) { setBusy(false); setErr(r.error.message); return; }
+      saved = { ...saved, has_password: true };
+    } else if (passOn && !room.has_password) { setBusy(false); setErr(translate("Şifrə yaz")); return; }
     setBusy(false);
-    if (error) setErr(/banned_word/.test(error.message) ? warning : error.message);
-    else onSaved(data as VoiceRoomRow);
+    onSaved(saved);
   };
   const remove = async () => {
     const sb = getSupabase();
@@ -674,6 +831,15 @@ function RoomSettings({
         <label className="vr-field">
           {translate("Otaq adı")}<input className={bad ? "lv-bad" : ""} value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} maxLength={40} />
         </label>
+        <label className="vr-switch">
+          <KeyRound size={16} /> <span>{translate("Otaq şifrəsi")}</span>
+          <input type="checkbox" checked={passOn} onChange={(e) => { setPassOn(e.target.checked); setErr(""); }} />
+        </label>
+        {passOn && (
+          <label className="vr-field">
+            <input type="password" value={pass} maxLength={32} placeholder={room.has_password ? translate("Yeni şifrə (boş = dəyişmə)") : translate("Şifrə yaz")} onChange={(e) => { setPass(e.target.value); setErr(""); }} />
+          </label>
+        )}
         {(bad || err) && <p className="lv-warn" role="alert"><AlertTriangle size={15} />{bad ? warning : err}</p>}
         <button type="button" className="vr-primary" disabled={busy || bad} onClick={save}>{translate("Yadda saxla")}</button>
         <button type="button" className="vr-danger" disabled={busy} onClick={remove}>
@@ -849,4 +1015,65 @@ background:radial-gradient(120% 70% at 50% 0%,var(--vr-bg2),var(--vr-bg) 60%);ba
 .vr-msg.join{align-items:center;border-radius:16px;background:oklch(.15 .01 260 / .8);border:1px solid oklch(1 0 0 / .08);animation:vr-msg .3s ease-out both;}
 .vr-msg.join .vr-msg-ico{color:oklch(.8 .18 155);background:transparent;display:grid;place-items:center;}
 .vr-msg.join b{color:oklch(.8 .18 155);margin-right:4px;}
+
+/* compact, no-scroll mobile layout */
+.vr{height:100dvh;padding:max(6px,env(safe-area-inset-top)) 0 max(6px,env(safe-area-inset-bottom));}
+.vr-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;margin:0 8px;padding:7px 7px 7px 8px;border-radius:16px;}
+.vr-head-ava{width:38px;height:38px;border-radius:12px;}
+.vr-head-text{overflow:hidden;}
+.vr-head-text strong{font-size:14px;}
+.vr-head-id{font-size:10px;letter-spacing:.06em;white-space:nowrap;overflow:hidden;max-width:100%;}
+.vr-head-id b{font-size:12px;}
+.vr-head-right{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.vr-head-pill{min-width:32px;height:32px;padding:0 8px;border-radius:11px;font-size:12.5px;gap:4px;}
+.vr-roomname{display:inline-flex;align-items:center;gap:4px;margin:6px 0 0;font-size:11.5px;padding:3px 12px;}
+.vr-stage{gap:6px;padding:6px 0 2px;flex-shrink:0;}
+.vr .vr-seats{gap:26px 4px;padding:12px 10px 0;max-width:400px;}
+.vr .vr-seat{width:min(14.5vw,56px);}
+.vr-name{font-size:10.5px;max-width:64px;top:calc(100% + 3px);}
+.vr-crown{font-size:13px;top:-12px;right:-4px;}
+.vr-numchip{top:-8px;min-width:18px;height:15px;font-size:9px;padding:0 4px;}
+.vr .vr-seat.taken{cursor:pointer;}
+.vr .vr-empty[data-locked]{background:oklch(.2 .01 260 / .85);color:oklch(.8 .14 75);border-color:oklch(.8 .14 75 / .35);}
+.vr-tools{padding:14px 12px 0;}
+.vr-pill{height:30px;padding:0 11px;font-size:12px;gap:6px;cursor:pointer;}
+.vr-chat{gap:6px;padding:4px 12px;}
+.vr-msg-ico{width:26px;height:26px;font-size:14px;}
+.vr-msg p{font-size:13px;padding:6px 10px;border-radius:12px;}
+.vr-msg b{font-size:11px;}
+.vr-x{font-style:italic;font-weight:900;color:oklch(.9 .15 90);}
+.vr-bar{padding:6px 6px 0;gap:2px;}
+.vr-tool{width:38px;height:40px;}
+.vr-tool svg{width:22px;height:22px;}
+.vr-input{height:38px;}
+.vr-input input{font-size:14px;}
+.vr-enter{position:fixed;z-index:72;left:0;top:30%;display:flex;align-items:center;gap:6px;padding:4px 14px 4px 4px;border-radius:0 18px 18px 0;font-size:12px;background:linear-gradient(90deg,oklch(.55 .17 155 / .95),oklch(.45 .14 165 / .6));box-shadow:0 6px 16px oklch(0 0 0 / .3);animation:vr-enter 2.6s cubic-bezier(.2,.9,.3,1) forwards;pointer-events:none;}
+.vr-enter img{width:26px;height:26px;border-radius:50%;object-fit:cover;}
+@keyframes vr-enter{0%{transform:translateX(-100%)}15%,80%{transform:none;opacity:1}100%{transform:translateX(-100%);opacity:0}}
+.vr-seat-menu{gap:8px;}
+.vr-who{display:flex;align-items:center;gap:10px;padding:2px 4px 6px;font-size:15px;}
+.vr-who img{width:44px;height:44px;border-radius:50%;object-fit:cover;}
+.vr-who span{margin-left:auto;font-size:12px;opacity:.7;}
+.vr-menu button{height:44px;font-size:13.5px;}
+.vr-kick small,.vr-invite-list small{display:flex;align-items:center;gap:6px;font-size:11.5px;opacity:.75;margin:2px 4px 6px;}
+.vr-kick div{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.vr-kick div button{justify-content:center;padding:0;height:38px;font-size:12.5px;}
+.vr-invite-list{display:flex;flex-direction:column;gap:6px;max-height:30dvh;overflow:auto;}
+.vr-invite-list button img,.vr-aud-list img{width:28px;height:28px;border-radius:50%;object-fit:cover;}
+.vr-invite-list button svg{margin-left:auto;}
+.vr-audience{max-height:65dvh;}
+.vr-aud-list{display:flex;flex-direction:column;gap:4px;overflow:auto;}
+.vr-aud-list button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:12px;background:var(--vr-surface);font-size:13.5px;font-weight:700;}
+.vr-aud-list span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vr-aud-list i{font-style:normal;font-size:11px;opacity:.7;}
+.vr-center{align-items:center;}
+.vr-invite{width:min(86%,320px);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:18px;border-radius:20px;background:oklch(.22 .03 230);border:1px solid var(--vr-line);animation:gx-pop .3s ease-out;color:oklch(.8 .17 155);}
+.vr-invite p{margin:0;font-size:14px;color:var(--vr-ink);}
+.vr-invite div{display:flex;gap:8px;width:100%;}
+.vr-invite div button{all:unset;cursor:pointer;flex:1;height:40px;line-height:40px;border-radius:12px;background:var(--vr-surface);font-weight:800;font-size:13px;color:var(--vr-ink);}
+.vr-invite div button.ok{background:oklch(.65 .17 155);color:oklch(.15 .03 160);}
+.vr-switch{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;padding:8px 10px;border-radius:12px;background:var(--vr-surface);}
+.vr-switch span{flex:1;}
+.vr-switch input{width:20px;height:20px;accent-color:oklch(.7 .17 155);}
+@media (max-height:640px){.vr .vr-seat{width:min(13vw,48px)}.vr .vr-seats{gap:22px 4px;padding-top:10px}.vr-tools{padding-top:10px}}
 `;
