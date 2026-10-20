@@ -17,6 +17,7 @@ import { DailyBonusHost } from "@/components/table/daily-bonus-dialog";
 import { startCloudBlocks } from "@/lib/block-session";
 import { SourceHaremNotice } from '@/components/table/source-harem-notice';
 import { ProfileSetupDialog } from "@/components/profile/profile-setup-dialog";
+import { getSupabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/game")({
   head: () => ({
@@ -51,12 +52,14 @@ function Index() {
     // Closing the tab frees the seat at once, so others see the player leave immediately.
     const stopAchievements = startCloudAchievements();
     const stopBlocks = startCloudBlocks(auth.session.user.id);
+    // Aktivlik liderləri: every minute spent at the table is counted by the server.
+    const activity = window.setInterval(() => { void getSupabase()?.rpc("activity_ping" as never); }, 60000);
     const bye = () => leaveRoomNow();
     // Back/forward cache restores the page after pagehide already freed the seat: sit down again.
     const back = (e: PageTransitionEvent) => { if (e.persisted) void joinRoom().catch(() => undefined); };
     window.addEventListener("pagehide", bye);
     window.addEventListener("pageshow", back);
-    return () => { alive = false; stopAchievements(); stopBlocks(); window.removeEventListener("pagehide", bye); window.removeEventListener("pageshow", back); void leaveRoom(); };
+    return () => { alive = false; window.clearInterval(activity); stopAchievements(); stopBlocks(); window.removeEventListener("pagehide", bye); window.removeEventListener("pageshow", back); void leaveRoom(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.ready, auth.session?.user.id, Boolean(auth.profile), auth.profile?.profile_setup_done]);
   if (auth.profile && auth.profile.profile_setup_done === false) return <ProfileSetupDialog onDone={() => undefined} />;

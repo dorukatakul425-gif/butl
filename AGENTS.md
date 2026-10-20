@@ -73,3 +73,4 @@
 - Bot login, notifications and the standalone polling bot share one server-only encrypted token row; verify admin role and getMe before replacement, deny all browser DB grants and never return credentials so rotation cannot expose tokens or diverge across services.
 - Insufficient-DAT contact requires both a Telegram-linked account and current Mini App initData; open a targeted draft using the selected DAT price, never send as the player or change website purchase handling.
 - Gift coming-soon countdowns use one fixed campaign deadline shared by website and Telegram, never a per-visit or storage-derived start; expiry remains zero and never enables unimplemented purchases.
+- Telegram-only Puanlar sections (level, activity) use top_players_extra and server-counted activity_ping minutes; level is derived client-side from gift-heart points so the threshold lives in one helper.

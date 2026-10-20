@@ -596,3 +596,22 @@
 .source-tops-help-popup .button--confirm { height:30px; min-width:80px; padding:0 10px; background:var(--source-tops-confirm); color:var(--source-tops-color-3); font-size:14px; font-weight:normal; border-radius:7px; }
 .bottle-drawer .send-gift__price { display:flex; justify-content:center; align-items:center; gap:3px; }
 .bottle-drawer .send-gift__icon { display:inline-block; background-repeat:no-repeat; }
+.top-dlg__tab--glv,.top-dlg__tab--glv-inactive{background-repeat:no-repeat;background-position:center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffe27a'/%3E%3Cstop offset='1' stop-color='%23b14dff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' stroke='%235a1f8f' stroke-width='.8' d='M3.5 18.5L2.8 8l5 4.2L12 5l4.2 7.2 5-4.2-.7 10.5z'/%3E%3C/svg%3E")}
+
+.top-dlg__tab--glv{background-size:30px 30px}
+
+.top-dlg__tab--glv-inactive{background-size:26px 26px;filter:grayscale(.6) opacity(.75)}
+
+.top-dlg__score--glv{color:#b14dff;font-weight:800}
+
+.top-dlg__tab--activity,.top-dlg__tab--activity-inactive{background-repeat:no-repeat;background-position:center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%2322c55e'/%3E%3Ccircle cx='12' cy='12' r='7.5' fill='%23fff'/%3E%3Cpath d='M12 7v5.2l3.4 2' stroke='%2316a34a' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+
+.top-dlg__tab--activity{background-size:30px 30px}
+
+.top-dlg__tab--activity-inactive{background-size:26px 26px;filter:grayscale(.6) opacity(.75)}
+
+.top-dlg__icon--activity{background-repeat:no-repeat;background-position:center;background-size:contain;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%2322c55e'/%3E%3Ccircle cx='12' cy='12' r='7.5' fill='%23fff'/%3E%3Cpath d='M12 7v5.2l3.4 2' stroke='%2316a34a' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+
+.top-dlg__score--activity{white-space:nowrap;color:#16a34a}
+
+.source-tops-layer .top-dlg__score--activity, .source-tops-layer .top-dlg__score--glv { white-space:nowrap; }

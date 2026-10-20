@@ -2,15 +2,22 @@ import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { translate, type CilizAssets } from '@/lib/ciliz-assets';
 
-export type TopsCategory = 'total_kisses' | 'dj_score' | 'price' | 'harem_price' | 'gestures';
+export type TopsCategory = 'total_kisses' | 'dj_score' | 'price' | 'harem_price' | 'gestures' | 'glv' | 'activity';
+
+// Telegram-only sections: ureyimsen showHelp texts (level points come from hearts spent on gifts).
+const EXTRA_HELP: Partial<Record<TopsCategory, { title: string; text: string }>> = {
+  glv: { title: 'Səviyyə liderləri', text: 'Hədiyyə atdıqca səviyyən qalxır: hədiyyəyə xərclənən hər ürək 1 səviyyə xalıdır, 1400 xal 1 səviyyədir (maksimum 100). Ümumi siyahıda səviyyəyə (bərabər səviyyədə xala), dövri siyahılarda həmin dövrdə qazanılan xala görə sıralanır.' },
+  activity: { title: 'Aktivlik liderləri', text: 'Oyunda keçirdiyin hər dəqiqə sayılır. Ümumi siyahı bütün vaxt üzrə, aylıq, həftəlik və günlük siyahılar həmin dövrdə oyunda keçirilən vaxta görə sıralanır.' },
+};
 
 /** TopsPresenter.showHelp -> InfoDialog, using the original translation keys. */
 export function SourceTopsHelp({ category, assets, onClose }: {
   category: TopsCategory; assets: CilizAssets; onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
-  const title = translate(assets, `dlg:top:help:${category}:title`);
-  const context = `${translate(assets, `dlg:top:help:${category}:text`)}\n\n${translate(assets, 'dlg:top:help:text:common')}`;
+  const extra = EXTRA_HELP[category];
+  const title = extra ? extra.title : translate(assets, `dlg:top:help:${category}:title`);
+  const context = extra ? extra.text : `${translate(assets, `dlg:top:help:${category}:text`)}\n\n${translate(assets, 'dlg:top:help:text:common')}`;
   useEffect(() => {
     const previous = document.activeElement;
     dialogRef.current?.focus();
