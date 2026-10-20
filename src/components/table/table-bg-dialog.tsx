@@ -32,7 +32,7 @@ export function TableBgDialog({ onClose }: { onClose: () => void }) {
     }
     if (info && r.crystals !== undefined) setInfo({ ...info, crystals: r.crystals });
     setPending(null);
-    showSourceToast(r.reason.includes("insufficient_crystals") ? "Kifayət qədər kristal yoxdur 💎" : "Fon dəyişmədi, yenidən yoxla");
+    showSourceToast(r.reason.includes("insufficient_crystals") ? "Kifayət qədər DAT yoxdur 🪙" : "Fon dəyişmədi, yenidən yoxla");
   };
 
   return createPortal(
@@ -42,7 +42,7 @@ export function TableBgDialog({ onClose }: { onClose: () => void }) {
           <div className="table-bg__title">Masa fonu</div>
           <button type="button" className="table-bg__close" onClick={onClose} aria-label="Bağla">✕</button>
         </div>
-        <div className="table-bg__sub">Masadakı hamı görəcək · dəyişmək {price} 💎{info ? ` · Kristalın: ${info.crystals}` : ""}</div>
+        <div className="table-bg__sub">Masadakı hamı görəcək · dəyişmək {price} DAT{info ? ` · DAT balansın: ${info.crystals}` : ""}</div>
         {free > 0 && <div className="table-bg__free">🎁 Köhnə fon üçün ödədiyin pula görə yeni fonlardan birini PULSUZ seçə bilərsən{free > 1 ? ` (${free} dəfə)` : ""}</div>}
         <div className="table-bg__grid">
           {TABLE_BGS.map(([id, name]) => (
@@ -61,7 +61,7 @@ export function TableBgDialog({ onClose }: { onClose: () => void }) {
             <div className="table-bg__pv-bottle">🍾</div>
           </div>
           <div className="table-bg__confirm">
-            <div className="table-bg__confirm-text">{free > 0 ? `“${tableBgName(pending)}” fonu PULSUZ qoyulsun?` : `“${tableBgName(pending)}” fonu ${price} kristala qoyulsun?`}</div>
+            <div className="table-bg__confirm-text">{free > 0 ? `“${tableBgName(pending)}” fonu PULSUZ qoyulsun?` : `“${tableBgName(pending)}” fonu ${price} DAT-a qoyulsun?`}</div>
             <button type="button" className="table-bg__yes" disabled={busy} onClick={() => void confirm()}>{busy ? "..." : "Bəli, dəyiş"}</button>
             <button type="button" className="table-bg__no" onClick={() => setPending(null)}>Ləğv et</button>
           </div>
