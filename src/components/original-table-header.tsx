@@ -27,6 +27,7 @@ import { SettingsDialog } from '@/components/settings/settings-dialog';
 import { SourceSeasonDialog } from '@/components/table/source-season-dialogs';
 import { SourceLeagueButton } from '@/components/table/source-league-button';
 import { SourceChangeTable } from '@/components/table/source-change-table';
+import { TableIdChip } from '@/components/table/table-id-chip';
 import { useRoom, VIEWER_DISPLAY_SEAT } from '@/lib/room-session';
 
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
@@ -126,10 +127,7 @@ export function OriginalTableHeader() {
           <ArrowLeft className="original-button-icon" aria-hidden="true" />
         </Button>
       </div>
-      {room.roomId !== null && <div className="original-header-table" aria-label={`Masa ${room.roomId}`}>
-        <span className="original-header-table-label">{vipAssets ? translate(vipAssets, 'chat:room_title') : ''}</span>
-        <span className="original-header-table-id">{room.roomId}</span>
-      </div>}
+      {room.roomId !== null && <TableIdChip roomId={room.roomId} label={vipAssets ? translate(vipAssets, 'chat:room_title') : ''} />}
       <Button variant="ghost" aria-label="Masa değiştir" title="Masa değiştir" aria-disabled={changeCount >= 1}
         onClick={() => { if (changeCount < 1) setChangeOpen(true); else showSourceToast((vipAssets?.translation["hint:change_room:waiting"] ?? "Bekleyin % saniye, oyun masasını değiştir").replace(/%0?/, String(Number.isFinite(changeCount) ? changeCount : 9))); }}
         className={`original-header-button original-icon-default${changeCount >= 1 ? ' original-change-table--count' : ''}`}>
