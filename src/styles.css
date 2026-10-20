@@ -203,7 +203,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.86) saturate(0.88);
 }
 
 .original-game {
@@ -287,8 +286,6 @@ html.tg-webapp .original-game { height: var(--tg-app-height, 100svh); }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Match the Ciliz Telegram build's darker, less orange wood tone. */
-  filter: brightness(0.86) saturate(0.88);
 }
 
 .original-table-header {
