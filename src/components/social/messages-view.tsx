@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Bell, BellOff, Check, CheckCheck, Search, Send } from "lucide-react";
 import { translate, usePreferences } from "@/lib/app-preferences";
 import { MediaComposer, MediaImage, VoiceBubble } from "@/components/social/chat-media";
+import { GlobalChat } from "@/components/social/global-chat";
 import { ReportSheet } from "@/components/social/report-sheet";
 import { IconFlag, IconTrash } from "@/components/ui-icons";
 import { unsendMessage } from "@/lib/social";
@@ -17,6 +18,7 @@ export function MessagesView({ me, defaultPhoto, initialPeer, onClose, onOpenPro
   const social = useSocial();
   const [peer, setPeer] = useState<string | null>(initialPeer);
   const [query, setQuery] = useState("");
+  const [section, setSection] = useState<"private" | "global">("private");
   const [sound, setSound] = useState(true);
   useEffect(() => { setSound(socialSoundEnabled()); requestNotifyPermission(); unlockSocialAudio(); }, []);
   useEffect(() => { setPeer(initialPeer); }, [initialPeer]);
@@ -36,6 +38,12 @@ export function MessagesView({ me, defaultPhoto, initialPeer, onClose, onOpenPro
         <h1>{translate("Mesajlar")}</h1>
         <button type="button" className="sm-icon" aria-label={sound ? translate("Səsi bağla") : translate("Səsi aç")} onClick={() => { setSocialSound(!sound); setSound(!sound); }}>{sound ? <Bell size={19} /> : <BellOff size={19} />}</button>
       </header>
+      <div className="sm-tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={section === "private"} className={section === "private" ? "on" : ""} onClick={() => setSection("private")}>{translate("Şəxsi")}{Object.values(social.unread).reduce((a, b) => a + (b || 0), 0) > 0 && <b>{Object.values(social.unread).reduce((a, b) => a + (b || 0), 0)}</b>}</button>
+        <button type="button" role="tab" aria-selected={section === "global"} className={section === "global" ? "on" : ""} onClick={() => setSection("global")}>🌍 {translate("Ümumi çat")}</button>
+        <span className="sm-tab-pill" style={{ transform: section === "private" ? "translateX(0)" : "translateX(100%)" }} aria-hidden="true" />
+      </div>
+      {section === "global" ? <GlobalChat me={me} defaultPhoto={defaultPhoto} onOpenProfile={onOpenProfile} /> : <>
       <label className="sm-search"><Search size={16} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder={translate("Dost axtar")} /></label>
       {incoming > 0 && <p className="sm-hint">{incoming} {translate("yeni dostluq istəyi — Profil bölməsində qəbul et")}</p>}
       <ul className="sm-list">
@@ -48,6 +56,7 @@ export function MessagesView({ me, defaultPhoto, initialPeer, onClose, onOpenPro
         </li>; })}
       </ul>
       {friends.length === 0 && <div className="sm-empty"><span>💬</span><strong>{translate("Hələ dostun yoxdur")}</strong><p>{translate("Əsas səhifədə “izlə” düyməsinə toxun, istək qəbul olunanda burada yazışa bilərsən.")}</p></div>}
+      </>}
     </>}
   </div>;
 }
@@ -188,6 +197,11 @@ function ChatThread({ me, peer, defaultPhoto, onBack, onOpenProfile }: { me: str
 }
 
 const SM_STYLES = `
+.sm-tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;margin:0 14px 10px;padding:4px;border-radius:22px;background:var(--muted);box-sizing:border-box;width:auto;}
+.sm-tabs button{all:unset;cursor:pointer;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;height:36px;font-size:13.5px;font-weight:750;color:var(--muted-foreground);transition:color .2s;}
+.sm-tabs button.on{color:var(--foreground);}
+.sm-tabs button b{min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:var(--heart);color:var(--primary-foreground);font-size:10px;display:grid;place-items:center;}
+.sm-tab-pill{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:36px;border-radius:18px;background:var(--surface);box-shadow:0 2px 8px oklch(.2 .03 165 / .1);transition:transform .25s cubic-bezier(.2,.9,.3,1);}
 .sm-root{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:var(--background);color:var(--foreground);animation:sm-in .28s cubic-bezier(.2,.9,.3,1) both;}
 .sm-root>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto;}
 .sm-head{display:flex;align-items:center;gap:10px;padding:max(12px,env(safe-area-inset-top)) 14px 10px;}
