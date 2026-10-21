@@ -1,8 +1,7 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
-import { ArrowLeft, Users, ChevronDown } from 'lucide-react';
+import { createFileRoute } from '@tanstack/react-router';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Button } from '@/components/ui/button';
-import { ASSET_SCALE as K, BOTS, INITIAL_MESSAGES, SEATS, TABLE_SIZE as V, seatAngle, type ChatMessage } from '@/lib/table-preview';
+import { ASSET_SCALE as K, BOTS, SEATS, TABLE_SIZE as V, seatAngle } from '@/lib/table-preview';
 
 export const Route = createFileRoute('/game')({
   head: () => ({ meta: [
@@ -21,19 +20,7 @@ function Masa() {
   const [from, setFrom] = useState(0);
   const [to, setTo] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
-  const [draft, setDraft] = useState('');
-  const [emojiOpen, setEmojiOpen] = useState(false);
-  const [nearBottom, setNearBottom] = useState(true);
   const tableSlot = useRef<HTMLDivElement>(null);
-  const scroll = useRef<HTMLDivElement>(null);
-  const input = useRef<HTMLInputElement>(null);
-  const counter = useRef(10);
-  const replyTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const addMessage = (message: Omit<ChatMessage, 'id'>) => {
-    const id = counter.current++;
-    setMessages(previous => [...previous.slice(-99), { ...message, id }]);
-  };
 
   useEffect(() => {
     const element = tableSlot.current;
@@ -43,16 +30,6 @@ function Masa() {
     observer.observe(element); fit();
     return () => observer.disconnect();
   }, []);
-  useEffect(() => {
-    const viewport = window.visualViewport;
-    const fit = () => document.documentElement.style.setProperty('--game-viewport-height', `${viewport?.height ?? window.innerHeight}px`);
-    fit(); viewport?.addEventListener('resize', fit);
-    return () => { viewport?.removeEventListener('resize', fit); document.documentElement.style.removeProperty('--game-viewport-height'); };
-  }, []);
-  useEffect(() => () => replyTimers.current.forEach(clearTimeout), []);
-  useEffect(() => {
-    if (nearBottom && scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
-  }, [messages, nearBottom]);
 
   const spin = () => {
     if (phase !== 'idle') return;
@@ -64,33 +41,16 @@ function Masa() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (phase === 'idle') spin();
-      if (phase === 'spin') {
-        setPhase('result');
-        const sender = BOTS[from]; const recipient = to === null ? undefined : BOTS[to];
-        if (sender && recipient) addMessage({ name: '', text: `${sender.name} 💋 ${recipient.name}`, system: true });
-      }
+      if (phase === 'spin') setPhase('result');
       if (phase === 'result') { if (to !== null) setFrom(to); setTo(null); setPhase('idle'); }
     }, phase === 'spin' ? 3500 : phase === 'result' ? 3200 : 2200);
     return () => clearTimeout(timer);
   }, [phase, from, to, angle]);
 
-  const sendMessage = (event: FormEvent) => {
-    event.preventDefault();
-    const text = draft.trim(); if (!text) return;
-    setNearBottom(true); addMessage({ name: 'Sen', text }); setDraft(''); setEmojiOpen(false);
-    const bot = BOTS[Math.floor(Math.random() * BOTS.length)];
-    if (bot) replyTimers.current.push(setTimeout(() => addMessage({ name: bot.name, gender: bot.g, text: /merhaba|selam/i.test(text) ? 'Merhaba, hoş geldin! 😊' : '😄 Şişe bir sonraki turda sende!' }), 1800));
-    input.current?.focus();
-  };
   const current = BOTS[from]; const selected = to === null ? undefined : BOTS[to];
   return (
     <main className="game-preview">
       <div className="game-shell">
-        <header className="game-header">
-          <Button asChild variant="ghost" size="icon" className="game-back" title="Geri"><Link to="/" aria-label="Geri"><ArrowLeft /></Link></Button>
-          <span className="game-room">Masa 1</span>
-          <span className="game-occupancy"><Users size={16} />12</span>
-        </header>
         <div ref={tableSlot} className="game-table-slot">
           <div className="game-table-frame" style={{ width: V * scale, height: V * scale }}>
             <div className="game-table" style={{ '--table-scale': scale } as CSSProperties}>
@@ -115,27 +75,6 @@ function Masa() {
           </div>
           <span className="game-turn" aria-live="polite">{phase === 'result' ? `${current?.name} → ${selected?.name} 💋` : phase === 'spin' ? 'Şişe dönüyor…' : `Sıra: ${current?.name}`}</span>
         </div>
-        <section className="game-chat" aria-label="Masa sohbeti">
-          <div ref={scroll} className="game-chat-scroll" onScroll={() => { const element = scroll.current; if (element) setNearBottom(element.scrollHeight - element.scrollTop - element.clientHeight < 45); }}>
-            <div className="game-chat-body" role="log" aria-label="Sohbet mesajları" aria-live="polite" aria-relevant="additions">
-              {messages.map(message => {
-                const bot = BOTS.find(item => item.name === message.name);
-                return message.system ? <div key={message.id} className="game-chat-system">{message.text}</div> :
-                  <div key={message.id} className="game-chat-message">
-                    {bot ? <img className="game-chat-avatar" src={`https://randomuser.me/api/portraits/${bot.g}/${bot.id}.jpg`} alt="" /> : <span className="game-chat-avatar game-chat-self">S</span>}
-                    <div className="game-chat-bubble"><span className={`game-chat-name ${message.gender === 'women' ? 'is-female' : ''}`}>{message.name}</span><span>{message.text}</span></div>
-                  </div>;
-              })}
-            </div>
-          </div>
-          {!nearBottom && <Button variant="outline" size="icon" className="game-chat-bottom" aria-label="Son mesajlara git" onClick={() => setNearBottom(true)}><ChevronDown /></Button>}
-          {emojiOpen && <div className="game-emoji-picker" aria-label="Emojiler">{['😊', '😂', '❤️', '💋', '😍', '🍀', '👋', '😎'].map(emoji => <Button key={emoji} variant="ghost" size="icon" aria-label={`${emoji} ekle`} onClick={() => { setDraft(previous => previous + emoji); input.current?.focus(); }}>{emoji}</Button>)}</div>}
-          <form className="game-chat-input" onSubmit={sendMessage}>
-            <input ref={input} aria-label="Mesajın" placeholder="Mesaj yaz…" value={draft} onChange={event => setDraft(event.target.value)} autoComplete="off" />
-            <Button type="button" variant="ghost" size="icon" className="original-emoji" aria-label="Emoji seç" title="Emoji seç" aria-expanded={emojiOpen} onClick={() => setEmojiOpen(previous => !previous)} />
-            <Button type="submit" variant="ghost" size="icon" className="original-send" aria-label="Mesajı gönder" title="Gönder" disabled={!draft.trim()} />
-          </form>
-        </section>
       </div>
     </main>
   );
