@@ -445,9 +445,15 @@ export const savePlayerNameStyle = createServerFn({ method: 'POST' })
 
 export const requestSiteRefresh = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((input: { title?: string; countdown?: number } | undefined) => {
+    const title = String(input?.title ?? '').trim().slice(0, 80);
+    const countdown = Math.round(Number(input?.countdown ?? 10));
+    if (!Number.isFinite(countdown) || countdown < 3 || countdown > 300) throw new Error('Geri sayım 3-300 saniyə olmalıdır');
+    return { title, countdown };
+  })
+  .handler(async ({ context, data: input }) => {
     await assertAdmin(context);
-    const { data, error } = await (context.supabase as any).rpc('admin_request_site_refresh');
+    const { data, error } = await (context.supabase as any).rpc('admin_request_site_refresh', { p_title: input.title || null, p_countdown: input.countdown });
     if (error) throw new Error(error.message);
     return { id: String(data) };
   });
