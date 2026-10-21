@@ -97,3 +97,5 @@
 
 - Realtime: room events go through the WebSocket hub (`ws-hub/`, systemd `butl-ws`, Caddy `/ws`) fed by `_rt_notify` triggers + `LISTEN butl_rt`; new room-scoped live tables must add a `_rt_` trigger and a routing rule in `ws-hub/routing.mjs` (privacy is enforced there). Supabase postgres_changes is only the fallback — never add global unfiltered subscriptions, they fan out to every player.
 - Database-change-only realtime channels get a per-subscriber topic and every channel's on/subscribe is guarded in the shared client; table parts sit in self-healing crash shields and browser errors go to /api/public/client-error, so one failing listener or widget never ejects a player from the table.
+
+- External realtime hubs only fan out authenticated room events through an outbound VPS bridge; SQL and gift transactions remain on the VPS, and transport disconnects never delete authoritative membership. Clients retain a bounded health-checked VPS fallback.
