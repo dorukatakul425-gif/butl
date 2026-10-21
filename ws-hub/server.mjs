@@ -22,7 +22,7 @@ function scheduleDeparture(uid, room) {
   clearTimeout(departures.get(uid));
   departures.set(uid, setTimeout(async () => {
     departures.delete(uid);
-    if ((byUser.get(uid)?.size ?? 0) > 0) return;
+    if ((byUser.get(uid)?.size ?? 0) > 0 || process.env.EXTERNAL_HUB_ACTIVE === "1") return;
     try { await pool.query("delete from public.room_players where user_id = $1 and room_id::text = $2", [uid, room]); }
     catch (e) { console.error("departure failed", e.message); }
   }, GRACE_MS));

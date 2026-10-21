@@ -1,6 +1,7 @@
 // game-socket.ts — single WebSocket to the butl hub (/ws): room-scoped push, gift relay,
 // precise server clock. Callers fall back to the old realtime feed when it is unavailable.
 import { getSupabase } from "./supabase";
+import { externalAvailable, externalCooldown } from "./transport-policy.mjs";
 
 export type SocketMessage = { type: string; [k: string]: unknown };
 type Handler = (m: SocketMessage) => void;
@@ -14,6 +15,9 @@ let watching = 0;
 let bestRtt = Infinity;
 let offset = 0;
 let pingTimer: ReturnType<typeof setInterval> | null = null;
+let externalUnavailableUntil = 0;
+let selecting = false;
+const externalOrigin = "https://butl-ws.onrender.com";
 const handlers = new Set<Handler>();
 
 const emit = (m: SocketMessage) => handlers.forEach((h) => { try { h(m); } catch (e) { console.error(e); } });
@@ -28,13 +32,27 @@ async function accessToken(): Promise<string | null> {
 
 function ping() { raw({ type: "ping", c: Date.now() }); }
 
-function connect() {
-  if (typeof window === "undefined" || ws) return;
-  const s = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
+async function connect() {
+  if (typeof window === "undefined" || ws || selecting) return;
+  selecting = true;
+  let useExternal = false;
+  if (externalAvailable(Date.now(), externalUnavailableUntil)) {
+    try {
+      const response = await fetch(`${externalOrigin}/health`, { signal: AbortSignal.timeout(2500), cache: "no-store" });
+      useExternal = response.ok && (await response.json()).ok === true;
+    } catch { /* Cold start or unavailable: keep the VPS path. */ }
+    if (!useExternal) externalUnavailableUntil = externalCooldown(Date.now());
+  }
+  selecting = false;
+  if (ws) return;
+  const url = useExternal ? `${externalOrigin.replace("https:", "wss:")}/ws` : `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`;
+  const s = new WebSocket(url);
   ws = s;
   ready = false;
+  const readyTimeout = setTimeout(() => { if (ws === s && !ready) s.close(); }, 7000);
   s.onopen = async () => {
-    const token = await accessToken();
+    let token: string | null;
+    try { token = await accessToken(); } catch { s.close(); return; }
     if (ws !== s) return;
     if (!token) { s.close(); return; }
     s.send(JSON.stringify({ type: "auth", token }));
@@ -49,6 +67,7 @@ function connect() {
       return;
     }
     if (m.type === "ready") {
+      clearTimeout(readyTimeout);
       const first = !ready;
       ready = true; retry = 0;
       if (first) {
@@ -63,7 +82,9 @@ function connect() {
     emit(m);
   };
   s.onclose = () => {
+    clearTimeout(readyTimeout);
     if (ws !== s) return;
+    if (useExternal) externalUnavailableUntil = externalCooldown(Date.now());
     ws = null;
     const was = ready;
     ready = false;
