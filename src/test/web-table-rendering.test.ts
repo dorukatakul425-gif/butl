@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasSceneAnimation, webGiftDestination, webGiftSample, webRenderQuality, webTableLayout } from '@/lib/web-table-rendering';
+import { hasSceneAnimation, tableTweenSeconds, webGiftDestination, webGiftSample, webRenderQuality, webTableLayout } from '@/lib/web-table-rendering';
 
 describe('shared website and Telegram reference rendering', () => {
   it('fits the source 375-unit square below the header on the requested phone', () => {
@@ -19,6 +19,16 @@ describe('shared website and Telegram reference rendering', () => {
     expect(hasSceneAnimation({ children: [{ children: [live] }] }, test)).toBe(true);
     expect(hasSceneAnimation({ children: [{ destroyed: true, children: [live] }] }, test)).toBe(false);
     expect(hasSceneAnimation({ visible: false, children: [live] }, test)).toBe(false);
+  });
+  it('uses native Telegram density and antialias without changing the website', () => {
+    expect(webRenderQuality(3, 'Safari', true)).toEqual({ resolution: 3, antialias: true });
+    expect(webRenderQuality(2.75, 'Android 14 Chrome', true).resolution).toBe(2.75);
+    expect(webRenderQuality(NaN, 'Safari', true).resolution).toBe(1);
+    expect(webRenderQuality(3, 'Safari')).toEqual({ resolution: 2, antialias: false });
+  });
+  it('keeps Telegram motion on elapsed time after a slow frame while preserving website timing', () => {
+    expect(tableTweenSeconds(100, 350, true)).toBe(0.35);
+    expect(tableTweenSeconds(350, 350, false)).toBe(0.1);
   });
   it('lands exactly on the enlarged moving receiver rather than its old seat', () => {
     const target = webGiftDestination({ x: 46, y: -5, scale: 1.5, rotation: 0 }, { x: 32, y: 32, scale: 0.75, rotation: 0 });
