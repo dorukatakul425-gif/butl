@@ -5,9 +5,15 @@ export function webTableLayout(width: number, height: number, header: number) {
   return { x: width / 2, y: header + available / 2, scale: side / 375, side };
 }
 
-export function webRenderQuality(dpr: number, ua: string) {
+export function webRenderQuality(dpr: number, ua: string, telegram = false) {
+  if (telegram) return { resolution: Number.isFinite(dpr) ? Math.max(dpr, 1) : 1, antialias: true };
   const safari = /Safari/i.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|Android/i.test(ua);
   return { resolution: Math.min(Math.max(dpr || 1, 1), 2), antialias: !safari && !/Android [78](?:[.; ]|$)/i.test(ua) };
+}
+
+/** Telegram tweens follow elapsed time; particle simulation remains bounded. */
+export function tableTweenSeconds(deltaMS: number, elapsedMS: number, telegram: boolean) {
+  return Math.max(0, telegram ? elapsedMS : Math.min(deltaMS, 100)) / 1000;
 }
 
 export interface GiftPose { x: number; y: number; scale: number; rotation: number }
