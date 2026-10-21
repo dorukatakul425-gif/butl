@@ -296,7 +296,7 @@ export function OriginalChatPanel() {
                 onClick={() => selectMessage(line)} onContextMenu={e => { e.preventDefault(); selectMessage(line); }} onDoubleClick={() => selectMessage(line)}
                 onTouchStart={e => { cancelLongTap(); if (e.touches.length === 1) longTap.current = setTimeout(() => selectMessage(line), 500); }}
                 onTouchEnd={cancelLongTap} onTouchMove={cancelLongTap} onTouchCancel={cancelLongTap}>
-                {!line.sender.isViewer && selected?.key === line.key && <Button variant="ghost" className="chat__report-button" aria-label={`${line.sender.name}: Mesaj seçenekleri`} onClick={() => selectMessage(line)}><span className="chat__report-icon" /></Button>}
+                {!line.sender.isViewer && selected?.key === line.key && <Button variant="ghost" className="chat__report-button" aria-label={`${line.sender.name}: Mesaj seçimləri`} onClick={() => selectMessage(line)}><span className="chat__report-icon" /></Button>}
                 {(() => {
                   // ChatContent.setDecor: 14×14 stone before the name; the name shrinks to make room.
                   const stoneId = line.sender.isViewer ? decor.stone : line.sender.stone;
