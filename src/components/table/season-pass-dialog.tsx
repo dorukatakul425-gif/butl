@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { showSourceToast } from "@/components/source-dialogs";
+import { flyGoldToCounter } from "@/lib/gold-fly";
+import "@/styles/gold-fly.css";
 import {
   buyPassPremium, canClaim, claimPassChest, claimPassLevel, fetchPassInfo, getCachedPass, passClock, passLeftText,
   passProgress, prizeView, type PassInfo, type PassLevel, type PassReward,
@@ -45,7 +47,7 @@ function Prize({ reward }: { reward: PassReward }) {
   return <div className={`bottle-pass__item bottle-pass__item--${v.kind}`} />;
 }
 
-function LevelRow({ info, l, now, onClaim }: { info: PassInfo; l: PassLevel; now: number; onClaim: (l: PassLevel, premium: boolean) => void }) {
+function LevelRow({ info, l, now, onClaim }: { info: PassInfo; l: PassLevel; now: number; onClaim: (l: PassLevel, premium: boolean, at?: { x: number; y: number }) => void }) {
   const opened = l.level <= info.level;
   const decor = prizeView(l.paid)?.kind === "decor";
   const premiumState = opened && info.pass_premium ? "premium" : "premium-locked";
@@ -56,7 +58,7 @@ function LevelRow({ info, l, now, onClaim }: { info: PassInfo; l: PassLevel; now
     <div className={`bottle-pass__level-bar bottle-pass__level-bar--${opened ? "opened" : "locked"}`}>
       <div className="bottle-pass__level-bar-shadow bottle-pass__level-bar-shadow--top" /><div className="bottle-pass__level-bar-shadow bottle-pass__level-bar-shadow--bottom" />
     </div>
-    <div className={`bottle-pass__level-prize bottle-pass__level-prize--${decor ? `premium-decor${premiumState === "premium" ? "" : "-locked"}` : premiumState}`} role="button" onClick={() => onClaim(l, true)}>
+    <div className={`bottle-pass__level-prize bottle-pass__level-prize--${decor ? `premium-decor${premiumState === "premium" ? "" : "-locked"}` : premiumState}`} role="button" onClick={(e) => onClaim(l, true, { x: e.clientX, y: e.clientY })}>
       {cp && <div className="bottle-pass__level-prize-light bottle-pass__level-prize-light--premium" />}
       <Prize reward={l.paid} />
       <div className={`bottle-pass__level-prize-icon bottle-pass__level-prize-icon--${icon(l.paid, info.pass_premium)}`} />
@@ -65,7 +67,7 @@ function LevelRow({ info, l, now, onClaim }: { info: PassInfo; l: PassLevel; now
     <div className="bottle-pass__level-dots" />
     <div className={`bottle-pass__level-title bottle-pass__level-title--${opened ? "opened" : "locked"}`}><div className="bottle-pass__level-title bottle-pass__level-title--text">{l.level + 1}</div></div>
     <div className="bottle-pass__level-dots" />
-    <div className={`bottle-pass__level-prize bottle-pass__level-prize--${freeState}`} role="button" onClick={() => onClaim(l, false)}>
+    <div className={`bottle-pass__level-prize bottle-pass__level-prize--${freeState}`} role="button" onClick={(e) => onClaim(l, false, { x: e.clientX, y: e.clientY })}>
       {cf && <div className="bottle-pass__level-prize-light bottle-pass__level-prize-light--free" />}
       <Prize reward={l.free} />
       {l.free.claimed && <div className="bottle-pass__level-prize-icon bottle-pass__level-prize-icon--claimed" />}
@@ -104,18 +106,29 @@ export function SeasonPassDialog({ onClose, startPremium = false }: { onClose: (
     else el.scrollTop = el.scrollHeight;
   }, [info?.level, info === null]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const onClaim = async (l: PassLevel, premium: boolean) => {
+  const onClaim = async (l: PassLevel, premium: boolean, at?: { x: number; y: number }) => {
     if (!info || busy) return;
     const r = premium ? l.paid : l.free;
-    if (r.claimed) { showSourceToast("Mükafat artıq toplanıb"); return; }
-    if (l.start_ms > t) { showSourceToast(`${l.level + 1} səviyyəsinin açılacağı müddət: ${passClock(l.start_ms - t)}`); return; }
-    if (l.score > info.score) { showSourceToast("Mükafatı almaq üçün bu səviyyəyə çat"); return; }
+    // Source BottlePassDialog toasts, birebir.
+    if (r.claimed) { showSourceToast("Mükafat artıq alınıb"); return; }
+    if (l.start_ms > t) { showSourceToast("Bu səviyyəni açmaq üçün daha çox liqa xalı əldə et"); return; }
+    if (l.score > info.score) { showSourceToast("Bu səviyyəni açmaq üçün daha çox liqa xalı əldə et"); return; }
     if (premium && !info.pass_premium) { setPremiumOpen(true); return; }
     setBusy(true);
     const res = await claimPassLevel(l.level, premium);
     setBusy(false);
-    if (res.ok) { setClaimed(r); void reload(); }
-    else showSourceToast(res.reason === "claimed" ? "Mükafat artıq toplanıb" : "Mükafat toplanmadı, yenidən yoxla");
+    if (res.ok) {
+      // Source cb.onGold: kalp ödülü tıklanan noktadan sol üst sayaca uçar;
+      // sadece kalp varsa pencere açılmaz, "Mükafat alındı!" yazısı çıkar.
+      if (r.gold) {
+        flyGoldToCounter(at ?? { x: window.innerWidth / 2, y: window.innerHeight / 2 });
+        showSourceToast("Mükafat alındı!");
+        if (!r.tokens && !Object.keys(r.items ?? {}).length) { void reload(); return; }
+      }
+      setClaimed(r);
+      void reload();
+    }
+    else showSourceToast(res.reason === "claimed" ? "Mükafat artıq alınıb" : "Mükafat toplanmadı, yenidən yoxla");
   };
   const onBuy = async () => {
     if (busy || !info) return;
@@ -125,11 +138,20 @@ export function SeasonPassDialog({ onClose, startPremium = false }: { onClose: (
     if (r.ok) { showSourceToast("✨ Premium icazənamə aktivdir!"); void reload(); }
     else showSourceToast(r.reason.includes("insufficient") ? "Kifayət qədər DAT yoxdur 🪙" : r.reason === "purchased" ? "Satın alındı!" : "Alınmadı, yenidən yoxla");
   };
-  const onChest = async () => {
+  // Source bonus chest: premium yoksa premium penceresi açılır; mövsüm sürüyorsa
+  // "Mövsüm başa çatana qədər gözlə"; açılınca kalpler sandıktan sayaca uçar.
+  const onChest = async (at?: { x: number; y: number }) => {
+    if (!info || busy) return;
+    if (!info.pass_premium) { setPremiumOpen(true); return; }
+    if (info.state === "running") { showSourceToast("Mövsüm başa çatana qədər gözlə"); return; }
     setBusy(true);
     const r = await claimPassChest();
     setBusy(false);
-    if (r.ok) setClaimed({ claimed: true, gold: r.gold ?? 0 });
+    if (r.ok) {
+      if (r.gold) flyGoldToCounter(at ?? { x: window.innerWidth / 2, y: window.innerHeight / 2 });
+      showSourceToast("Mükafat alındı!");
+      setClaimed({ claimed: true, gold: r.gold ?? 0 });
+    }
     else showSourceToast("Sandıq açılmadı");
   };
 
@@ -189,7 +211,7 @@ export function SeasonPassDialog({ onClose, startPremium = false }: { onClose: (
                   <div className="bottle-pass__bonus-chest-icon" />
                   <div className="bottle-pass__bonus-chest-desc">Sən <b>{lastLevel}</b> səviyyəsinə çatdıqdan sonra, hər <span className="bottle-pass__bonus-chest-desc-icon bottle-pass__bonus-chest-desc-icon--star">{info.chest.overscore2gold}</span> bonus sandığına <span className="bottle-pass__bonus-chest-desc-icon bottle-pass__bonus-chest-desc-icon--heart">1</span> əlavə edəcək. Sandığı, Premium icazənamən olduğu halda mövsümün sonunda açmaq olar.</div>
                   <div className="bottle-pass__bonus-chest-max">Maksimum: <div className="bottle-pass__bonus-chest-score">{info.chest.gold_max}</div></div>
-                  {info.prev_chest > 0 && <div role="button" className="button button--confirm" style={{ margin: "8px auto 0" }} onClick={() => void onChest()}>Sandığı aç (+{info.prev_chest} ❤️)</div>}
+                  {info.prev_chest > 0 && <div role="button" className="button button--confirm" style={{ margin: "8px auto 0" }} onClick={(e) => void onChest({ x: e.clientX, y: e.clientY })}>Sandığı aç (+{info.prev_chest} ❤️)</div>}
                 </div>
               </div>
               <div className="bottle-pass__levels">
