@@ -331,8 +331,8 @@ export function OriginalChatPanel() {
                   const img = dialogImage(assets, stone.image, 14, 14);
                   return <><div className="chat__stone" style={{ display: "inline-block" }}><img className="chat__stone-img" src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" /></div>{" "}</>;
                 })()}
-                <span className={`chat__sender-name ${chatNameClass(line.sender)}${(line.sender.isViewer ? decor.stone : line.sender.stone) && assets?.stones[(line.sender.isViewer ? decor.stone : line.sender.stone) ?? ""] ? " chat__sender-name--stone" : ""}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
-                  onClick={e => { e.stopPropagation(); setReceiver(line.sender); inputRef.current?.focus(); }}><PlayerName name={line.sender.name} appearance={appearances[line.sender.id]} nameClass={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`} /></span>
+                <span className={`chat__sender-name chat__sender-name--card ${(line.sender.isViewer ? decor.stone : line.sender.stone) && assets?.stones[(line.sender.isViewer ? decor.stone : line.sender.stone) ?? ""] ? " chat__sender-name--stone" : ""}`}
+                  onClick={e => { e.stopPropagation(); setReceiver(line.sender); inputRef.current?.focus(); }}><PlayerName name={line.sender.name} appearance={appearances[line.sender.id]} presentation="chat" nameClass={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`} /></span>
                 <span className={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}>: </span>
                 {line.private && <span className="chat__private-label">(şəxsi) </span>}
                 {line.receiver && <><span className="chat__sender-name">{line.receiver.name}</span><span>, </span></>}

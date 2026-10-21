@@ -39,6 +39,7 @@
 - Composite manifest-sized original center artwork below the bottle in Pixi so layout and input remain shared.
 - Roulette reuses the original wheel/frame/center; production spins and DAT chance purchases are atomic authenticated SQL RPCs with per-user idempotency and authoritative wallet/booster awards. Admin odds are exact basis-point percentages totaling 100%, replaced under a config lock with revision checks; no local fallback may simulate winnings. Reference-private pricing/odds are not inferred from visual sectors, and initial configuration stays disabled until an admin enables it.
 - Cosmetic name styles and Creator labels live in player_name_styles separately from roles, changed only by an authenticated admin RPC; badges reuse trusted gift_levels and the shared 1400-point helper. Exact reference nickname animations remain unverified, so local cosmetics must not be described as extracted private code.
+- Anchor the table Creator overlay to the avatar's full world transform in a photo-sized wrapper and update each animation frame, so moving, scaled or rotated seats never detach the label from the photo.
 - Site refresh requests use a persisted latest revision with realtime and visible-tab recovery mounted at the root; an explicit player confirmation reloads the document without leaving the table, and newly opened documents do not replay older requests.
 
 - Root prints the inspector notice once client-side; no DevTools detection or execution/input blocking, to preserve operation.

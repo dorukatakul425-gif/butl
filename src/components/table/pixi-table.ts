@@ -782,7 +782,10 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       const seat = seats[index];
       if (!seat || destroyed) return null;
       const r = host.getBoundingClientRect();
-      return { x: r.left + stage.x + seat.view.x * scale, y: r.top + stage.y + seat.view.y * scale, scale: scale * seat.view.scale.x };
+      const center = seat.view.toGlobal({ x: 0, y: 0 });
+      const edge = seat.view.toGlobal({ x: 1, y: 0 });
+      const dx = edge.x - center.x, dy = edge.y - center.y;
+      return { x: r.left + center.x, y: r.top + center.y, scale: Math.hypot(dx, dy), rotation: Math.atan2(dy, dx) };
     },
     async setBottle(type: string) {
       const version = ++bottleVersion;

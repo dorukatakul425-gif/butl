@@ -24,6 +24,13 @@
 .chat__message-line--selected { background-color: var(--chat-message-selected); }
 .chat__message-line--selected::after { border-right-color: var(--chat-message-selected); }
 .chat__sender-name { display: inline-block; vertical-align: bottom; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 1em); font-weight: bold; cursor: pointer; }
+.chat__sender-name--card { display: inline-flex; overflow: visible; vertical-align: middle; min-width: 0; }
+.player-name-card--chat { box-sizing: border-box; min-width: 0; max-width: 100%; }
+.player-name-card--chat .player-level-badge { height: 18px; flex-shrink: 0; }
+.player-name-card--chat .player-name-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-name-card--chat .player-creator { flex-shrink: 0; }
+.player-name-card--chat .player-name-text--default.chat__premium-sender-name { color: transparent; }
+.player-name-card--chat .player-name-text:not(.player-name-text--default):not(.player-name-text--rainbow) { background: none; }
 .chat__word-break { word-break: break-word; hyphens: manual; }
 .chat__message--bold { font-weight: bold; }
 .chat__name-color--unknown { color: var(--chat-message-text); }
