@@ -93,3 +93,5 @@
 - Owned tables use server-managed metadata, hashed passwords and a membership insertion guard; all random/resume entry paths consult the same access predicate, while edits retain stable internal room IDs and existing occupants. DAT price is an authenticated administrator setting with no assumed initial price.
 - Personal-table random color is separate from purchased table_bg assets, so ownership never grants a paid background for free.
 - Active-song gift rating is emitted exactly once from committed ordinary/premium gift events; play_music serializes same-room replacements and exempts only the current song sender from the shared wait, preserving authoritative wallets.
+
+- Realtime: room events go through the WebSocket hub (`ws-hub/`, systemd `butl-ws`, Caddy `/ws`) fed by `_rt_notify` triggers + `LISTEN butl_rt`; new room-scoped live tables must add a `_rt_` trigger and a routing rule in `ws-hub/routing.mjs` (privacy is enforced there). Supabase postgres_changes is only the fallback — never add global unfiltered subscriptions, they fan out to every player.
