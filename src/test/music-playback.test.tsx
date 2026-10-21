@@ -19,10 +19,10 @@ describe('music sound controls', () => {
   it('applies mute immediately without restarting paused playback', () => {
     const audio = getSharedAudio();
     render(<MusicView song={song} muted={false} volume={1} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Müziği duraklat' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Musiqini fasiləyə qoy' }));
     const attempts = play.mock.calls.length;
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Sesi kapat' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Sesi kapat' }));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Səsi bağla' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Səsi bağla' }));
     expect(audio?.muted).toBe(true);
     expect(audio?.paused).toBe(true);
     expect(play).toHaveBeenCalledTimes(attempts);

@@ -22,7 +22,7 @@ export function SourceFeaturePopup({ title, children, onClose, help, inactive = 
     document.addEventListener('keydown', key, true);
     return () => { document.removeEventListener('keydown', key, true); if (previous instanceof HTMLElement) previous.focus(); };
   }, [inactive]);
-  return <div className="source-feature-layer"><div className="popup-shade" onClick={inactive ? undefined : onClose} />
+  return <div className="source-feature-layer"><div className="popup-shade" onClick={e => { e.stopPropagation(); if (!inactive) onClose(); }} />
     <section ref={ref} tabIndex={-1} role="dialog" aria-modal={!inactive} inert={inactive} aria-label={title} className={`popup popup--center source-feature-popup ${className}`}>
       {/* Dialog.Header (closeBtnMod 'dlg'): title, extra children (manual icon), then the close button inside the header. */}
       {manualClass !== undefined ? <header className={`popup__header ${headerClass}`}><div className={`popup__title ${titleClass}`}>{title}</div>{help && <div role="button" tabIndex={0} aria-label="Kömək" className={manualClass} onClick={help} onKeyDown={e => { if (e.key === 'Enter') help(); }} />}<Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Bağla" onClick={onClose}><span className={`popup__close-icon ${closeIconClass}`} /></Button></header>

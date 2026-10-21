@@ -3,6 +3,8 @@ import { YouTubeFrame } from "@/components/music/youtube-player";
 import { finishMusic, setMusicMuted, setMusicVolume, getSharedAudio, type PlayingSong } from "@/lib/music-session";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, X } from "lucide-react";
+import { Square } from 'lucide-react';
+import { clipZoomTitle, loadClipZoom, nextClipZoom, type ClipZoom } from '@/lib/clip-zoom';
 
 // Markup ported from MusicViewPreact.tsx, UniversalPlayer.tsx and PlayerControls.tsx (portrait layout).
 const bem = (block: string) => (element = "", mods: Array<string | false | undefined> = []) => {
@@ -79,6 +81,8 @@ function HtmlAudio({ url, startPosition, muted, volume, onReady, onProgress, onC
 export function MusicView({ song, muted, volume, onDj, onPlayer }: { song: PlayingSong; muted: boolean; volume: number; onDj?: (id: string) => void; onPlayer?: () => void }) {
   const [ready, setReady] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [zoom, setZoom] = useState<ClipZoom>(0);
+  useEffect(() => { setZoom(loadClipZoom()); }, []);
   const [startPosition] = useState(() => Math.max(0, (Date.now() - song.startedAt) / 1000));
   useEffect(() => { setReady(false); setProgress(0); }, [song.key]);
 
@@ -100,7 +104,7 @@ export function MusicView({ song, muted, volume, onDj, onPlayer }: { song: Playi
   const done = () => finishMusic(song.key);
 
   return (
-    <div className={cls("", [position, media, size])} style={{ right: 0, top: 6 }}>
+    <div className={cls("", [position, media, size, hasVideo && zoom ? `zoom${zoom}` : undefined])} style={{ right: 0, top: 6 }}>
       <Button variant="ghost" className="music-stop-button" aria-label="Musiqini bağla" title="Bağla" onClick={done}><X size={14}/></Button>
       <div className={cls("top", [size, media, position, volumeClass])}>
         <Button variant="ghost" className={`${cls("progress", [ready ? undefined : "loading", size, position, media])} p-0 border-0`} aria-label={`${song.sender.name}: DJ`} onClick={() => onDj?.(song.sender.id)}
@@ -120,6 +124,9 @@ export function MusicView({ song, muted, volume, onDj, onPlayer }: { song: Playi
         </div>
       </div>
       <div className={pcCls("", [position, size, volumeClass])}>
+        {hasVideo && <Button variant="ghost" className={pcCls('zoom', [size, zoom ? 'on' : undefined])} data-clip-zoom={zoom} title={clipZoomTitle(zoom)} aria-label={clipZoomTitle(zoom)} onClick={e => { e.stopPropagation(); setZoom(nextClipZoom(zoom)); }}>
+          <Square size={18} aria-hidden="true" />{zoom > 0 && <span className={pcCls('zoom-badge')}>{zoom}x</span>}
+        </Button>}
         <button type="button" aria-label={muted ? "Səsi aç" : "Səsi bağla"} onClick={() => setMusicMuted(!muted)} className={pcCls("mute", [position, size, volumeClass, muteMode, media])} style={{ border: 0, padding: 0, backgroundColor: "transparent", backgroundRepeat: "no-repeat", backgroundPosition: "center", backgroundSize: "contain" }} />
         <input type="range" aria-label="Səs" value={rangeValue} onChange={(e) => setMusicVolume(Number(e.target.value) / 100)}
           className={pcCls("slider", [size, supportVolume ? undefined : "disabled", position])}

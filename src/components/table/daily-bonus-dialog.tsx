@@ -37,7 +37,7 @@ export function DailyBonusHost({ viewerId }: { viewerId: string }) {
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif" }}>
       <div className="popup__dialog-manager">
-        <div className="popup-shade" />
+        <div className="popup-shade" onClick={e => { e.stopPropagation(); close(); }} />
         <div role="dialog" aria-modal="true" aria-label={title} className={`popup ${cls("x_popup")} popup--center popup--show`}>
           <div className={cls("bg")} />
           <div className={popup("header")}>

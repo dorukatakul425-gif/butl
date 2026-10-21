@@ -219,6 +219,7 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
   };
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif", pointerEvents: "none" }}>
+      <div className="table-drawer-dismiss" onClick={e => { e.stopPropagation(); onClose(); }} />
       {/* Ciliz setHeader: dikey modda çekmece başlığı üst simge çubuğunun üzerine
           opak beyaz şerit olarak çıkar; simgeler başlığın altında kalır. */}
       <div

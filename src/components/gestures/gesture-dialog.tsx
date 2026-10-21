@@ -55,6 +55,7 @@ export function GestureDialog({ open, assets, account = null, onClose, onPreview
   if (!open || !box) return null;
   const image = selected ? dialogImage(assets, selected.gesture.storeImage || selected.gesture.image, 90, 90) : null;
   return createPortal(<>
+    <div className="table-drawer-dismiss table-drawer-dismiss--gesture" onClick={e => { e.stopPropagation(); onClose(); }} />
     <section role="dialog" aria-label={t("dlg:gesture:send")} className="gesture-drawer" style={{ top: box.top, left: box.left, width: box.width }}>
       <header className="gesture-header">{onProfile && <Button variant="ghost" className="send-gift__btn send-gift__btn--profile gesture-profile" title="Profilim" aria-label="Profilim" onClick={onProfile} />}<span className="gesture-title">{t("dlg:gesture:send")}</span><Button variant="ghost" className="send-gift__tokens gesture-balance" title="Jetonlar" aria-label="Jeton balansı" onClick={() => window.dispatchEvent(new Event(OPEN_TOKENS_BANK_EVENT))}>{account?.tokens ?? "—"}</Button></header>
       {status && !selected && <p role="status" className="gesture-status">{status}</p>}

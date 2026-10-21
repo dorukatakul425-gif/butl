@@ -55,7 +55,17 @@ const MUSIC_KEY = "deltagame.music.volume";
 const savedMusic = (() => { try { const v = Number(typeof window !== "undefined" ? window.localStorage.getItem(MUSIC_KEY) ?? 1 : 1); return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1; } catch { return 1; } })();
 let state: State = { song: null, lines: [], muted: savedMusic === 0, volume: savedMusic };
 const listeners = new Set<() => void>();
-const set = (next: Partial<State>) => { state = { ...state, ...next }; listeners.forEach(l => l()); };
+let batching = 0;
+let changed = false;
+const set = (next: Partial<State>) => { state = { ...state, ...next }; if (batching) changed = true; else listeners.forEach(l => l()); };
+/** History is one snapshot, not 100 nested external-store notifications. */
+export function batchChatHistory(work: () => void) {
+  batching++;
+  try { work(); } finally {
+    batching--;
+    if (!batching && changed) { changed = false; listeners.forEach(l => l()); }
+  }
+}
 let seq = 0;
 // Sohbet listesi sınırsız büyüyünce telefon kasmaya başlıyordu; Ciliz gibi son 100 satır tutulur.
 const MAX_CHAT_LINES = 100;

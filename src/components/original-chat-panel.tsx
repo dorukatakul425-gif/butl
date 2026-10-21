@@ -31,6 +31,8 @@ import { dialogImage } from "@/lib/ciliz-assets";
 import { useDecorState } from "@/lib/decor-store";
 import { applyTranslation, chatTranslator, needsTranslation, toggleTranslation, useChatTranslations } from "@/lib/chat-translation";
 import { roomProfileResolver } from '@/lib/room-profile-resolver';
+import { playChatAlert, preloadChatAlert } from '@/lib/chat-alert';
+import { batchChatHistory } from '@/lib/music-session';
 
 const VIEWER_LOCALE = "tr";
 
@@ -40,6 +42,7 @@ const profileUser = (p: Profile) => ({ id: p.id, name: p.name, photoUrl: playerP
 /** Original chat area: MediaPanel (video, music), chat body with info lines, input at bottom (source order). */
 export function OriginalChatPanel() {
   const preferences = useChatPreferences();
+  useEffect(() => { preloadChatAlert(); }, []);
   const assets = useCilizAssets();
   const session = useMusicSession();
   const blocked = useBlockedUsers();
@@ -125,13 +128,26 @@ export function OriginalChatPanel() {
       return;
     }
     setText(""); setReceiver(undefined); inputRef.current?.focus();
+    // Follow before the realtime echo; a successful send may arrive before its RPC response.
+    followEnd();
     void sendChat(value, to?.id, Boolean(to?.private)).then(ok => {
-      if (ok) window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: value }));
+      if (ok) { followEnd(); window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: value })); }
       else showSourceToast("Mesaj göndərilmədi.");
     });
   };
   useEffect(() => onRoomChatDelete(id => removeTextLine(id)), []);
   const room = useRoom();
+  // The home inbox is unmounted at /game; keep its incoming audio available at the table.
+  useEffect(() => {
+    const sb = getSupabase(), viewerId = VIEWER.id;
+    if (!sb || !viewerId || !room.roomId) return;
+    const channel = sb.channel(`table-direct-alert:${viewerId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'direct_messages', filter: `recipient_id=eq.${viewerId}` }, event => {
+        const m = event.new as { id: string; sender_id: string; recipient_id: string };
+        playChatAlert(`direct:${m.id}`, m.sender_id, m.recipient_id, viewerId);
+      }).subscribe();
+    return () => { void sb.removeChannel(channel); };
+  }, [room.roomId]);
   const resolver = useMemo(() => roomProfileResolver(id => { const seat = displaySeatOf(id); return seat >= 0 ? profileBySeat(seat) : null; }, async id => {
     const sb = getSupabase(); if (!sb) return null;
     const { data } = await sb.from('profiles').select('*').eq('id', id).maybeSingle();
@@ -177,7 +193,13 @@ export function OriginalChatPanel() {
       const participants = Promise.all([resolver.find(row.user_id), resolver.find(row.receiver_id)]);
       queue = queue.then(async () => {
         const [sender, rec] = await participants;
-        if (alive && sender) receiveRef.current(row, sender, rec);
+        // Yield between burst deliveries: external-store updates are synchronous in React.
+        // A long resolved-promise chain otherwise exhausts React's nested-update limit.
+        await new Promise<void>(resolve => window.setTimeout(resolve, 0));
+        if (alive && sender) {
+          receiveRef.current(row, sender, rec);
+          if ((!row.kind || row.kind === 'chat') && !blocked.has(row.user_id)) playChatAlert(`room:${row.id}`, row.user_id, row.receiver_id, VIEWER.id);
+        }
       });
     });
     return () => { alive = false; off(); };
@@ -250,7 +272,7 @@ export function OriginalChatPanel() {
     if (!el) return;
     if (atBottom.current) { el.scrollTop = el.scrollHeight; setShowScrollBtn(false); }
     else setShowScrollBtn(true);
-  }, [session.lines.length]);
+  }, [session.lines.at(-1)?.key]);
   const onChatScroll = () => {
     const el = scrollRef.current; if (!el) return;
     atBottom.current = Math.ceil(el.scrollTop) >= el.scrollHeight - el.clientHeight - 2;
@@ -264,7 +286,7 @@ export function OriginalChatPanel() {
     let alive = true;
     void loadRoomChatHistory(roomId).then(rows => {
       if (!alive) return;
-      for (const r of rows) receiveRef.current(r.row, r.sender, r.receiver);
+      batchChatHistory(() => { for (const r of rows) receiveRef.current(r.row, r.sender, r.receiver); });
 
     });
     return () => { alive = false; };

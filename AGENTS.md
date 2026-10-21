@@ -83,3 +83,6 @@
 
 - Keep authenticated liveness in isolated room_presence, throttling legacy membership timestamps with nonblocking locks; prune only stale unlocked members after rechecking presence, so gift rewards cannot evict active seats. Room allocation waits for the selected available table instead of treating a busy lock as fullness.
 - Bound visual-only gift flights and generation-cancel video callbacks; keep every acknowledged payment/event independent, so rendering bursts cannot stall membership recovery. Serialize periodic liveness checks to avoid accumulating slow RPCs.
+
+- Keep clip zoom browser-local with the source three-state cycle and the existing iframe mounted; apply bounded portrait widths so zoom never restarts playback. Incoming addressed-chat/direct-message sound uses the source personal_message through shared SFX, once per live event, never history; the table owns a narrow DM audio subscription because the home inbox unmounts there.
+- Table dialog backdrops close only their owning layer and stop portal propagation; unshaded drawers have input-catching empty-area surfaces behind their interactive contents. Local sending restores end-following before realtime echo, and follow effects depend on latest line identity rather than capped history length.

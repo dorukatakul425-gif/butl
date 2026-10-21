@@ -49,7 +49,7 @@ function PopupShell({ open, onClose, className, label, z, children }: { open: bo
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: z, fontFamily: "Arial, Helvetica, sans-serif" }}>
       <div className="popup__dialog-manager">
-        <div className="popup-shade" onClick={onClose} />
+        <div className="popup-shade" onClick={e => { e.stopPropagation(); onClose(); }} />
         <div role="dialog" aria-modal="true" aria-label={label}
           className={["popup", className, "popup--center", phase === "show" && "popup--show", phase === "hide" && "popup--hide"].filter(Boolean).join(" ")}>
           {children}

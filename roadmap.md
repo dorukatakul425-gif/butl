@@ -1,3 +1,10 @@
+## Completed: Table video and chat controls
+- [x] Original clipZoom 0/1/2 cycle and persistent choice, bounded video-only zoom without remounting the iframe; exact reference pixel styling unavailable.
+- [x] Original personal_message sound for live replies/private/direct messages, deduplicated and preference-aware, never history.
+- [x] Empty-area dismissal for daily/info dialogs and gift/gesture drawers with portal propagation isolation.
+- [x] Follow newest after local send including capped history; batch history and yield live burst updates to prevent React nested-update overflow.
+- [x] 32 tests passed. Two real accounts: sound starts, daily/settings outside dismissal, 100-line send-to-latest, mobile 112/224/323px video cycle preserving iframe, desktop layout and zero runtime errors. YouTube demanded bot verification, so actual video playback remains unverified. Temporary accounts removed.
+
 - [x] Add detailed profile view using existing account fields and upload action.
 - [x] Add persistent AZ/TR/RU/EN languages and appearance control; preserve game.
 - [x] Compact and reorder header controls.
