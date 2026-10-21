@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { getSupabase } from '@/lib/supabase';
 import { needsRefresh } from '@/lib/player-appearance';
 
-type RefreshEvent = { id: string; created_at: string };
+type RefreshEvent = { id: string; created_at: string; title?: string | null; countdown?: number | null };
 const COUNTDOWN = 10;
 
 function reloadFor(id: string) {
@@ -40,7 +40,7 @@ export function SiteRefreshHost() {
       if (disposed || reading) return;
       reading = true;
       try {
-        const { data, error } = await sb.from('site_refresh_requests').select('id,created_at').eq('singleton', 1).maybeSingle();
+        const { data, error } = await sb.from('site_refresh_requests').select('id,created_at,title,countdown').eq('singleton', 1).maybeSingle();
         if (!error) accept(data);
       } finally { reading = false; }
     };
@@ -57,7 +57,7 @@ export function SiteRefreshHost() {
   // Ureyimsen app-update.js: 10 saniyəlik geri sayım, gizli tabda görünənə qədər gözləyir.
   useEffect(() => {
     if (!pending) return;
-    let count = COUNTDOWN, timer = 0;
+    let count = Math.min(300, Math.max(3, Number(pending.countdown) || COUNTDOWN)), timer = 0;
     const start = () => {
       setLeft(count);
       timer = window.setInterval(() => {
@@ -89,6 +89,7 @@ export function SiteRefreshHost() {
   }, [pending]);
 
   if (!pending || typeof document === 'undefined') return null;
+  const total = Math.min(300, Math.max(3, Number(pending.countdown) || COUNTDOWN));
   const style = box
     ? { left: box.left + 8, top: box.top + 8, width: Math.min(420, box.width - 16) }
     : undefined;
@@ -96,11 +97,11 @@ export function SiteRefreshHost() {
     <div id="app-update-banner" role="status" className={`app-update-banner${box ? ' app-update-banner--chat' : ''}`} style={style}>
       <div className="app-update-banner__icon" aria-hidden>✨</div>
       <div className="app-update-banner__text">
-        <div className="app-update-banner__title">Yeni versiya hazırdır</div>
+        <div className="app-update-banner__title">{pending.title?.trim() || 'Yeni versiya hazırdır'}</div>
         <div className="app-update-banner__body">{left} saniyə sonra yenilənəcək</div>
       </div>
       <button type="button" className="app-update-banner__now" onClick={() => reloadFor(pending.id)}>İndi yenilə</button>
-      <i className="app-update-banner__bar" style={{ width: `${(Math.max(0, left - 1) / COUNTDOWN) * 100}%` }} />
+      <i className="app-update-banner__bar" style={{ width: `${(Math.max(0, left - 1) / total) * 100}%` }} />
     </div>,
     document.body,
   );
