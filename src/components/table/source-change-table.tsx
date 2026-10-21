@@ -1,3 +1,6 @@
+import { OwnedTableDialog } from './owned-table-dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { gameError } from '@/lib/game-language';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
@@ -36,26 +39,28 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
   const isAdmin = useIsChatAdmin();
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [now, setNow] = useState(Date.now()), [info, setInfo] = useState<SourceTableEntry | null>(null);
   const [fullTable, setFullTable] = useState<string | null>(null);
+  const [ownedOpen, setOwnedOpen] = useState(false), [lockedTable, setLockedTable] = useState<string | null>(null), [password, setPassword] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
   if (!assets) return null;
   const t = (key: string) => translate(assets, key);
-  const change = async (id?: string) => {
+  const change = async (id?: string, pass?: string) => {
     if (busy) return;
     setBusy(true); setMessage('');
     try {
-      const result = await executeSourceFeature('change-table', id ? { tableId: id } : undefined);
+      const result = await executeSourceFeature('change-table', id ? { tableId: id, ...(pass === undefined ? {} : { password: pass }) } : undefined);
       if (result.confirmed) onClose();
       // Original GameQueuePresenter: a full table opens the "Boş yer yoxdur" popup.
       else if (result.message === 'table_full' || result.message === 'Masa dolu') setFullTable(id ?? '');
-      else setMessage(result.message ?? t('dlg:music:unavailable'));
+      else if (result.message === 'password_required') { setLockedTable(id ?? null); setPassword(''); }
+      else setMessage(result.message === 'wrong_password' ? 'Parol yanlışdır.' : result.message ?? t('dlg:music:unavailable'));
     }
     catch (e) { setMessage(gameError(e)); }
     finally { setBusy(false); }
   };
   const timerOf = (e: SourceTableEntry) => { if (!e.blockedUntil) return undefined; return mmss(Math.max(0, Math.ceil((e.blockedUntil - now) / 1000))); };
   // Original ChangeTableDialog: tapping a counting-down table opens the kickout info dialog, never a plain toast.
-  const click = (e: SourceTableEntry, timer?: string) => () => { if (timer && timer !== '00:00') setInfo(e); else void change(e.id); };
+  const click = (e: SourceTableEntry, timer?: string) => () => { if (timer && timer !== '00:00') setInfo(e); else if (e.locked && !e.current) { setLockedTable(e.id); setPassword(''); setMessage(''); } else void change(e.id); };
   const infoDesc = (e: SourceTableEntry) => {
     const k = e.kicker;
     return translate(assets, 'kickout:info:desc', k?.name ?? '', e.id)
@@ -66,8 +71,8 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
     <div className={cls('info')}><div className={cls('photo')} style={e.photo ? { backgroundImage: `url(${e.photo})` } : undefined} /><div className={cls('item-border')}>{e.name}</div></div>
     <Stats men={e.men} women={e.women} timer={timer} />
   </div>; };
-  const TableItem = (e: SourceTableEntry) => { const timer = timerOf(e), image = EMBEDDED_IMAGES.includes(e.bottle) ? e.bottle : 'standart'; return <div key={`h${e.id}`} className={cls('item')} aria-label={`#${e.id}`} {...press(click(e, timer))}>
-    <div className={cls('info')}><div className={cls('table-icon')}><div className={cls('bottle', [image])} /></div><div className={cls('item-border')}>#{e.id}</div></div>
+  const TableItem = (e: SourceTableEntry) => { const timer = timerOf(e), image = EMBEDDED_IMAGES.includes(e.bottle) ? e.bottle : 'standart'; return <div key={`h${e.id}`} className={cls('item')} aria-label={`#${e.number ?? e.id}`} {...press(click(e, timer))}>
+    <div className={cls('info')}><div className={cls('table-icon')}><div className={cls('bottle', [image])} /></div><div className={cls('item-border')}>{e.locked ? '🔒 ' : ''}#{e.number ?? e.id}{e.name ? ` · ${e.name}` : ''}</div></div>
     <Stats men={e.men} women={e.women} timer={timer} />
   </div>; };
   const friends = session.tables?.friends ?? [], tables = session.tables?.history ?? [];
@@ -75,6 +80,7 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
   return createPortal(<><SourceFeaturePopup title={t('dlg:change_table:title')} onClose={onClose} contentClass="popup__content--no-padding" footer={<div className="popup__footer change-table__x_popup__footer" />}>
     <div className={cls('', [isBrokenBorders ? '' : 'support-borders'])}>
       <div className={cls('random-button')} aria-disabled={busy || !session.viewerId} {...press(() => { if (session.viewerId) void change(); })}>{t('dlg:change_table:btn_random2')}</div>
+      <Button variant="ghost" className="w-full" onClick={() => setOwnedOpen(true)} disabled={busy || !session.viewerId}>👑 Masa yarat / Mənim masam</Button>
       {session.tables?.canViewById && isAdmin && <form className={cls('view-form')} onSubmit={e => { e.preventDefault(); const v = inputRef.current?.value ?? ''; if (/^\d+$/.test(v)) void change(String(Number(v))); }}>
         <label htmlFor="table-id" className={cls('subtitle', ['input'])}>Masanı göstər</label>
         <div className={cls('input-line')}><input type="number" id="table-id" className={cls('input')} placeholder="Masa nömrəsi" step="1" min="0" ref={inputRef} required /><span className="validity" /><input className={cls('submit')} type="submit" value="Keç" disabled={busy} /></div>
@@ -89,6 +95,10 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
     </div>
     {!session.viewerId && <div className="source-feature-message">{t('dlg:music:unavailable')}</div>}{message && <div role="status" className="source-feature-message">{message}</div>}
   </SourceFeaturePopup>
+  {ownedOpen && <OwnedTableDialog onClose={() => setOwnedOpen(false)} onJoined={onClose} />}
+  {lockedTable && <SourceFeaturePopup title="🔒 Masa parolu" onClose={() => { setLockedTable(null); setMessage(''); }}>
+    <form className="space-y-3" onSubmit={e => { e.preventDefault(); void change(lockedTable, password); }}><Input aria-label="Masa parolu" type="password" value={password} maxLength={32} autoComplete="off" onChange={e => setPassword(e.target.value)} /><Button type="submit" disabled={busy}>Keç</Button>{message && <p role="alert">{message}</p>}</form>
+  </SourceFeaturePopup>}
   {info && <SourceFeaturePopup title={t('kickout:info:header')} onClose={() => setInfo(null)} className="source-kickout-popup" footer={<SourceButtons confirm={{ title: t('kickout:help:btn_ok'), onClick: () => setInfo(null) }} />}>
     <div className="kickout"><div className="kickout__user">
       <div className="kickout__photo">{info.kicker?.photo ? <img src={info.kicker.photo} alt={info.kicker.name} /> : null}<div className="kickout__icon kickout__icon--kicked" /></div>

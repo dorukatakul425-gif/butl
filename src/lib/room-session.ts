@@ -28,6 +28,9 @@ export interface RoomRow {
   bottle?: string;
   table_bg?: string;
   table_bg_by?: string | null;
+  table_number?: number | null;
+  table_name?: string;
+  table_color?: number | null;
 }
 export interface ChatRow {
   id: number;

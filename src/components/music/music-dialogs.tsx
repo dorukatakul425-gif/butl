@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { createPortal } from "react-dom";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { MusicFolder, secondsToMMSS, type MusicItem, type MusicService } from "@/lib/music";
+import { useMusicSession } from '@/lib/music-session';
+import { useAuth } from '@/lib/auth';
 import { YouTubeFrame } from "@/components/music/youtube-player";
 
 // Markup and class names ported from MusicListDialog.tsx, MusicPreviewDialog.tsx, PreviewAudioPlayer.tsx and Dialog.*.
@@ -271,6 +273,10 @@ export interface MusicPreviewDialogProps {
 
 export function MusicPreviewDialog({ open, assets, service, music, onConfirm, onClose }: MusicPreviewDialogProps) {
   const [sent, setSent] = useState(false);
+  const current = useMusicSession().song, auth = useAuth();
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { if (!open) return; const id = window.setInterval(() => setNow(Date.now()), 250); return () => window.clearInterval(id); }, [open]);
+  const remaining = current && current.sender.id !== auth.session?.user.id ? Math.max(0, Math.ceil((current.startedAt + 60000 - now) / 1000)) : 0;
   useEffect(() => { if (open) setSent(false); }, [open, music]);
   const t = (key: string) => translate(assets, key);
   const isVideo = service.id === "yt";
@@ -292,7 +298,7 @@ export function MusicPreviewDialog({ open, assets, service, music, onConfirm, on
       </div>
       <div className="popup__buttons popup__buttons--center">
         <div className="button button--cancel" role="button" onClick={onClose}>{t("ios:dlg:music_confirm:cancel")}</div>
-        <div className="button button--confirm" role="button" onClick={() => { if (sent || !music) return; setSent(true); onConfirm(music); }}>{t("ios:dlg:music_confirm:confirm")}</div>
+        <div className="button button--confirm" role="button" aria-disabled={sent || remaining > 0} onClick={() => { if (sent || remaining > 0 || !music) return; setSent(true); onConfirm(music); }}>{remaining > 0 ? secondsToMMSS(remaining) : t("ios:dlg:music_confirm:confirm")}</div>
       </div>
     </PopupShell>
   );

@@ -143,7 +143,7 @@ export function OriginalTableHeader() {
           <ArrowLeft className="original-button-icon" aria-hidden="true" />
         </Button>
       </div>
-      {room.roomId !== null && <TableIdChip roomId={room.roomId} label={vipAssets ? translate(vipAssets, 'chat:room_title') : ''} />}
+      {room.roomId !== null && <TableIdChip roomId={room.room?.table_number ?? room.roomId} name={room.room?.table_name} personal={room.room?.table_color != null} label={vipAssets ? translate(vipAssets, 'chat:room_title') : ''} />}
       <Button variant="ghost" aria-label="Masanı dəyiş" title="Masanı dəyiş" aria-disabled={changeCount >= 1}
         onClick={() => { if (changeCount < 1) setChangeOpen(true); else showSourceToast((vipAssets?.translation["hint:change_room:waiting"] ?? "Masanı dəyişmək üçün % saniyə gözləyin").replace(/%0?/, String(Number.isFinite(changeCount) ? changeCount : 9))); }}
         className={`original-header-button original-icon-default${changeCount >= 1 ? ' original-change-table--count' : ''}`}>

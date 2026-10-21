@@ -124,13 +124,17 @@ const stubService = (id: "cz" | "yt"): MusicService => ({ id, musicPrice: id ===
 /** session.viewerSendMusic: the server charges the price and stores the song on the table; everyone (sender included) plays it from the room feed. */
 export async function sendMusic(music: MusicItem, service: MusicService): Promise<{ ok: true } | { ok: false; reason: string }> {
   const audio = getSharedAudio();
+  const previous = audio ? { src: audio.src, time: audio.currentTime, paused: audio.paused } : null;
   // Unlock audio inside the tap (iOS); the feed then sets the real start position.
   if (audio && service.id !== "yt") { audio.src = music.url; audio.currentTime = 0; resumeMusicAudio(); }
   const { getSupabase } = await import("@/lib/supabase");
   const sb = getSupabase();
   if (!sb) { audio?.pause(); return { ok: false, reason: "offline" }; }
   const { error } = await sb.rpc("play_music", { p_service: service.id, p_item: music });
-  if (error) { if (state.song?.musicItem.url !== music.url) audio?.pause(); return { ok: false, reason: error.message }; }
+  if (error) {
+    if (audio && previous) { audio.pause(); audio.src = previous.src; audio.currentTime = previous.time; if (!previous.paused) resumeMusicAudio(); }
+    return { ok: false, reason: error.message };
+  }
   return { ok: true };
 }
 

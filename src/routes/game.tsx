@@ -86,7 +86,7 @@ function Index() {
       {auth.session && <DailyBonusHost viewerId={auth.session.user.id} />}
       <img className="original-page-wood" src={woodTable} alt="" />
       <div className="original-game">
-        <div className="original-table">
+        <div className={`original-table${!tableBg && room.room?.table_color != null ? ` personal-table-color-${room.room.table_color}` : ''}`}>
           <img className="original-table-wood" src={woodTable} alt="Taxta oyun masası" />
           {tableBg && <img key={tableBg} className="original-table-bg-image" src={tableBgUrl(tableBg)} alt="" />}
           <TableSeats />

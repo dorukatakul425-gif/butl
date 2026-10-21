@@ -89,3 +89,7 @@
 
 - Keep clip zoom browser-local with the source three-state cycle and the existing iframe mounted; apply bounded portrait widths so zoom never restarts playback. Incoming addressed-chat/direct-message sound uses the source personal_message through shared SFX, once per live event, never history; the table owns a narrow DM audio subscription because the home inbox unmounts there.
 - Table dialog backdrops close only their owning layer and stop portal propagation; unshaded drawers have input-catching empty-area surfaces behind their interactive contents. Local sending restores end-following before realtime echo, and follow effects depend on latest line identity rather than capped history length.
+
+- Owned tables use server-managed metadata, hashed passwords and a membership insertion guard; all random/resume entry paths consult the same access predicate, while edits retain stable internal room IDs and existing occupants. DAT price is an authenticated administrator setting with no assumed initial price.
+- Personal-table random color is separate from purchased table_bg assets, so ownership never grants a paid background for free.
+- Active-song gift rating is emitted exactly once from committed ordinary/premium gift events; play_music serializes same-room replacements and exempts only the current song sender from the shared wait, preserving authoritative wallets.

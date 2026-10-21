@@ -50,8 +50,8 @@ async function refreshTables() {
   const read = ++tableRead;
   const { data, error } = await sb.rpc('list_tables');
   if (error || read !== tableRead) return;
-  const history: SourceTableEntry[] = ((data ?? []) as Array<{ room_id: number; men: number; women: number; bottle: string; is_current: boolean; blocked_until: string | null; kicker_id: string | null; kicker_name: string | null; kicker_photo: string | null; kicker_male: boolean | null }>).map((r) => ({
-    id: String(r.room_id), bottle: r.bottle || 'standart', men: r.men, women: r.women, ...(r.is_current ? { current: true } : {}),
+  const history: SourceTableEntry[] = ((data ?? []) as Array<{ room_id: number; number?: number; name?: string; locked?: boolean; owned?: boolean; men: number; women: number; bottle: string; is_current: boolean; blocked_until: string | null; kicker_id: string | null; kicker_name: string | null; kicker_photo: string | null; kicker_male: boolean | null }>).map((r) => ({
+    id: String(r.room_id), number: r.number ?? r.room_id, name: r.name ?? '', locked: r.locked ?? false, owned: r.owned ?? false, bottle: r.bottle || 'standart', men: r.men, women: r.women, ...(r.is_current ? { current: true } : {}),
     ...(r.blocked_until ? { blockedUntil: Date.parse(r.blocked_until) } : {}),
     ...(r.kicker_id ? { kicker: { id: r.kicker_id, name: r.kicker_name ?? '', ...(r.kicker_photo ? { photo: r.kicker_photo } : {}), ...(r.kicker_male !== null ? { male: r.kicker_male } : {}) } } : {}),
   }));
@@ -161,9 +161,10 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
       if (action !== 'change-table') return { confirmed: false };
       const tableId = input?.['tableId'];
       if (tableId !== undefined && snapshot.tables?.history.find((h) => h.id === String(tableId))?.current) return { confirmed: true };
-      const { data, error } = await sb.rpc('change_table', tableId !== undefined ? { p_room: Number(tableId) } : {});
+      const { data, error } = await sb.rpc(tableId !== undefined ? 'enter_table' : 'change_table', tableId !== undefined ? { p_room: Number(tableId), p_password: input?.['password'] ?? null } : {});
       if (error) return { confirmed: false, message: error.message };
       const membership = Array.isArray(data) ? data[0] : null;
+      if (membership?.room_id === -1) return { confirmed: false, message: 'wrong_password' };
       if (!membership) return { confirmed: false, message: 'Masaya qoşulmaq olmadı.' };
       await rejoin({ room_id: Number(membership.room_id), seat: Number(membership.seat) });
       await refreshTables();

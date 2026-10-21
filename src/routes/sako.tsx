@@ -7,6 +7,7 @@ import { TelegramNotifications } from "@/components/admin/telegram-notifications
 import { TelegramBotSettings } from '@/components/admin/telegram-bot-settings';
 import { Input } from "@/components/ui/input";
 import { PlayerLevelPanel } from "@/components/admin/player-level-panel";
+import { TablePricePanel } from '@/components/admin/table-price-panel';
 import { RoulettePanel } from '@/components/admin/roulette-panel';
 import { PlayerNamePanel, SiteRefreshPanel } from '@/components/admin/player-name-panel';
 import { useAuth } from "@/lib/auth";
@@ -81,7 +82,7 @@ function Dashboard() {
           ))}
         </div>
         {tab === "umumi" && <><Stats /><SiteRefreshPanel /><Broadcast /></>}
-        {tab === "masalar" && <Rooms />}
+        {tab === "masalar" && <><TablePricePanel /><Rooms /></>}
         {tab === "oyuncular" && <Players />}
         {tab === "sikayetler" && <Reports />}
         {tab === "statuslar" && <StatusReviews />}
