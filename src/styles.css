@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
 @import "./styles/ciliz-decor.css";
+@import "./styles/ciliz-dialogs.css";
 @import "./styles/ciliz-gift.css";
 @import "./styles/ciliz-response-gift.css";
 @import "./styles/ciliz-premium-gifts.css";
@@ -21,7 +22,6 @@
 @import "./styles/ciliz-league-original.css";
 @import "./styles/ciliz-gestures.css";
 @import "./styles/ciliz-change-table.css";
-@import "./styles/ciliz-dialogs.css";
 @import "./styles/ciliz-vip.css";
 @import "./styles/ciliz-hints.css";
 @import "./styles/ciliz-user-profile.css";
