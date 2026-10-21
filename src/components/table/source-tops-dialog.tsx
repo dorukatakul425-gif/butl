@@ -76,7 +76,7 @@ export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
   if (self && !visible.includes(self)) visible.push(self);
   return createPortal(<div className="source-tops-layer">
     <div className="popup-shade" onClick={onClose} />
-    <section role="dialog" aria-modal={!help} inert={help} aria-label="Liderlər" className="popup popup--center top-dlg__x_popup">
+    <section role="dialog" aria-modal={!help} inert={help} aria-label="Liderlər" className="popup popup--center popup--show top-dlg__x_popup">
       <header className="popup__header top-dlg__x_popup__header">
         <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Liderlər siyahısını bağla" onClick={onClose}><span className="top-dlg__x_popup__close-icon" /></Button>
         <Button variant="ghost" className="top-dlg__help" aria-label="Liderlər haqqında məlumat" aria-haspopup="dialog" onClick={() => setHelp(true)}><span className="top-dlg__help-icon" /></Button>
