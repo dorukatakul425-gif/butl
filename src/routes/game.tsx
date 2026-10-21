@@ -20,6 +20,7 @@ import { ProfileSetupDialog } from "@/components/profile/profile-setup-dialog";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from '@/components/ui/button';
 import { tableBgUrl, useTableBg } from "@/lib/table-bg";
+import { useOriginalLayout } from "@/lib/original-layout";
 import "@/styles/table-bg.css";
 import { GameCrashShield } from "@/components/game-crash-shield";
 
@@ -42,6 +43,8 @@ function Index() {
   const navigate = useNavigate();
   const room = useRoom();
   const tableBg = useTableBg();
+  // Original getLayout() engine: table/chat geometry + keyboard shift.
+  const { layout, shift } = useOriginalLayout();
   const [joined, setJoined] = useState(false);
   // Telegram Mini App only: keep the table height stable while the chat
   // keyboard opens (original client's expand + keyboard scroll behavior).
@@ -87,13 +90,23 @@ function Index() {
       {auth.session && <GameCrashShield name="daily-bonus"><DailyBonusHost viewerId={auth.session.user.id} /></GameCrashShield>}
       <img className="original-page-wood" src={woodTable} alt="" />
       <div className="original-game">
-        <div className={`original-table${!tableBg && room.room?.table_color != null ? ` personal-table-color-${room.room.table_color}` : ''}`}>
-          <img className="original-table-wood" src={woodTable} alt="Taxta oyun masası" />
-          {tableBg && <img key={tableBg} className="original-table-bg-image" src={tableBgUrl(tableBg)} alt="" />}
-          <GameCrashShield name="seats"><TableSeats /></GameCrashShield>
+        <div className="original-game-shell" style={shift ? { transform: `translateY(${shift}px)` } : undefined}>
           <GameCrashShield name="header"><OriginalTableHeader /></GameCrashShield>
+          <div
+            className={`original-table${!tableBg && room.room?.table_color != null ? ` personal-table-color-${room.room.table_color}` : ''}`}
+            style={layout ? { left: layout.table.x, top: layout.table.y, width: layout.table.size, height: layout.table.size } : undefined}
+          >
+            <img className="original-table-wood" src={woodTable} alt="Taxta oyun masası" />
+            {tableBg && <img key={tableBg} className="original-table-bg-image" src={tableBgUrl(tableBg)} alt="" />}
+            <GameCrashShield name="seats"><TableSeats /></GameCrashShield>
+          </div>
+          <div
+            className="original-chat-slot"
+            style={layout ? { left: layout.chat.x, top: layout.chat.y, width: layout.chat.w, height: layout.chat.h } : undefined}
+          >
+            <GameCrashShield name="chat"><OriginalChatPanel /></GameCrashShield>
+          </div>
         </div>
-        <GameCrashShield name="chat"><OriginalChatPanel /></GameCrashShield>
       </div>
     </main>
   );
