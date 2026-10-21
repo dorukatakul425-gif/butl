@@ -158,7 +158,7 @@ export function TableSeats() {
     const host = hostRef.current;
     import("@/components/table/pixi-table").then(async ({ createPixiTable }) => {
       const table = await createPixiTable(host, assets, {
-        onSeatClick: (index) => {
+        onSeatClick: (index: number) => {
           unlockSfx();
           // Ciliz TablePresenter onuserphoto: ilk dokunuş hediye/jest panelini açar;
           // aynı koltuğa ikinci dokunuş profil penceresini açar.
@@ -169,8 +169,8 @@ export function TableSeats() {
           setGesturesOpen(false);
           setTarget(state => openFor(state, index, VIEWER_SEAT));
         },
-        playSfx: (id) => void playSfx(assets.sfxUrl, id),
-        prepareSfx: (id) => prepareSfx(assets.sfxUrl, id),
+        playSfx: (id: Parameters<typeof playSfx>[1]) => void playSfx(assets.sfxUrl, id),
+        prepareSfx: (id: Parameters<typeof prepareSfx>[1]) => prepareSfx(assets.sfxUrl, id),
       });
       if (disposed) {
         table.destroy();
@@ -415,7 +415,7 @@ export function TableSeats() {
   const preload = useCallback((item: GiftStoreItem) => {
     const live = livePremiumGift(item.type);
     if (live) { preloadLiveGiftVideo(live.video); return; }
-    void tableRef.current?.preloadGift(item.gift).catch(error => console.warn(`Gift preload ${item.type}`, error));
+    void tableRef.current?.preloadGift(item.gift).catch((error: unknown) => console.warn(`Gift preload ${item.type}`, error));
   }, []);
   const close = useCallback(() => setTarget(closedTarget), []);
   const multiselect = useMemo(() => ({

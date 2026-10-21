@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import { describe, expect, it } from "vitest";
-// @ts-expect-error plain ESM module without types
 import { applyMembership, audience, touchesTables, verifyJwt } from "../../ws-hub/routing.mjs";
 
 const secret = "test-secret";
