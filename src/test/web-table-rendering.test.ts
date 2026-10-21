@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { hasSceneAnimation, tableTweenSeconds, webGiftDestination, webGiftSample, webRenderQuality, webTableLayout } from '@/lib/web-table-rendering';
+import { hasSceneAnimation, originalCenterDimensions, tableTweenSeconds, webGiftDestination, webGiftSample, webRenderQuality, webTableLayout } from '@/lib/web-table-rendering';
 
 describe('shared website and Telegram reference rendering', () => {
+  it('uses the original center ornament dimensions independently of platform density', () => {
+    const scale = 375 / 704 * 1.17;
+    expect(originalCenterDimensions([-143.7, -143.75, 287.4, 287.5], scale)).toEqual({ width: 287.4 * scale, height: 287.5 * scale });
+    expect(originalCenterDimensions(undefined, scale)).toEqual({ width: 287.4 * scale, height: 287.5 * scale });
+  });
   it('fits the source 375-unit square below the header on the requested phone', () => {
     expect(webTableLayout(393, 441, 48)).toEqual({ x: 196.5, y: 244.5, scale: 393 / 375, side: 393 });
   });
