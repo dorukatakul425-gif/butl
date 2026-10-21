@@ -1,3 +1,4 @@
+import { gameError } from '@/lib/game-language';
 import { useGameSettings } from "./game-settings";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -91,7 +92,7 @@ function SettingsPopup({ title, items, phase, onClose, info, sliders, children }
           className={["popup", "popup--center", phase === "show" && "popup--show", phase === "hide" && "popup--hide"].filter(Boolean).join(" ")}>
           <div className={popup("header")}>
             <div className={popup("title")}>{title}</div>
-            <Button variant="ghost" className={popup("close", ["dlg"])} aria-label="Kapat" onClick={onClose}>
+            <Button variant="ghost" className={popup("close", ["dlg"])} aria-label="Bağla" onClick={onClose}>
               <div className={popup("close-icon")} />
             </Button>
           </div>
@@ -151,7 +152,7 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
       confirm={{ title: t("android:dlg:feedback:send"), onClick: () => {
         finish();
         executeSourceFeature("feedback").then(r => showSourceToast(r.confirmed ? t("dlg:settings:console_report:sent") : r.message ?? t("dlg:music:unavailable")))
-          .catch((e: unknown) => showSourceToast(e instanceof Error ? e.message : t("dlg:music:unavailable")));
+          .catch((e: unknown) => showSourceToast(gameError(e)));
       } }} />;
   }
 

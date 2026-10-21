@@ -1,3 +1,4 @@
+import { gameError } from '@/lib/game-language';
 import { useRef, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { Bold, Send, Upload, X } from 'lucide-react';
@@ -29,7 +30,7 @@ export function TelegramNotifications() {
         after = r.after;
         if (r.done) break;
       } while (after);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Göndərilə bilmədi.'); }
+    } catch (e) { setError(gameError(e)); }
     finally { lock.current = false; setBusy(false); }
   };
   return <section className="max-w-3xl space-y-4">
@@ -47,7 +48,7 @@ export function TelegramNotifications() {
         const file = e.target.files?.[0]; if (!file) return;
         setUploading(true); setError('');
         try { const f = new FormData(); f.set('file', file); f.set('kind', kind); const r = await upload({ data: f }); setMedia(r.fileId); setFileName(file.name); }
-        catch (e) { setError(e instanceof Error ? e.message : 'Fayl yüklənmədi.'); }
+        catch (e) { setError(gameError(e)); }
         finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; }
       }} />
       <div className="flex items-center gap-2"><Button variant="outline" disabled={busy || uploading} onClick={() => fileRef.current?.click()}><Upload className="mr-2 size-4" />{uploading ? 'Yüklənir…' : 'Fayl seç'}</Button>{fileName && <><span className="truncate text-sm">{fileName}</span><Button size="icon" variant="ghost" aria-label="Faylı sil" disabled={busy} onClick={() => { setMedia(''); setFileName(''); }}><X className="size-4" /></Button></>}</div>

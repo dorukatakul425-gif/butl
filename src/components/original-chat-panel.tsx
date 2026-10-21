@@ -57,7 +57,7 @@ export function OriginalChatPanel() {
   const onTranslate = (key: number, original: string) => {
     if (translations[key]?.translated) { toggleTranslation(key); return; }
     const fn = chatTranslator() ?? ((t: string) => translateChatText({ data: { text: t, lang: VIEWER_LOCALE } }).then(r => r.ttext));
-    void fn(original, key).then(t => applyTranslation(key, t), () => showSourceToast('Çeviri alınamadı.'));
+    void fn(original, key).then(t => applyTranslation(key, t), () => showSourceToast('Tərcümə alınmadı.'));
   };
   const [listType, setListType] = useState<"audio" | "video" | null>(null);
   const [preview, setPreview] = useState<{ music: MusicItem; service: MusicService } | null>(null);
@@ -127,7 +127,7 @@ export function OriginalChatPanel() {
     setText(""); setReceiver(undefined); inputRef.current?.focus();
     void sendChat(value, to?.id, Boolean(to?.private)).then(ok => {
       if (ok) window.dispatchEvent(new CustomEvent(CHAT_SENT_EVENT, { detail: value }));
-      else showSourceToast("Mesaj gönderilemedi.");
+      else showSourceToast("Mesaj göndərilmədi.");
     });
   };
   useEffect(() => onRoomChatDelete(id => removeTextLine(id)), []);
@@ -285,7 +285,7 @@ export function OriginalChatPanel() {
   };
 
   return (
-    <section ref={sectionRef} className="original-chat chat" style={{ background: preferences.background === "default" ? undefined : preferences.background, fontFamily: preferences.font }} aria-label="Sohbet">
+    <section ref={sectionRef} className="original-chat chat" style={{ background: preferences.background === "default" ? undefined : preferences.background, fontFamily: preferences.font }} aria-label="Söhbət">
       {showScrollBtn && <div className="chat__scroll-btn" role="button" style={{ bottom: 50 }} onClick={followEnd}><div className="chat__scroll-btn-icon" /><div>{assets ? translate(assets, "chat:scroll:text") : "Yeni mesajlar"}</div></div>}
       <div ref={scrollRef} onScroll={onChatScroll} className="original-chat-scroll chat__scroll">
         <div className={`chat__body${small ? " chat__small" : ""}`}>
@@ -308,7 +308,7 @@ export function OriginalChatPanel() {
                 <span className={`chat__sender-name ${chatNameClass(line.sender)}${(line.sender.isViewer ? decor.stone : line.sender.stone) && assets?.stones[(line.sender.isViewer ? decor.stone : line.sender.stone) ?? ""] ? " chat__sender-name--stone" : ""}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
                   onClick={e => { e.stopPropagation(); setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
                 <span className={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}>: </span>
-                {line.private && <span className="chat__private-label">(özel) </span>}
+                {line.private && <span className="chat__private-label">(şəxsi) </span>}
                 {line.receiver && <><span className="chat__sender-name">{line.receiver.name}</span><span>, </span></>}
                 <span className="chat__word-break">{translations[line.key]?.shown ? translations[line.key]?.translated : line.text}</span>
                 {assets && needsTranslation(line.sender, VIEWER_LOCALE, line.text) && (
@@ -318,7 +318,7 @@ export function OriginalChatPanel() {
                 )}
               </div>
               {/* Original ChatPresenter.chatMessage: green reply arrow only on messages addressed to the viewer; tap sets the sender as recipient and focuses the input. */}
-              {line.receiver?.id === VIEWER.id && <div className="chat__reply-button" role="button" aria-label="Yanıtla" onClick={e => { e.stopPropagation(); setReceiver(line.sender); inputRef.current?.focus(); }} />}
+              {line.receiver?.id === VIEWER.id && <div className="chat__reply-button" role="button" aria-label="Cavab yaz" onClick={e => { e.stopPropagation(); setReceiver(line.sender); inputRef.current?.focus(); }} />}
             </div>
           ) : line.kind === "action" ? (
             <div key={line.key} className={`chat__action chat__action--${line.style} chat__noselect`} role="button"
@@ -386,7 +386,7 @@ export function OriginalChatPanel() {
               <div className={`chat__icon chat__icon--${line.icon}`} title={assets ? kickoutTooltip(line) : ""} />
               <div className="chat__icon chat__icon--arrows" />
               <div className="chat__photo" style={{ backgroundImage: `url('${line.receiver.photoUrl}')` }} title={line.receiver.name} onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.receiver.id }))} />
-              {line.icon === "kick" && displaySeatOf(line.receiver.id) >= 0 && <div className="chat__reply-button chat__reply-button--save" role="button" aria-label="Koru" onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.receiver.id }))} />}
+              {line.icon === "kick" && displaySeatOf(line.receiver.id) >= 0 && <div className="chat__reply-button chat__reply-button--save" role="button" aria-label="Qoru" onClick={() => window.dispatchEvent(new CustomEvent('source:open-profile', { detail: line.receiver.id }))} />}
             </div>
           ) : (
             <div key={line.key} className="chat__info chat__noselect">
@@ -405,7 +405,7 @@ export function OriginalChatPanel() {
           <div role="button" aria-label="Video" className="media-panel__video" onClick={() => setListType("video")} />
         </div>
         <div className="media-panel__button">
-          <div role="button" aria-label="Müzik" className="media-panel__music" onClick={() => setListType("audio")} />
+          <div role="button" aria-label="Musiqi" className="media-panel__music" onClick={() => setListType("audio")} />
         </div>
       </div>
       {session.song && <MusicView key={session.song.key} song={session.song} muted={session.muted} volume={session.volume} onPlayer={() => setListType('audio')} onDj={id => {
@@ -421,7 +421,7 @@ export function OriginalChatPanel() {
         if (emojiSendDecision(text, vip) === "warn") { setEmojiWarning(text); return; }
         doSend(text);
       }}>
-        {receiver?.private && <div className="chat__private-badge" role="button" aria-label="Özel mesajı iptal et" title="Sadece bu oyuncu görür" onClick={() => setReceiver(undefined)}>Özel</div>}
+        {receiver?.private && <div className="chat__private-badge" role="button" aria-label="Şəxsi mesajı ləğv et" title="Yalnız bu oyunçu görür" onClick={() => setReceiver(undefined)}>Şəxsi</div>}
         <input ref={inputRef} className="original-chat-input-field" type="text" maxLength={300} placeholder={assets ? translate(assets, 'chat:input_hint') : 'Mesaj yaz'} aria-label="Mesaj yaz" value={receiver ? `${receiver.name}, ${text}` : text}
           onChange={(e) => {
             const prefix = receiver ? `${receiver.name}, ` : "";
@@ -429,12 +429,12 @@ export function OriginalChatPanel() {
             setText(prefix && e.target.value.startsWith(prefix) ? e.target.value.slice(prefix.length) : e.target.value);
           }} />
         <Button variant="ghost" type="button" className="original-chat-round original-chat-emoji js-emoji" disabled={!preferences.smileys} onClick={toggleEmoji} aria-expanded={emojiOpen} aria-label="Emoji"><img className="original-chat-control-image" src={emojiIcon} width={26} height={26} alt="" /></Button>
-        <Button variant="ghost" type="button" className="original-chat-round original-chat-gift" aria-label="Hediye" onClick={() => {
+        <Button variant="ghost" type="button" className="original-chat-round original-chat-gift" aria-label="Hədiyyə" onClick={() => {
           const seat = receiver ? displaySeatOf(receiver.id) : undefined;
-          if (seat === undefined || seat < 0) { showSourceToast(receiver && assets ? translate(assets, 'warning:offline_gift:desc') : 'Hediye göndermek için bir oyuncu seçin.'); return; }
+          if (seat === undefined || seat < 0) { showSourceToast(receiver && assets ? translate(assets, 'warning:offline_gift:desc') : 'Hədiyyə göndərmək üçün oyunçu seçin.'); return; }
           window.dispatchEvent(new CustomEvent(OPEN_GIFT_FOR_SEAT_EVENT, { detail: seat }));
         }}><img className="original-chat-control-image" src={giftIcon.url} width={26} height={26} alt="" /></Button>
-        <Button variant="ghost" type="submit" className="original-chat-round original-chat-send" aria-label="Gönder"><img className="original-chat-control-image" src={sendIcon} width={26} height={26} alt="" /></Button>
+        <Button variant="ghost" type="submit" className="original-chat-round original-chat-send" aria-label="Göndər"><img className="original-chat-control-image" src={sendIcon} width={26} height={26} alt="" /></Button>
       </form>
       {/* Original chat__safe-area: white strip under the input, Telegram iOS only. */}
       <div className="chat__safe-area" aria-hidden="true" />
@@ -442,11 +442,11 @@ export function OriginalChatPanel() {
         onClose={() => setSelected(null)} onTranslate={() => { onTranslate(selected.key, selected.text); setSelected(null); }}
         onReport={() => { setReportMessage(selected); setSelected(null); }}
         isOwn={Boolean(selected.sender.isViewer)}
-        onDelete={isAdmin && selected.messageId !== undefined ? () => { const id = selected.messageId; if (id === undefined) return; setSelected(null); void deleteChatMessage(id).then(ok => { if (!ok) showSourceToast('Mesaj silinemedi.'); }); } : undefined}
-        onIgnore={() => { setMenuBusy(true); void setUserBlocked(selected.sender.id, !blocked.has(selected.sender.id)).then(() => setSelected(null), () => showSourceToast('İgnore kaydedilemedi.')).finally(() => setMenuBusy(false)); }} />}
+        onDelete={isAdmin && selected.messageId !== undefined ? () => { const id = selected.messageId; if (id === undefined) return; setSelected(null); void deleteChatMessage(id).then(ok => { if (!ok) showSourceToast('Mesaj silinmədi.'); }); } : undefined}
+        onIgnore={() => { setMenuBusy(true); void setUserBlocked(selected.sender.id, !blocked.has(selected.sender.id)).then(() => setSelected(null), () => showSourceToast('Bloklama yadda saxlanılmadı.')).finally(() => setMenuBusy(false)); }} />}
       {assets && reportMessage && <SourceInfoDialog title={translate(assets, 'dlg:report_issue:title')} context={translate(assets, 'dlg:report_issue:desc', reportMessage.sender.name, reportMessage.text)} onClose={() => setReportMessage(null)}
         cancel={{ title: translate(assets, 'dlg:report_issue:cancel'), onClick: () => setReportMessage(null) }}
-        confirm={{ title: translate(assets, 'dlg:report_issue:ok'), onClick: () => { setReportMessage(null); showSourceToast('Şikâyet kaydı hizmeti şu anda kullanılamıyor; şikâyet gönderilmedi.'); } }} />}
+        confirm={{ title: translate(assets, 'dlg:report_issue:ok'), onClick: () => { setReportMessage(null); showSourceToast('Şikayət xidməti hazırda əlçatan deyil; şikayət göndərilmədi.'); } }} />}
       {assets && emojiWarning !== null && (
         <SourceInfoDialog title={translate(assets, "dlg:emoji:title")} context={translate(assets, "dlg:emoji:desc2")} onClose={() => setEmojiWarning(null)}
           cancel={{ title: translate(assets, "dlg:emoji:send2"), onClick: () => { const v = emojiWarning; setEmojiWarning(null); doSend(v); } }}
@@ -465,7 +465,7 @@ export function OriginalChatPanel() {
             void sendMusic(music, preview.service).then(res => {
               if (res.ok) return;
               if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
-              else showSourceToast("Müzik gönderilemedi.");
+              else showSourceToast("Musiqi göndərilmədi.");
             });
           }} />
       )}

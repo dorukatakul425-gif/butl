@@ -38,7 +38,7 @@ export function ResponseGiftPopup({ assets, sender, giftType, onConfirm, onClose
             <div className={`response-gift__name${sender.premium ? " response-gift__name--premium" : ""}`} style={sender.premium || !sender.nameColor ? undefined : { color: `#${sender.nameColor}` }}>{sender.name}</div>
             <div className="response-gift__message">{message}</div>
           </div>
-          <button type="button" aria-label="Kapat" className="popup__close popup__close--response-gift" onClick={onClose}><div className="popup__close-icon" /></button>
+          <button type="button" aria-label="Bağla" className="popup__close popup__close--response-gift" onClick={onClose}><div className="popup__close-icon" /></button>
         </div>
         <div className="popup__content response-gift__x_popup__content"><img className="response-gift__image" src={image} alt="" /></div>
         <div className="popup__buttons response-gift__x_popup__buttons">

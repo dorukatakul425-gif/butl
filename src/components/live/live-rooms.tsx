@@ -295,7 +295,7 @@ export function LiveRooms({ me, defaultPhoto, onClose }: { me: Me; defaultPhoto:
           <div className="vr-sheet lv-sheet">
             <div className="vr-sheet-head">
               <h3><Lock size={16} /> {roomTitle(pwFor.name)}</h3>
-              <button type="button" className="vr-icon" onClick={() => { setPwFor(null); setErr(""); }} aria-label="Close"><X size={18} /></button>
+              <button type="button" className="vr-icon" onClick={() => { setPwFor(null); setErr(""); }} aria-label="Bağla"><X size={18} /></button>
             </div>
             <label className="vr-field">
               {t("pwAsk")}
@@ -311,7 +311,7 @@ export function LiveRooms({ me, defaultPhoto, onClose }: { me: Me; defaultPhoto:
           <div className="vr-sheet lv-sheet">
             <div className="vr-sheet-head">
               <h3>{mine ? t("edit") : t("newRoom")}</h3>
-              <button type="button" className="vr-icon" onClick={() => setCreating(false)} aria-label="Close"><X size={18} /></button>
+              <button type="button" className="vr-icon" onClick={() => setCreating(false)} aria-label="Bağla"><X size={18} /></button>
             </div>
             <button type="button" className="lv-photo" onClick={() => fileRef.current?.click()}>
               <img src={photo || TELEGRAM_NO_PHOTO} alt="" />

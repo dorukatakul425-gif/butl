@@ -12,6 +12,7 @@ import { setCurrentTableBg, tableBgName } from "./table-bg";
 import { showSourceToast } from "@/components/source-dialogs";
 import { emitServerHeartAward, luckyBonusAmount } from "./game-session";
 import { eventDeduper, haremTransition, revisionGuard } from './live-event-guards';
+import { gameError } from './game-language';
 
 export type RoomPhase = "offer" | "spin" | "choose" | "result" | "return";
 export interface RoomRow {
@@ -266,7 +267,7 @@ async function loadPlayers(roomId: number, mySeat: number) {
   if (error || version !== generation || read !== playerRead || state.roomId !== roomId) return;
   if (viewerUserId && !(data ?? []).some(row => row.user_id === viewerUserId)) {
     // The server removed our membership. Never leave a ghost seat able to send actions.
-    set({ connected: false, error: 'Masadan ayrıldınız.', players: mapPlayers((data ?? []) as unknown as PlayerRow[], mySeat) });
+    set({ connected: false, error: 'Masadan ayrıldın.', players: mapPlayers((data ?? []) as unknown as PlayerRow[], mySeat) });
     return;
   }
   set({ players: mapPlayers((data ?? []) as unknown as PlayerRow[], mySeat) });
@@ -293,15 +294,21 @@ const serial = <T,>(fn: () => Promise<T>) => {
 };
 
 export const joinRoom = () => serial(joinRoomNow);
+/** Stop this view's feeds, not the account's server-owned membership. */
+export const detachRoom = () => serial(async () => {
+  await teardown();
+  set({ connected: false });
+});
 /** Consume the membership already committed by change_table, without joining a second time. */
 export const switchRoom = (membership: { room_id: number; seat: number }) => serial(() => joinRoomNow(membership));
 
 async function joinRoomNow(membership?: { room_id: number; seat: number }) {
   const sb = getSupabase();
   if (!sb) {
-    set({ error: "Server bağlantısı yoxdur." });
-    return;
+    set({ error: "Server bağlantısı yoxdur.", connected: false });
+    throw new Error('Server bağlantısı yoxdur.');
   }
+  set({ connected: false });
   await teardown();
   const { data: sess } = await sb.auth.getSession();
   accessToken = sess.session?.access_token ?? null;
@@ -319,8 +326,8 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
   const { data, error } = result;
   const joined = Array.isArray(data) ? data[0] : null;
   if (error || !joined) {
-    set({ error: error?.message ?? "Masaya qoşulmaq olmadı." });
-    throw new Error(error?.message ?? "Masaya qoşulmaq olmadı.");
+    set({ error: gameError(error?.message ?? "Masaya qoşulmaq olmadı.") });
+    throw new Error(gameError(error?.message ?? "Masaya qoşulmaq olmadı."));
   }
   const roomId = Number(joined.room_id);
   const mySeat = Number(joined.seat);
@@ -334,7 +341,7 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     sb.from("room_players").select("seat, user_id, kisses, profiles(*)").eq("room_id", roomId),
   ]);
   if (initialRoom.error || initialPlayers.error || !initialRoom.data) {
-    const message = initialRoom.error?.message ?? initialPlayers.error?.message ?? "Masaya qoşulmaq olmadı.";
+    const message = gameError(initialRoom.error?.message ?? initialPlayers.error?.message ?? "Masaya qoşulmaq olmadı.");
     set({ connected: false, error: message });
     throw new Error(message);
   }
@@ -406,7 +413,7 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     });
 
   let pulse = 0;
-  // One 5s keepalive (seat stale limit is 10s). Round phases advance through
+  // One 5s keepalive. Round phases advance through
   // the deadline timer in applyRoom, so this loop is only a fallback and does
   // not flood the table with writes/realtime events every 2s.
   heartbeatTimer = setInterval(() => {
@@ -418,12 +425,15 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
       if (current()) await sb.rpc("room_tick", { p_room: roomId });
     });
     if (pulse % 2 === 0) { void loadPlayers(roomId, mapSeat); void refreshRoom(); }
-    // A late keepalive leave_room from the previous page can delete the fresh seat: re-join when it is gone.
+    // Recover server-expired membership, never render a cached/fictitious seat.
     if (pulse % 2 === 1) void sb.auth.getSession().then(async ({ data: s }) => {
       const uid = s.session?.user.id;
       if (!uid || !current()) return;
-      const { data: mine, error: missingErr } = await sb.from("room_players").select("room_id").eq("user_id", uid).maybeSingle();
-      if (!missingErr && !mine && current()) void joinRoom().catch(() => undefined);
+      const { data: mine, error: missingErr } = await sb.from("room_players").select("room_id, seat").eq("user_id", uid).maybeSingle();
+      if (!missingErr && current()) {
+        if (!mine) void joinRoom().catch(() => undefined);
+        else if (Number(mine.room_id) !== roomId || Number(mine.seat) !== mySeat) void switchRoom({ room_id: Number(mine.room_id), seat: Number(mine.seat) }).catch(() => undefined);
+      }
     });
   }, 5000);
   refreshCurrentRoom = () => (current() ? refreshRoom() : Promise.resolve());
@@ -433,13 +443,13 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
 
 let accessToken: string | null = null;
 let stopTokenUpdates: (() => void) | null = null;
-/** pagehide: a keepalive request survives tab close, so others see the seat free at once. */
+/** Refresh/tab suspension renews the lease; only explicit leaveRoom frees a seat. */
 export function leaveRoomNow() {
   const url = import.meta.env["VITE_SUPABASE_URL"] as string | undefined;
   const key = (import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env["VITE_SUPABASE_ANON_KEY"]) as string | undefined;
   if (!url || !key || !accessToken) return;
   try {
-    void fetch(`${url}/rest/v1/rpc/leave_room`, { method: "POST", keepalive: true,
+    void fetch(`${url}/rest/v1/rpc/heartbeat`, { method: "POST", keepalive: true,
       headers: { apikey: key, Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: "{}" });
   } catch { /* ignore */ }
 }
@@ -450,7 +460,7 @@ export const leaveRoom = () =>
     await teardown();
     if (sb) {
       const { error } = await sb.rpc("leave_room");
-      if (error) { set({ error: error.message, connected: false }); throw error; }
+      if (error) { set({ error: gameError(error.message), connected: false }); throw error; }
     }
     resetRoomMusic();
     accessToken = null;

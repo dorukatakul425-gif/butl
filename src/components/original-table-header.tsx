@@ -36,7 +36,7 @@ import { useRoom, VIEWER_DISPLAY_SEAT } from '@/lib/room-session';
 // TableView.createHeaderLayer() order and SVGIcon.getSize() dimensions.
 // All artwork is extracted unchanged from the live game's preloader bundle.
 const middleIcons = [
-  { asset: menu, label: "Menü", kind: "menu" },
+  { asset: menu, label: "Menyu", kind: "menu" },
   { asset: settings, label: "Ayarlar", kind: "default" },
 ];
 
@@ -49,7 +49,7 @@ function OriginalIcon({ asset, label, kind, onClick }: (typeof middleIcons)[numb
   </Button>;
   return (
     <Button asChild variant="ghost" className={`original-header-button original-icon-${kind}`}>
-      <a href={asset} target="_blank" rel="noreferrer" aria-label={`${label} orijinal görseli`} title={label}>
+      <a href={asset} target="_blank" rel="noreferrer" aria-label={`${label} şəkli`} title={label}>
         <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
         <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
         <img src={asset} alt={label} className="original-button-icon" />
@@ -116,18 +116,18 @@ export function OriginalTableHeader() {
     <div className="original-table-header" aria-label="Orijinal üst masa ikonları">
       <div className="original-header-wallet">
       <Button type="button" variant="ghost" className="original-header-button original-heart-button"
-        aria-label="Kalp al" title="Kalp al" aria-haspopup="dialog" onClick={() => setBankOpen(true)}>
+        aria-label="Ürək al" title="Ürək al" aria-haspopup="dialog" onClick={() => setBankOpen(true)}>
         <img src={heartUp} alt="" className="original-heart-image original-button-up" />
         <img src={heartDown} alt="" className="original-heart-image original-button-down" />
       </Button>
-      <output className="original-header-balance" aria-label="Kalp bakiyesi" aria-live="polite" style={{ width: `${String(gold ?? '—').length}ch` }}>{gold ?? '—'}</output>
+      <output className="original-header-balance" aria-label="Ürək balansı" aria-live="polite" style={{ width: `${String(gold ?? '—').length}ch` }}>{gold ?? '—'}</output>
       </div>
       <div className="original-header-middle">
         <SeasonPassButton skin={[backgroundUp, backgroundDown]} />
         <SourceLeagueButton onClick={() => setSeason('league')} />
         {middleIcons.map((icon) => icon.kind === "menu" ? (
           <Button key={icon.label} ref={menuTriggerRef} type="button" variant="ghost"
-            className="original-header-button original-icon-menu" aria-label="Menü" title="Menü"
+            className="original-header-button original-icon-menu" aria-label="Menyu" title="Menyu"
             aria-expanded={menuOpen} aria-controls="original-misc-menu" aria-haspopup="dialog"
             onClick={() => setMenuOpen((value) => !value)}>
             <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
@@ -135,15 +135,15 @@ export function OriginalTableHeader() {
             <img src={menu} alt="" className="original-button-icon" />
           </Button>
         ) : <OriginalIcon key={icon.label} {...icon} onClick={icon.label === 'Ayarlar' ? () => setSettingsOpen(true) : undefined} />)}
-        <Button variant="ghost" className="original-header-button original-icon-back" aria-label="Ana sayfaya dön" title="Geri" onClick={() => void navigate({ to: "/" })}>
+        <Button variant="ghost" className="original-header-button original-icon-back" aria-label="Əsas səhifəyə qayıt" title="Geri" onClick={() => void navigate({ to: "/" })}>
           <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
           <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
           <ArrowLeft className="original-button-icon" aria-hidden="true" />
         </Button>
       </div>
       {room.roomId !== null && <TableIdChip roomId={room.roomId} label={vipAssets ? translate(vipAssets, 'chat:room_title') : ''} />}
-      <Button variant="ghost" aria-label="Masa değiştir" title="Masa değiştir" aria-disabled={changeCount >= 1}
-        onClick={() => { if (changeCount < 1) setChangeOpen(true); else showSourceToast((vipAssets?.translation["hint:change_room:waiting"] ?? "Bekleyin % saniye, oyun masasını değiştir").replace(/%0?/, String(Number.isFinite(changeCount) ? changeCount : 9))); }}
+      <Button variant="ghost" aria-label="Masanı dəyiş" title="Masanı dəyiş" aria-disabled={changeCount >= 1}
+        onClick={() => { if (changeCount < 1) setChangeOpen(true); else showSourceToast((vipAssets?.translation["hint:change_room:waiting"] ?? "Masanı dəyişmək üçün % saniyə gözləyin").replace(/%0?/, String(Number.isFinite(changeCount) ? changeCount : 9))); }}
         className={`original-header-button original-icon-default${changeCount >= 1 ? ' original-change-table--count' : ''}`}>
         <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
         <img src={backgroundDown} alt="" className="original-button-background original-button-down" />

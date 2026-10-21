@@ -56,7 +56,7 @@ export function GiftSheet({
       <div className="gx-sheet" role="dialog" aria-label={t("gifts")}>
         <div className="gx-head">
           <strong><Gift size={16} /> {t("gifts")}</strong>
-          <button type="button" className="gx-x" onClick={onClose} aria-label="Close"><X size={17} /></button>
+          <button type="button" className="gx-x" onClick={onClose} aria-label="Bağla"><X size={17} /></button>
         </div>
         <div className="gx-to">
           <button type="button" className={to === null ? "on" : ""} onClick={() => setTo(null)}><span className="gx-all">🎉</span>{t("all")}</button>

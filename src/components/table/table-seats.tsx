@@ -334,7 +334,7 @@ export function TableSeats() {
         if (!res.ok) for (const id of receivers) localSent.current.delete(`${seed}:${id}`);
         if (res.ok) { window.dispatchEvent(new CustomEvent(GIFT_SENT_EVENT, { detail: item.type })); return; }
         if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
-        else showSourceToast("Hediye gönderilemedi.");
+        else showSourceToast("Hədiyyə göndərilmədi.");
       });
     },
     [assets, target, room.players],
@@ -416,7 +416,7 @@ export function TableSeats() {
   }, []);
   const close = useCallback(() => setTarget(closedTarget), []);
   const multiselect = useMemo(() => ({
-    title: assets ? translate(assets, "mobile:dlg:gift:multiselect", "Birden fazla kişi seç") : "",
+    title: assets ? translate(assets, "mobile:dlg:gift:multiselect", "Bir neçə oyunçu seç") : "",
     onSelectState: (on: boolean) => setTarget(state => setSelective(state, on)),
     onSelectMen: () => setTarget(state => selectGender(state, playersRef.current.map(p => p.male), true, VIEWER_SEAT)),
     onSelectWomen: () => setTarget(state => selectGender(state, playersRef.current.map(p => p.male), false, VIEWER_SEAT)),
@@ -424,7 +424,7 @@ export function TableSeats() {
 
   return (
     <>
-      <div ref={hostRef} className="original-table-seats" aria-label="Masadaki oyuncular">
+      <div ref={hostRef} className="original-table-seats" aria-label="Masadakı oyunçular">
         {activeTable && assets && <BottlePlay key={room.roomId} table={activeTable} assets={assets} />}
       </div>
       {activeTable && assets && <KickoutSeatFx assets={assets} seatPoint={seat => activeTable.seatPoint(seat)} />}
@@ -447,7 +447,7 @@ export function TableSeats() {
             const res = await sendGesture(item.gesture.type);
             if (!res.ok) {
               localGestures.current = Math.max(0, localGestures.current - 1);
-              if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_TOKENS_BANK_EVENT)); else showSourceToast("Jest gönderilemedi.");
+              if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_TOKENS_BANK_EVENT)); else showSourceToast("Jest göndərilmədi.");
             }
           }}
         />

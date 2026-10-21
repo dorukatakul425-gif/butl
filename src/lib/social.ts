@@ -343,7 +343,7 @@ export function startSocial(me: string) {
       // The original table inbox owns durable attraction notices, not the expiring social banner.
       if (n.payload?.type === 'harem_purchase') return;
       void (n.actor_id ? profileOf(n.actor_id) : Promise.resolve(undefined)).then(p => {
-        if (live()) notify({ id: `h-${n.id}`, kind: "harem", from: n.actor_id ?? me, title: "Hayranlık", body: n.body, photo: p?.photo_url ?? null });
+        if (live()) notify({ id: `h-${n.id}`, kind: "harem", from: n.actor_id ?? me, title: "Heyranlıq", body: n.body, photo: p?.photo_url ?? null });
       });
     })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "direct_messages", filter: `sender_id=eq.${me}` }, payload => {

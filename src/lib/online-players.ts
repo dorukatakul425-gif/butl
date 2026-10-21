@@ -7,8 +7,8 @@ import { getSupabase } from "@/lib/supabase";
 export type OnlinePlayer = { userId: string; name: string; photo: string | null; male: boolean };
 export type OnlineSummary = { total: number; boys: number; girls: number; players: OnlinePlayer[] };
 
-/** Players whose heartbeat is older than this are treated as gone (server removes them at 45s). */
-export const STALE_MS = 45_000;
+/** Matches the server's bounded live-membership reconnect lease. */
+export const STALE_MS = 120_000;
 
 type Row = {
   user_id: string;

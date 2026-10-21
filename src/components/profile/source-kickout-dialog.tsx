@@ -50,7 +50,7 @@ export function SourceKickoutDialog({ player, self, assets, onClose, onConfirmed
       {session.kickout?.freeAt && session.kickout.freeAt > now && <div className="kickout__price-info"><div className="kickout__price-info-text">{Math.ceil((session.kickout.freeAt - now) / 60000)} min</div></div>}
       {session.kickout ? <div className="kickout__price-info"><div className="kickout__price-info-text">{text(t(!session.kickout.vip && !(self && type === 'save') ? self ? 'kickout:vip3' : 'kickout:vip1' : session.kickout.price ? 'kickout:price' : 'kickout:free'))}</div>
         {permitted && session.kickout.price > 0 && <div className="kickout__price">{session.kickout.price}</div>}</div>
-       : <div className="source-feature-message" role="status">Şutla ve Koru hizmeti bağlı değil; ücret ve koruma süresi doğrulanamadı.</div>}
+       : <div className="source-feature-message" role="status">Masadan çıxarma və qoruma xidməti qoşulmayıb; qiymət və qoruma müddəti təsdiqlənmədi.</div>}
       {message && <div className="source-feature-message" role="status">{message}</div>}
       </div>
     </SourceFeaturePopup>

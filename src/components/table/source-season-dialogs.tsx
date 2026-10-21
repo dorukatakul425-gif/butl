@@ -1,3 +1,4 @@
+import { gameError } from '@/lib/game-language';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
@@ -69,7 +70,7 @@ export function SourceSeasonDialog({ feature, onClose, onSettings }: { feature: 
         if (wheel.current) { wheel.current.style.transition = 'transform 4s cubic-bezier(0.17,0.67,0.12,0.99)'; wheel.current.style.transform = `rotate(${rotation.current}deg)`; }
         timeout.current = window.setTimeout(() => { if (generation === spinGeneration.current) finishSpin(); }, 4000);
       } else showEarned(result.rewards ?? []);
-    } catch (e) { setMessage(e instanceof Error ? e.message : t('dlg:music:unavailable')); } finally { inFlight.current = false; setBusy(false); }
+    } catch (e) { setMessage(gameError(e)); } finally { inFlight.current = false; setBusy(false); }
   };
   const remaining = (endsAt?: number) => endsAt === undefined ? '—' : `${Math.floor(Math.max(0, endsAt - now) / 3600000)}:${Math.floor(Math.max(0, endsAt - now) / 60000) % 60}`;
   const info = (index: number) => { setSelectedLeague(index); setNested('reward-info'); };
@@ -78,7 +79,7 @@ export function SourceSeasonDialog({ feature, onClose, onSettings }: { feature: 
     const level = session.league?.level, entry = level === undefined ? undefined : assets.leagues?.[level];
     // LeaguePresenter.showWelcome / showLocked: LeagueMoveDialog with the viewer's cup.
     const cup = assets.leagues?.[session.leagueLevel ?? 0]?.image ?? assets.leagues?.[0]?.image ?? '';
-    body = !session.league ? <div className="league-move"><div className="league-move__cups"><Image assets={assets} name={cup} size={118} /></div><div className="league-move__description"><Text text={session.leagueState === 'loading' ? '…' : session.leagueState === 'welcome' ? t('dlg:league:welcome:desc') : session.leagueState === 'idle' ? t(`dlg:league:${session.leagueLevel ?? 0}`) : session.leagueState === 'error' ? 'Lig bilgisi sunucudan alınamadı. Lütfen sonra tekrar deneyin.' : t('dlg:league:undefined')} /></div></div> : <SourceLeagueBody assets={assets} league={session.league} viewerId={session.viewerId} onLadder={() => setNested('ladder')} onPrize={() => info(level ?? 0)}
+    body = !session.league ? <div className="league-move"><div className="league-move__cups"><Image assets={assets} name={cup} size={118} /></div><div className="league-move__description"><Text text={session.leagueState === 'loading' ? '…' : session.leagueState === 'welcome' ? t('dlg:league:welcome:desc') : session.leagueState === 'idle' ? t(`dlg:league:${session.leagueLevel ?? 0}`) : session.leagueState === 'error' ? 'Liqa məlumatları serverdən alınmadı. Daha sonra yenidən cəhd edin.' : t('dlg:league:undefined')} /></div></div> : <SourceLeagueBody assets={assets} league={session.league} viewerId={session.viewerId} onLadder={() => setNested('ladder')} onPrize={() => info(level ?? 0)}
       onLimit={() => setNested('limit')}
       onClaim={() => {
         const id = session.league?.roundId;
@@ -91,7 +92,7 @@ export function SourceSeasonDialog({ feature, onClose, onSettings }: { feature: 
   } else if (feature === 'roulette') {
     body = <div className="roulette roulette__x_popup__content">
       <div className="roulette__paper roulette__paper--guide">
-        <Button variant="ghost" className="roulette__help-icon" aria-label="Yardım" onClick={() => setNested('help')} />
+        <Button variant="ghost" className="roulette__help-icon" aria-label="Kömək" onClick={() => setNested('help')} />
         <div className="roulette__title">{title}</div>
         <div className="roulette__description"><Text text={t('roulette:main:panel1:desc')} /></div>
         <div className="roulette__chances"><span>{t('roulette:main:panel1:chances')}</span><Button variant="ghost" className="roulette__chances-stats" aria-label={t('roulette:main:panel1:chances')} onClick={() => setNested('chances')}>{session.roulette?.freeSpins ?? testChances}<span className="roulette__chances-plus"><span className="roulette__chances-plus-icon" /></span></Button></div>
@@ -145,7 +146,7 @@ export function SourceSeasonDialog({ feature, onClose, onSettings }: { feature: 
     {nested === 'premium' && <SourceFeaturePopup title={t('dlg:bottle_pass:premium_pass')} onClose={closeNested}><div className="source-feature-message"><Text text={t('dlg:bottle_pass_info:desc2')} /></div><div className="popup__buttons"><Button variant="ghost" className="button--confirm" disabled={!session.pass || !session.viewerId || busy || session.pass.premium} onClick={() => void act('pass-buy')}>{t(session.pass?.premium ? 'dlg:premium_pass:purchased' : 'dlg:premium_pass:buy')}</Button></div></SourceFeaturePopup>}
     {(nested === 'reward-info' || nested === 'reward') && <SourceFeaturePopup title={t(nested === 'reward' ? 'dlg:bottle_pass:reward:achieved' : selectedLeague !== null ? `dlg:league:${selectedLeague}` : 'dlg:bottle_pass_reward_info:title')} onClose={() => selectedLeague !== null ? (setSelectedLeague(null), setNested('ladder')) : closeNested()} className={nested === 'reward' && feature === 'roulette' ? 'source-roulette-reward-popup' : ''}>
       {selectedLeague !== null && assets.leagues?.[selectedLeague] ? <><Image assets={assets} name={assets.leagues[selectedLeague].image} size={85} /><div className="source-feature-message">{t('dlg:league_reward:desc')}</div><div className="source-feature-rewards">{(assets.leagues[selectedLeague - 1] ?? assets.leagues[selectedLeague]).gifts?.map(id => <Image key={id} assets={assets} name={assets.gifts[id]?.storeImage ?? ''} />)}</div></> : <Rewards assets={assets} rewards={rewards} />}
-      {nested === 'reward-info' && feature === 'bottle-pass' && <div className="source-feature-message">{t(session.pass?.premium ? 'dlg:bottle_pass:reward:level_block' : 'dlg:bottle_pass:reward:pass_block')}</div>}{nested === 'reward' && feature === 'roulette' && testSpin && <div className="roulette__test-note">Test ödülü · bakiyeye eklenmez</div>}<div className="popup__buttons"><Button variant="ghost" className="button--confirm" onClick={closeNested}>{t('dlg:navigate_vip:btn')}</Button></div>
+      {nested === 'reward-info' && feature === 'bottle-pass' && <div className="source-feature-message">{t(session.pass?.premium ? 'dlg:bottle_pass:reward:level_block' : 'dlg:bottle_pass:reward:pass_block')}</div>}{nested === 'reward' && feature === 'roulette' && testSpin && <div className="roulette__test-note">Sınaq mükafatı · balansa əlavə olunmur</div>}<div className="popup__buttons"><Button variant="ghost" className="button--confirm" onClick={closeNested}>{t('dlg:navigate_vip:btn')}</Button></div>
     </SourceFeaturePopup>}
   </>, document.body);
 }

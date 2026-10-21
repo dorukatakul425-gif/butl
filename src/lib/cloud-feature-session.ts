@@ -110,14 +110,14 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
           if (snapshot.viewerId !== viewerId) return { confirmed: false };
           snapshot = { ...snapshot, profile }; emit(); return { confirmed: true };
         } catch (e) {
-          return { confirmed: false, message: e instanceof Error ? e.message : 'Profil kaydedilemedi.' };
+          return { confirmed: false, message: e instanceof Error ? e.message : 'Profil yadda saxlanılmadı.' };
         }
       }
       if (action === 'league-settings') {
         if (input?.['enabled'] !== 0 && input?.['enabled'] !== 1) return { confirmed: false };
         const revision = ++preferenceRevision;
         const { data, error } = await sb.auth.updateUser({ data: { league_participation: input['enabled'] === 1 } });
-        if (error) return { confirmed: false, message: 'Lig seçimi kaydedilemedi.' };
+        if (error) return { confirmed: false, message: 'Liqa seçimi yadda saxlanılmadı.' };
         if (snapshot.viewerId === viewerId && revision === preferenceRevision) { snapshot = { ...snapshot, leagueParticipation: data.user?.user_metadata['league_participation'] !== false }; emit(); }
         await refreshLeague(viewerId);
         return { confirmed: true };

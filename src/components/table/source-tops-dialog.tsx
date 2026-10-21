@@ -40,7 +40,7 @@ export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
   const title = (item: Section) => isExtra(item.id) ? item.title : translate(assets!, item.title);
   const [period, setPeriod] = useState('');
   const [rows, setRows] = useState<Row[]>([]);
-  const [notice, setNotice] = useState<string | null>('Yükleniyor…');
+  const [notice, setNotice] = useState<string | null>('Yüklənir…');
   // Server-ranked, refreshed live while the dialog is open.
   useEffect(() => {
     const sb = getSupabase();
@@ -52,11 +52,11 @@ export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
       const [{ data: u }, { data, error }] = await Promise.all([sb.auth.getUser(), sb.rpc(isExtra(section.id) ? 'top_players_extra' as 'top_players' : 'top_players', { p_section: section.id, p_period: period })]);
       if (!alive || !revision.current(read)) return;
       setViewerId(u.user?.id);
-      if (error) { setNotice('Puanlar yüklenemedi.'); return; }
+      if (error) { setNotice('Liderlər siyahısı yüklənmədi.'); return; }
       setRows(topRankingRows((data ?? []) as TopPlayerRow[]).map(r => ({ id: r.id, name: r.name, photo: r.photo_url || DEFAULT_PHOTO, score: r.score, rank: r.rank })));
-      setNotice((data ?? []).length ? null : 'Henüz kayıt yok.');
+      setNotice((data ?? []).length ? null : 'Hələ nəticə yoxdur.');
     };
-    setNotice('Yükleniyor…'); void load();
+    setNotice('Yüklənir…'); void load();
     const id = window.setInterval(() => void load(), 5000);
     return () => { alive = false; window.clearInterval(id); };
   }, [section, period]);
@@ -76,12 +76,12 @@ export function SourceTopsDialog({ onClose }: { onClose: () => void }) {
   if (self && !visible.includes(self)) visible.push(self);
   return createPortal(<div className="source-tops-layer">
     <div className="popup-shade" onClick={onClose} />
-    <section role="dialog" aria-modal={!help} inert={help} aria-label="Puanlar" className="popup popup--center top-dlg__x_popup">
+    <section role="dialog" aria-modal={!help} inert={help} aria-label="Liderlər" className="popup popup--center top-dlg__x_popup">
       <header className="popup__header top-dlg__x_popup__header">
-        <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Puanları kapat" onClick={onClose}><span className="top-dlg__x_popup__close-icon" /></Button>
-        <Button variant="ghost" className="top-dlg__help" aria-label="Puan bilgisi" aria-haspopup="dialog" onClick={() => setHelp(true)}><span className="top-dlg__help-icon" /></Button>
-        <div className="top-dlg__tabs" role="tablist" aria-label="Puan türü">{tabs.map(item => <Button key={item.id} variant="ghost" role="tab" aria-selected={section.id === item.id} aria-label={title(item)} title={title(item)} className={`top-dlg__tab top-dlg__tab--${item.id}${section.id !== item.id ? ` top-dlg__tab--${item.id}-inactive` : ''}`} onClick={() => { setSection(item); setPeriod(''); setHelp(false); }} />)}</div>
-        <div className="top-dlg__desc"><span className="top-dlg__title">{title(section)}</span>{!PERIODLESS.includes(section.id) && <select aria-label="Puan dönemi" className="top-dlg__period" value={period} onChange={event => setPeriod(event.target.value)}>{['', 'monthly', 'weekly', 'daily'].map(value => <option key={value} value={value}>{translate(assets, `dlg:top:${value || 'absolute'}`)}</option>)}</select>}</div>
+        <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Liderlər siyahısını bağla" onClick={onClose}><span className="top-dlg__x_popup__close-icon" /></Button>
+        <Button variant="ghost" className="top-dlg__help" aria-label="Liderlər haqqında məlumat" aria-haspopup="dialog" onClick={() => setHelp(true)}><span className="top-dlg__help-icon" /></Button>
+        <div className="top-dlg__tabs" role="tablist" aria-label="Reytinq kateqoriyası">{tabs.map(item => <Button key={item.id} variant="ghost" role="tab" aria-selected={section.id === item.id} aria-label={title(item)} title={title(item)} className={`top-dlg__tab top-dlg__tab--${item.id}${section.id !== item.id ? ` top-dlg__tab--${item.id}-inactive` : ''}`} onClick={() => { setSection(item); setPeriod(''); setHelp(false); }} />)}</div>
+        <div className="top-dlg__desc"><span className="top-dlg__title">{title(section)}</span>{!PERIODLESS.includes(section.id) && <select aria-label="Reytinq dövrü" className="top-dlg__period" value={period} onChange={event => setPeriod(event.target.value)}>{['', 'monthly', 'weekly', 'daily'].map(value => <option key={value} value={value}>{translate(assets, `dlg:top:${value || 'absolute'}`)}</option>)}</select>}</div>
       </header>
       <div className="top-dlg__content top-dlg__bg">
         {notice ? <p className="source-tops-notice" role="status">{notice}</p> : visible.map(row => <div key={row.id} className={`top-dlg__item${row.id === viewerId ? ' top-dlg__item--sticked' : ''}`}>

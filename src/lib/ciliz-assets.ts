@@ -4,6 +4,7 @@ import { completeLoadingStage, failGameLoading } from "./game-loading";
 import { customFrameUrl, injectCustomFrames } from "./custom-frames";
 import { injectSourceNormalGifts } from "./source-normal-gifts";
 import { injectSourcePremiumGifts, premiumImageUrl } from "./source-premium-gifts";
+import { azerbaijaniGameDictionary } from './game-language';
 import type { CilizGesture, GestureEntry } from "./gestures";
 const SERVER_JSON_URL = "https://cdn-s.ciliz.com/mobile/server.json";
 
@@ -129,7 +130,7 @@ export function loadCilizAssets(): Promise<CilizAssets> {
         stones: json.stones,
         decor: json.decor.__store,
         images: json.images,
-        translation: json.translation.tr,
+        translation: azerbaijaniGameDictionary(json.translation.az ?? {}),
         achievements: json.achievement,
         boosters: json.boosters,
         leagues: json.leagues,

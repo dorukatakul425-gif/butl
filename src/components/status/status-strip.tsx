@@ -1,3 +1,4 @@
+import { gameError } from '@/lib/game-language';
 import { translate, usePreferences } from "@/lib/app-preferences";
 // Home statuses: WhatsApp-style ring row + TikTok-style vertical viewer with likes/comments.
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -20,7 +21,7 @@ export function StatusStrip({ me, defaultPhoto }: { me: Me; defaultPhoto: string
 
   const refresh = useCallback(async () => {
     try { setFeed(await loadFeed()); setError(""); }
-    catch (e) { setError(e instanceof Error ? e.message : translate("Statuslar yüklənmədi.")); setFeed(f => f ?? []); }
+    catch (e) { setError(gameError(e)); setFeed(f => f ?? []); }
   }, []);
   useEffect(() => {
     setSeen(readSeen());
@@ -130,7 +131,7 @@ function StatusComposer({ me, onClose, onDone }: { me: Me; onClose: () => void; 
   const share = async () => {
     setBusy(true); setMsg("");
     try { await createStatus(me.id, { kind, body: text, bg, file }); await onDone(); }
-    catch (e) { setMsg(e instanceof Error ? e.message : translate("Status paylaşılmadı.")); }
+    catch (e) { setMsg(gameError(e)); }
     finally { setBusy(false); }
   };
   const canShare = !busy && (kind === "text" ? text.trim().length > 0 : Boolean(file));
@@ -311,7 +312,7 @@ function CommentsSheet({ status, me, defaultPhoto, onClose, onCount }: { status:
   const countRef = useRef(onCount); countRef.current = onCount;
   const load = useCallback(async () => {
     try { const c = await loadComments(status.id); setList(c); countRef.current(c.length); }
-    catch (e) { setMsg(e instanceof Error ? e.message : translate("Şərhlər yüklənmədi.")); setList(l => l ?? []); }
+    catch (e) { setMsg(gameError(e)); setList(l => l ?? []); }
   }, [status.id]);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [list?.length]);
@@ -319,7 +320,7 @@ function CommentsSheet({ status, me, defaultPhoto, onClose, onCount }: { status:
     if (!text.trim() || busy) return;
     setBusy(true); setMsg("");
     try { await addComment(status.id, me.id, text); setText(""); await load(); }
-    catch (e) { setMsg(e instanceof Error ? e.message : translate("Şərh göndərilmədi.")); }
+    catch (e) { setMsg(gameError(e)); }
     finally { setBusy(false); }
   };
   const canDelete = (c: StatusComment) => c.userId === me.id || status.userId === me.id;

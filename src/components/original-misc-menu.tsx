@@ -12,13 +12,13 @@ import "@/styles/table-bg.css";
 
 // MiscMenuPresenter order, MiscMenuDialog geometry and the live assets.json Turkish strings.
 const items = [
-  { id: "achievements", title: "Başarılar", key: 'table:hint:achievement', icon: achievements },
-  { id: "tops", title: "Puanlar", key: 'table:hint:top', icon: tops },
-  { id: "bottle", title: "Şişe", key: 'table:menu:change_bottle', icon: bottle },
+  { id: "achievements", title: "Nailiyyətlər", key: 'table:hint:achievement', icon: achievements },
+  { id: "tops", title: "Liderlər", key: 'table:hint:top', icon: tops },
+  { id: "bottle", title: "Şüşə", key: 'table:menu:change_bottle', icon: bottle },
   // ureyimsen: "Masa fonu" sits between bottle and decor (preloader_new.js misc menu items).
   { id: "tablebg", title: "Masa fonu", key: '', icon: bottle },
   { id: "decor", title: "Stil", key: 'table:menu:decor', icon: decor },
-  { id: "boosters", title: "Booster'lar", key: 'table:menu:boosters', icon: boosters },
+  { id: "boosters", title: "Gücləndiricilər", key: 'table:menu:boosters', icon: boosters },
 ] as const;
 
 interface OriginalMiscMenuProps {
@@ -106,7 +106,7 @@ export function OriginalMiscMenu({ open, triggerRef, onClose, onSelect }: Origin
       ref={menuRef}
       id="original-misc-menu"
       role="dialog"
-      aria-label="Masa menüsü"
+      aria-label="Masa menyusu"
       className={`original-misc-menu original-misc-menu--${open ? "show" : "hide"}`}
     >
       {items.map((item) => (

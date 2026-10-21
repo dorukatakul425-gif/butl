@@ -1,3 +1,4 @@
+import { gameError } from '@/lib/game-language';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCilizAssets } from '@/components/decor/decor-selection';
@@ -73,7 +74,7 @@ function Detail({ assets, item, onClose, completion = false, pending = false, ow
   return <div className="achievement-detail-layer">
     <div className="popup-shade" onClick={onClose} />
     <section role="dialog" aria-modal="true" aria-label={tr(assets, completion ? 'dlg:kiss_bonus:title' : 'dlg:achievement:info_title')} className="popup popup--center">
-      {!completion && <Button variant="ghost" type="button" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>}
+      {!completion && <Button variant="ghost" type="button" className="popup__close popup__close--dlg" aria-label="Bağla" onClick={onClose}><span className="popup__close-icon" /></Button>}
       <header className="popup__header"><div className="popup__title">{tr(assets, completion ? 'dlg:kiss_bonus:title' : 'dlg:achievement:info_title')}</div></header>
       <div className="popup__content"><div className="achievement">
         <div className="achievement__subtitle">{owner && !completion && <span className="achievement__username">{owner.name}</span>}{subtitle}</div>
@@ -141,7 +142,7 @@ export function SourceAchievementsDialog({ onClose, male = true, user }: { onClo
   return createPortal(<div className={`achievements-layer ${portrait ? 'portrait' : 'landscape'}`}>
     <div className="popup-shade" onClick={onClose} />
     <section role="dialog" aria-modal={!open} aria-label={title} inert={Boolean(open)} className="popup popup--center achievements-list__x_popup">
-      <button type="button" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></button>
+      <button type="button" className="popup__close popup__close--dlg" aria-label="Bağla" onClick={onClose}><span className="popup__close-icon" /></button>
       <header className="popup__header achievements-list__x_popup__header">
         <div className="popup__title achievements-list__x_popup__title">{title}<div className="achievements-list__title-star" />{current}/{total}</div>
         <div className="achievements-list__sort">
@@ -182,7 +183,7 @@ export function SourceAchievementNotifications({ male = true }: { male?: boolean
     if (pending) return;
     setPending(true);
     try { await acknowledgeAchievement(next.achievement_id, next.level); }
-    catch (e) { toast.error(e instanceof Error ? e.message : 'Başarı kaydedilemedi.'); }
+    catch (e) { toast.error(gameError(e)); }
     finally { setPending(false); }
   };
   return createPortal(<div className="achievements-layer"><Detail assets={assets} item={item} completion pending={pending} onClose={() => { void close(); }} /></div>, document.body);

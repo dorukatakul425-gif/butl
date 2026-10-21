@@ -41,22 +41,22 @@ export function GestureDialog({ open, assets, account = null, onClose, onPreview
     if (!onSend) {
       // No verified game session: play the animation locally without spending tokens.
       setBusy(true);
-      try { await onPreview(item); } catch { setSelected(item); setStatus("Jest animasyonu yüklenemedi; tekrar deneyin."); } finally { setBusy(false); }
+      try { await onPreview(item); } catch { setSelected(item); setStatus("Jest animasiyası yüklənmədi; yenidən cəhd edin."); } finally { setBusy(false); }
       return;
     }
     const eligibility = gestureEligibility(item, account);
     if (eligibility !== "available") {
       if (eligibility === "tokens") { window.dispatchEvent(new Event(OPEN_TOKENS_BANK_EVENT)); return; }
-      setSelected(item); setStatus("Oyuncu hesabı bağlı değil; jeton harcanamaz."); return;
+      setSelected(item); setStatus("Oyunçu hesabına giriş edilməyib; jeton xərcləmək mümkün deyil."); return;
     }
     setBusy(true);
-    try { await onSend(item); } catch { setStatus("Jest gönderilemedi; tekrar deneyin."); } finally { setBusy(false); }
+    try { await onSend(item); } catch { setStatus("Jest göndərilmədi; yenidən cəhd edin."); } finally { setBusy(false); }
   };
   if (!open || !box) return null;
   const image = selected ? dialogImage(assets, selected.gesture.storeImage || selected.gesture.image, 90, 90) : null;
   return createPortal(<>
     <section role="dialog" aria-label={t("dlg:gesture:send")} className="gesture-drawer" style={{ top: box.top, left: box.left, width: box.width }}>
-      <header className="gesture-header">{onProfile && <Button variant="ghost" className="send-gift__btn send-gift__btn--profile gesture-profile" title="Profilim" aria-label="Profilim" onClick={onProfile} />}<span className="gesture-title">{t("dlg:gesture:send")}</span><Button variant="ghost" className="send-gift__tokens gesture-balance" title="Jetonlar" aria-label="Jeton bakiyesi" onClick={() => window.dispatchEvent(new Event(OPEN_TOKENS_BANK_EVENT))}>{account?.tokens ?? "—"}</Button></header>
+      <header className="gesture-header">{onProfile && <Button variant="ghost" className="send-gift__btn send-gift__btn--profile gesture-profile" title="Profilim" aria-label="Profilim" onClick={onProfile} />}<span className="gesture-title">{t("dlg:gesture:send")}</span><Button variant="ghost" className="send-gift__tokens gesture-balance" title="Jetonlar" aria-label="Jeton balansı" onClick={() => window.dispatchEvent(new Event(OPEN_TOKENS_BANK_EVENT))}>{account?.tokens ?? "—"}</Button></header>
       {status && !selected && <p role="status" className="gesture-status">{status}</p>}
       <div ref={listRef} className="gesture-scroll" onScroll={e => { savedScroll.current = e.currentTarget.scrollTop; }}><div className="send-gift--gesture gesture-grid">
         {items.map(item => {
@@ -64,7 +64,7 @@ export function GestureDialog({ open, assets, account = null, onClose, onPreview
           return <Button key={item.gesture.type} variant="ghost" className="send-gift__item gesture-item" title={item.name} aria-label={item.name} disabled={busy} onClick={() => void activate(item)}><span className="send-gift__image-block"><img className={item.lock ? "send-gift__image send-gift__image--locked" : "send-gift__image"} src={img.src} width={img.width} height={img.height} alt="" loading="lazy" /></span><span className="send-gift__subitem"><span className={`send-gift__icon send-gift__icon--${item.lock ? item.lock.kind === "vip" ? "viplock" : "lock" : "token"}`} />{!item.lock && <span className="send-gift__price">{item.gesture.storePrice}</span>}</span></Button>;
         })}
       </div></div>
-      <Button variant="ghost" className="popup__close popup__close--drawer gesture-close" aria-label="Jestleri kapat" title="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>
+      <Button variant="ghost" className="popup__close popup__close--drawer gesture-close" aria-label="Jestləri bağla" title="Bağla" onClick={onClose}><span className="popup__close-icon" /></Button>
     </section>
     {selected?.lock && image && <SourceGiftLockedDialog kind="gesture" image={image}
       title={selected.lock.kind === "vip" ? t("dlg:locked:vip:title") : t("dlg:locked_gift:title")}

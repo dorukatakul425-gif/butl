@@ -61,7 +61,7 @@ function PopupShell({ open, onClose, className, label, z, children }: { open: bo
 }
 
 const CloseButton = ({ onClose }: { onClose: () => void }) => (
-  <div className="popup__close popup__close--dlg" onClick={onClose} role="button" aria-label="Kapat">
+  <div className="popup__close popup__close--dlg" onClick={onClose} role="button" aria-label="Bağla">
     <div className="popup__close-icon" />
   </div>
 );
@@ -242,8 +242,8 @@ function PreviewAudioPlayer({ song }: { song: MusicItem }) {
   return (
     <div className={audioCls("", [duration > 0 ? "" : "loading"])}>
       <audio ref={ref} src={song.url} preload="metadata" />
-      <div className={audioCls("button", [playing ? "pause" : "play", duration > 0 ? "" : "disabled"])} onClick={toggle} role="button" aria-label={playing ? "Durdur" : "Çal"} />
-      <input className={audioCls("slider")} type="range" min={0} max={Math.ceil(duration)} step={1} value={time} aria-label="İlerleme"
+      <div className={audioCls("button", [playing ? "pause" : "play", duration > 0 ? "" : "disabled"])} onClick={toggle} role="button" aria-label={playing ? "Dayandır" : "Səsləndir"} />
+      <input className={audioCls("slider")} type="range" min={0} max={Math.ceil(duration)} step={1} value={time} aria-label="Səsləndirmə mövqeyi"
         onChange={(e) => { const v = Number(e.target.value); if (ref.current) ref.current.currentTime = v; setTime(v); }}
         style={{ background: `linear-gradient(to right, #9dc93b ${pct}%, rgba(0, 0, 0, 0.08) ${pct}%)` }} />
       <div className={audioCls("time")}>{time > 0 ? secondsToMMSS(time) : duration ? secondsToMMSS(duration) : ""}</div>

@@ -1,3 +1,4 @@
+import { gameError } from '@/lib/game-language';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useCilizAssets } from '@/components/decor/decor-selection';
@@ -49,7 +50,7 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
       else if (result.message === 'table_full' || result.message === 'Masa dolu') setFullTable(id ?? '');
       else setMessage(result.message ?? t('dlg:music:unavailable'));
     }
-    catch (e) { setMessage(e instanceof Error ? e.message : t('dlg:music:unavailable')); }
+    catch (e) { setMessage(gameError(e)); }
     finally { setBusy(false); }
   };
   const timerOf = (e: SourceTableEntry) => { if (!e.blockedUntil) return undefined; return mmss(Math.max(0, Math.ceil((e.blockedUntil - now) / 1000))); };
@@ -75,8 +76,8 @@ export function SourceChangeTable({ onClose }: { onClose: () => void }) {
     <div className={cls('', [isBrokenBorders ? '' : 'support-borders'])}>
       <div className={cls('random-button')} aria-disabled={busy || !session.viewerId} {...press(() => { if (session.viewerId) void change(); })}>{t('dlg:change_table:btn_random2')}</div>
       {session.tables?.canViewById && isAdmin && <form className={cls('view-form')} onSubmit={e => { e.preventDefault(); const v = inputRef.current?.value ?? ''; if (/^\d+$/.test(v)) void change(String(Number(v))); }}>
-        <label htmlFor="table-id" className={cls('subtitle', ['input'])}>Указать стол</label>
-        <div className={cls('input-line')}><input type="number" id="table-id" className={cls('input')} placeholder="Id стола" step="1" min="0" ref={inputRef} required /><span className="validity" /><input className={cls('submit')} type="submit" value="Перейти" disabled={busy} /></div>
+        <label htmlFor="table-id" className={cls('subtitle', ['input'])}>Masanı göstər</label>
+        <div className={cls('input-line')}><input type="number" id="table-id" className={cls('input')} placeholder="Masa nömrəsi" step="1" min="0" ref={inputRef} required /><span className="validity" /><input className={cls('submit')} type="submit" value="Keç" disabled={busy} /></div>
       </form>}
       <div className={cls('items')}>
         {friends.length > 0 && <div className={cls('subtitle')}>{t('ios:dlg:change_table:desc_friends_and_fellows')}</div>}

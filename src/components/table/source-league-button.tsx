@@ -14,7 +14,7 @@ export function SourceLeagueButton({ onClick }: { onClick: () => void }) {
   const running = info?.type === 'running';
   const limit = league?.limit;
   const pill = running ? info.leftTimeShortText?.replaceAll('&nbsp;', '\u00a0') : info?.type === 'finished' ? info.positionText : undefined;
-  return <Button variant="ghost" aria-label="Lig" title="Lig" aria-haspopup="dialog" onClick={() => { if (canOpenLeague(leagueState)) onClick(); else showSourceToast("Liglerde yarışmaya başlamak için 100 öpücük almalısınız"); }} className="original-header-button original-icon-default original-league-button">
+  return <Button variant="ghost" aria-label="Liqa" title="Liqa" aria-haspopup="dialog" onClick={() => { if (canOpenLeague(leagueState)) onClick(); else showSourceToast("Liqalarda yarışmağa başlamaq üçün 100 öpüş almalısınız"); }} className="original-header-button original-icon-default original-league-button">
     <img src={backgroundUp} alt="" className="original-button-background original-button-up" />
     <img src={backgroundDown} alt="" className="original-button-background original-button-down" />
     {running ? <span className="original-league-position">{info.positionText ?? '—'}</span> : <img src={cup} alt="" className="original-button-icon" />}

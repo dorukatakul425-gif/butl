@@ -206,7 +206,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
 
   const loadRef = useRef<() => Promise<void>>(async () => {});
   const [buying, setBuying] = useState(false);
-  const noServer = () => showSourceToast("Oyuncu hesabı bağlı değil; bu işlem sunucuda gerçekleştirilemiyor.");
+  const noServer = () => showSourceToast("Oyunçu hesabına giriş edilməyib; bu əməliyyat serverdə yerinə yetirilə bilmir.");
 
   useEffect(() => {
     const key = (e: KeyboardEvent) => { if (!popup && e.key === "Escape") onClose(); };
@@ -248,7 +248,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       setBuying(false);
       if (error) {
         if (error.message.includes("not_enough_gold")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
-        else showSourceToast("Satın alınamadı.");
+        else showSourceToast("Alış baş tutmadı.");
         return;
       }
       showSourceToast(t("dlg:profile:harem:purchased", player.name));
@@ -258,21 +258,21 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   const sendReport = async (kind: "photo" | "user", text: string) => {
     if (!player.id || self) return;
     const result = await reportPlayer(player.id, kind, text);
-    showSourceToast(result === "error" ? "Şikayet gönderilemedi." : t("dlg:report_photo:toast"));
+    showSourceToast(result === "error" ? "Şikayət göndərilmədi." : t("dlg:report_photo:toast"));
   };
   const onBlock = () => {
     if (!player.id || self || blocking) return;
     setBlocking(true);
     void setUserBlocked(player.id, !blocked)
       .then(() => showSourceToast(t(blocked ? "hint:icon:unblock" : "hint:icon:block")))
-      .catch(() => showSourceToast("İşlem yapılamadı."))
+      .catch(() => showSourceToast("Əməliyyat yerinə yetirilmədi."))
       .finally(() => setBlocking(false));
   };
 
   return createPortal(<div className={`profile-layer ${portrait ? 'portrait' : 'landscape'}`}>
     <div className="popup-shade" onClick={onClose} />
     <section ref={sectionRef} role="dialog" aria-modal="true" aria-label={player.name} className="popup popup--center popup--show user-profile__x_popup">
-      <Div className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Div>
+      <Div className="popup__close popup__close--dlg" aria-label="Bağla" onClick={onClose}><span className="popup__close-icon" /></Div>
       <div className="user-profile">
         <div className="user-profile__info" style={infoSize ? { width: `${infoSize}px`, height: `${infoSize}px` } : undefined}>
           <Div className="user-profile__photos" aria-label={self ? t("dlg:profile_info:title") : undefined} onClick={self ? () => setPopup("settings") : undefined}>
@@ -291,8 +291,8 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
           </div>
           {player.zodiac !== undefined && <Div className={`user-profile__zodiac user-profile__zodiac--${player.zodiac}`} onClick={() => showTooltip(t(`hint:zodiac:${player.zodiac}`))} />}
           <div className="user-profile__tooltip" style={{ display: tooltip ? "block" : "none" }}>{tooltip}</div>
-          {self && <Div className="user-profile__decor" aria-label="Süsleme" onClick={onDecor} />}
-          {!self && <Div className="user-profile__claim" aria-label="Şikayet" onClick={() => setPopup("claims")} />}
+          {self && <Div className="user-profile__decor" aria-label="Bəzəklər" onClick={onDecor} />}
+          {!self && <Div className="user-profile__claim" aria-label="Şikayət" onClick={() => setPopup("claims")} />}
         </div>
         <div className="user-profile__details">
           <div className="user-profile__scrollable">
@@ -312,7 +312,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
             </div>
             <div className="user-profile__stats-border-item">
               <div className="user-profile__stats-border" />
-              <Div className={`user-profile__stats-expand-icon${statsState === "expanded" ? " user-profile__stats-expand-icon--expanded" : ""}`} aria-label="İstatistikler"
+              <Div className={`user-profile__stats-expand-icon${statsState === "expanded" ? " user-profile__stats-expand-icon--expanded" : ""}`} aria-label="Statistika"
                 onClick={() => setStatsState(s => s === "expanded" ? "narrowed" : "expanded")} />
               <div className="user-profile__stats-border" />
             </div>
@@ -347,9 +347,9 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
             <Button variant="ghost" className={`user-profile__action user-profile__action--kickout-${feature.kickout?.targets[player.id ?? '']?.kickAt ? 'save' : self ? 'self' : 'kick'}${atTable ? '' : ' user-profile__action--greyscaled'}`} aria-label={t('kickout:header')} title={t('kickout:header')} onClick={onKickout} />
             {/* Telegram build (TGSocial) has no getProfileUrl, so no social profile button is rendered. */}
             {self
-              ? <Div className="user-profile__action user-profile__action--music" aria-label="Müzik" onClick={onMusic} />
-              : <Button variant="ghost" className={`user-profile__action user-profile__action--gift${atTable ? '' : ' user-profile__action--greyscaled'}`} aria-label="Hediye" onClick={onSendGift} />}
-            <Div className="user-profile__action user-profile__action--achievements" aria-label="Başarılar" onClick={() => { if (userId) setPopup("achievements"); else noServer(); }} />
+              ? <Div className="user-profile__action user-profile__action--music" aria-label="Musiqi" onClick={onMusic} />
+              : <Button variant="ghost" className={`user-profile__action user-profile__action--gift${atTable ? '' : ' user-profile__action--greyscaled'}`} aria-label="Hədiyyə" onClick={onSendGift} />}
+            <Div className="user-profile__action user-profile__action--achievements" aria-label="Nailiyyətlər" onClick={() => { if (userId) setPopup("achievements"); else noServer(); }} />
             <Button variant="ghost" className={`user-profile__action user-profile__action--message${atTable && !self ? '' : ' user-profile__action--greyscaled'}`} aria-label="Mesaj" onClick={onSendMessage} />
           </div>
         </div>

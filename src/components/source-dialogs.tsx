@@ -27,7 +27,7 @@ export function SourceDialogLayer({ title, onClose, hasClose = true, onShade, ch
       <section role="dialog" aria-modal="true" aria-label={label ?? title} className="popup popup--center popup--show">
         <div className="popup__header">
           <div className="popup__title">{title}</div>
-          {hasClose && <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>}
+          {hasClose && <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Bağla" onClick={onClose}><span className="popup__close-icon" /></Button>}
         </div>
         {children}
       </section>

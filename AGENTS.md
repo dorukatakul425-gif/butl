@@ -47,7 +47,8 @@
 - Premium live gifts (live_*) are DAT-only via send_premium_gift; their catalogue/media are static repo assets and the table plays the alpha video for every room member from premium_gift_events.
 - Live gifts use acknowledged room broadcasts with IDs/start timestamps; only catalogued media is rendered, and VPS media references resolve to the confirmed hosted asset origin.
 
-- Keep browser language/appearance preferences in the versioned app-preferences store, with SSR-safe Azerbaijani/light defaults and storage-event synchronization; exclude /game from appearance and translations to preserve the existing game.
+- Keep browser language/appearance preferences in the versioned app-preferences store; game text uses the source Azerbaijani dictionary and game-language error boundary independently of lobby choices, while game appearance stays isolated.
+- Page lifecycle cleanup detaches transports only; authenticated server membership resumes on refresh/visibility/network return, with a bounded live lease and durable last-table preference. Explicit departure clears preference; kicks and occupied seats must never be bypassed or represented by cached players.
 - Keep the mobile profile as an authenticated home subview using the existing verified profile and photo-upload callback; wallet navigation must reuse the existing shop without fabricated balances.
 - Admin panel lives at /sako; roles are in user_roles via has_role, and every admin server function re-verifies the role before using the service client, so the page itself grants nothing.
 - Bans live in user_bans and are enforced in the database (write triggers, session revocation) plus a root BanGuard screen, so a still-valid token cannot keep playing.

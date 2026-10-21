@@ -45,9 +45,9 @@ export function TokensBankHost() {
     busy.current = false;
     if (!error) { close(); return; }
     if (error.message.includes("insufficient")) { close(); window.dispatchEvent(new Event(OPEN_BANK_EVENT)); }
-    else showSourceToast("Jeton satın alınamadı.");
+    else showSourceToast("Jeton alınmadı.");
   };
-  const title = translate(assets, "dlg:tokens_store:title", "Jeton dükkanı");
+  const title = translate(assets, "dlg:tokens_store:title", "Jeton mağazası");
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif" }}>
       <div className="popup__dialog-manager">
@@ -56,7 +56,7 @@ export function TokensBankHost() {
           <div className={cls("bg")} />
           <div className={`${popup("header")} ${cls("x_popup__header")}`}>
             <div className={`${popup("title")} ${cls("x_popup__title")}`}>{title}</div>
-            <div className={popup("close", ["dlg"])} role="button" aria-label="Kapat" onClick={close}>
+            <div className={popup("close", ["dlg"])} role="button" aria-label="Bağla" onClick={close}>
               <div className={`${popup("close-icon")} ${cls("x_popup__close-icon")}`} />
             </div>
           </div>

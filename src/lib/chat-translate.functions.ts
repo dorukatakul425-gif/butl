@@ -10,7 +10,7 @@ export const translateChatText = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }): Promise<{ ttext: string }> => {
     const key = process.env["LOVABLE_API_KEY"];
-    if (!key) throw new Error("Çeviri servisi yapılandırılmamış.");
+    if (!key) throw new Error("Tərcümə xidməti konfiqurasiya edilməyib.");
     const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
       method: "POST",
       headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "fetch", "Content-Type": "application/json" },
@@ -28,6 +28,6 @@ export const translateChatText = createServerFn({ method: "POST" })
     }
     const json = await res.json() as { output_text?: string; output?: Array<{ content?: Array<{ type?: string; text?: string }> }> };
     const ttext = (json.output_text ?? json.output?.flatMap(o => o.content ?? []).filter(c => c.type === "output_text").map(c => c.text ?? "").join("") ?? "").trim();
-    if (!ttext) throw new Error("Çeviri alınamadı.");
+    if (!ttext) throw new Error("Tərcümə alınmadı.");
     return { ttext };
   });

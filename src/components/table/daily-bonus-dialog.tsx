@@ -42,7 +42,7 @@ export function DailyBonusHost({ viewerId }: { viewerId: string }) {
           <div className={cls("bg")} />
           <div className={popup("header")}>
             <div className={`${popup("title")} ${cls("x_popup__title")}`}>{title}</div>
-            <div className={popup("close", ["dlg"])} role="button" aria-label="Kapat" onClick={close}>
+            <div className={popup("close", ["dlg"])} role="button" aria-label="Bağla" onClick={close}>
               <div className={popup("close-icon")} />
             </div>
           </div>

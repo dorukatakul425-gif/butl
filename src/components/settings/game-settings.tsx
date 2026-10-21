@@ -1,3 +1,4 @@
+import { gameError } from '@/lib/game-language';
 import { useEffect, useState } from 'react';
 import { backgrounds, fonts, setChatPreferences, useChatPreferences } from '@/lib/chat-preferences';
 import { getSupabase } from '@/lib/supabase';
@@ -13,7 +14,7 @@ export function useGameSettings(viewerId: string | null, open: boolean) {
   const [names, setNames] = useState<Record<string, string>>({});
   const [child, setChild] = useState<'background' | 'font' | 'blocks' | null>(null);
   const [pending, setPending] = useState<string | null>(null);
-  const fail = (e: unknown) => showSourceToast(e instanceof Error ? e.message : 'Əməliyyat alınmadı');
+  const fail = (e: unknown) => showSourceToast(gameError(e));
   useEffect(() => {
     let alive = true;
     setBusy(true);

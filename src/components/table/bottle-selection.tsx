@@ -77,7 +77,7 @@ export function BottleSelection({ open, onClose }: { open: boolean; onClose: () 
   if (!open || !assets || !box) return null;
   return createPortal(<div className="bottle-drawer-overlay" onClick={onClose}>
     <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={translate(assets,"dlg:change_bottle:title")} className={`popup popup--absolute bottle-drawer${box.landscape ? ' bottle-drawer--landscape' : ''}`} style={{top:box.top,left:box.left,width:box.width,height:box.height}} onClick={e=>e.stopPropagation()}>
-      <Button ref={closeRef} variant="ghost" className="popup__close-drawer-bg" aria-label="Kapat" title="Kapat" onClick={onClose}><span className="popup__close popup__close--drawer"><span className="popup__close-icon" /></span></Button>
+      <Button ref={closeRef} variant="ghost" className="popup__close-drawer-bg" aria-label="Bağla" title="Bağla" onClick={onClose}><span className="popup__close popup__close--drawer"><span className="popup__close-icon" /></span></Button>
       <div className={`popup__header send-gift__x_header${scrolled ? ' popup__border--bottom' : ''}`}><div className="popup__title popup__title--left send-gift__x_popup__title">{translate(assets,"dlg:change_bottle:title")}</div></div>
       <div className="popup__content popup__content--no-padding send-gift__x_popup__content" onScroll={e => setScrolled(e.currentTarget.scrollTop > 0)}><div ref={listRef} className="send-gift send-gift--bottle">
         {items.map(item => {
@@ -96,7 +96,7 @@ export function BottleSelection({ open, onClose }: { open: boolean; onClose: () 
               if (res.ok) { selectBottle(item.bottle.type); onClose(); return; }
               if (res.reason.includes('insufficient')) { onClose(); window.dispatchEvent(new Event(OPEN_BANK_EVENT)); }
               else if (res.reason.includes('vip')) setNotice(translate(assets, 'dlg:locked_bottle:vip:desc'));
-              else setNotice('Şişe değiştirilemedi.');
+              else setNotice('Şüşə dəyişdirilmədi.');
             });
           }}>
             <span className="send-gift__image-block"><img className={`send-gift__image${locked ? ' send-gift__image--locked' : ''}`} src={image.src} width={image.width} height={image.height} alt="" /></span>

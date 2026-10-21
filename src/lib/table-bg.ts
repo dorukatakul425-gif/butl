@@ -4,7 +4,7 @@ import { getSupabase } from "@/lib/supabase";
 // ureyimsen "Masa fonu" (preloader_new.js: Md list, Va header skins, headerBtnSvg).
 export const TABLE_BGS: ReadonlyArray<readonly [string, string]> = [
   ["", "Standart"], ["royal_velvet", "Kral məxməri"], ["lux_hall", "Lüks zal"], ["night_city", "Gecə şəhəri"],
-  ["space", "Kosmos"], ["seaside", "Dəniz kənarı"], ["vip_club", "VIP klub"], ["golden_lounge", "Qızıl lounge"],
+  ["space", "Kosmos"], ["seaside", "Dəniz kənarı"], ["vip_club", "VIP klub"], ["golden_lounge", "Qızılı istirahət zalı"],
   ["crystal_cave", "Kristal mağara"], ["royal_garden", "Saray bağı"], ["aurora_lake", "Şimal parıltısı"],
   ["underwater", "Sualtı dünya"], ["desert_night", "Səhra gecəsi"], ["sakura_garden", "Sakura bağı"],
 ];

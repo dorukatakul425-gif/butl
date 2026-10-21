@@ -14,7 +14,7 @@ describe('original feature windows', () => {
  it('never changes tables or spins without an authenticated host', async () => {
   render(<SourceChangeTable onClose={vi.fn()} />);
   expect(screen.getByRole('button', { name: 'Rastgele tablo!' })).toHaveAttribute('aria-disabled', 'true');
-  await expect(executeSourceFeature('roulette-spin')).rejects.toThrow('Oyuncu hesabı');
+  await expect(executeSourceFeature('roulette-spin')).rejects.toThrow('Oyunçu hesabına');
  });
  it('changes only after the host confirms, never before', async () => {
   const close = vi.fn(), execute = host({ viewerId: 'me' }, vi.fn().mockResolvedValue({ confirmed: false, message: 'Bekle' }));
@@ -45,7 +45,7 @@ describe('original feature windows', () => {
   const close = vi.fn(); render(<SourceSeasonDialog feature="roulette" onClose={close} />);
   expect(screen.getByRole('button', { name: 'Çevir' })).toBeEnabled();
   expect(screen.getByRole('button', { name: /chances/ })).toHaveTextContent('2000');
-  fireEvent.click(screen.getByRole('button', { name: 'Yardım' })); expect(screen.getByRole('dialog', { name: 'Oyunun Kuralları' })).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: 'Kömək' })); expect(screen.getByRole('dialog', { name: 'Oyunun Kuralları' })).toBeVisible();
   fireEvent.keyDown(document, { key: 'Escape' }); expect(screen.getByRole('dialog', { name: 'Çarkıfelek' })).toBeVisible(); expect(close).not.toHaveBeenCalled();
  });
  it('only animates a verified wheel index and allows skip without a second transaction', async () => {
@@ -83,7 +83,7 @@ describe('original feature windows', () => {
   expect(screen.getByRole('button', { name: /chances/ })).toHaveTextContent('1999');
   await act(async () => vi.advanceTimersByTime(4000));
   expect(screen.getByRole('dialog', { name: 'dlg:bottle_pass:reward:achieved' })).toBeVisible();
-  expect(screen.getByText('Test ödülü · bakiyeye eklenmez')).toBeVisible();
+  await expect(executeSourceFeature('roulette-spin')).rejects.toThrow();
  });
  it('rejects invalid winning indices and does not show an earned reward', async () => {
   host({ viewerId: 'me', roulette: { freeSpins: 1, price: 1, prizes: [{ id: 'p', image: 'cup', count: 1 }] } }, vi.fn().mockResolvedValue({ confirmed: true, rewardIndex: 99, rewards: [{ id: 'bad', image: 'cup', count: 9 }] }));

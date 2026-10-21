@@ -15,7 +15,7 @@ describe('profile table actions', () => {
   it('never starts gifts, private chat or kicking for an off-table player', () => {
     const gift = vi.fn(), reply = vi.fn(); window.addEventListener('game-reply-to', reply);
     render(<ProfileDialog player={{ id: 'other', name: 'Other', male: false, photoUrl: '', frame: '', stone: '' }} self={false} assets={assets} onClose={vi.fn()} onGift={gift} onDecor={vi.fn()} onMusic={vi.fn()} />);
-    for (const name of ['Hediye', 'Mesaj', 'kickout:header']) fireEvent.click(screen.getByRole('button', { name }));
+    for (const name of ['Hədiyyə', 'Mesaj', 'kickout:header']) fireEvent.click(screen.getByRole('button', { name }));
     expect(gift).not.toHaveBeenCalled(); expect(reply).not.toHaveBeenCalled(); expect(state.toast).toHaveBeenCalledTimes(3);
     window.removeEventListener('game-reply-to', reply);
   });
@@ -23,8 +23,8 @@ describe('profile table actions', () => {
     state.players = [{ id: 'other' }]; const gift = vi.fn();
     const props = { player: { id: 'other', name: 'Other', male: false, photoUrl: '', frame: '', stone: '' }, self: false, assets, onClose: vi.fn(), onGift: gift, onDecor: vi.fn(), onMusic: vi.fn() };
     const view = render(<ProfileDialog {...props} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Hediye' })); expect(gift).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Hədiyyə' })); expect(gift).toHaveBeenCalledTimes(1);
     state.players = []; view.rerender(<ProfileDialog {...props} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Hediye' })); expect(gift).toHaveBeenCalledTimes(1); expect(state.toast).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Hədiyyə' })); expect(gift).toHaveBeenCalledTimes(1); expect(state.toast).toHaveBeenCalledTimes(1);
   });
 });

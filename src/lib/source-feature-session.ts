@@ -42,6 +42,6 @@ export function useSourceFeatureSession() {
   return useSyncExternalStore(fn => { listeners.add(fn); return () => { listeners.delete(fn); }; }, () => snapshot, () => empty);
 }
 export async function executeSourceFeature(action: SourceFeatureAction, input?: Record<string, string | number>) {
-  if (!adapter || !snapshot.viewerId) throw new Error('Oyuncu hesabı bağlı değil.');
+  if (!adapter || !snapshot.viewerId) throw new Error('Oyunçu hesabına giriş edilməyib.');
   return adapter.execute(action, input);
 }
