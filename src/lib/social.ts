@@ -3,6 +3,8 @@
 import { useEffect, useSyncExternalStore } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase";
+import { playChatAlert, preloadChatAlert } from './chat-alert';
+import { unlockSfx } from './sfx';
 
 export type Friendship = { id: string; requester_id: string; addressee_id: string; status: "pending" | "accepted"; created_at: string };
 export type DirectMessage = { id: string; sender_id: string; recipient_id: string; body: string; kind?: "text" | "image" | "audio"; media_path?: string | null; duration_ms?: number | null; deleted_at?: string | null; created_at: string; read_at: string | null; pending?: boolean };
@@ -112,7 +114,7 @@ function audio() {
   return ac;
 }
 /** Call from a user gesture so mobile browsers allow later notification sounds. */
-export function unlockSocialAudio() { audio(); }
+export function unlockSocialAudio() { audio(); unlockSfx(); preloadChatAlert(); }
 const SOUND_KEY = "deltagame.social.sound";
 export function socialSoundEnabled() {
   try { return localStorage.getItem(SOUND_KEY) !== "off"; } catch { return true; }
@@ -160,7 +162,7 @@ async function systemNotify(n: SocialNotice) {
   } catch { /* some mobile browsers only allow worker notifications */ }
 }
 function notify(n: SocialNotice) {
-  playSocialSound(n.kind);
+  if (n.kind !== 'message') playSocialSound(n.kind);
   if (document.visibilityState === "visible") {
     set({ notices: [n, ...state.notices.filter(x => x.id !== n.id)].slice(0, 3) });
     window.setTimeout(() => dismissNotice(n.id), 5500);
@@ -213,6 +215,7 @@ async function profileOf(id: string) {
 }
 async function handleIncoming(m: DirectMessage) {
   const gen = generation;
+  playChatAlert(`direct:${m.id}`, m.sender_id, m.recipient_id, state.me ?? '');
   const peer = m.sender_id;
   set({ last: { ...state.last, [peer]: m } });
   messageListeners.forEach(l => l(m, "insert"));
@@ -339,9 +342,11 @@ export function startSocial(me: string) {
     // Admiration alerts: someone else admired the same person, or the person rejected you.
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "profile_notifications", filter: `user_id=eq.${me}` }, payload => {
       if (!live()) return;
-      const n = payload.new as { id: number; actor_id: string | null; body: string };
+      const n = payload.new as { id: number; actor_id: string | null; body: string; payload?: { type?: string } };
+      // The original table inbox owns durable attraction notices, not the expiring social banner.
+      if (n.payload?.type === 'harem_purchase') return;
       void (n.actor_id ? profileOf(n.actor_id) : Promise.resolve(undefined)).then(p => {
-        if (live()) notify({ id: `h-${n.id}`, kind: "harem", from: n.actor_id ?? me, title: "Hayranlık", body: n.body, photo: p?.photo_url ?? null });
+        if (live()) notify({ id: `h-${n.id}`, kind: "harem", from: n.actor_id ?? me, title: "Heyranlıq", body: n.body, photo: p?.photo_url ?? null });
       });
     })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "direct_messages", filter: `sender_id=eq.${me}` }, payload => {

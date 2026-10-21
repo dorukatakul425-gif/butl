@@ -17,7 +17,7 @@ export const telegramLogin = createServerFn({ method: "POST" })
     const { createHmac } = await import("node:crypto");
     const hmac = (key: string | Buffer, msg: string) => createHmac("sha256", key).update(msg).digest();
     const parsed = validateInitData(data.initData, botToken, hmac, Math.floor(Date.now() / 1000));
-    if (!parsed) throw new Error("Telegram oturumu doğrulanamadı.");
+    if (!parsed) throw new Error("Telegram sessiyası təsdiqlənmədi.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const admin = supabaseAdmin as any;
@@ -46,7 +46,7 @@ export const telegramLogin = createServerFn({ method: "POST" })
         email_confirm: true,
         user_metadata: { username, name },
       });
-      if (createError || !created?.user?.id) throw new Error("Hesap oluşturulamadı.");
+      if (createError || !created?.user?.id) throw new Error("Hesab yaradılmadı.");
       userId = created.user.id;
       // handle_new_user trigger already inserted the profile row.
       await admin
@@ -55,33 +55,35 @@ export const telegramLogin = createServerFn({ method: "POST" })
         .eq("id", userId);
     }
 
-    if (!userId) throw new Error("Telegram hesabı bulunamadı.");
+    if (!userId) throw new Error("Telegram hesabı tapılmadı.");
     // Synchronize on every verified launch; a failed Telegram request is not a removed photo/bio.
     const patch: { name: string; username?: string; photo_url?: string | null; bio?: string } = { name: current.name };
     const { data: usernameOwner, error: usernameError } = await admin.from("profiles").select("id").eq("username", current.username).maybeSingle();
-    if (usernameError) throw new Error("Telegram profil adı yenilenemedi.");
+    if (usernameError) throw new Error("Telegram profil adı yenilənmədi.");
     if (!usernameOwner || usernameOwner.id === userId) patch.username = current.username;
     if (current.bio !== undefined) patch.bio = current.bio;
-    if (current.photo === null) patch.photo_url = null;
-    if (current.photo && current.photo.byteLength > 0) {
+    // Only manage Telegram's own photo; a photo uploaded by the player on the site/app is kept forever.
+    const ownPhoto = Boolean(existing?.photo_url) && !String(existing?.photo_url).includes('/telegram-');
+    if (current.photo === null && !ownPhoto) patch.photo_url = null;
+    if (!ownPhoto && current.photo && current.photo.byteLength > 0) {
       // A new object key prevents browser/CDN caches from showing the previous Telegram photo.
       const path = `${userId}/telegram-${Date.now()}-${crypto.randomUUID()}.jpg`;
       const upload = await admin.storage.from("avatars").upload(path, current.photo, { contentType: "image/jpeg" });
-      if (upload.error) throw new Error("Telegram fotoğrafı yenilenemedi.");
+      if (upload.error) throw new Error("Telegram profil şəkli yenilənmədi.");
       const signed = await admin.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
-      if (!signed.data?.signedUrl) throw new Error("Telegram fotoğrafı açılamadı.");
+      if (!signed.data?.signedUrl) throw new Error("Telegram profil şəkli açılmadı.");
       const publicBase = import.meta.env.VITE_SUPABASE_URL;
-      if (!publicBase) throw new Error('Telegram fotoğraf adresi yapılandırılmamış.');
+      if (!publicBase) throw new Error('Telegram profil şəklinin ünvanı konfiqurasiya edilməyib.');
       patch.photo_url = telegramPublicPhotoUrl(signed.data.signedUrl, publicBase);
     }
     const { error: syncError } = await admin.from("profiles").update(patch).eq("id", userId);
-    if (syncError) throw new Error("Telegram profil bilgileri yenilenemedi.");
+    if (syncError) throw new Error("Telegram profil məlumatları yenilənmədi.");
 
     const { data: link, error: linkError } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email,
     });
-    if (linkError || !link?.properties?.hashed_token) throw new Error("Oturum açılamadı.");
+    if (linkError || !link?.properties?.hashed_token) throw new Error("Hesaba giriş mümkün olmadı.");
 
     return { tokenHash: link.properties.hashed_token as string };
   });

@@ -21,6 +21,7 @@ import { cleanDisplayName } from "@/lib/display-name";
 import { playEntryFx } from "@/components/table/entry-fx-pixi";
 import { playPremiumFinish, premiumStickAlive } from "@/components/table/premium-gift-fx-pixi";
 import { entryParticipantCurrent } from "@/lib/entry-fx-lifetime";
+import { presentationBudget } from '@/lib/room-work-budget';
 
 // TableView seats (virtual 375px table space, origin at table centre).
 const SEATS: Array<[number, number]> = [
@@ -632,7 +633,8 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   };
 
   /** GiftAnimations.flyGift() */
-  const flyGift = async (from: number, to: number, gift: SentGift) => {
+  const flights = presentationBudget(24);
+  const renderGiftFlight = async (from: number, to: number, gift: SentGift) => {
     const sender = seats[from];
     const receiver = seats[to];
     if (!sender || !receiver) return;
@@ -691,6 +693,15 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       const target = { d: receiver.view, get _invalid() { return !valid(); } };
       playPremiumFinish(gift.type, target);
     });
+  };
+
+  const flyGift = async (from: number, to: number, gift: SentGift) => {
+    const release = flights.acquire();
+    if (!release || destroyed) { release?.(); return; }
+    try {
+      await renderGiftFlight(from, to, gift);
+      after(FLY_SEC + 0.1, release);
+    } catch (error) { release(); throw error; }
   };
 
   const observer = new ResizeObserver(layout);
@@ -771,7 +782,10 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
       const seat = seats[index];
       if (!seat || destroyed) return null;
       const r = host.getBoundingClientRect();
-      return { x: r.left + stage.x + seat.view.x * scale, y: r.top + stage.y + seat.view.y * scale, scale: scale * seat.view.scale.x };
+      const center = seat.view.toGlobal({ x: 0, y: 0 });
+      const edge = seat.view.toGlobal({ x: 1, y: 0 });
+      const dx = edge.x - center.x, dy = edge.y - center.y;
+      return { x: r.left + center.x, y: r.top + center.y, scale: Math.hypot(dx, dy), rotation: Math.atan2(dy, dx) };
     },
     async setBottle(type: string) {
       const version = ++bottleVersion;
@@ -902,6 +916,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     },
     destroy() {
       destroyed = true;
+      flights.clear();
       ticks.clear();
       observer.disconnect();
       effects.destroy();

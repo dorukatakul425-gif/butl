@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { joinRoom, leaveRoom, leaveRoomNow, useRoom } from "@/lib/room-session";
+import { joinRoom, detachRoom, leaveRoomNow, useRoom } from "@/lib/room-session";
 import { setViewerProfile } from "@/lib/viewer";
 import { setupTelegramViewport } from "@/lib/telegram-viewport";
 import woodTable from "@/assets/original-wood-table.png";
@@ -18,16 +18,18 @@ import { startCloudBlocks } from "@/lib/block-session";
 import { SourceHaremNotice } from '@/components/table/source-harem-notice';
 import { ProfileSetupDialog } from "@/components/profile/profile-setup-dialog";
 import { getSupabase } from "@/lib/supabase";
+import { Button } from '@/components/ui/button';
 import { tableBgUrl, useTableBg } from "@/lib/table-bg";
 import "@/styles/table-bg.css";
+import { GameCrashShield } from "@/components/game-crash-shield";
 
 export const Route = createFileRoute("/game")({
   head: () => ({
     meta: [
-      { title: "Şişe Oyunu — Masa" },
-      { name: "description", content: "Oyunun sunucusundan alınan orijinal ahşap masa ve masa ikonları." },
-      { property: "og:title", content: "Orijinal Oyun Masası" },
-      { property: "og:description", content: "Orijinal ahşap oyun masası ve sunucu görselleri." },
+      { title: "Deltagame — Oyun masası" },
+      { name: "description", content: "Deltagame oyun masasında şüşəni fırlat, söhbət et və yeni insanlarla tanış ol." },
+      { property: "og:title", content: "Deltagame — Oyun masası" },
+      { property: "og:description", content: "Şüşəni fırlat və Deltagame oyun masasında söhbətə qoşul." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -51,42 +53,47 @@ function Index() {
     // Telegram first entry: gender/age setup must finish before the live room is mounted.
     if (auth.profile.profile_setup_done === false) return;
     let alive = true;
-    void joinRoom().then(() => { if (alive) setJoined(true); }).catch(() => { if (alive) setJoined(false); });
-    // Closing the tab frees the seat at once, so others see the player leave immediately.
+    const connect = () => void joinRoom().then(() => { if (alive) setJoined(true); }).catch(() => { if (alive) setJoined(false); });
+    connect();
+    // Membership belongs to the server, not this page's component lifecycle.
     const stopAchievements = startCloudAchievements();
     const stopBlocks = startCloudBlocks(auth.session.user.id);
     // Aktivlik liderləri: every minute spent at the table is counted by the server.
     const activity = window.setInterval(() => { void getSupabase()?.rpc("activity_ping" as never); }, 60000);
     const bye = () => leaveRoomNow();
-    // Back/forward cache restores the page after pagehide already freed the seat: sit down again.
-    const back = (e: PageTransitionEvent) => { if (e.persisted) void joinRoom().catch(() => undefined); };
+    const resume = () => { if (alive && document.visibilityState === 'visible') connect(); };
+    // Re-read the authoritative membership and table after suspended tabs/network recovery.
+    const back = (e: PageTransitionEvent) => { if (e.persisted) connect(); };
     window.addEventListener("pagehide", bye);
     window.addEventListener("pageshow", back);
-    return () => { alive = false; window.clearInterval(activity); stopAchievements(); stopBlocks(); window.removeEventListener("pagehide", bye); window.removeEventListener("pageshow", back); void leaveRoom(); };
+    window.addEventListener("online", resume);
+    document.addEventListener("visibilitychange", resume);
+    return () => { alive = false; window.clearInterval(activity); stopAchievements(); stopBlocks(); window.removeEventListener("pagehide", bye); window.removeEventListener("pageshow", back); window.removeEventListener("online", resume); document.removeEventListener("visibilitychange", resume); void detachRoom(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.ready, auth.session?.user.id, Boolean(auth.profile), auth.profile?.profile_setup_done]);
   if (auth.profile && auth.profile.profile_setup_done === false) return <ProfileSetupDialog onDone={() => undefined} />;
   if (!joined || !room.roomId) {
     return <main className="grid min-h-dvh place-items-center bg-background p-6 text-center text-foreground">
-      <p>{room.error ?? "Masaya bağlanılıyor…"}</p>
+      <p>{room.error ?? "Masaya qoşulursan…"}</p>
+      {room.error && <Button onClick={() => void joinRoom().then(() => setJoined(true)).catch(() => undefined)}>Qayıt</Button>}
     </main>;
   }
   return (
-    <main className="original-table-page" aria-label="Orijinal oyun masası">
-      <OriginalLoadingScreen />
-      <SourceConnectionScreen />
-      <SourceHeartBonus />
-      <SourceHaremNotice />
-      {auth.session && <DailyBonusHost viewerId={auth.session.user.id} />}
+    <main className="original-table-page" aria-label="Deltagame oyun masası">
+      <GameCrashShield name="loading"><OriginalLoadingScreen /></GameCrashShield>
+      <GameCrashShield name="connection"><SourceConnectionScreen /></GameCrashShield>
+      <GameCrashShield name="heart-bonus"><SourceHeartBonus /></GameCrashShield>
+      {auth.session && <GameCrashShield name="harem"><SourceHaremNotice key={auth.session.user.id} viewerId={auth.session.user.id} /></GameCrashShield>}
+      {auth.session && <GameCrashShield name="daily-bonus"><DailyBonusHost viewerId={auth.session.user.id} /></GameCrashShield>}
       <img className="original-page-wood" src={woodTable} alt="" />
       <div className="original-game">
-        <div className="original-table">
-          <img className="original-table-wood" src={woodTable} alt="Oyunun sunucusundan alınan orijinal ahşap masa" />
+        <div className={`original-table${!tableBg && room.room?.table_color != null ? ` personal-table-color-${room.room.table_color}` : ''}`}>
+          <img className="original-table-wood" src={woodTable} alt="Taxta oyun masası" />
           {tableBg && <img key={tableBg} className="original-table-bg-image" src={tableBgUrl(tableBg)} alt="" />}
-          <TableSeats />
-          <OriginalTableHeader />
+          <GameCrashShield name="seats"><TableSeats /></GameCrashShield>
+          <GameCrashShield name="header"><OriginalTableHeader /></GameCrashShield>
         </div>
-        <OriginalChatPanel />
+        <GameCrashShield name="chat"><OriginalChatPanel /></GameCrashShield>
       </div>
     </main>
   );

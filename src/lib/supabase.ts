@@ -17,7 +17,34 @@ export function getSupabase(): SupabaseClient | null {
           auth: { persistSession: true, autoRefreshToken: true },
         })
       : null;
+  if (client) hardenRealtime(client);
   return client;
+}
+
+// Database-change-only channels: their topic is local, so every subscriber gets its own
+// instance. A shared instance made a second mount call .on() after subscribe(), which threw
+// inside React and replaced the table with "This page didn't load" during gift bursts.
+const PRIVATE_TOPICS = ["appearance:", "harem-inbox:", "table-direct-alert:", "social:", "site-refresh:", "league-"];
+type AnyChannel = ReturnType<SupabaseClient["channel"]> & { __safe?: boolean };
+function hardenRealtime(sb: SupabaseClient) {
+  const create = sb.channel.bind(sb);
+  const safe = (ch: AnyChannel): AnyChannel => {
+    if (ch.__safe) return ch;
+    ch.__safe = true;
+    const on = ch.on.bind(ch) as (...a: unknown[]) => AnyChannel;
+    const subscribe = ch.subscribe.bind(ch) as (...a: unknown[]) => AnyChannel;
+    (ch as unknown as { on: unknown }).on = (...a: unknown[]) => {
+      try { return on(...a); } catch (e) { console.warn("[realtime] listener skipped", (e as Error)?.message); return ch; }
+    };
+    (ch as unknown as { subscribe: unknown }).subscribe = (...a: unknown[]) => {
+      try { return subscribe(...a); } catch (e) { console.warn("[realtime] subscribe skipped", (e as Error)?.message); return ch; }
+    };
+    return ch;
+  };
+  (sb as unknown as { channel: unknown }).channel = (name: string, opts?: Parameters<SupabaseClient["channel"]>[1]) => {
+    const topic = PRIVATE_TOPICS.some((p) => name.startsWith(p)) ? `${name}:u${Math.random().toString(36).slice(2, 9)}` : name;
+    return safe(create(topic, opts) as AnyChannel);
+  };
 }
 
 export function normalizeUsername(name: string) {

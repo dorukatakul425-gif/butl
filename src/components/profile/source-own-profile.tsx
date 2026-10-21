@@ -21,7 +21,7 @@ export function useFrameUnlocked() {
   return (session.league?.level ?? -1) >= IRON_LEAGUE_INDEX;
 }
 
-/** Original locked-feature popup ("Gerektirir" + reason + "Devam et"). */
+/** Original locked-feature popup ("Gerektirir" + reason + "Davam et"). */
 export function SourceLockedPopup({ assets, title, desc, onClose }: { assets: CilizAssets; title: string; desc: string; onClose: () => void }) {
   const t = (k: string) => translate(assets, k);
   return <SourceFeaturePopup title={title} onClose={onClose} className="source-profile-locked">

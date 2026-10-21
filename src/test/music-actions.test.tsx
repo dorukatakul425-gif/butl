@@ -9,5 +9,5 @@ it('opens the actual DJ action and recorder selection independently', () => {
   const song = { key: 1, startedAt: Date.now(), isVideo: false, musicItem: { artist: 'A', title: 'T', duration: 180, url: '' }, sender: { id: 'dj-id', name: 'DJ', photoUrl: '', musicLevel: 1 } } as PlayingSong;
   render(<MusicView song={song} muted={false} volume={1} onDj={dj} onPlayer={player} />);
   fireEvent.click(screen.getByRole('button', { name: 'DJ: DJ' })); expect(dj).toHaveBeenCalledWith('dj-id');
-  fireEvent.click(screen.getByRole('button', { name: 'Müzik seç' })); expect(player).toHaveBeenCalledTimes(1);
+  fireEvent.click(screen.getByRole('button', { name: 'Musiqi seç' })); expect(player).toHaveBeenCalledTimes(1);
 });

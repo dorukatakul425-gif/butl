@@ -225,7 +225,7 @@ export function DecorSelectionDialog({ open, assets, items, activeItem, user, on
               user={user}
               btn={{ title: preview.btnTitle, onApply: canApply ? apply : shake }}
             />
-            <div className="popup__close popup__close--dlg" onClick={onClose} role="button" aria-label="Kapat">
+            <div className="popup__close popup__close--dlg" onClick={onClose} role="button" aria-label="Bağla">
               <div className="popup__close-icon" />
             </div>
           </div>

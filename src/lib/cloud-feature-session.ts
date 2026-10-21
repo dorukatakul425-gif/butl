@@ -1,8 +1,10 @@
 // Lovable Cloud adapter for the source feature dialogs (currently: change table).
 import { attachSourceFeatureSession, type SourceFeatureSnapshot, type SourceTableEntry } from './source-feature-session';
+import { ensureSocket, onSocket, watchTables } from './game-socket';
 import { getSupabase } from './supabase';
 import { readProfileEdit, saveProfileEdit, saveProfilePhoto } from './profile-edit';
 import { leagueHeader, type LeagueInfo } from './league';
+import { refreshProfile } from './auth';
 
 let snapshot: SourceFeatureSnapshot = { viewerId: null };
 const listeners = new Set<() => void>();
@@ -10,6 +12,16 @@ const emit = () => listeners.forEach((l) => l());
 let tableRead = 0;
 let preferenceRevision = 0;
 let kickoutRead = 0;
+let rouletteRead = 0;
+async function refreshRoulette(viewerId: string) {
+  const sb = getSupabase();
+  if (!sb) return;
+  const read = ++rouletteRead;
+  const { data, error } = await sb.rpc('roulette_info' as never);
+  if (snapshot.viewerId !== viewerId || read !== rouletteRead) return;
+  if (error || !data) throw new Error('Çarx məlumatları alınmadı. Yenidən yoxlayın.');
+  snapshot = { ...snapshot, roulette: data as SourceFeatureSnapshot['roulette'] }; emit();
+}
 async function refreshKickout(viewerId: string) {
   const sb = getSupabase();
   if (!sb) return;
@@ -39,8 +51,8 @@ async function refreshTables() {
   const read = ++tableRead;
   const { data, error } = await sb.rpc('list_tables');
   if (error || read !== tableRead) return;
-  const history: SourceTableEntry[] = ((data ?? []) as Array<{ room_id: number; men: number; women: number; bottle: string; is_current: boolean; blocked_until: string | null; kicker_id: string | null; kicker_name: string | null; kicker_photo: string | null; kicker_male: boolean | null }>).map((r) => ({
-    id: String(r.room_id), bottle: r.bottle || 'standart', men: r.men, women: r.women, ...(r.is_current ? { current: true } : {}),
+  const history: SourceTableEntry[] = ((data ?? []) as Array<{ room_id: number; number?: number; name?: string; locked?: boolean; owned?: boolean; men: number; women: number; bottle: string; is_current: boolean; blocked_until: string | null; kicker_id: string | null; kicker_name: string | null; kicker_photo: string | null; kicker_male: boolean | null }>).map((r) => ({
+    id: String(r.room_id), number: r.number ?? r.room_id, name: r.name ?? '', locked: r.locked ?? false, owned: r.owned ?? false, bottle: r.bottle || 'standart', men: r.men, women: r.women, ...(r.is_current ? { current: true } : {}),
     ...(r.blocked_until ? { blockedUntil: Date.parse(r.blocked_until) } : {}),
     ...(r.kicker_id ? { kicker: { id: r.kicker_id, name: r.kicker_name ?? '', ...(r.kicker_photo ? { photo: r.kicker_photo } : {}), ...(r.kicker_male !== null ? { male: r.kicker_male } : {}) } } : {}),
   }));
@@ -103,6 +115,15 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
     execute: async (action, input) => {
       const sb = getSupabase();
       if (!sb) return { confirmed: false, message: 'Server bağlantısı yoxdur.' };
+      if (action === 'roulette-refresh') { await refreshRoulette(viewerId); return { confirmed: true }; }
+      if (action === 'roulette-spin' || action === 'roulette-buy-chances') {
+        if (!snapshot.roulette || snapshot.viewerId !== viewerId || typeof input?.['requestId'] !== 'string') return { confirmed: false };
+        const { data, error } = await sb.rpc('roulette_action' as never, { p_request: input['requestId'], p_action: action === 'roulette-spin' ? 'spin' : 'buy', p_revision: snapshot.roulette.revision } as never);
+        if (error) { await refreshRoulette(viewerId).catch(() => undefined); return { confirmed: false, message: error.message }; }
+        // Payment already committed; a failed follow-up read must not discard the earned result.
+        await Promise.allSettled([refreshRoulette(viewerId), refreshProfile()]);
+        return data as import('./source-feature-session').SourceFeatureResult;
+      }
       if (action === 'profile-refresh' || action === 'save-profile' || action === 'save-profile-photo') {
         try {
           if (action === 'save-profile-photo') await saveProfilePhoto(viewerId, String(input?.['photo'] ?? ''));
@@ -110,14 +131,14 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
           if (snapshot.viewerId !== viewerId) return { confirmed: false };
           snapshot = { ...snapshot, profile }; emit(); return { confirmed: true };
         } catch (e) {
-          return { confirmed: false, message: e instanceof Error ? e.message : 'Profil kaydedilemedi.' };
+          return { confirmed: false, message: e instanceof Error ? e.message : 'Profil yadda saxlanılmadı.' };
         }
       }
       if (action === 'league-settings') {
         if (input?.['enabled'] !== 0 && input?.['enabled'] !== 1) return { confirmed: false };
         const revision = ++preferenceRevision;
         const { data, error } = await sb.auth.updateUser({ data: { league_participation: input['enabled'] === 1 } });
-        if (error) return { confirmed: false, message: 'Lig seçimi kaydedilemedi.' };
+        if (error) return { confirmed: false, message: 'Liqa seçimi yadda saxlanılmadı.' };
         if (snapshot.viewerId === viewerId && revision === preferenceRevision) { snapshot = { ...snapshot, leagueParticipation: data.user?.user_metadata['league_participation'] !== false }; emit(); }
         await refreshLeague(viewerId);
         return { confirmed: true };
@@ -141,9 +162,10 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
       if (action !== 'change-table') return { confirmed: false };
       const tableId = input?.['tableId'];
       if (tableId !== undefined && snapshot.tables?.history.find((h) => h.id === String(tableId))?.current) return { confirmed: true };
-      const { data, error } = await sb.rpc('change_table', tableId !== undefined ? { p_room: Number(tableId) } : {});
+      const { data, error } = await sb.rpc(tableId !== undefined ? 'enter_table' : 'change_table', tableId !== undefined ? { p_room: Number(tableId), p_password: input?.['password'] ?? null } : {});
       if (error) return { confirmed: false, message: error.message };
       const membership = Array.isArray(data) ? data[0] : null;
+      if (membership?.room_id === -1) return { confirmed: false, message: 'wrong_password' };
       if (!membership) return { confirmed: false, message: 'Masaya qoşulmaq olmadı.' };
       await rejoin({ room_id: Number(membership.room_id), seat: Number(membership.seat) });
       await refreshTables();
@@ -153,6 +175,7 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
   void refreshTables();
   void refreshKickout(viewerId);
   void refreshPreference(viewerId);
+  void refreshRoulette(viewerId).catch(() => undefined);
   leagueInfo = null; leagueRound = undefined; void leagueChannel?.unsubscribe(); leagueChannel = null;
   void refreshLeague(viewerId);
   // Header timer, finish detection and joining once the viewer earns points.
@@ -166,19 +189,15 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
   }, 10000);
   clearInterval(kickoutTimer);
   kickoutTimer = setInterval(() => { if (snapshot.viewerId === viewerId) void refreshKickout(viewerId); }, 2000);
-  // Live men/women counts: any seat change anywhere refreshes the list.
-  const sb = getSupabase();
-  if (sb && !liveChannel) {
+  // Live men/women counts: the WebSocket hub sends one coalesced "tables" ping per seat change wave.
+  if (!liveChannel) {
     let t: ReturnType<typeof setTimeout> | undefined;
-    liveChannel = sb.channel('tables-live').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_players' }, () => {
-      clearTimeout(t); t = setTimeout(() => void refreshTables(), 300);
-    }).on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'room_players' }, () => {
-      clearTimeout(t); t = setTimeout(() => void refreshTables(), 300);
-    }).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms' }, (p) => {
-      const n = p.new as { id?: number; bottle?: string };
-      if (snapshot.tables?.history.some((h) => h.id === String(n.id) && h.bottle !== n.bottle)) { clearTimeout(t); t = setTimeout(() => void refreshTables(), 300); }
-    }).subscribe();
+    ensureSocket();
+    watchTables(true);
+    liveChannel = { unsubscribe: onSocket((m) => {
+      if (m.type === 'tables' || m.type === 'open') { clearTimeout(t); t = setTimeout(() => void refreshTables(), 150); }
+    }) };
   }
 }
-let liveChannel: ReturnType<NonNullable<ReturnType<typeof getSupabase>>['channel']> | null = null;
+let liveChannel: { unsubscribe: () => void } | null = null;
 let kickoutTimer: ReturnType<typeof setInterval> | undefined;

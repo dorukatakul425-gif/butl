@@ -19,6 +19,8 @@ import { SourceProfileSettings } from "@/components/profile/source-own-profile";
 import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast, OPEN_BANK_EVENT } from "@/components/source-dialogs";
 import { profileRibbon, formatHarem, formatStats, splitStatusEmoji, type ServerUserProfile } from "@/lib/user-profile";
 import { reportPlayer } from "@/lib/game-reports";
+import { usePlayerAppearances } from '@/lib/use-player-appearance';
+import { PlayerName, CreatorLabel } from '@/components/player-name';
 
 const Div = (p: React.HTMLAttributes<HTMLDivElement>) => <div role={p.onClick ? "button" : undefined} {...p} />;
 
@@ -62,6 +64,8 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   profile?: ServerUserProfile | null;
 }) {
   const t = (key: string, ...a: string[]) => translate(assets, key, ...a);
+  const appearances = usePlayerAppearances(player.id ? [player.id] : []);
+  const appearance = player.id ? appearances[player.id] : undefined;
   const viewerVip = useViewerProgress().vip;
   const [vipNow, setVipNow] = useState(() => Date.now());
   useEffect(() => {
@@ -131,20 +135,6 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
     return () => { alive = false; window.clearInterval(timer); };
   }, [userId]);
   const ranks = ranking?.userId === userId ? ranking : null;
-  const [heartSenders, setHeartSenders] = useState<{ userId: string; rows: { id: string; name: string; photo_url: string | null }[] } | null>(null);
-  useEffect(() => {
-    const sb = getSupabase();
-    if (!sb || !userId) return;
-    let alive = true, revision = 0;
-    const load = async () => {
-      const current = ++revision;
-      const { data, error } = await sb.rpc("player_heart_senders", { p_user: userId });
-      if (alive && current === revision && !error) setHeartSenders({ userId, rows: data ?? [] });
-    };
-    void load();
-    const timer = window.setInterval(() => void load(), 10000);
-    return () => { alive = false; window.clearInterval(timer); };
-  }, [userId]);
   const [savedBio, setSavedBio] = useState<{ userId: string; value: string | null } | null>(null);
   const bio = savedBio && savedBio.userId === userId ? savedBio.value : profile?.status;
   // Bio belongs to the home profile, not the statistics adapter. Read even when stats are supplied.
@@ -206,7 +196,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
 
   const loadRef = useRef<() => Promise<void>>(async () => {});
   const [buying, setBuying] = useState(false);
-  const noServer = () => showSourceToast("Oyuncu hesabı bağlı değil; bu işlem sunucuda gerçekleştirilemiyor.");
+  const noServer = () => showSourceToast("Oyunçu hesabına giriş edilməyib; bu əməliyyat serverdə yerinə yetirilə bilmir.");
 
   useEffect(() => {
     const key = (e: KeyboardEvent) => { if (!popup && e.key === "Escape") onClose(); };
@@ -248,7 +238,7 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
       setBuying(false);
       if (error) {
         if (error.message.includes("not_enough_gold")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
-        else showSourceToast("Satın alınamadı.");
+        else showSourceToast("Alış baş tutmadı.");
         return;
       }
       showSourceToast(t("dlg:profile:harem:purchased", player.name));
@@ -258,21 +248,21 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   const sendReport = async (kind: "photo" | "user", text: string) => {
     if (!player.id || self) return;
     const result = await reportPlayer(player.id, kind, text);
-    showSourceToast(result === "error" ? "Şikayet gönderilemedi." : t("dlg:report_photo:toast"));
+    showSourceToast(result === "error" ? "Şikayət göndərilmədi." : t("dlg:report_photo:toast"));
   };
   const onBlock = () => {
     if (!player.id || self || blocking) return;
     setBlocking(true);
     void setUserBlocked(player.id, !blocked)
       .then(() => showSourceToast(t(blocked ? "hint:icon:unblock" : "hint:icon:block")))
-      .catch(() => showSourceToast("İşlem yapılamadı."))
+      .catch(() => showSourceToast("Əməliyyat yerinə yetirilmədi."))
       .finally(() => setBlocking(false));
   };
 
   return createPortal(<div className={`profile-layer ${portrait ? 'portrait' : 'landscape'}`}>
     <div className="popup-shade" onClick={onClose} />
     <section ref={sectionRef} role="dialog" aria-modal="true" aria-label={player.name} className="popup popup--center popup--show user-profile__x_popup">
-      <Div className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Div>
+      <Div className="popup__close popup__close--dlg" aria-label="Bağla" onClick={onClose}><span className="popup__close-icon" /></Div>
       <div className="user-profile">
         <div className="user-profile__info" style={infoSize ? { width: `${infoSize}px`, height: `${infoSize}px` } : undefined}>
           <Div className="user-profile__photos" aria-label={self ? t("dlg:profile_info:title") : undefined} onClick={self ? () => setPopup("settings") : undefined}>
@@ -284,15 +274,16 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
           <div className="user-profile__title">
             {stone ? <div className="user-profile__decored-name">
               <img className="user-profile__stone" src={stone.src} width={stone.width} height={stone.height} alt="" />
-              <div className="user-profile__name">{player.name}{player.age ? `, ${player.age}` : ""}</div>
+              <div className="user-profile__name"><PlayerName name={player.name} appearance={appearance} showCreator={false} />{player.age ? `, ${player.age}` : ""}</div>
               <img className="user-profile__stone" src={stone.src} width={stone.width} height={stone.height} alt="" />
-            </div> : <div className="user-profile__name">{player.name}{player.age ? `, ${player.age}` : ""}</div>}
+            </div> : <div className="user-profile__name"><PlayerName name={player.name} appearance={appearance} showCreator={false} />{player.age ? `, ${player.age}` : ""}</div>}
+            {appearance?.creator && <CreatorLabel />}
             {player.city && <div className="user-profile__city">{player.city}</div>}
           </div>
           {player.zodiac !== undefined && <Div className={`user-profile__zodiac user-profile__zodiac--${player.zodiac}`} onClick={() => showTooltip(t(`hint:zodiac:${player.zodiac}`))} />}
           <div className="user-profile__tooltip" style={{ display: tooltip ? "block" : "none" }}>{tooltip}</div>
-          {self && <Div className="user-profile__decor" aria-label="Süsleme" onClick={onDecor} />}
-          {!self && <Div className="user-profile__claim" aria-label="Şikayet" onClick={() => setPopup("claims")} />}
+          {self && <Div className="user-profile__decor" aria-label="Bəzəklər" onClick={onDecor} />}
+          {!self && <Div className="user-profile__claim" aria-label="Şikayət" onClick={() => setPopup("claims")} />}
         </div>
         <div className="user-profile__details">
           <div className="user-profile__scrollable">
@@ -312,21 +303,10 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
             </div>
             <div className="user-profile__stats-border-item">
               <div className="user-profile__stats-border" />
-              <Div className={`user-profile__stats-expand-icon${statsState === "expanded" ? " user-profile__stats-expand-icon--expanded" : ""}`} aria-label="İstatistikler"
+              <Div className={`user-profile__stats-expand-icon${statsState === "expanded" ? " user-profile__stats-expand-icon--expanded" : ""}`} aria-label="Statistika"
                 onClick={() => setStatsState(s => s === "expanded" ? "narrowed" : "expanded")} />
               <div className="user-profile__stats-border" />
             </div>
-            {heartSenders && heartSenders.userId === userId && <section aria-label="Hədiyyə göndərənlər" style={{ padding: "8px 12px" }}>
-              <div style={{ fontSize: 12, marginBottom: 6 }}>Ürək / hədiyyə göndərənlər</div>
-              <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
-                {heartSenders.rows.length === 0 && <span style={{ fontSize: 12 }}>Hələ hədiyyə göndərən yoxdur</span>}
-                {heartSenders.rows.map(sender => <button key={sender.id} type="button" title={sender.name} aria-label={`${sender.name} — profili aç`}
-                  style={{ flex: "0 0 32px", padding: 0, border: 0, background: "transparent", cursor: "pointer" }}
-                  onClick={() => { onClose(); window.dispatchEvent(new CustomEvent("source:open-profile", { detail: sender.id })); }}>
-                  <img src={sender.photo_url || DEFAULT_PHOTO} alt={sender.name} width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover" }} />
-                </button>)}
-              </div>
-            </section>}
             <div className="user-profile__harem">
               <Div className="user-profile__owner-photo" style={harem.owner ? { backgroundImage: `url('${harem.owner.photoUrl}')` } : undefined} />
               <div className="user-profile__harem-info">
@@ -347,9 +327,9 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
             <Button variant="ghost" className={`user-profile__action user-profile__action--kickout-${feature.kickout?.targets[player.id ?? '']?.kickAt ? 'save' : self ? 'self' : 'kick'}${atTable ? '' : ' user-profile__action--greyscaled'}`} aria-label={t('kickout:header')} title={t('kickout:header')} onClick={onKickout} />
             {/* Telegram build (TGSocial) has no getProfileUrl, so no social profile button is rendered. */}
             {self
-              ? <Div className="user-profile__action user-profile__action--music" aria-label="Müzik" onClick={onMusic} />
-              : <Button variant="ghost" className={`user-profile__action user-profile__action--gift${atTable ? '' : ' user-profile__action--greyscaled'}`} aria-label="Hediye" onClick={onSendGift} />}
-            <Div className="user-profile__action user-profile__action--achievements" aria-label="Başarılar" onClick={() => { if (userId) setPopup("achievements"); else noServer(); }} />
+              ? <Div className="user-profile__action user-profile__action--music" aria-label="Musiqi" onClick={onMusic} />
+              : <Button variant="ghost" className={`user-profile__action user-profile__action--gift${atTable ? '' : ' user-profile__action--greyscaled'}`} aria-label="Hədiyyə" onClick={onSendGift} />}
+            <Div className="user-profile__action user-profile__action--achievements" aria-label="Nailiyyətlər" onClick={() => { if (userId) setPopup("achievements"); else noServer(); }} />
             <Button variant="ghost" className={`user-profile__action user-profile__action--message${atTable && !self ? '' : ' user-profile__action--greyscaled'}`} aria-label="Mesaj" onClick={onSendMessage} />
           </div>
         </div>

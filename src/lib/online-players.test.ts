@@ -11,8 +11,8 @@ describe("online players summary", () => {
     const s = summarize([row("a", true, 1000), row("b", false, 2000), row("c", false, 3000)], now);
     expect([s.total, s.boys, s.girls]).toEqual([3, 1, 2]);
   });
-  it("drops players silent for more than 45 seconds", () => {
-    const s = summarize([row("a", true, 46_000), row("b", false, 10_000)], now);
+  it("drops expired presence without dropping a brief reconnect", () => {
+    const s = summarize([row("a", true, 121_000), row("b", false, 30_000)], now);
     expect(s.total).toBe(1);
   });
 });

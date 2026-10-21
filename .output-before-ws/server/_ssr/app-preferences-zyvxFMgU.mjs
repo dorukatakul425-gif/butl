@@ -1,0 +1,1278 @@
+import { i as __toESM } from "../_runtime.mjs";
+import { p as useRouterState } from "../_libs/@tanstack/react-router+[...].mjs";
+import { d as require_react, u as require_jsx_runtime } from "../_libs/@radix-ui/react-checkbox+[...].mjs";
+//#region ../../opt/butl/node_modules/.nitro/vite/services/ssr/assets/app-preferences-zyvxFMgU.js
+var import_react = /* @__PURE__ */ __toESM(require_react());
+var import_jsx_runtime = require_jsx_runtime();
+var app_translations_default = {
+	Əsas: {
+		"az": "Əsas",
+		"tr": "Ana sayfa",
+		"ru": "Главная",
+		"en": "Home"
+	},
+	Canlı: {
+		"az": "Canlı",
+		"tr": "Canlı",
+		"ru": "Эфир",
+		"en": "Live"
+	},
+	Oyunlar: {
+		"az": "Oyunlar",
+		"tr": "Oyunlar",
+		"ru": "Игры",
+		"en": "Games"
+	},
+	Mesajlar: {
+		"az": "Mesajlar",
+		"tr": "Mesajlar",
+		"ru": "Сообщения",
+		"en": "Messages"
+	},
+	Profil: {
+		"az": "Profil",
+		"tr": "Profil",
+		"ru": "Профиль",
+		"en": "Profile"
+	},
+	"Əsas menyu": {
+		"az": "Əsas menyu",
+		"tr": "Ana menü",
+		"ru": "Главное меню",
+		"en": "Main menu"
+	},
+	Dil: {
+		"az": "Dil",
+		"tr": "Dil",
+		"ru": "Язык",
+		"en": "Language"
+	},
+	"Gecə rejimi": {
+		"az": "Gecə rejimi",
+		"tr": "Gece modu",
+		"ru": "Тёмная тема",
+		"en": "Dark mode"
+	},
+	"Gündüz rejimi": {
+		"az": "Gündüz rejimi",
+		"tr": "Gündüz modu",
+		"ru": "Светлая тема",
+		"en": "Light mode"
+	},
+	Hesab: {
+		"az": "Hesab",
+		"tr": "Hesap",
+		"ru": "Аккаунт",
+		"en": "Account"
+	},
+	Ümumi: {
+		"az": "Ümumi",
+		"tr": "Genel",
+		"ru": "Обзор",
+		"en": "Overview"
+	},
+	Cüzdan: {
+		"az": "Cüzdan",
+		"tr": "Cüzdan",
+		"ru": "Кошелёк",
+		"en": "Wallet"
+	},
+	Ayarlar: {
+		"az": "Ayarlar",
+		"tr": "Ayarlar",
+		"ru": "Настройки",
+		"en": "Settings"
+	},
+	"Şəxsi məlumatlar": {
+		"az": "Şəxsi məlumatlar",
+		"tr": "Kişisel bilgiler",
+		"ru": "Личные данные",
+		"en": "Personal information"
+	},
+	"Oyunçu nömrəsi": {
+		"az": "Oyunçu nömrəsi",
+		"tr": "Oyuncu numarası",
+		"ru": "Номер игрока",
+		"en": "Player number"
+	},
+	"Qeydiyyat tarixi": {
+		"az": "Qeydiyyat tarixi",
+		"tr": "Kayıt tarihi",
+		"ru": "Дата регистрации",
+		"en": "Joined"
+	},
+	Şəhər: {
+		"az": "Şəhər",
+		"tr": "Şehir",
+		"ru": "Город",
+		"en": "City"
+	},
+	Göstərilməyib: {
+		"az": "Göstərilməyib",
+		"tr": "Belirtilmemiş",
+		"ru": "Не указано",
+		"en": "Not provided"
+	},
+	Öpüşlər: {
+		"az": "Öpüşlər",
+		"tr": "Öpücükler",
+		"ru": "Поцелуи",
+		"en": "Kisses"
+	},
+	Qızıl: {
+		"az": "Qızıl",
+		"tr": "Altın",
+		"ru": "Золото",
+		"en": "Gold"
+	},
+	Geri: {
+		"az": "Geri",
+		"tr": "Geri",
+		"ru": "Назад",
+		"en": "Back"
+	},
+	Görünüş: {
+		"az": "Görünüş",
+		"tr": "Görünüm",
+		"ru": "Оформление",
+		"en": "Appearance"
+	},
+	"Balansı artır": {
+		"az": "Balansı artır",
+		"tr": "Bakiye artır",
+		"ru": "Пополнить",
+		"en": "Top up"
+	},
+	"DAT balansı": {
+		"az": "DAT balansı",
+		"tr": "DAT bakiyesi",
+		"ru": "Баланс DAT",
+		"en": "DAT balance"
+	},
+	"DAT əlavə et": {
+		"az": "DAT əlavə et",
+		"tr": "DAT ekle",
+		"ru": "Добавить DAT",
+		"en": "Add DAT"
+	},
+	"Şəkli dəyiş": {
+		"az": "Şəkli dəyiş",
+		"tr": "Fotoğrafı değiştir",
+		"ru": "Изменить фото",
+		"en": "Change photo"
+	},
+	"Çıxış et": {
+		"az": "Çıxış et",
+		"tr": "Çıkış yap",
+		"ru": "Выйти",
+		"en": "Sign out"
+	},
+	"Yüklənir…": {
+		"az": "Yüklənir…",
+		"tr": "Yükleniyor…",
+		"ru": "Загрузка…",
+		"en": "Loading…"
+	},
+	Bağla: {
+		"az": "Bağla",
+		"tr": "Kapat",
+		"ru": "Закрыть",
+		"en": "Close"
+	},
+	Giriş: {
+		"az": "Giriş",
+		"tr": "Giriş",
+		"ru": "Вход",
+		"en": "Sign in"
+	},
+	Qeydiyyat: {
+		"az": "Qeydiyyat",
+		"tr": "Kayıt",
+		"ru": "Регистрация",
+		"en": "Register"
+	},
+	"Daxil ol": {
+		"az": "Daxil ol",
+		"tr": "Giriş yap",
+		"ru": "Войти",
+		"en": "Sign in"
+	},
+	"Hesab yarat": {
+		"az": "Hesab yarat",
+		"tr": "Hesap oluştur",
+		"ru": "Создать аккаунт",
+		"en": "Create account"
+	},
+	"İstifadəçi adı": {
+		"az": "İstifadəçi adı",
+		"tr": "Kullanıcı adı",
+		"ru": "Имя пользователя",
+		"en": "Username"
+	},
+	"İstifadəçi adını yaz": {
+		"az": "İstifadəçi adını yaz",
+		"tr": "Kullanıcı adını yaz",
+		"ru": "Введите имя пользователя",
+		"en": "Enter username"
+	},
+	Şifrə: {
+		"az": "Şifrə",
+		"tr": "Şifre",
+		"ru": "Пароль",
+		"en": "Password"
+	},
+	"Şifrəni yaz": {
+		"az": "Şifrəni yaz",
+		"tr": "Şifreni yaz",
+		"ru": "Введите пароль",
+		"en": "Enter password"
+	},
+	"Şifrəni gizlət": {
+		"az": "Şifrəni gizlət",
+		"tr": "Şifreyi gizle",
+		"ru": "Скрыть пароль",
+		"en": "Hide password"
+	},
+	"Şifrəni göstər": {
+		"az": "Şifrəni göstər",
+		"tr": "Şifreyi göster",
+		"ru": "Показать пароль",
+		"en": "Show password"
+	},
+	"Oyunda görünən ad": {
+		"az": "Oyunda görünən ad",
+		"tr": "Oyunda görünen ad",
+		"ru": "Отображаемое имя",
+		"en": "Display name"
+	},
+	"Sənə necə müraciət edək?": {
+		"az": "Sənə necə müraciət edək?",
+		"tr": "Sana nasıl hitap edelim?",
+		"ru": "Как вас называть?",
+		"en": "What should we call you?"
+	},
+	Yaş: {
+		"az": "Yaş",
+		"tr": "Yaş",
+		"ru": "Возраст",
+		"en": "Age"
+	},
+	Yaşın: {
+		"az": "Yaşın",
+		"tr": "Yaşın",
+		"ru": "Ваш возраст",
+		"en": "Your age"
+	},
+	Cins: {
+		"az": "Cins",
+		"tr": "Cinsiyet",
+		"ru": "Пол",
+		"en": "Gender"
+	},
+	Kişi: {
+		"az": "Kişi",
+		"tr": "Erkek",
+		"ru": "Мужчина",
+		"en": "Male"
+	},
+	Qadın: {
+		"az": "Qadın",
+		"tr": "Kadın",
+		"ru": "Женщина",
+		"en": "Female"
+	},
+	"Bir az gözlə…": {
+		"az": "Bir az gözlə…",
+		"tr": "Biraz bekle…",
+		"ru": "Подождите…",
+		"en": "Please wait…"
+	},
+	"Hələ hesabın yoxdur?": {
+		"az": "Hələ hesabın yoxdur?",
+		"tr": "Henüz hesabın yok mu?",
+		"ru": "Ещё нет аккаунта?",
+		"en": "Don't have an account?"
+	},
+	"Artıq hesabın var?": {
+		"az": "Artıq hesabın var?",
+		"tr": "Zaten hesabın var mı?",
+		"ru": "Уже есть аккаунт?",
+		"en": "Already have an account?"
+	},
+	"Qeydiyyatdan keç": {
+		"az": "Qeydiyyatdan keç",
+		"tr": "Kayıt ol",
+		"ru": "Зарегистрироваться",
+		"en": "Register"
+	},
+	"Əyləncənin dadını çıxarmağa hazırsan?": {
+		"az": "Əyləncənin dadını çıxarmağa hazırsan?",
+		"tr": "Eğlenmeye hazır mısın?",
+		"ru": "Готовы повеселиться?",
+		"en": "Ready to have fun?"
+	},
+	"Tanışlıq buradan başlayır": {
+		"az": "Tanışlıq buradan başlayır",
+		"tr": "Tanışma burada başlar",
+		"ru": "Знакомство начинается здесь",
+		"en": "Connections start here"
+	},
+	"Söhbətə qaldığın yerdən davam et.": {
+		"az": "Söhbətə qaldığın yerdən davam et.",
+		"tr": "Sohbete kaldığın yerden devam et.",
+		"ru": "Продолжайте общение.",
+		"en": "Pick up where you left off."
+	},
+	"Öz hesabını yarat, yeni insanlarla tanış ol.": {
+		"az": "Öz hesabını yarat, yeni insanlarla tanış ol.",
+		"tr": "Hesabını oluştur, yeni insanlarla tanış ol.",
+		"ru": "Создайте аккаунт и знакомьтесь.",
+		"en": "Create an account and meet new people."
+	},
+	"Hesaba giriş üsulu": {
+		"az": "Hesaba giriş üsulu",
+		"tr": "Hesaba giriş yöntemi",
+		"ru": "Способ входа",
+		"en": "Account access"
+	},
+	"Şifrən heç vaxt digər oyunçulara göstərilmir.": {
+		"az": "Şifrən heç vaxt digər oyunçulara göstərilmir.",
+		"tr": "Şifren diğer oyunculara asla gösterilmez.",
+		"ru": "Ваш пароль не виден другим игрокам.",
+		"en": "Your password is never shown to other players."
+	},
+	"Hazırda xidmətə qoşulmaq mümkün deyil. Bir az sonra yenidən cəhd et.": {
+		"az": "Hazırda xidmətə qoşulmaq mümkün deyil. Bir az sonra yenidən cəhd et.",
+		"tr": "Şu anda bağlantı kurulamıyor. Biraz sonra tekrar dene.",
+		"ru": "Сервис недоступен. Попробуйте позже.",
+		"en": "Service unavailable. Please try again later."
+	},
+	"İstifadəçi adı ən azı 3 hərf və ya rəqəmdən ibarət olmalıdır.": {
+		"az": "İstifadəçi adı ən azı 3 hərf və ya rəqəmdən ibarət olmalıdır.",
+		"tr": "Kullanıcı adı en az 3 harf veya rakam olmalı.",
+		"ru": "Имя пользователя должно содержать минимум 3 буквы или цифры.",
+		"en": "Username must contain at least 3 letters or numbers."
+	},
+	"Şifrə ən azı 6 simvoldan ibarət olmalıdır.": {
+		"az": "Şifrə ən azı 6 simvoldan ibarət olmalıdır.",
+		"tr": "Şifre en az 6 karakter olmalı.",
+		"ru": "Пароль должен содержать минимум 6 символов.",
+		"en": "Password must contain at least 6 characters."
+	},
+	"İstifadəçi adı və ya şifrə yanlışdır.": {
+		"az": "İstifadəçi adı və ya şifrə yanlışdır.",
+		"tr": "Kullanıcı adı veya şifre yanlış.",
+		"ru": "Неверное имя пользователя или пароль.",
+		"en": "Incorrect username or password."
+	},
+	"Bu istifadəçi adı artıq istifadə olunur.": {
+		"az": "Bu istifadəçi adı artıq istifadə olunur.",
+		"tr": "Bu kullanıcı adı zaten kullanılıyor.",
+		"ru": "Это имя пользователя уже занято.",
+		"en": "This username is already taken."
+	},
+	"Qeydiyyat alınmadı. Məlumatlarını yoxlayıb yenidən cəhd et.": {
+		"az": "Qeydiyyat alınmadı. Məlumatlarını yoxlayıb yenidən cəhd et.",
+		"tr": "Kayıt başarısız. Bilgilerini kontrol edip tekrar dene.",
+		"ru": "Регистрация не удалась. Проверьте данные.",
+		"en": "Registration failed. Check your details and try again."
+	},
+	"Hesab yaradıldı. Daxil olmaq üçün hesabın təsdiqlənməlidir.": {
+		"az": "Hesab yaradıldı. Daxil olmaq üçün hesabın təsdiqlənməlidir.",
+		"tr": "Hesap oluşturuldu. Giriş için hesabını doğrulamalısın.",
+		"ru": "Аккаунт создан. Подтвердите его для входа.",
+		"en": "Account created. Please verify it before signing in."
+	},
+	"Bağlantıda problem yarandı. Yenidən cəhd et.": {
+		"az": "Bağlantıda problem yarandı. Yenidən cəhd et.",
+		"tr": "Bağlantı sorunu oluştu. Tekrar dene.",
+		"ru": "Ошибка подключения. Попробуйте снова.",
+		"en": "Connection problem. Please try again."
+	},
+	"Tanış ol": {
+		"az": "Tanış ol",
+		"tr": "Tanış",
+		"ru": "Знакомьтесь",
+		"en": "Meet people"
+	},
+	"Yeni insanlarla tanış ol, söhbətə başla.": {
+		"az": "Yeni insanlarla tanış ol, söhbətə başla.",
+		"tr": "Yeni insanlarla tanış ol, sohbete başla.",
+		"ru": "Знакомьтесь и начинайте общение.",
+		"en": "Meet new people and start chatting."
+	},
+	İstifadəçilər: {
+		"az": "İstifadəçilər",
+		"tr": "Kullanıcılar",
+		"ru": "Пользователи",
+		"en": "People"
+	},
+	izlə: {
+		"az": "izlə",
+		"tr": "takip et",
+		"ru": "подписаться",
+		"en": "follow"
+	},
+	"Yaxında əlavə olunacaq": {
+		"az": "Yaxında əlavə olunacaq",
+		"tr": "Yakında eklenecek",
+		"ru": "Скоро появится",
+		"en": "Coming soon"
+	},
+	"Mesajlar tezliklə.": {
+		"az": "Mesajlar tezliklə.",
+		"tr": "Mesajlar yakında.",
+		"ru": "Сообщения скоро появятся.",
+		"en": "Messages are coming soon."
+	},
+	"Oyuna qoşul": {
+		"az": "Oyuna qoşul",
+		"tr": "Oyuna katıl",
+		"ru": "Присоединиться к игре",
+		"en": "Join game"
+	},
+	"Oyuna qoşulmaq üçün": {
+		"az": "Oyuna qoşulmaq üçün",
+		"tr": "Oyuna katılmak için",
+		"ru": "Чтобы присоединиться",
+		"en": "To join the game"
+	},
+	klikləyin: {
+		"az": "klikləyin",
+		"tr": "tıklayın",
+		"ru": "нажмите",
+		"en": "tap here"
+	},
+	"Oyuna qoşulmaq üçün klikləyin": {
+		"az": "Oyuna qoşulmaq üçün klikləyin",
+		"tr": "Oyuna katılmak için tıklayın",
+		"ru": "Нажмите для входа в игру",
+		"en": "Tap to join the game"
+	},
+	"Şüşə oyunu": {
+		"az": "Şüşə oyunu",
+		"tr": "Şişe oyunu",
+		"ru": "Игра в бутылочку",
+		"en": "Spin the bottle"
+	},
+	"Oyunçu #": {
+		"az": "Oyunçu #",
+		"tr": "Oyuncu #",
+		"ru": "Игрок #",
+		"en": "Player #"
+	},
+	"Yalnız şəkil faylı seçin.": {
+		"az": "Yalnız şəkil faylı seçin.",
+		"tr": "Yalnızca fotoğraf seçin.",
+		"ru": "Выберите изображение.",
+		"en": "Please choose an image."
+	},
+	"Şəkil 5 MB-dan kiçik olmalıdır.": {
+		"az": "Şəkil 5 MB-dan kiçik olmalıdır.",
+		"tr": "Fotoğraf 5 MB'dan küçük olmalı.",
+		"ru": "Изображение должно быть меньше 5 МБ.",
+		"en": "Image must be smaller than 5 MB."
+	},
+	"Şəkil yüklənmədi.": {
+		"az": "Şəkil yüklənmədi.",
+		"tr": "Fotoğraf yüklenemedi.",
+		"ru": "Не удалось загрузить фото.",
+		"en": "Photo upload failed."
+	},
+	"Şəkil yadda saxlanılmadı.": {
+		"az": "Şəkil yadda saxlanılmadı.",
+		"tr": "Fotoğraf kaydedilemedi.",
+		"ru": "Фото не сохранено.",
+		"en": "Photo was not saved."
+	},
+	Mağaza: {
+		"az": "Mağaza",
+		"tr": "Mağaza",
+		"ru": "Магазин",
+		"en": "Shop"
+	},
+	"Balansın:": {
+		"az": "Balansın:",
+		"tr": "Bakiyen:",
+		"ru": "Ваш баланс:",
+		"en": "Your balance:"
+	},
+	Ürək: {
+		"az": "Ürək",
+		"tr": "Kalp",
+		"ru": "Сердце",
+		"en": "Heart"
+	},
+	"Mənə uyğun paketi tap": {
+		"az": "Mənə uyğun paketi tap",
+		"tr": "Bana uygun paketi bul",
+		"ru": "Подобрать пакет",
+		"en": "Find my package"
+	},
+	"Büdcə (AZN)": {
+		"az": "Büdcə (AZN)",
+		"tr": "Bütçe (AZN)",
+		"ru": "Бюджет (AZN)",
+		"en": "Budget (AZN)"
+	},
+	"Büdcə AZN": {
+		"az": "Büdcə AZN",
+		"tr": "Bütçe AZN",
+		"ru": "Бюджет AZN",
+		"en": "Budget AZN"
+	},
+	"Nə üçün? məs: dostuma hədiyyə": {
+		"az": "Nə üçün? məs: dostuma hədiyyə",
+		"tr": "Ne için? Ör: arkadaşıma hediye",
+		"ru": "Для чего? Например подарок другу",
+		"en": "For what? e.g. a gift for a friend"
+	},
+	"Nə almaq istəyirsən": {
+		"az": "Nə almaq istəyirsən",
+		"tr": "Ne almak istiyorsun",
+		"ru": "Что хотите купить",
+		"en": "What would you like to buy"
+	},
+	"Büdcəni və nə almaq istədiyini yaz.": {
+		"az": "Büdcəni və nə almaq istədiyini yaz.",
+		"tr": "Bütçeni ve ne almak istediğini yaz.",
+		"ru": "Укажите бюджет и покупку.",
+		"en": "Enter your budget and what you want to buy."
+	},
+	"Düşünür…": {
+		"az": "Düşünür…",
+		"tr": "Düşünüyor…",
+		"ru": "Подбираем…",
+		"en": "Thinking…"
+	},
+	"Tövsiyə al": {
+		"az": "Tövsiyə al",
+		"tr": "Öneri al",
+		"ru": "Получить рекомендацию",
+		"en": "Get recommendation"
+	},
+	"Balansı Artır ·": {
+		"az": "Balansı Artır ·",
+		"tr": "Bakiye artır ·",
+		"ru": "Пополнить ·",
+		"en": "Top up ·"
+	},
+	"Ödəniş PAYRIFF ilə təhlükəsiz həyata keçirilir": {
+		"az": "Ödəniş PAYRIFF ilə təhlükəsiz həyata keçirilir",
+		"tr": "Ödeme PAYRIFF ile güvenle yapılır",
+		"ru": "Безопасная оплата через PAYRIFF",
+		"en": "Secure payment through PAYRIFF"
+	},
+	"Xəta baş verdi.": {
+		"az": "Xəta baş verdi.",
+		"tr": "Hata oluştu.",
+		"ru": "Произошла ошибка.",
+		"en": "Something went wrong."
+	},
+	"Canlı otaqlar": {
+		"az": "Canlı otaqlar",
+		"tr": "Canlı odalar",
+		"ru": "Комнаты эфира",
+		"en": "Live rooms"
+	},
+	"Bu ID ilə otaq tapılmadı": {
+		"az": "Bu ID ilə otaq tapılmadı",
+		"tr": "Bu ID ile oda bulunamadı",
+		"ru": "Комната с таким ID не найдена",
+		"en": "No room found with this ID"
+	},
+	"nəfər danışır": {
+		"az": "nəfər danışır",
+		"tr": "kişi konuşuyor",
+		"ru": "человек общаются",
+		"en": "people talking"
+	},
+	Otağım: {
+		"az": "Otağım",
+		"tr": "Odam",
+		"ru": "Моя комната",
+		"en": "My room"
+	},
+	"Otaq adı və ya ID": {
+		"az": "Otaq adı və ya ID",
+		"tr": "Oda adı veya ID",
+		"ru": "Название или ID комнаты",
+		"en": "Room name or ID"
+	},
+	Qoşul: {
+		"az": "Qoşul",
+		"tr": "Katıl",
+		"ru": "Присоединиться",
+		"en": "Join"
+	},
+	"Hələ aktiv otaq yoxdur.": {
+		"az": "Hələ aktiv otaq yoxdur.",
+		"tr": "Henüz aktif oda yok.",
+		"ru": "Пока нет активных комнат.",
+		"en": "No active rooms yet."
+	},
+	"İlk otağı sən yarat!": {
+		"az": "İlk otağı sən yarat!",
+		"tr": "İlk odayı sen oluştur!",
+		"ru": "Создайте первую комнату!",
+		"en": "Create the first room!"
+	},
+	"🎥 Görüntülü": {
+		"az": "🎥 Görüntülü",
+		"tr": "🎥 Görüntülü",
+		"ru": "🎥 Видео",
+		"en": "🎥 Video"
+	},
+	"🎙️ Səsli": {
+		"az": "🎙️ Səsli",
+		"tr": "🎙️ Sesli",
+		"ru": "🎙️ Голос",
+		"en": "🎙️ Voice"
+	},
+	"· sənin otağın": {
+		"az": "· sənin otağın",
+		"tr": "· senin odan",
+		"ru": "· ваша комната",
+		"en": "· your room"
+	},
+	"Boşdur — ilk sən qoşul": {
+		"az": "Boşdur — ilk sən qoşul",
+		"tr": "Boş — ilk sen katıl",
+		"ru": "Пусто — присоединитесь первым",
+		"en": "Empty — be the first to join"
+	},
+	"Otağını aç": {
+		"az": "Otağını aç",
+		"tr": "Odanı aç",
+		"ru": "Открыть комнату",
+		"en": "Open your room"
+	},
+	"Otaq adı": {
+		"az": "Otaq adı",
+		"tr": "Oda adı",
+		"ru": "Название комнаты",
+		"en": "Room name"
+	},
+	"Görüntülü otaq": {
+		"az": "Görüntülü otaq",
+		"tr": "Görüntülü oda",
+		"ru": "Видеокомната",
+		"en": "Video room"
+	},
+	"Səsli otaq": {
+		"az": "Səsli otaq",
+		"tr": "Sesli oda",
+		"ru": "Голосовая комната",
+		"en": "Voice room"
+	},
+	"Otaq növü": {
+		"az": "Otaq növü",
+		"tr": "Oda türü",
+		"ru": "Тип комнаты",
+		"en": "Room type"
+	},
+	"Yuvarlaq yerlər, səs": {
+		"az": "Yuvarlaq yerlər, səs",
+		"tr": "Yuvarlak koltuklar, ses",
+		"ru": "Круглые места, голос",
+		"en": "Round seats, voice"
+	},
+	"Böyük kamera pəncərələri": {
+		"az": "Böyük kamera pəncərələri",
+		"tr": "Büyük kamera pencereleri",
+		"ru": "Большие окна камеры",
+		"en": "Large camera windows"
+	},
+	"Otaq şəkli": {
+		"az": "Otaq şəkli",
+		"tr": "Oda görseli",
+		"ru": "Обложка комнаты",
+		"en": "Room cover"
+	},
+	"Yaradılır…": {
+		"az": "Yaradılır…",
+		"tr": "Oluşturuluyor…",
+		"ru": "Создание…",
+		"en": "Creating…"
+	},
+	"Otağa gir": {
+		"az": "Otağa gir",
+		"tr": "Odaya gir",
+		"ru": "Войти в комнату",
+		"en": "Enter room"
+	},
+	"Yarat və gir": {
+		"az": "Yarat və gir",
+		"tr": "Oluştur ve gir",
+		"ru": "Создать и войти",
+		"en": "Create and enter"
+	},
+	Oyunçu: {
+		"az": "Oyunçu",
+		"tr": "Oyuncu",
+		"ru": "Игрок",
+		"en": "Player"
+	},
+	"hədiyyə göndərdi": {
+		"az": "hədiyyə göndərdi",
+		"tr": "hediye gönderdi",
+		"ru": "отправил подарок",
+		"en": "sent a gift"
+	},
+	"Hədiyyənin səsini aç": {
+		"az": "Hədiyyənin səsini aç",
+		"tr": "Hediye sesini aç",
+		"ru": "Включить звук подарка",
+		"en": "Unmute gift"
+	},
+	"Hədiyyəni bağla": {
+		"az": "Hədiyyəni bağla",
+		"tr": "Hediyeyi kapat",
+		"ru": "Закрыть подарок",
+		"en": "Close gift"
+	},
+	"Otağa xoş gəldin! Hörmətli ünsiyyət qaydalarına əməl et.": {
+		"az": "Otağa xoş gəldin! Hörmətli ünsiyyət qaydalarına əməl et.",
+		"tr": "Odaya hoş geldin! Saygılı iletişim kur.",
+		"ru": "Добро пожаловать! Общайтесь уважительно.",
+		"en": "Welcome! Please be respectful."
+	},
+	"Otaq sahibi otağı bağladı": {
+		"az": "Otaq sahibi otağı bağladı",
+		"tr": "Oda sahibi odayı kapattı",
+		"ru": "Владелец закрыл комнату",
+		"en": "The owner closed the room"
+	},
+	"Əvvəlcə masaya otur": {
+		"az": "Əvvəlcə masaya otur",
+		"tr": "Önce masaya otur",
+		"ru": "Сначала займите место",
+		"en": "Take a seat first"
+	},
+	"Mikrofona icazə verilməyib": {
+		"az": "Mikrofona icazə verilməyib",
+		"tr": "Mikrofon izni verilmedi",
+		"ru": "Нет доступа к микрофону",
+		"en": "Microphone permission denied"
+	},
+	"Kameraya icazə verilməyib": {
+		"az": "Kameraya icazə verilməyib",
+		"tr": "Kamera izni verilmedi",
+		"ru": "Нет доступа к камере",
+		"en": "Camera permission denied"
+	},
+	"Yer tutulub və ya mikrofon icazəsi verilməyib": {
+		"az": "Yer tutulub və ya mikrofon icazəsi verilməyib",
+		"tr": "Koltuk dolu veya mikrofon izni verilmedi",
+		"ru": "Место занято или нет доступа к микрофону",
+		"en": "Seat taken or microphone permission denied"
+	},
+	Sən: {
+		"az": "Sən",
+		"tr": "Sen",
+		"ru": "Вы",
+		"en": "You"
+	},
+	"Otaqdan çıx": {
+		"az": "Otaqdan çıx",
+		"tr": "Odadan çık",
+		"ru": "Выйти из комнаты",
+		"en": "Leave room"
+	},
+	"Qoşulur…": {
+		"az": "Qoşulur…",
+		"tr": "Bağlanıyor…",
+		"ru": "Подключение…",
+		"en": "Connecting…"
+	},
+	"Bağlantı xətası": {
+		"az": "Bağlantı xətası",
+		"tr": "Bağlantı hatası",
+		"ru": "Ошибка подключения",
+		"en": "Connection error"
+	},
+	"Söhbəti gizlət": {
+		"az": "Söhbəti gizlət",
+		"tr": "Sohbeti gizle",
+		"ru": "Скрыть чат",
+		"en": "Hide chat"
+	},
+	"Yerdən qalx": {
+		"az": "Yerdən qalx",
+		"tr": "Koltuktan kalk",
+		"ru": "Освободить место",
+		"en": "Leave seat"
+	},
+	sənə: {
+		"az": "sənə",
+		"tr": "sana",
+		"ru": "вам",
+		"en": "to you"
+	},
+	Səs: {
+		"az": "Səs",
+		"tr": "Ses",
+		"ru": "Звук",
+		"en": "Sound"
+	},
+	"Bir şey söylə…": {
+		"az": "Bir şey söylə…",
+		"tr": "Bir şey söyle…",
+		"ru": "Напишите что-нибудь…",
+		"en": "Say something…"
+	},
+	Göndər: {
+		"az": "Göndər",
+		"tr": "Gönder",
+		"ru": "Отправить",
+		"en": "Send"
+	},
+	"Hədiyyə göndər": {
+		"az": "Hədiyyə göndər",
+		"tr": "Hediye gönder",
+		"ru": "Отправить подарок",
+		"en": "Send gift"
+	},
+	Hədiyyələr: {
+		"az": "Hədiyyələr",
+		"tr": "Hediyeler",
+		"ru": "Подарки",
+		"en": "Gifts"
+	},
+	Hamıya: {
+		"az": "Hamıya",
+		"tr": "Herkese",
+		"ru": "Всем",
+		"en": "Everyone"
+	},
+	SƏSLİ: {
+		"az": "SƏSLİ",
+		"tr": "SESLİ",
+		"ru": "СО ЗВУКОМ",
+		"en": "SOUND"
+	},
+	"Səsli hədiyyə": {
+		"az": "Səsli hədiyyə",
+		"tr": "Sesli hediye",
+		"ru": "Звуковой подарок",
+		"en": "Sound gift"
+	},
+	"Hədiyyə göndərilmədi. Bağlantını yoxla.": {
+		"az": "Hədiyyə göndərilmədi. Bağlantını yoxla.",
+		"tr": "Hediye gönderilemedi. Bağlantını kontrol et.",
+		"ru": "Подарок не отправлен. Проверьте соединение.",
+		"en": "Gift not sent. Check your connection."
+	},
+	"Göndərilir…": {
+		"az": "Göndərilir…",
+		"tr": "Gönderiliyor…",
+		"ru": "Отправка…",
+		"en": "Sending…"
+	},
+	"Otaq ayarları": {
+		"az": "Otaq ayarları",
+		"tr": "Oda ayarları",
+		"ru": "Настройки комнаты",
+		"en": "Room settings"
+	},
+	"Otaq yeniləndi": {
+		"az": "Otaq yeniləndi",
+		"tr": "Oda güncellendi",
+		"ru": "Комната обновлена",
+		"en": "Room updated"
+	},
+	Səsli: {
+		"az": "Səsli",
+		"tr": "Sesli",
+		"ru": "Голос",
+		"en": "Voice"
+	},
+	Görüntülü: {
+		"az": "Görüntülü",
+		"tr": "Görüntülü",
+		"ru": "Видео",
+		"en": "Video"
+	},
+	"Otağı bağla və sil": {
+		"az": "Otağı bağla və sil",
+		"tr": "Odayı kapat ve sil",
+		"ru": "Закрыть и удалить комнату",
+		"en": "Close and delete room"
+	},
+	"Statuslar yüklənmədi.": {
+		"az": "Statuslar yüklənmədi.",
+		"tr": "Durumlar yüklenemedi.",
+		"ru": "Не удалось загрузить статусы.",
+		"en": "Statuses could not load."
+	},
+	"Status əlavə et": {
+		"az": "Status əlavə et",
+		"tr": "Durum ekle",
+		"ru": "Добавить статус",
+		"en": "Add status"
+	},
+	"Hələ status yoxdur — ilk sən paylaş ✨": {
+		"az": "Hələ status yoxdur — ilk sən paylaş ✨",
+		"tr": "Henüz durum yok — ilk sen paylaş ✨",
+		"ru": "Пока нет статусов — поделитесь первым ✨",
+		"en": "No statuses yet — share the first ✨"
+	},
+	"Video faylı seçin.": {
+		"az": "Video faylı seçin.",
+		"tr": "Video seçin.",
+		"ru": "Выберите видео.",
+		"en": "Choose a video."
+	},
+	"Şəkil faylı seçin.": {
+		"az": "Şəkil faylı seçin.",
+		"tr": "Fotoğraf seçin.",
+		"ru": "Выберите изображение.",
+		"en": "Choose an image."
+	},
+	"Video 50 MB-dan kiçik olmalıdır.": {
+		"az": "Video 50 MB-dan kiçik olmalıdır.",
+		"tr": "Video 50 MB'dan küçük olmalı.",
+		"ru": "Видео должно быть меньше 50 МБ.",
+		"en": "Video must be smaller than 50 MB."
+	},
+	"Şəkil 10 MB-dan kiçik olmalıdır.": {
+		"az": "Şəkil 10 MB-dan kiçik olmalıdır.",
+		"tr": "Fotoğraf 10 MB'dan küçük olmalı.",
+		"ru": "Фото должно быть меньше 10 МБ.",
+		"en": "Image must be smaller than 10 MB."
+	},
+	"Status paylaşılmadı.": {
+		"az": "Status paylaşılmadı.",
+		"tr": "Durum paylaşılamadı.",
+		"ru": "Статус не опубликован.",
+		"en": "Status could not be shared."
+	},
+	Önizləmə: {
+		"az": "Önizləmə",
+		"tr": "Önizleme",
+		"ru": "Предпросмотр",
+		"en": "Preview"
+	},
+	"Video seç (max 50 MB)": {
+		"az": "Video seç (max 50 MB)",
+		"tr": "Video seç (en fazla 50 MB)",
+		"ru": "Выбрать видео (до 50 МБ)",
+		"en": "Choose video (max 50 MB)"
+	},
+	"Şəkil seç (max 10 MB)": {
+		"az": "Şəkil seç (max 10 MB)",
+		"tr": "Fotoğraf seç (en fazla 10 MB)",
+		"ru": "Выбрать фото (до 10 МБ)",
+		"en": "Choose image (max 10 MB)"
+	},
+	"Açıqlama əlavə et…": {
+		"az": "Açıqlama əlavə et…",
+		"tr": "Açıklama ekle…",
+		"ru": "Добавьте описание…",
+		"en": "Add a caption…"
+	},
+	Yazı: {
+		"az": "Yazı",
+		"tr": "Metin",
+		"ru": "Текст",
+		"en": "Text"
+	},
+	Şəkil: {
+		"az": "Şəkil",
+		"tr": "Fotoğraf",
+		"ru": "Фото",
+		"en": "Photo"
+	},
+	Paylaş: {
+		"az": "Paylaş",
+		"tr": "Paylaş",
+		"ru": "Опубликовать",
+		"en": "Share"
+	},
+	"Status silinmədi.": {
+		"az": "Status silinmədi.",
+		"tr": "Durum silinemedi.",
+		"ru": "Статус не удалён.",
+		"en": "Status could not be deleted."
+	},
+	"Səsi aç": {
+		"az": "Səsi aç",
+		"tr": "Sesi aç",
+		"ru": "Включить звук",
+		"en": "Unmute"
+	},
+	"Səsi bağla": {
+		"az": "Səsi bağla",
+		"tr": "Sesi kapat",
+		"ru": "Выключить звук",
+		"en": "Mute"
+	},
+	"Əvvəlki status": {
+		"az": "Əvvəlki status",
+		"tr": "Önceki durum",
+		"ru": "Предыдущий статус",
+		"en": "Previous status"
+	},
+	"Növbəti status": {
+		"az": "Növbəti status",
+		"tr": "Sonraki durum",
+		"ru": "Следующий статус",
+		"en": "Next status"
+	},
+	Bəyən: {
+		"az": "Bəyən",
+		"tr": "Beğen",
+		"ru": "Нравится",
+		"en": "Like"
+	},
+	Şərhlər: {
+		"az": "Şərhlər",
+		"tr": "Yorumlar",
+		"ru": "Комментарии",
+		"en": "Comments"
+	},
+	"Şərhlər yüklənmədi.": {
+		"az": "Şərhlər yüklənmədi.",
+		"tr": "Yorumlar yüklenemedi.",
+		"ru": "Комментарии не загружены.",
+		"en": "Comments could not load."
+	},
+	"Şərh göndərilmədi.": {
+		"az": "Şərh göndərilmədi.",
+		"tr": "Yorum gönderilemedi.",
+		"ru": "Комментарий не отправлен.",
+		"en": "Comment could not be sent."
+	},
+	"İlk şərhi sən yaz 💬": {
+		"az": "İlk şərhi sən yaz 💬",
+		"tr": "İlk yorumu sen yaz 💬",
+		"ru": "Напишите первый комментарий 💬",
+		"en": "Write the first comment 💬"
+	},
+	"Şərhi sil": {
+		"az": "Şərhi sil",
+		"tr": "Yorumu sil",
+		"ru": "Удалить комментарий",
+		"en": "Delete comment"
+	},
+	"Şərh silinmədi.": {
+		"az": "Şərh silinmədi.",
+		"tr": "Yorum silinemedi.",
+		"ru": "Комментарий не удалён.",
+		"en": "Comment could not be deleted."
+	},
+	"Şərh yaz…": {
+		"az": "Şərh yaz…",
+		"tr": "Yorum yaz…",
+		"ru": "Напишите комментарий…",
+		"en": "Write a comment…"
+	},
+	"Şərh yaz": {
+		"az": "Şərh yaz",
+		"tr": "Yorum yaz",
+		"ru": "Написать комментарий",
+		"en": "Write a comment"
+	},
+	"hələ heç kim oynamır": {
+		"az": "hələ heç kim oynamır",
+		"tr": "henüz kimse oynamıyor",
+		"ru": "пока никто не играет",
+		"en": "nobody is playing yet"
+	},
+	"nəfər indi oynayır": {
+		"az": "nəfər indi oynayır",
+		"tr": "kişi şu an oynuyor",
+		"ru": "человек играют сейчас",
+		"en": "people playing now"
+	},
+	Oğlan: {
+		"az": "Oğlan",
+		"tr": "Erkek",
+		"ru": "Парень",
+		"en": "Male"
+	},
+	Qız: {
+		"az": "Qız",
+		"tr": "Kız",
+		"ru": "Девушка",
+		"en": "Female"
+	},
+	POPULYAR: {
+		"az": "POPULYAR",
+		"tr": "POPÜLER",
+		"ru": "ПОПУЛЯРНЫЙ",
+		"en": "POPULAR"
+	},
+	Video: {
+		"az": "Video",
+		"tr": "Video",
+		"ru": "Видео",
+		"en": "Video"
+	},
+	Mətn: {
+		"az": "Mətn",
+		"tr": "Metin",
+		"ru": "Текст",
+		"en": "Text"
+	},
+	"Sevgilini Tap": {
+		"az": "Sevgilini Tap",
+		"tr": "Sevgilini Bul",
+		"ru": "Найди любовь",
+		"en": "Find your love"
+	},
+	"Sevgilini Tap — Şüşə oyunu": {
+		"az": "Sevgilini Tap — Şüşə oyunu",
+		"tr": "Sevgilini Bul — Şişe oyunu",
+		"ru": "Найди любовь — Бутылочка",
+		"en": "Find your love — Spin the bottle"
+	},
+	"Spin the Bottle — Öp və tanış ol, sevgini tap": {
+		"az": "Spin the Bottle — Öp və tanış ol, sevgini tap",
+		"tr": "Spin the Bottle — Öp, tanış ve sevgini bul",
+		"ru": "Spin the Bottle — Целуй, знакомься, найди любовь",
+		"en": "Spin the Bottle — Kiss, meet and find love"
+	},
+	Bildirişlər: {
+		"az": "Bildirişlər",
+		"tr": "Bildirimler",
+		"ru": "Уведомления",
+		"en": "Notifications"
+	},
+	"Bildirişlər yaxında əlavə olunacaq": {
+		"az": "Bildirişlər yaxında əlavə olunacaq",
+		"tr": "Bildirimler yakında eklenecek",
+		"ru": "Уведомления скоро появятся",
+		"en": "Notifications are coming soon"
+	},
+	oğlan: {
+		"az": "oğlan",
+		"tr": "erkek",
+		"ru": "парень",
+		"en": "male"
+	},
+	qız: {
+		"az": "qız",
+		"tr": "kız",
+		"ru": "девушка",
+		"en": "female"
+	},
+	"hər fırlanış yeni tanışlıq, hər oyun unudulmaz bir an. Şüşəni fırlat və əyləncəyə qoşul!": {
+		"az": "hər fırlanış yeni tanışlıq, hər oyun unudulmaz bir an. Şüşəni fırlat və əyləncəyə qoşul!",
+		"tr": "her çevirişte yeni bir tanışma, her oyunda unutulmaz bir an. Şişeyi çevir ve eğlenceye katıl!",
+		"ru": "каждый поворот — новое знакомство, каждая игра — незабываемый момент. Крути бутылочку и присоединяйся!",
+		"en": "every spin is a new connection, every game an unforgettable moment. Spin the bottle and join the fun!"
+	},
+	"Admin təsdiqi gözləyir": {
+		"az": "Admin təsdiqi gözləyir",
+		"tr": "Admin onayı bekleniyor",
+		"ru": "Ожидает одобрения администратора",
+		"en": "Waiting for admin approval"
+	},
+	"Admin tərəfindən rədd edildi": {
+		"az": "Admin tərəfindən rədd edildi",
+		"tr": "Admin tarafından reddedildi",
+		"ru": "Отклонено администратором",
+		"en": "Rejected by admin"
+	}
+};
+var languages = [
+	{
+		code: "az",
+		name: "Azərbaycan",
+		flag: "🇦🇿"
+	},
+	{
+		code: "tr",
+		name: "Türkçe",
+		flag: "🇹🇷"
+	},
+	{
+		code: "ru",
+		name: "Русский",
+		flag: "🇷🇺"
+	},
+	{
+		code: "en",
+		name: "English",
+		flag: "🇬🇧"
+	}
+];
+var PREFERENCE_KEY = "butl.app.preferences.v1";
+var initial = {
+	language: "az",
+	theme: "light"
+};
+var current = initial;
+var listeners = /* @__PURE__ */ new Set();
+function parsePreferences(raw) {
+	try {
+		const p = JSON.parse(raw ?? "{}");
+		return {
+			language: languages.some((l) => l.code === p?.language) ? p.language : "az",
+			theme: p?.theme === "dark" ? "dark" : "light"
+		};
+	} catch {
+		return initial;
+	}
+}
+function emit() {
+	listeners.forEach((fn) => fn());
+}
+function setPreferences(next) {
+	current = {
+		...current,
+		...next
+	};
+	try {
+		localStorage.setItem(PREFERENCE_KEY, JSON.stringify(current));
+	} catch {}
+	emit();
+}
+function usePreferences() {
+	return (0, import_react.useSyncExternalStore)((fn) => {
+		listeners.add(fn);
+		return () => listeners.delete(fn);
+	}, () => current, () => initial);
+}
+function translate(text, language = current.language) {
+	if (typeof window !== "undefined" && window.location.pathname === "/game") language = "az";
+	return app_translations_default[text]?.[language] ?? text;
+}
+var GameScope = (0, import_react.createContext)(false);
+function useAppTranslation() {
+	const p = usePreferences();
+	const game = (0, import_react.useContext)(GameScope);
+	return (text) => translate(text, game ? "az" : p.language);
+}
+function PreferencesProvider({ children }) {
+	const preferences = usePreferences();
+	const game = useRouterState({ select: (s) => s.location.pathname }) === "/game";
+	(0, import_react.useEffect)(() => {
+		try {
+			current = parsePreferences(localStorage.getItem(PREFERENCE_KEY));
+			emit();
+		} catch {}
+		const onStorage = (e) => {
+			if (e.key === "butl.app.preferences.v1") {
+				current = parsePreferences(e.newValue);
+				emit();
+			}
+		};
+		window.addEventListener("storage", onStorage);
+		return () => window.removeEventListener("storage", onStorage);
+	}, []);
+	(0, import_react.useEffect)(() => {
+		document.documentElement.lang = game ? "az" : preferences.language;
+	}, [game, preferences.language]);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GameScope, {
+		value: game,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: game ? void 0 : "app-preferences",
+			"data-theme": game ? void 0 : preferences.theme,
+			children
+		})
+	});
+}
+//#endregion
+export { useAppTranslation as a, translate as i, languages as n, usePreferences as o, setPreferences as r, PreferencesProvider as t };

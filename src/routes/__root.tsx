@@ -12,11 +12,15 @@ import { useEffect, type ReactNode } from "react";
 
 import { PreferencesProvider } from "@/lib/app-preferences";
 import { BanGuard } from "@/components/ban-guard";
+import { SiteRefreshHost } from '@/components/site-refresh-host';
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { showInspectorNotice } from "../lib/inspector-notice";
+import { installGlobalErrorReporting, reportClientError } from "../lib/client-error-report";
 
 function NotFoundComponent() {
+  // Stale links/updates must not strand a player on a dead page.
+  useEffect(() => { const t = window.setTimeout(() => window.location.replace('/'), 1500); return () => window.clearTimeout(t); }, []);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -38,12 +42,25 @@ function NotFoundComponent() {
   );
 }
 
+// Recent automatic recoveries; a crash loop stops retrying and shows the page below.
+const recoveries: number[] = [];
+
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportClientError(error, "root-boundary");
+    const now = Date.now();
+    while (recoveries.length && now - recoveries[0]! > 60000) recoveries.shift();
+    if (recoveries.length >= 4) return;
+    recoveries.push(now);
+    // Silent self-repair: the player stays on the table instead of seeing an error page.
+    const t = window.setTimeout(() => { void router.invalidate(); reset(); }, 200);
+    return () => window.clearTimeout(t);
   }, [error]);
+  const now = Date.now();
+  if (recoveries.filter((t) => now - t < 60000).length < 4) return <div className="min-h-screen bg-background" />;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -132,6 +149,7 @@ function RootComponent() {
   useEffect(() => {
     showInspectorNotice();
   }, []);
+  useEffect(() => installGlobalErrorReporting(), []);
   useEffect(() => {
     const editable = (t: EventTarget | null) => t instanceof HTMLElement && !!t.closest("input, textarea, [contenteditable='true']");
     const block = (e: Event) => { if (!editable(e.target)) e.preventDefault(); };
@@ -150,7 +168,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <PreferencesProvider><Outlet /></PreferencesProvider> breaks all child routes. */}
-      <PreferencesProvider><BanGuard><Outlet /></BanGuard></PreferencesProvider>
+      <PreferencesProvider><BanGuard><Outlet /><SiteRefreshHost /></BanGuard></PreferencesProvider>
     </QueryClientProvider>
   );
 }

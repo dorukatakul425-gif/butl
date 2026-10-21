@@ -1,0 +1,1 @@
+import{n as e}from"./x-Cfb1fxRS.js";var t=e({type:`function`});export{t};

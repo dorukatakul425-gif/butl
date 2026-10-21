@@ -15,7 +15,7 @@ const raw = new Map<string, Promise<ArrayBuffer | null>>();
 
 export function sfxUrl(template: string, id: string) {
   // SfxPresenter.buildUrl: ureyimsen premium sounds (mg_*) are served from /room-assets/sfx/.
-  if (/^mg_[a-z0-9_]+$/.test(String(id))) return `/room-assets/sfx/${id}.mp3`;
+  if (/^mg_[a-z0-9_]+$/.test(String(id)) || id === 'roulette_spin' || id === 'roulette_reward') return `/room-assets/sfx/${id}.mp3`;
   return template.replace("${name}", `${id}.mp3`);
 }
 

@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as GameRouteImport } from './routes/game'
 import { Route as SakoRouteImport } from './routes/sako'
 import { Route as TgRouteImport } from './routes/tg'
+import { Route as ApiPublicYtIdRouteImport } from './routes/api/public/yt.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const TgRoute = TgRouteImport.update({
   path: '/tg',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicYtIdRoute = ApiPublicYtIdRouteImport.update({
+  id: '/api/public/yt/$id',
+  path: '/api/public/yt/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/game': typeof GameRoute
   '/sako': typeof SakoRoute
   '/tg': typeof TgRoute
+  '/api/public/yt/$id': typeof ApiPublicYtIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/game': typeof GameRoute
   '/sako': typeof SakoRoute
   '/tg': typeof TgRoute
+  '/api/public/yt/$id': typeof ApiPublicYtIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,21 @@ export interface FileRoutesById {
   '/game': typeof GameRoute
   '/sako': typeof SakoRoute
   '/tg': typeof TgRoute
+  '/api/public/yt/$id': typeof ApiPublicYtIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/game' | '/sako' | '/tg'
+  fullPaths: '/' | '/auth' | '/game' | '/sako' | '/tg' | '/api/public/yt/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/game' | '/sako' | '/tg'
-  id: '__root__' | '/' | '/auth' | '/game' | '/sako' | '/tg'
+  to: '/' | '/auth' | '/game' | '/sako' | '/tg' | '/api/public/yt/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/game'
+    | '/sako'
+    | '/tg'
+    | '/api/public/yt/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +93,7 @@ export interface RootRouteChildren {
   GameRoute: typeof GameRoute
   SakoRoute: typeof SakoRoute
   TgRoute: typeof TgRoute
+  ApiPublicYtIdRoute: typeof ApiPublicYtIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +133,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TgRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/yt/$id': {
+      id: '/api/public/yt/$id'
+      path: '/api/public/yt/$id'
+      fullPath: '/api/public/yt/$id'
+      preLoaderRoute: typeof ApiPublicYtIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +149,7 @@ const rootRouteChildren: RootRouteChildren = {
   GameRoute: GameRoute,
   SakoRoute: SakoRoute,
   TgRoute: TgRoute,
+  ApiPublicYtIdRoute: ApiPublicYtIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

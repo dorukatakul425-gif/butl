@@ -21,6 +21,6 @@ export function useAchievementSession() {
   return useSyncExternalStore(fn => { listeners.add(fn); return () => { listeners.delete(fn); }; }, () => snapshot, () => empty);
 }
 export async function acknowledgeAchievement(id: string, level: number) {
-  if (!adapter || !snapshot.verified) throw new Error('Oyuncu hesabı bağlı değil.');
+  if (!adapter || !snapshot.verified) throw new Error('Oyunçu hesabına giriş edilməyib.');
   await adapter.acknowledge(id, level);
 }

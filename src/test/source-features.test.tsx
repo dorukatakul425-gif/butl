@@ -7,14 +7,14 @@ import { attachSourceFeatureSession, executeSourceFeature, type SourceFeatureSna
 import type { CilizAssets } from '@/lib/ciliz-assets';
 const assets: CilizAssets = { gifts: {}, giftStore: [], spines: {}, sfxUrl: '/sfx/${name}.mp3', frames: {}, stones: {}, decor: [], bundles: [], images: { cup: { size: [0, 0, 60, 60] } }, dialogBundles: [{ dpr: 3, url: '/images/${name}' }], leagues: [{ image: 'cup', gold: 4 }], translation: { 'dlg:change_table:title': 'Masayı değiştir', 'dlg:change_table:btn_random2': 'Rastgele tablo!', 'roulette:main:panel1:header': 'Çarkıfelek', 'roulette:main:btn1': 'Çevir', 'roulette:main:btn2': 'Atla', 'roulette:help:header': 'Oyunun Kuralları', 'roulette:help:btn': 'Tamam', 'dlg:bottle_pass:title': 'Dönemsel geçiş kartı', 'dlg:profile_info:title': 'Profil ayarları', 'dlg:profile_info:save': 'Kaydet', 'dlg:league:idle:title': 'Ligler', 'dlg:league:ladder:title': 'Ligler listesi', 'kickout:info:header': 'Şutlama', 'kickout:info:desc': '%0 sizi #%1 masasından şutladı %2d(erkek|kadın)', 'kickout:info:return': 'Geri dönüş:', 'kickout:help:btn_ok': 'Tamam' } };
 vi.mock('@/components/decor/decor-selection', () => ({ useCilizAssets: () => assets }));
-vi.mock('@/lib/sfx', () => ({ playSfx: vi.fn() }));
+vi.mock('@/lib/sfx', () => ({ playSfx: vi.fn(), preloadSfx: vi.fn() }));
 afterEach(() => { cleanup(); attachSourceFeatureSession(null); vi.useRealTimers(); });
 function host(snapshot: SourceFeatureSnapshot, execute = vi.fn().mockResolvedValue({ confirmed: true })) { attachSourceFeatureSession({ getSnapshot: () => snapshot, subscribe: () => () => {}, execute }); return execute; }
 describe('original feature windows', () => {
  it('never changes tables or spins without an authenticated host', async () => {
   render(<SourceChangeTable onClose={vi.fn()} />);
   expect(screen.getByRole('button', { name: 'Rastgele tablo!' })).toHaveAttribute('aria-disabled', 'true');
-  await expect(executeSourceFeature('roulette-spin')).rejects.toThrow('Oyuncu hesabı');
+  await expect(executeSourceFeature('roulette-spin')).rejects.toThrow('Oyunçu hesabına');
  });
  it('changes only after the host confirms, never before', async () => {
   const close = vi.fn(), execute = host({ viewerId: 'me' }, vi.fn().mockResolvedValue({ confirmed: false, message: 'Bekle' }));
@@ -43,17 +43,18 @@ describe('original feature windows', () => {
  });
  it('help Escape preserves the underlying wheel and never spins locally', () => {
   const close = vi.fn(); render(<SourceSeasonDialog feature="roulette" onClose={close} />);
-  expect(screen.getByRole('button', { name: 'Çevir' })).toBeEnabled();
-  expect(screen.getByRole('button', { name: /chances/ })).toHaveTextContent('2000');
-  fireEvent.click(screen.getByRole('button', { name: 'Yardım' })); expect(screen.getByRole('dialog', { name: 'Oyunun Kuralları' })).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Çevir' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: /chances/ })).toHaveTextContent('—');
+  fireEvent.click(screen.getByRole('button', { name: 'Kömək' })); expect(screen.getByRole('dialog', { name: 'Oyunun Kuralları' })).toBeVisible();
   fireEvent.keyDown(document, { key: 'Escape' }); expect(screen.getByRole('dialog', { name: 'Çarkıfelek' })).toBeVisible(); expect(close).not.toHaveBeenCalled();
  });
  it('only animates a verified wheel index and allows skip without a second transaction', async () => {
   vi.useFakeTimers(); const execute = host({ viewerId: 'me', roulette: { freeSpins: 1, price: 1, prizes: [{ id: 'p', image: 'cup', count: 1 }] } }, vi.fn().mockResolvedValue({ confirmed: true, rewardIndex: 0, rewards: [{ id: 'award', image: 'cup', count: 3 }] }));
   render(<SourceSeasonDialog feature="roulette" onClose={vi.fn()} />);
   await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Çevir' })));
-  expect(document.querySelector('.roulette__wheel')).toHaveStyle({ transform: 'rotate(1620deg)' });
-  fireEvent.click(screen.getByRole('button', { name: 'Atla' })); expect(execute).toHaveBeenCalledTimes(1); expect(screen.getByText('3')).toBeVisible();
+  const wheel = document.querySelector<HTMLElement>('.roulette__wheel');
+  expect(Number(wheel?.style.transform.match(/[\d.]+/)?.[0]) % 360).toBe(180);
+  fireEvent.click(screen.getByRole('button', { name: 'Atla' })); expect(execute.mock.calls.filter(c => c[0] === 'roulette-spin')).toHaveLength(1); expect(screen.getByText('3')).toBeVisible();
  });
  it('profile editor opens but cannot save unknown profile state', () => {
   render(<SourceSettingsChild kind="profile" assets={assets} onClose={vi.fn()} />); expect(screen.getByRole('dialog', { name: 'Profil ayarları' })).toBeVisible(); expect(screen.getByRole('button', { name: 'Kaydet' })).toBeDisabled();
@@ -74,16 +75,16 @@ describe('original feature windows', () => {
   expect(document.querySelector('.roulette__wheel-center')).not.toBeNull();
   expect(document.querySelectorAll('.roulette__wheel-item')).toHaveLength(16);
   expect(document.querySelector('.roulette__wheel-section')).toHaveAttribute('data-reference-artwork', 'true');
-  expect(screen.getByRole('button', { name: 'Çevir' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: 'Çevir' })).toBeDisabled();
  });
- it('spends one visual-test chance and shows the source reward popup without a host wallet', async () => {
+ it('does not grant any visual-test reward without a host wallet', async () => {
   vi.useFakeTimers();
   render(<SourceSeasonDialog feature="roulette" onClose={vi.fn()} />);
   await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Çevir' })));
-  expect(screen.getByRole('button', { name: /chances/ })).toHaveTextContent('1999');
+  expect(screen.getByRole('button', { name: /chances/ })).toHaveTextContent('—');
   await act(async () => vi.advanceTimersByTime(4000));
-  expect(screen.getByRole('dialog', { name: 'dlg:bottle_pass:reward:achieved' })).toBeVisible();
-  expect(screen.getByText('Test ödülü · bakiyeye eklenmez')).toBeVisible();
+  expect(screen.queryByRole('dialog', { name: 'dlg:bottle_pass:reward:achieved' })).toBeNull();
+  await expect(executeSourceFeature('roulette-spin')).rejects.toThrow();
  });
  it('rejects invalid winning indices and does not show an earned reward', async () => {
   host({ viewerId: 'me', roulette: { freeSpins: 1, price: 1, prizes: [{ id: 'p', image: 'cup', count: 1 }] } }, vi.fn().mockResolvedValue({ confirmed: true, rewardIndex: 99, rewards: [{ id: 'bad', image: 'cup', count: 9 }] }));

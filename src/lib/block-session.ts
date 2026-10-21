@@ -54,7 +54,7 @@ export function setUserBlocked(id: string, value: boolean): Promise<void> {
 }
 async function commitBlock(id: string, value: boolean, current: number) {
   const sb = getSupabase();
-  if (!sb) throw new Error('Oyuncu hesabı bağlı değil.');
+  if (!sb) throw new Error('Oyunçu hesabına giriş edilməyib.');
   mutation++;
   const { error } = await sb.rpc('block_user', { p_user: id, p_block: value });
   if (error) throw error;

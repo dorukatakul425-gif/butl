@@ -219,6 +219,7 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
   };
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: "Arial, Helvetica, sans-serif", pointerEvents: "none" }}>
+      <div className="table-drawer-dismiss" onClick={e => { e.stopPropagation(); onClose(); }} />
       {/* Ciliz setHeader: dikey modda çekmece başlığı üst simge çubuğunun üzerine
           opak beyaz şerit olarak çıkar; simgeler başlığın altında kalır. */}
       <div
@@ -242,12 +243,12 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
           <div className={cls("multigift-btn-list")}>
             {selective ? (
               <div className={cls("multigift-gender-list")}>
-                <div className={cls("btn", ["men"])} role="button" aria-label="Erkekleri seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectMen(); }} />
-                <div className={cls("btn", ["women"])} role="button" aria-label="Kadınları seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectWomen(); }} />
-                <div className={cls("btn", ["cancel"])} role="button" aria-label="Toplu seçimi iptal et" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(false); }} />
+                <div className={cls("btn", ["men"])} role="button" aria-label="Kişiləri seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectMen(); }} />
+                <div className={cls("btn", ["women"])} role="button" aria-label="Qadınları seç" onClick={(e) => { e.stopPropagation(); multiselect.onSelectWomen(); }} />
+                <div className={cls("btn", ["cancel"])} role="button" aria-label="Çoxlu seçimi ləğv et" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(false); }} />
               </div>
             ) : (
-              <div className={cls("btn", ["add"])} role="button" aria-label="Toplu hediye" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(true); }} />
+              <div className={cls("btn", ["add"])} role="button" aria-label="Bir neçə oyunçuya hədiyyə" onClick={(e) => { e.stopPropagation(); multiselect.onSelectState(true); }} />
             )}
           </div>
         )}
@@ -260,7 +261,7 @@ export function SendGiftDialog({ open, assets, items, receiverName, onSend, onPr
         style={{ top: box.top, left: box.left, width: box.width, bottom: 0, pointerEvents: "auto" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="popup__close-drawer-bg" style={{ zIndex: 1 }} onClick={onClose} role="button" aria-label="Kapat">
+        <div className="popup__close-drawer-bg" style={{ zIndex: 1 }} onClick={onClose} role="button" aria-label="Bağla">
           <div className="popup__close popup__close--drawer">
             <div className="popup__close-icon" />
           </div>

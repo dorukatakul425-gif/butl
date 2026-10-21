@@ -16,8 +16,8 @@ function Popup({ title, onClose, children, help, nested = false }: { title: stri
   return <div className="source-boosters-layer">
     <div className="popup-shade" onClick={onClose} />
     <section role="dialog" aria-modal={!nested} inert={nested} aria-label={title} className="popup popup--center">
-      <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>
-      <header className="popup__header"><div className="popup__title">{title}</div>{help && <Button variant="ghost" className="boosters-list__manual" aria-label="Güçlendirici Nedir" onClick={help} />}</header>
+      <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Bağla" onClick={onClose}><span className="popup__close-icon" /></Button>
+      <header className="popup__header"><div className="popup__title">{title}</div>{help && <Button variant="ghost" className="boosters-list__manual" aria-label="Gücləndirici nədir?" onClick={help} />}</header>
       <div className="popup__content">{children}</div>
     </section>
   </div>;

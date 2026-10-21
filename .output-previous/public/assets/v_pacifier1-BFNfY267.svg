@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_Слой_2" data-name="Слой 2" xmlns="http://www.w3.org/2000/svg" width="30.1" height="37.5" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 30.1 37.5">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#_Безымянный_градиент_3);
+      }
+
+      .cls-2 {
+        fill: url(#_Безымянный_градиент_2);
+      }
+
+      .cls-3 {
+        fill: url(#_Безымянный_градиент_5);
+      }
+
+      .cls-4 {
+        fill: url(#_Безымянный_градиент_4);
+      }
+
+      .cls-5 {
+        fill: url(#_Безымянный_градиент_7);
+      }
+
+      .cls-6 {
+        fill: url(#_Безымянный_градиент_6);
+        opacity: .7;
+      }
+
+      .cls-6, .cls-7 {
+        isolation: isolate;
+      }
+
+      .cls-7 {
+        fill: url(#_Безымянный_градиент_8);
+        opacity: .4;
+      }
+    </style>
+    <linearGradient id="_Безымянный_градиент_2" data-name="Безымянный градиент 2" x1="14.9" y1="18.81" x2="14.9" y2="10.3" gradientTransform="translate(0 48) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ccb8ab"/>
+      <stop offset=".9" stop-color="#e7e5ca"/>
+    </linearGradient>
+    <linearGradient id="_Безымянный_градиент_3" data-name="Безымянный градиент 3" x1=".1" y1="22.1" x2="30" y2="22.1" gradientTransform="translate(0 48) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b93cbf"/>
+      <stop offset=".5" stop-color="#d45ed6"/>
+      <stop offset="1" stop-color="#bf45c1"/>
+    </linearGradient>
+    <linearGradient id="_Безымянный_градиент_4" data-name="Безымянный градиент 4" x1="15.1" y1="20.8" x2="15.1" y2="31.1" gradientTransform="translate(0 48) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e998e6"/>
+      <stop offset=".9" stop-color="#d76ec8"/>
+    </linearGradient>
+    <radialGradient id="_Безымянный_градиент_5" data-name="Безымянный градиент 5" cx="15.4" cy="40.1" fx="15.4" fy="40.1" r="10" gradientTransform="translate(0 48) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f1ce5f"/>
+      <stop offset=".3" stop-color="#f0ca59"/>
+      <stop offset=".7" stop-color="#eebf4b"/>
+      <stop offset=".8" stop-color="#eebb45"/>
+    </radialGradient>
+    <radialGradient id="_Безымянный_градиент_6" data-name="Безымянный градиент 6" cx="15.1" cy="23.2" fx="15.1" fy="23.2" r="10.7" gradientTransform="translate(0 48) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity=".7"/>
+      <stop offset=".9" stop-color="#fff" stop-opacity=".1"/>
+    </radialGradient>
+    <radialGradient id="_Безымянный_градиент_7" data-name="Безымянный градиент 7" cx="432.05" cy="496.53" fx="432.05" fy="496.53" r="3.6" gradientTransform="translate(-584.21 -426.2) rotate(90) scale(1 -1.2)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fefffe"/>
+      <stop offset=".2" stop-color="#fefffe" stop-opacity=".8"/>
+      <stop offset=".5" stop-color="#fefffe" stop-opacity=".4"/>
+      <stop offset=".7" stop-color="#fefffe" stop-opacity=".2"/>
+      <stop offset=".8" stop-color="#fefffe" stop-opacity="0"/>
+      <stop offset=".9" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="_Безымянный_градиент_8" data-name="Безымянный градиент 8" x1="15.1" y1="24.7" x2="15.1" y2="31.1" gradientTransform="translate(0 48) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#dd74cf" stop-opacity="0"/>
+      <stop offset="1" stop-color="#dd77cf"/>
+    </linearGradient>
+  </defs>
+  <g id="_Слой_2-2" data-name=" Слой 2">
+    <g>
+      <path class="cls-2" d="M15,37.5c-6,0-7.8-5.9-7.9-9.1h3.3c0-.1-1.6,0-1.6,0h1.6c0,.2.3,5.9,4.7,5.9.97,0,2.7-.3,3.7-2.8.6-1.6.6-3.3.6-3.4h3.3c0,.2,0,4.7-2.7,7.4-1.3,1.3-3,2-5,2h0Z"/>
+      <path class="cls-1" d="M30,22.1c0,4.2-6.7,7.6-15,7.6S0,26.3,0,22.1"/>
+      <ellipse class="cls-4" cx="15.1" cy="22.1" rx="15" ry="5.2"/>
+      <path class="cls-3" d="M21.4,3C19,0,15.3,0,15.3,0h-.5s-3.7,0-6.1,3c-2.4,3-1.7,7.1-.5,9s3.5,3.1,3.8,4.7,0,2.6-.6,3.4-1.2,3.3,3.6,3.3,4.1-2.5,3.6-3.3-.9-1.8-.6-3.4c.3-1.6,2.6-2.9,3.8-4.7,1.2-1.8,1.9-5.9-.5-9h.1Z"/>
+      <path class="cls-6" d="M15.1,26.3c-7.4,0-13.6-1.5-14.9-3.9.5,2.7,7,4.8,14.9,4.8s14.4-2.1,14.9-4.8c-1.3,2.4-7.5,3.9-14.9,3.9Z"/>
+      <ellipse class="cls-5" cx="11.96" cy="5.95" rx="4.5" ry="3.5" transform="translate(1.89 14.72) rotate(-67.5)"/>
+      <path class="cls-7" d="M15.1,16.9c-1,0-2,0-3,.1.2,1.4-.2,2.3-.6,3-.5.8-1.2,3.3,3.6,3.3s4.1-2.5,3.6-3.3c-.4-.7-.8-1.7-.6-3-1,0-2-.1-3-.1Z"/>
+    </g>
+  </g>
+</svg>

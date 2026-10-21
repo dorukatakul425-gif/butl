@@ -27,3 +27,13 @@
 .table-bg-toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);z-index:100001;background:rgba(28,16,48,.92);color:#fff;font:700 13px Inter,Arial,sans-serif;padding:10px 16px;border-radius:14px;max-width:calc(100% - 24px);box-shadow:0 12px 30px -10px rgba(0,0,0,.6)}
 .original-misc-menu-image--tablebg{width:40px;height:40px;background:linear-gradient(135deg,#ff9a3d,#e8436a 50%,#3f1d7a);border-radius:7px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.7);display:block}
 .original-table-bg-image{position:absolute;width:100%;height:100%;object-fit:cover}
+
+/* Personal room colors never grant a paid table_bg image. */
+:root{--personal-rose:sepia(.5) hue-rotate(310deg) saturate(1.5);--personal-green:sepia(.5) hue-rotate(70deg) saturate(1.1);--personal-teal:sepia(.6) hue-rotate(125deg) saturate(1.2);--personal-gold:sepia(.8) saturate(1.1);--personal-lilac:sepia(.5) hue-rotate(225deg) saturate(1.1);--personal-silver:grayscale(.9)}
+.personal-table-color-0>.original-table-wood{filter:var(--personal-rose)}
+.personal-table-color-1>.original-table-wood{filter:var(--personal-green)}
+.personal-table-color-2>.original-table-wood{filter:var(--personal-teal)}
+.personal-table-color-3>.original-table-wood{filter:var(--personal-gold)}
+.personal-table-color-4>.original-table-wood{filter:var(--personal-lilac)}
+.personal-table-color-5>.original-table-wood{filter:var(--personal-silver)}
+.change-table__item-border{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

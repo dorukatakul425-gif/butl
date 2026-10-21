@@ -131,7 +131,7 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     return () => window.clearTimeout(id);
   }, [round.phase, roundNo, participating]);
   const kissHint = !participating && canPlay && !stale && round.phase === "choose"
-    ? (decidedCount >= 1 ? "Geri öpecek mi?" : willTheyKiss ? "Öpüşecekler mi?" : null)
+    ? (decidedCount >= 1 ? "Qarşılıq verəcək?" : willTheyKiss ? "Öpüşəcəklər?" : null)
     : null;
   const [left,right] = round.spinner>=0 && round.target>=0 ? leftRight(round.spinner,round.target) : [-1,-1];
   const offer = offers[round.spinner] ?? offers[0];
@@ -139,12 +139,12 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
     if(round.phase!=="choose" || !participating || round.decisions[VIEWER])return;
     void decideRpc(decision==="kiss");
   };
-  return <div ref={overlay} className="bottle-play-overlay" aria-label="Şişe oyunu" data-phase={round.phase} data-spinner={round.spinner} data-target={round.target}>
+  return <div ref={overlay} className="bottle-play-overlay" aria-label="Şüşə oyunu" data-phase={round.phase} data-spinner={round.spinner} data-target={round.target}>
     {waitKey && <span className="bottle-turn-status bottle-turn-status--waiting" role="status">{translate(assets, waitKey)}</span>}
     {kissHint && <span className="bottle-kiss-hint" role="status">{kissHint}</span>}
     {canPlay && !stale && round.phase==="offer" && round.spinner<0 && <span className="bottle-turn-status bottle-turn-status--waiting" role="status">{translate(assets,"game:nextturn")}</span>}
     {canPlay && !stale && round.phase==="offer" && round.spinner===VIEWER && <>
-      <Button variant="ghost" className="bottle-spin-hit" aria-label="Şişeyi çevir" disabled={!ready} onClick={spin} />
+      <Button variant="ghost" className="bottle-spin-hit" aria-label="Şüşəni fırlat" disabled={!ready} onClick={spin} />
       <BottleIcon className="bottle-roll-big" src={rollBig.url} alt="" /><span className="bottle-roll-text">{translate(assets,"game:spin")}</span>
     </>}
     {canPlay && !stale && round.phase==="offer" && round.spinner!==VIEWER && spinnerHere && offer && <>
@@ -152,14 +152,14 @@ export function BottlePlay({table, assets}: {table: Table; assets: CilizAssets})
       <span className="bottle-small-text" style={{left:offer[3],top:offer[4]}}>{translate(assets,"game:spins")}</span>
     </>}
     {canPlay && !stale && decisionArrowsVisible(round.phase) && <>
-      {round.decisions[left] && <BottleIcon className="bottle-decision-arrow bottle-arrow-up" src={round.decisions[left]==="kiss" ? kissUp.url:refuseUp.url} alt={round.decisions[left]==="kiss" ? "Öptü":"Vazgeçti"} />}
-      {round.decisions[right] && <BottleIcon className="bottle-decision-arrow bottle-arrow-down" src={round.decisions[right]==="kiss" ? kissDown.url:refuseDown.url} alt={round.decisions[right]==="kiss" ? "Öptü":"Vazgeçti"} />}
-      {decisionTimerVisible(round.phase,participating,Boolean(round.decisions[VIEWER])) && <span className="bottle-countdown" role="timer" aria-label="Karar süresi">{remaining}</span>}
+      {round.decisions[left] && <BottleIcon className="bottle-decision-arrow bottle-arrow-up" src={round.decisions[left]==="kiss" ? kissUp.url:refuseUp.url} alt={round.decisions[left]==="kiss" ? "Öpdü":"İmtina etdi"} />}
+      {round.decisions[right] && <BottleIcon className="bottle-decision-arrow bottle-arrow-down" src={round.decisions[right]==="kiss" ? kissDown.url:refuseDown.url} alt={round.decisions[right]==="kiss" ? "Öpdü":"İmtina etdi"} />}
+      {decisionTimerVisible(round.phase,participating,Boolean(round.decisions[VIEWER])) && <span className="bottle-countdown" role="timer" aria-label="Seçim müddəti">{remaining}</span>}
       {round.phase==="choose" && participating && !round.decisions[VIEWER] && <>
         <Button variant="ghost" className="bottle-decision-button bottle-refuse-button" onClick={()=>decide("refuse")}><BottleIcon src={refuseButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss_cancel")}</span></Button>
         <Button variant="ghost" className="bottle-decision-button bottle-kiss-button" onClick={()=>decide("kiss")}><BottleIcon src={kissButton.url} alt="" /><span>{translate(assets,"game:choose:btn_kiss")}</span></Button>
       </>}
     </>}
-    {bottleError && <Button variant="ghost" className="bottle-retry" onClick={()=>{setBottleError(false);void table.setBottle(selected).then(()=>setReady(true),()=>setBottleError(true));}}>Şişeyi yeniden yükle</Button>}
+    {bottleError && <Button variant="ghost" className="bottle-retry" onClick={()=>{setBottleError(false);void table.setBottle(selected).then(()=>setReady(true),()=>setBottleError(true));}}>Şüşəni yenidən yüklə</Button>}
   </div>;
 }

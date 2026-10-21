@@ -105,7 +105,7 @@ export function VipDialog({ assets, onClose, onBought }: { assets: CilizAssets; 
       const selected = options.find(option => option.id === id);
       const dat = selected ? Number.parseInt(selected.price, 10) : 0;
       if (dat > 0 && contactTelegramAdminOnInsufficient(error.message, dat)) return;
-      showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return;
+      showSourceToast(error.message.includes("insufficient") ? "Kifayət qədər DAT yoxdur." : "Alış baş tutmadı."); return;
     }
     window.dispatchEvent(new Event(VIEWER_STATUS_CHANGED));
     setBought(true);
@@ -132,7 +132,7 @@ export function VipDialog({ assets, onClose, onBought }: { assets: CilizAssets; 
       <section role="dialog" aria-modal="true" aria-label={t("mobile:bank:vip")} className="popup vip__x_popup popup--center popup--show">
         <div className="popup__header vip__x_popup__header">
           <div className="popup__title vip__x_popup__title">{t("mobile:bank:vip")}</div>
-          <div className="popup__close popup__close--dlg" role="button" aria-label="Kapat" onClick={onClose}><div className="popup__close-icon" /></div>
+          <div className="popup__close popup__close--dlg" role="button" aria-label="Bağla" onClick={onClose}><div className="popup__close-icon" /></div>
         </div>
         <div className="popup__content vip__x_popup__content">
           <div className="vip__desc vip__desc--main">{t("mobile:vip:desc1")}</div>

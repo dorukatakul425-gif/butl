@@ -1,0 +1,15 @@
+[Unit]
+Description=Butl WebSocket hub
+After=network.target docker.service
+
+[Service]
+WorkingDirectory=/opt/butl/ws-hub
+EnvironmentFile=/etc/butl-ws.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /opt/butl/ws-hub/server.mjs
+Restart=always
+RestartSec=1
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

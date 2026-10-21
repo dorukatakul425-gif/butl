@@ -3,6 +3,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { telegramNoticeSchema, telegramPayload } from "./telegram-notifications";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { rouletteConfigSchema } from './roulette-config';
+import { appearanceInput, validNameStyle } from './player-appearance';
+import { levelFromPoints } from './top-level-activity';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function assertAdmin(context: { supabase: unknown; userId: string }) {
@@ -384,4 +387,73 @@ export const grantFrame = createServerFn({ method: "POST" })
     const { data: owned, error } = await admin.rpc("admin_grant_frame", { _user_id: data.userId, _frame: data.frame, _give: data.give });
     if (error) throw new Error(error.message);
     return { owned: ((owned ?? []) as string[]).filter((i) => i.startsWith("cf_")) };
+  });
+
+export const getRouletteAdmin = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const admin = await assertAdmin(context);
+    const [configResult, prizesResult, eventsResult] = await Promise.all([
+      admin.from('roulette_config').select('*').eq('id', 1).single(),
+      admin.from('roulette_prizes').select('id,image,amount,probability_bp').order('id'),
+      admin.from('roulette_events').select('id,user_id,action,prize_id,created_at').order('created_at', { ascending: false }).limit(50),
+    ]);
+    for (const result of [configResult, prizesResult, eventsResult]) if (result.error) throw new Error(result.error.message);
+    const prizes = prizesResult.data as Array<{ id: number; image: string; amount: number; probability_bp: number }>;
+    const events = eventsResult.data as Array<{ id: string; user_id: string; action: string; prize_id: number | null; created_at: string }>;
+    const ids = [...new Set(events.map(e => e.user_id))];
+    const peopleResult = ids.length ? await admin.from('profiles').select('id,name').in('id', ids) : { data: [], error: null };
+    if (peopleResult.error) throw new Error(peopleResult.error.message);
+    const people = new Map<string, string>((peopleResult.data ?? []).map((p: { id: string; name: string }) => [p.id, p.name]));
+    const c = configResult.data;
+    return { config: { enabled: Boolean(c.enabled), spinCost: Number(c.spin_cost), dailyChances: Number(c.daily_chances), bundleChances: Number(c.bundle_chances), bundleDat: Number(c.bundle_dat), revision: Number(c.revision), prizes: prizes.map(p => ({ id: p.id, percentage: p.probability_bp / 100 })) }, prizes,
+      events: events.map(e => { const p = prizes.find(p => p.id === e.prize_id); return { ...e, name: people.get(e.user_id) ?? 'Oyunçu', image: p?.image, amount: p?.amount }; }) };
+  });
+
+export const saveRouletteAdmin = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => rouletteConfigSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const { data: revision, error } = await (context.supabase as any).rpc('admin_roulette_save', { p_config: data });
+    if (error) throw new Error(error.message);
+    return { revision: Number(revision) };
+  });
+
+export const getPlayerNameStyle = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ context, data }) => {
+    const admin = await assertAdmin(context);
+    const [style, points] = await Promise.all([
+      admin.from('player_name_styles').select('name_style,creator').eq('user_id', data.userId).maybeSingle(),
+      admin.rpc('gift_points_of', { p_user: data.userId }),
+    ]);
+    if (style.error || points.error) throw new Error('Ad üslubu yüklənmədi.');
+    return { nameStyle: validNameStyle(style.data?.name_style), creator: style.data?.creator === true, level: levelFromPoints(Number(points.data)) };
+  });
+
+export const savePlayerNameStyle = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => appearanceInput.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const { error } = await (context.supabase as any).rpc('admin_set_name_style', { p_user: data.userId, p_style: data.nameStyle, p_creator: data.creator });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const requestSiteRefresh = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { title?: string; countdown?: number } | undefined) => {
+    const title = String(input?.title ?? '').trim().slice(0, 80);
+    const countdown = Math.round(Number(input?.countdown ?? 10));
+    if (!Number.isFinite(countdown) || countdown < 3 || countdown > 300) throw new Error('Geri sayım 3-300 saniyə olmalıdır');
+    return { title, countdown };
+  })
+  .handler(async ({ context, data: input }) => {
+    await assertAdmin(context);
+    const { data, error } = await (context.supabase as any).rpc('admin_request_site_refresh', { p_title: input.title || null, p_countdown: input.countdown });
+    if (error) throw new Error(error.message);
+    return { id: String(data) };
   });

@@ -40,9 +40,13 @@ function start() {
 
 /** Signs out and updates every page immediately, without waiting for the network. */
 export async function signOut() {
+  const { leaveRoom } = await import('./room-session');
+  // Local sign-out must not be held hostage by a stalled transport queue.
+  const leaving = leaveRoom().catch(() => undefined);
   authRevision++;
   profileRevision++;
   set({ session: null, profile: null, ready: true });
+  await Promise.race([leaving, new Promise<void>(resolve => setTimeout(resolve, 1500))]);
   await getSupabase()?.auth.signOut();
 }
 

@@ -1,3 +1,4 @@
+import { gameError } from '@/lib/game-language';
 import { DatPrice } from "@/components/bank/dat-price";
 import { StarPrice } from "@/components/bank/star-price";
 import { useEffect, useRef, useState } from "react";
@@ -39,7 +40,7 @@ function PremiumPassDialog({ t, onClose }: { t: (k: string) => string; onClose: 
     busy.current = false;
     if (error) {
       if (contactTelegramAdminOnInsufficient(error.message, PREMIUM_PRICE)) return;
-      showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return;
+      showSourceToast(error.message.includes("insufficient") ? "Kifayət qədər DAT yoxdur." : "Alış baş tutmadı."); return;
     }
     window.dispatchEvent(new Event(VIEWER_STATUS_CHANGED));
     setDone(true);
@@ -51,7 +52,7 @@ function PremiumPassDialog({ t, onClose }: { t: (k: string) => string; onClose: 
         <div role="dialog" aria-modal="true" aria-label={t("dlg:bottle_pass:premium_pass")} className="popup popup--center popup--show info__x_popup">
           <div className="popup__header">
             <div className="popup__title">{t("dlg:bottle_pass:premium_pass")}</div>
-            <div className="popup__close popup__close--dlg" role="button" aria-label="Kapat" onClick={onClose}><div className="popup__close-icon" /></div>
+            <div className="popup__close popup__close--dlg" role="button" aria-label="Bağla" onClick={onClose}><div className="popup__close-icon" /></div>
           </div>
           <div className="popup__content" style={{ textAlign: "center", padding: "12px 16px" }}>
             <div className="bank__opt-icon bank__opt-icon--premium-pass" style={{ position: "relative", margin: "0 auto 10px", left: "auto", top: "auto" }} />
@@ -130,7 +131,7 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
     busy.current = false;
     if (error) {
       if (contactTelegramAdminOnInsufficient(error.message, real)) return;
-      showSourceToast(error.message.includes("insufficient") ? "Yeterli DAT yok." : "Satın alma başarısız."); return;
+      showSourceToast(error.message.includes("insufficient") ? "Kifayət qədər DAT yoxdur." : "Alış baş tutmadı."); return;
     }
     const got = Number(data);
     setPendingGold(got);
@@ -156,24 +157,24 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
         return;
       }
     }
-    showSourceToast("Ödeme alındı; kalplerin birazdan hesabına eklenecek.");
+    showSourceToast("Ödəniş qəbul edildi; ürəklər tezliklə hesabınıza əlavə olunacaq.");
   };
   const buyStars = async (stars: number, totalGold: number, position: number) => {
     if (busy.current) return;
     const app = window.Telegram?.WebApp;
     const initData = app?.initData ?? "";
-    if (!initData || !app?.openInvoice) { showSourceToast("Ödeme yalnız Telegram içinde açılır."); return; }
+    if (!initData || !app?.openInvoice) { showSourceToast("Ödəniş yalnız Telegram daxilində mümkündür."); return; }
     busy.current = true;
     try {
       const { link } = await createStarsInvoice({ data: { initData, stars } });
       busy.current = false;
       app.openInvoice(link, (status) => {
         if (status === "paid") void confirmStarsPayment(totalGold, position);
-        else if (status === "failed") showSourceToast("Ödeme tamamlanmadı.");
+        else if (status === "failed") showSourceToast("Ödəniş tamamlanmadı.");
       });
     } catch (e) {
       busy.current = false;
-      showSourceToast(e instanceof Error ? e.message : "Fatura açılamadı.");
+      showSourceToast(gameError(e));
     }
   };
   const receivedDialog = received && assets ? <ReceivedGoldDialog assets={assets} gold={received.gold} position={received.position} onContinue={async (pt) => {
@@ -212,7 +213,7 @@ export function BankDialog({ open, onClose, isVip, vipPurchased = false, onVip }
           <div className={cls("bg")} />
           <div className={`${popup("header")} ${cls("x_popup__header")}`}>
             <div className={`${popup("title")} ${cls("x_popup__title")}`}>{t("bank:title")}</div>
-            <div className={popup("close", ["dlg"])} role="button" aria-label="Kapat" onClick={onClose}>
+            <div className={popup("close", ["dlg"])} role="button" aria-label="Bağla" onClick={onClose}>
               <div className={`${popup("close-icon")} ${cls("x_popup__close-icon")}`} />
             </div>
           </div>

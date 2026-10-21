@@ -24,20 +24,24 @@
 - Apply confirmed round RPC responses and room-state events directly to React state; cache signed avatar URLs until expiry, so round controls do not wait on unrelated photo/chat reads.
 - Consume transactional table-change membership directly; generation-guard reads/feeds and reset cancellable motion/media to prevent stale-room state.
 - Apply sound settings before playback; autoplay recovery must respect mute and explicit pause.
-- Share the pure table-layout calculation between Pixi and bottle overlays to anchor the lowest seat to the chat boundary consistently.
+- Website and Telegram table rendering share the dynamically loaded web-pixi-table and pure web-table-rendering math; keep Telegram authentication, viewport and native integration independent so visual upgrades do not change account or platform behavior.
+- Shared table premium effect invalidation belongs to its owning scene and detaches on destruction, so idle dirty rendering cannot freeze effects or leak into another renderer.
 - Cache only resolved public purchase catalogues briefly on the server; keep every click's authenticated spending transaction independent and never cache user eligibility or results.
 - Keep source Tops presentation isolated from other table dialogs; rank verified account statistics across all readable profiles, and never substitute lifetime scores for unsupported periods or allow cosmetic bottle clicks to bypass paid server transactions.
 - Keep Tops help as a browser-safe original InfoDialog presentation using category-specific manifest translations; dismissing help must retain the underlying ranking selection.
 - Scope bottle drawer presentation to its own selectors and measure the existing game/chat bounds; this preserves source drawer sizing and close controls without changing other dialogs or purchase rules.
 - Achievement levels come from trusted event/wallet counters and source thresholds through an authenticated bridge; source-only conditions and unspecified rewards remain unavailable to prevent fabricated completion or currency.
 - Keep achievement/booster presentation browser-safe behind optional session adapters; original booster inventory remains unknown until a verified seasonal-pass/league service exists.
-- Use authenticated subscriptions for connection, heart awards and harem inbox; deduplicate events, acknowledge confirmed notices, and never infer rewards or prices.
+- Attraction inbox uses structured recipient-scoped profile_notifications written atomically by harem_purchase; read/recover under user RLS and acknowledge only through the owner-checked RPC, so first admiration, transfers and releases open source dialogs without inferred rewards or duplicate banners.
 - Feature dialogs require verified session state for mutations; kick/save uses atomic authenticated database RPCs, source-derived deadlines and a membership trigger for all room-entry paths. Kick pricing/free cooldown remain unconfigured until verified host values are supplied, never guessed. Participation metadata grants no privilege.
 - Scope profile layout resets to the profile layer, restoring original content-box sizing and non-repeating fixed-size SVG icons without changing other source dialogs.
 - Keep profile popup positioning absolute inside its fixed layer, using the source safe-area translation; relative offsets combined with flex centering shift the popup offscreen.
 - Leagues are scored only by database triggers on trusted kiss/gift events and finalized lazily inside get_league; tunable numbers live in league_config/league_levels so clients never compute scores, moves or rewards.
 - Composite manifest-sized original center artwork below the bottle in Pixi so layout and input remain shared.
-- Roulette uses original wheel/frame/center and host-fed prizes/winners. Screenshot labels are inert, not payouts; the 2,000-spin preview never changes wallets. Only authenticated host awards persist.
+- Roulette reuses the original wheel/frame/center; production spins and DAT chance purchases are atomic authenticated SQL RPCs with per-user idempotency and authoritative wallet/booster awards. Admin odds are exact basis-point percentages totaling 100%, replaced under a config lock with revision checks; no local fallback may simulate winnings. Reference-private pricing/odds are not inferred from visual sectors, and initial configuration stays disabled until an admin enables it.
+- Cosmetic name styles and Creator labels live in player_name_styles separately from roles, changed only by an authenticated admin RPC; badges reuse trusted gift_levels and the shared 1400-point helper. Exact reference nickname animations remain unverified, so local cosmetics must not be described as extracted private code.
+- Anchor the table Creator overlay to the avatar's full world transform in a photo-sized wrapper and update each animation frame, so moving, scaled or rotated seats never detach the label from the photo.
+- Site refresh requests use a persisted latest revision with realtime and visible-tab recovery mounted at the root; an explicit player confirmation reloads the document without leaving the table, and newly opened documents do not replay older requests.
 
 - Root prints the inspector notice once client-side; no DevTools detection or execution/input blocking, to preserve operation.
 - VPS hosting lives only in deploy/vps (subdirectories have their own AGENTS.md to read first); never change Lovable's .env/vite config for it, so both targets work.
@@ -47,7 +51,8 @@
 - Premium live gifts (live_*) are DAT-only via send_premium_gift; their catalogue/media are static repo assets and the table plays the alpha video for every room member from premium_gift_events.
 - Live gifts use acknowledged room broadcasts with IDs/start timestamps; only catalogued media is rendered, and VPS media references resolve to the confirmed hosted asset origin.
 
-- Keep browser language/appearance preferences in the versioned app-preferences store, with SSR-safe Azerbaijani/light defaults and storage-event synchronization; exclude /game from appearance and translations to preserve the existing game.
+- Keep browser language/appearance preferences in the versioned app-preferences store; game text uses the source Azerbaijani dictionary and game-language error boundary independently of lobby choices, while game appearance stays isolated.
+- Page lifecycle cleanup detaches transports only; authenticated server membership resumes on refresh/visibility/network return, with a bounded live lease and durable last-table preference. Explicit departure clears preference; kicks and occupied seats must never be bypassed or represented by cached players.
 - Keep the mobile profile as an authenticated home subview using the existing verified profile and photo-upload callback; wallet navigation must reuse the existing shop without fabricated balances.
 - Admin panel lives at /sako; roles are in user_roles via has_role, and every admin server function re-verifies the role before using the service client, so the page itself grants nothing.
 - Bans live in user_bans and are enforced in the database (write triggers, session revocation) plus a root BanGuard screen, so a still-valid token cannot keep playing.
@@ -79,3 +84,16 @@
 - Entrance particles are derived from server gift levels and gender, never selected frames; cancel delayed and active effects when their room, renderer or occupant changes to prevent seat-reuse leakage.
 - Table backgrounds (Masa fonu) are room state on rooms.table_bg, bought only through the set_table_bg RPC that validates the fixed list and charges DAT atomically; clients render the bundled /room-assets/table-bg images and header skins from that state, so nobody can set a background for free.
 - Seasonal pass (Mövsümi icazənamə) mirrors ureyimsen BottlePass: levels/rewards/config live in pass_levels/pass_config, points come only from kiss/gift triggers, and pass_info/pass_claim/pass_buy_premium/pass_claim_chest validate every claim server-side; the dialog keeps the original CSS in its lazily loaded module.
+
+- Keep authenticated liveness in isolated room_presence, throttling legacy membership timestamps with nonblocking locks; prune only stale unlocked members after rechecking presence, so gift rewards cannot evict active seats. Room allocation waits for the selected available table instead of treating a busy lock as fullness.
+- Bound visual-only gift flights and generation-cancel video callbacks; keep every acknowledged payment/event independent, so rendering bursts cannot stall membership recovery. Serialize periodic liveness checks to avoid accumulating slow RPCs.
+
+- Keep clip zoom browser-local with the source three-state cycle and the existing iframe mounted; apply bounded portrait widths so zoom never restarts playback. Incoming addressed-chat/direct-message sound uses the source personal_message through shared SFX, once per live event, never history; the table owns a narrow DM audio subscription because the home inbox unmounts there.
+- Table dialog backdrops close only their owning layer and stop portal propagation; unshaded drawers have input-catching empty-area surfaces behind their interactive contents. Local sending restores end-following before realtime echo, and follow effects depend on latest line identity rather than capped history length.
+
+- Owned tables use server-managed metadata, hashed passwords and a membership insertion guard; all random/resume entry paths consult the same access predicate, while edits retain stable internal room IDs and existing occupants. DAT price is an authenticated administrator setting with no assumed initial price.
+- Personal-table random color is separate from purchased table_bg assets, so ownership never grants a paid background for free.
+- Active-song gift rating is emitted exactly once from committed ordinary/premium gift events; play_music serializes same-room replacements and exempts only the current song sender from the shared wait, preserving authoritative wallets.
+
+- Realtime: room events go through the WebSocket hub (`ws-hub/`, systemd `butl-ws`, Caddy `/ws`) fed by `_rt_notify` triggers + `LISTEN butl_rt`; new room-scoped live tables must add a `_rt_` trigger and a routing rule in `ws-hub/routing.mjs` (privacy is enforced there). Supabase postgres_changes is only the fallback — never add global unfiltered subscriptions, they fan out to every player.
+- Database-change-only realtime channels get a per-subscriber topic and every channel's on/subscribe is guarded in the shared client; table parts sit in self-healing crash shields and browser errors go to /api/public/client-error, so one failing listener or widget never ejects a player from the table.

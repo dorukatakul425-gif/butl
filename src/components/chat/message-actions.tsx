@@ -23,7 +23,7 @@ export function MessageActions({ assets, blocked, translationShown, canTranslate
   return createPortal(<div className="source-feature-layer source-message-actions">
     <div className="popup-shade" onClick={onClose} />
     <section role="dialog" aria-modal="true" aria-label={translate(assets, 'dlg:report_issue:title')} className="popup popup--center popup--show message-actions__x_popup">
-      <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Kapat" onClick={onClose}><span className="popup__close-icon" /></Button>
+      <Button variant="ghost" className="popup__close popup__close--dlg" aria-label="Bağla" onClick={onClose}><span className="popup__close-icon" /></Button>
       {items.map(item => <Button key={item.key} variant="ghost" disabled={busy} className="settings__item settings__item--selectable" onClick={item.action}>
         <span className={`settings__icon settings__icon--${item.icon}`} />{item.label ?? translate(assets, item.key)}
       </Button>)}

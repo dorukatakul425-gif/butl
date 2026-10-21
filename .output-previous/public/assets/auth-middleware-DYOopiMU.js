@@ -1,0 +1,1 @@
+import{t as e}from"./createMiddleware-DQnh37QV.js";import{t}from"./createLucideIcon-cPwvoQem.js";var n=t(`x`,[[`path`,{d:`M18 6 6 18`,key:`1bl5f8`}],[`path`,{d:`m6 6 12 12`,key:`d8bk6v`}]]),r=e({type:`function`});export{n,r as t};

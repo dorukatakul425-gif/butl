@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { createPortal } from "react-dom";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 import { MusicFolder, secondsToMMSS, type MusicItem, type MusicService } from "@/lib/music";
+import { useMusicSession } from '@/lib/music-session';
+import { useAuth } from '@/lib/auth';
 import { YouTubeFrame } from "@/components/music/youtube-player";
 
 // Markup and class names ported from MusicListDialog.tsx, MusicPreviewDialog.tsx, PreviewAudioPlayer.tsx and Dialog.*.
@@ -49,7 +51,7 @@ function PopupShell({ open, onClose, className, label, z, children }: { open: bo
   return createPortal(
     <div style={{ position: "fixed", inset: 0, zIndex: z, fontFamily: "Arial, Helvetica, sans-serif" }}>
       <div className="popup__dialog-manager">
-        <div className="popup-shade" onClick={onClose} />
+        <div className="popup-shade" onClick={e => { e.stopPropagation(); onClose(); }} />
         <div role="dialog" aria-modal="true" aria-label={label}
           className={["popup", className, "popup--center", phase === "show" && "popup--show", phase === "hide" && "popup--hide"].filter(Boolean).join(" ")}>
           {children}
@@ -61,7 +63,7 @@ function PopupShell({ open, onClose, className, label, z, children }: { open: bo
 }
 
 const CloseButton = ({ onClose }: { onClose: () => void }) => (
-  <div className="popup__close popup__close--dlg" onClick={onClose} role="button" aria-label="Kapat">
+  <div className="popup__close popup__close--dlg" onClick={onClose} role="button" aria-label="Bağla">
     <div className="popup__close-icon" />
   </div>
 );
@@ -242,8 +244,8 @@ function PreviewAudioPlayer({ song }: { song: MusicItem }) {
   return (
     <div className={audioCls("", [duration > 0 ? "" : "loading"])}>
       <audio ref={ref} src={song.url} preload="metadata" />
-      <div className={audioCls("button", [playing ? "pause" : "play", duration > 0 ? "" : "disabled"])} onClick={toggle} role="button" aria-label={playing ? "Durdur" : "Çal"} />
-      <input className={audioCls("slider")} type="range" min={0} max={Math.ceil(duration)} step={1} value={time} aria-label="İlerleme"
+      <div className={audioCls("button", [playing ? "pause" : "play", duration > 0 ? "" : "disabled"])} onClick={toggle} role="button" aria-label={playing ? "Dayandır" : "Səsləndir"} />
+      <input className={audioCls("slider")} type="range" min={0} max={Math.ceil(duration)} step={1} value={time} aria-label="Səsləndirmə mövqeyi"
         onChange={(e) => { const v = Number(e.target.value); if (ref.current) ref.current.currentTime = v; setTime(v); }}
         style={{ background: `linear-gradient(to right, #9dc93b ${pct}%, rgba(0, 0, 0, 0.08) ${pct}%)` }} />
       <div className={audioCls("time")}>{time > 0 ? secondsToMMSS(time) : duration ? secondsToMMSS(duration) : ""}</div>
@@ -271,6 +273,10 @@ export interface MusicPreviewDialogProps {
 
 export function MusicPreviewDialog({ open, assets, service, music, onConfirm, onClose }: MusicPreviewDialogProps) {
   const [sent, setSent] = useState(false);
+  const current = useMusicSession().song, auth = useAuth();
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { if (!open) return; const id = window.setInterval(() => setNow(Date.now()), 250); return () => window.clearInterval(id); }, [open]);
+  const remaining = current && current.sender.id !== auth.session?.user.id ? Math.max(0, Math.ceil((current.startedAt + 60000 - now) / 1000)) : 0;
   useEffect(() => { if (open) setSent(false); }, [open, music]);
   const t = (key: string) => translate(assets, key);
   const isVideo = service.id === "yt";
@@ -292,7 +298,7 @@ export function MusicPreviewDialog({ open, assets, service, music, onConfirm, on
       </div>
       <div className="popup__buttons popup__buttons--center">
         <div className="button button--cancel" role="button" onClick={onClose}>{t("ios:dlg:music_confirm:cancel")}</div>
-        <div className="button button--confirm" role="button" onClick={() => { if (sent || !music) return; setSent(true); onConfirm(music); }}>{t("ios:dlg:music_confirm:confirm")}</div>
+        <div className="button button--confirm" role="button" aria-disabled={sent || remaining > 0} onClick={() => { if (sent || remaining > 0 || !music) return; setSent(true); onConfirm(music); }}>{remaining > 0 ? secondsToMMSS(remaining) : t("ios:dlg:music_confirm:confirm")}</div>
       </div>
     </PopupShell>
   );

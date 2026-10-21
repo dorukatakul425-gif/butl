@@ -1,7 +1,7 @@
 import { createPortal } from "react-dom";
 import { translate, type CilizAssets } from "@/lib/ciliz-assets";
 
-/** ReceivedGoldDialog.tsx: "Tebrikler!", package artwork, "<gold/> ödülü aldınız!", "Devam". */
+/** ReceivedGoldDialog.tsx: "Tebrikler!", package artwork, "<gold/> mükafatı qazandınız!", "Devam". */
 export function ReceivedGoldDialog({ assets, gold, position, onContinue }: {
   assets: CilizAssets; gold: number; position: number | "heart"; onContinue: (pt: { x: number; y: number }) => void;
 }) {
@@ -16,7 +16,7 @@ export function ReceivedGoldDialog({ assets, gold, position, onContinue }: {
         <div role="dialog" aria-modal="true" aria-label={t("dlg:kiss_bonus:title")} className="popup popup--center popup--show">
           <div className="popup__header received-gold__x_popup__header">
             <div className="popup__title">{t("dlg:kiss_bonus:title")}</div>
-            <div className="popup__close popup__close--dlg" role="button" aria-label="Kapat" onClick={go}><div className="popup__close-icon" /></div>
+            <div className="popup__close popup__close--dlg" role="button" aria-label="Bağla" onClick={go}><div className="popup__close-icon" /></div>
           </div>
           <div className="popup__content popup__content--center">
             <div className="received-gold">
@@ -51,7 +51,7 @@ export function VipBoughtDialog({ assets, onClose }: { assets: CilizAssets; onCl
         <div role="dialog" aria-modal="true" aria-label={t("dlg:kiss_bonus:title")} className="popup popup--center popup--show">
           <div className="popup__header">
             <div className="popup__title">{t("dlg:kiss_bonus:title")}</div>
-            <div className="popup__close popup__close--dlg" role="button" aria-label="Kapat" onClick={onClose}><div className="popup__close-icon" /></div>
+            <div className="popup__close popup__close--dlg" role="button" aria-label="Bağla" onClick={onClose}><div className="popup__close-icon" /></div>
           </div>
           <div className="popup__content popup__content--wrap popup__content--center">
             <div className="info__image info__image--vip-purchase" />

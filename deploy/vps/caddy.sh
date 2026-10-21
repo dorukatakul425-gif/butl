@@ -39,6 +39,11 @@ $DOMAIN {
   @hidden path /.* */.* *.map /deploy/* /drizzle/* /supabase/* /src/* *.md
   respond @hidden 404
 
+  # Game WebSocket hub (room events, gifts, music clock).
+  handle /ws* {
+    reverse_proxy 127.0.0.1:3100
+  }
+
   @api path /auth/v1/* /rest/v1/* /realtime/v1/* /storage/v1/* /graphql/v1/*
   handle @api {
     reverse_proxy 127.0.0.1:$KONG_PORT

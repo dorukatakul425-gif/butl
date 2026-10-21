@@ -39,7 +39,7 @@ export function DecorSelection({ open, onClose }: { open: boolean; onClose: () =
       const res = await purchaseItem(item.type);
       if (!res.ok) {
         if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
-        else showSourceToast("Satın alınamadı.");
+        else showSourceToast("Alış baş tutmadı.");
         return;
       }
     }
@@ -49,7 +49,7 @@ export function DecorSelection({ open, onClose }: { open: boolean; onClose: () =
       return;
     }
     const ok = await setDecorations(item.frame?.type || "", item.stone?.type || "");
-    if (!ok) showSourceToast("Uygulanamadı.");
+    if (!ok) showSourceToast("Tətbiq edilmədi.");
   };
 
   return (

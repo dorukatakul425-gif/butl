@@ -1,4 +1,6 @@
 import { KickoutSeatFx } from "@/components/table/kickout-seat-fx";
+import { PlayerCreatorOverlay } from '@/components/table/player-creator-overlay';
+import { usePlayerAppearances } from '@/lib/use-player-appearance';
 import { telegramZodiac } from "@/lib/telegram-profile";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCilizAssets } from "@/components/decor/decor-selection";
@@ -61,7 +63,7 @@ export interface SeatPlayer {
 
 export const VIEWER_SEAT = 5;
 
-type PixiTable = Awaited<ReturnType<typeof import("@/components/table/pixi-table").createPixiTable>>;
+type PixiTable = Awaited<ReturnType<typeof import("@/components/table/web-pixi-table").createPixiTable>>;
 
 export function TableSeats() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -79,6 +81,7 @@ export function TableSeats() {
 
   const progress = useViewerProgress();
   const room = useRoom();
+  const appearances = usePlayerAppearances(room.players.flatMap(p => p ? [p.id] : []));
   const blocked = useBlockedUsers();
   const ownKisses = room.players[VIEWER_SEAT]?.kisses;
   useEffect(() => { if (ownKisses !== undefined) setViewerKisses(ownKisses); }, [ownKisses]);
@@ -153,7 +156,10 @@ export function TableSeats() {
     if (!assets || !hostRef.current) return;
     let disposed = false;
     const host = hostRef.current;
-    import("@/components/table/pixi-table").then(async ({ createPixiTable }) => {
+    // Both website and Telegram share the verified reference table rendering.
+    // Telegram authentication, viewport and native integration remain separate.
+    const renderer = import("@/components/table/web-pixi-table");
+    renderer.then(async ({ createPixiTable }) => {
       const table = await createPixiTable(host, assets, {
         onSeatClick: (index) => {
           unlockSfx();
@@ -334,7 +340,7 @@ export function TableSeats() {
         if (!res.ok) for (const id of receivers) localSent.current.delete(`${seed}:${id}`);
         if (res.ok) { window.dispatchEvent(new CustomEvent(GIFT_SENT_EVENT, { detail: item.type })); return; }
         if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_BANK_EVENT));
-        else showSourceToast("Hediye gönderilemedi.");
+        else showSourceToast("Hədiyyə göndərilmədi.");
       });
     },
     [assets, target, room.players],
@@ -416,7 +422,7 @@ export function TableSeats() {
   }, []);
   const close = useCallback(() => setTarget(closedTarget), []);
   const multiselect = useMemo(() => ({
-    title: assets ? translate(assets, "mobile:dlg:gift:multiselect", "Birden fazla kişi seç") : "",
+    title: assets ? translate(assets, "mobile:dlg:gift:multiselect", "Bir neçə oyunçu seç") : "",
     onSelectState: (on: boolean) => setTarget(state => setSelective(state, on)),
     onSelectMen: () => setTarget(state => selectGender(state, playersRef.current.map(p => p.male), true, VIEWER_SEAT)),
     onSelectWomen: () => setTarget(state => selectGender(state, playersRef.current.map(p => p.male), false, VIEWER_SEAT)),
@@ -424,10 +430,11 @@ export function TableSeats() {
 
   return (
     <>
-      <div ref={hostRef} className="original-table-seats" aria-label="Masadaki oyuncular">
+      <div ref={hostRef} className="original-table-seats" aria-label="Masadakı oyunçular">
         {activeTable && assets && <BottlePlay key={room.roomId} table={activeTable} assets={assets} />}
       </div>
       {activeTable && assets && <KickoutSeatFx assets={assets} seatPoint={seat => activeTable.seatPoint(seat)} />}
+      {activeTable && <PlayerCreatorOverlay players={room.players} appearances={appearances} seatPoint={seat => activeTable.seatPoint(seat)} />}
       <TokensBankHost />
       {assets && (
         <GestureDialog
@@ -447,7 +454,7 @@ export function TableSeats() {
             const res = await sendGesture(item.gesture.type);
             if (!res.ok) {
               localGestures.current = Math.max(0, localGestures.current - 1);
-              if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_TOKENS_BANK_EVENT)); else showSourceToast("Jest gönderilemedi.");
+              if (res.reason.includes("insufficient")) window.dispatchEvent(new Event(OPEN_TOKENS_BANK_EVENT)); else showSourceToast("Jest göndərilmədi.");
             }
           }}
         />
