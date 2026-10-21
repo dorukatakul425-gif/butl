@@ -1,17 +1,30 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/lib/auth';
 import { getSupabase } from '@/lib/supabase';
 import { needsRefresh } from '@/lib/player-appearance';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 
 type RefreshEvent = { id: string; created_at: string };
+const COUNTDOWN = 10;
+
+function reloadFor(id: string) {
+  try { sessionStorage.setItem('appUpdateReload', JSON.stringify({ v: id, at: Date.now() })); } catch { /* ignore */ }
+  const url = new URL(window.location.href);
+  url.searchParams.set('oyun-versiya', id);
+  window.location.replace(url.href);
+}
+function recentlyReloadedFor(id: string) {
+  try { const raw = sessionStorage.getItem('appUpdateReload'); return Boolean(raw && JSON.parse(raw)?.v === id); } catch { return false; }
+}
+
 export function SiteRefreshHost() {
   const { session } = useAuth();
   const [pending, setPending] = useState<RefreshEvent | null>(null);
-  const [open, setOpen] = useState(false);
+  const [left, setLeft] = useState(COUNTDOWN);
+  const [box, setBox] = useState<{ left: number; top: number; width: number } | null>(null);
+
   useEffect(() => {
-    setPending(null); setOpen(false);
+    setPending(null);
     const sb = getSupabase();
     if (!sb || !session) return;
     const openedAt = Date.now();
@@ -19,7 +32,9 @@ export function SiteRefreshHost() {
     let disposed = false, reading = false;
     const accept = (event: RefreshEvent | null) => {
       if (disposed || !needsRefresh(event, openedAt, seen) || !event) return;
-      seen.add(event.id); setPending(event); setOpen(true);
+      seen.add(event.id);
+      if (recentlyReloadedFor(event.id)) return;
+      setPending(event);
     };
     const read = async () => {
       if (disposed || reading) return;
@@ -38,11 +53,55 @@ export function SiteRefreshHost() {
     void read();
     return () => { disposed = true; window.clearInterval(timer); window.removeEventListener('online', onVisible); document.removeEventListener('visibilitychange', onVisible); void sb.removeChannel(channel); };
   }, [session?.user.id]);
-  return <Dialog open={open && Boolean(pending)} onOpenChange={setOpen}>
-    <DialogContent className="site-refresh-dialog">
-      <DialogTitle>Yeni versiya hazırdır</DialogTitle>
-      <DialogDescription>Yeni versiya hazırdır. Davam etmək üçün səhifəni yeniləyin.</DialogDescription>
-      <Button onClick={() => { if (!pending) return; const url = new URL(window.location.href); url.searchParams.set('oyun-versiya', pending.id); window.location.replace(url.href); }}>İndi yenilə</Button>
-    </DialogContent>
-  </Dialog>;
+
+  // Ureyimsen app-update.js: 10 saniyəlik geri sayım, gizli tabda görünənə qədər gözləyir.
+  useEffect(() => {
+    if (!pending) return;
+    let count = COUNTDOWN, timer = 0;
+    const start = () => {
+      setLeft(count);
+      timer = window.setInterval(() => {
+        count -= 1;
+        if (count <= 0) { window.clearInterval(timer); reloadFor(pending.id); return; }
+        setLeft(count);
+      }, 1000);
+    };
+    const onVisible = () => { if (!document.hidden) { document.removeEventListener('visibilitychange', onVisible); start(); } };
+    if (document.hidden) document.addEventListener('visibilitychange', onVisible); else start();
+    return () => { window.clearInterval(timer); document.removeEventListener('visibilitychange', onVisible); };
+  }, [pending]);
+
+  // Söhbət panelinin sol yuxarı küncünə yapışdır.
+  useEffect(() => {
+    if (!pending) return;
+    let raf = 0;
+    const place = () => {
+      const chat = document.querySelector<HTMLElement>('.original-chat');
+      const r = chat?.getBoundingClientRect();
+      setBox(prev => {
+        const next = r && r.width > 0 && r.height > 0 ? { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width) } : null;
+        return prev?.left === next?.left && prev?.top === next?.top && prev?.width === next?.width ? prev : next;
+      });
+      raf = window.requestAnimationFrame(place);
+    };
+    place();
+    return () => window.cancelAnimationFrame(raf);
+  }, [pending]);
+
+  if (!pending || typeof document === 'undefined') return null;
+  const style = box
+    ? { left: box.left + 8, top: box.top + 8, width: Math.min(420, box.width - 16) }
+    : undefined;
+  return createPortal(
+    <div id="app-update-banner" role="status" className={`app-update-banner${box ? ' app-update-banner--chat' : ''}`} style={style}>
+      <div className="app-update-banner__icon" aria-hidden>✨</div>
+      <div className="app-update-banner__text">
+        <div className="app-update-banner__title">Yeni versiya hazırdır</div>
+        <div className="app-update-banner__body">{left} saniyə sonra yenilənəcək</div>
+      </div>
+      <button type="button" className="app-update-banner__now" onClick={() => reloadFor(pending.id)}>İndi yenilə</button>
+      <i className="app-update-banner__bar" style={{ width: `${(Math.max(0, left - 1) / COUNTDOWN) * 100}%` }} />
+    </div>,
+    document.body,
+  );
 }
