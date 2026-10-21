@@ -135,20 +135,6 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
     return () => { alive = false; window.clearInterval(timer); };
   }, [userId]);
   const ranks = ranking?.userId === userId ? ranking : null;
-  const [heartSenders, setHeartSenders] = useState<{ userId: string; rows: { id: string; name: string; photo_url: string | null }[] } | null>(null);
-  useEffect(() => {
-    const sb = getSupabase();
-    if (!sb || !userId) return;
-    let alive = true, revision = 0;
-    const load = async () => {
-      const current = ++revision;
-      const { data, error } = await sb.rpc("player_heart_senders", { p_user: userId });
-      if (alive && current === revision && !error) setHeartSenders({ userId, rows: data ?? [] });
-    };
-    void load();
-    const timer = window.setInterval(() => void load(), 10000);
-    return () => { alive = false; window.clearInterval(timer); };
-  }, [userId]);
   const [savedBio, setSavedBio] = useState<{ userId: string; value: string | null } | null>(null);
   const bio = savedBio && savedBio.userId === userId ? savedBio.value : profile?.status;
   // Bio belongs to the home profile, not the statistics adapter. Read even when stats are supplied.
@@ -321,17 +307,6 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
                 onClick={() => setStatsState(s => s === "expanded" ? "narrowed" : "expanded")} />
               <div className="user-profile__stats-border" />
             </div>
-            {heartSenders && heartSenders.userId === userId && <section aria-label="Hədiyyə göndərənlər" style={{ padding: "8px 12px" }}>
-              <div style={{ fontSize: 12, marginBottom: 6 }}>Ürək / hədiyyə göndərənlər</div>
-              <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
-                {heartSenders.rows.length === 0 && <span style={{ fontSize: 12 }}>Hələ hədiyyə göndərən yoxdur</span>}
-                {heartSenders.rows.map(sender => <button key={sender.id} type="button" title={sender.name} aria-label={`${sender.name} — profili aç`}
-                  style={{ flex: "0 0 32px", padding: 0, border: 0, background: "transparent", cursor: "pointer" }}
-                  onClick={() => { onClose(); window.dispatchEvent(new CustomEvent("source:open-profile", { detail: sender.id })); }}>
-                  <img src={sender.photo_url || DEFAULT_PHOTO} alt={sender.name} width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover" }} />
-                </button>)}
-              </div>
-            </section>}
             <div className="user-profile__harem">
               <Div className="user-profile__owner-photo" style={harem.owner ? { backgroundImage: `url('${harem.owner.photoUrl}')` } : undefined} />
               <div className="user-profile__harem-info">
