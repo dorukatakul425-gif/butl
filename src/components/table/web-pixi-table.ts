@@ -1,4 +1,5 @@
-import { hasSceneAnimation, webGiftDestination, webGiftSample, webRenderQuality, webTableLayout } from "@/lib/web-table-rendering";
+import { hasSceneAnimation, tableTweenSeconds, webGiftDestination, webGiftSample, webRenderQuality, webTableLayout } from "@/lib/web-table-rendering";
+import { isTelegramWebApp } from "@/lib/telegram-viewport";
 import autumnCenterUrl from "@/assets/original-table-autumn-center.png";
 const autumnCenter = { url: autumnCenterUrl };
 import { ASSETS_TO_VIRTUAL as ASSETS_K } from "@/lib/ciliz-assets";
@@ -460,8 +461,9 @@ export interface PixiTableOptions {
 }
 
 export async function createPixiTable(host: HTMLElement, assets: CilizAssets, options: PixiTableOptions = {}) {
-  // Website-only reference quality policy; Telegram retains its existing renderer.
-  const quality = webRenderQuality(window.devicePixelRatio, navigator.userAgent);
+  // Preserve website policy; Telegram uses its screen's native pixel density.
+  const telegram = isTelegramWebApp();
+  const quality = webRenderQuality(window.devicePixelRatio, navigator.userAgent, telegram);
   let resolution = quality.resolution;
   const app = new Application({
     backgroundAlpha: 0,
@@ -527,7 +529,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
     // tekrar dene — yoksa masa boş kalır ve sayfayı yenilemek gerekir.
     if (!width || !height) { if (!destroyed) requestAnimationFrame(layout); return; }
     // Boyut değişmediyse canvas'ı sıfırlayan resize çağrısını atla.
-    const nextResolution = webRenderQuality(window.devicePixelRatio, navigator.userAgent).resolution;
+    const nextResolution = webRenderQuality(window.devicePixelRatio, navigator.userAgent, telegram).resolution;
     if (width !== lastWidth || height !== lastHeight || nextResolution !== resolution) {
       resolution = nextResolution;
       app.renderer.resolution = resolution;
@@ -553,7 +555,7 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   type Tick = (elapsed: number) => boolean;
   const ticks = new Set<Tick>();
   let destroyed = false;
-  void loadImage(autumnCenter.url).then(image => {
+  if (!telegram) void loadImage(autumnCenter.url).then(image => {
     if (destroyed) return;
     centerDecor.texture = Texture.from(image);
     const frame = assets.images['td_table_autumn_c']?.size;
@@ -565,11 +567,16 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   // oynar; biri varken çizim sürer (çerçeve "stick" animasyonu sonsuz döngüdür).
   const hasLiveSpine = () => hasSceneAnimation(stage, node =>
     (node instanceof Spine && node.autoUpdate) || (node instanceof AnimatedSprite && node.playing));
+  let previousTick = performance.now();
   app.ticker.add(() => {
+    const now = performance.now();
+    const tweenSeconds = tableTweenSeconds(app.ticker.deltaMS, now - previousTick, telegram);
+    previousTick = now;
+    if (telegram) for (const tick of ticks) if (!tick(tweenSeconds)) ticks.delete(tick);
     let remaining = Math.min(app.ticker.deltaMS / 1000, 0.1);
     while (remaining > 0) {
       const dt = Math.min(remaining, 0.02);
-      for (const tick of ticks) if (!tick(dt)) ticks.delete(tick);
+      if (!telegram) for (const tick of ticks) if (!tick(dt)) ticks.delete(tick);
       effects.update(dt);
       remaining -= dt;
     }
