@@ -10,8 +10,6 @@ import { GestureDialog } from "@/components/gestures/gesture-dialog";
 import { syncDecorFromProfile, useDecorState } from "@/lib/decor-store";
 import { VIEWER, VIEWER_STORE } from "@/lib/viewer";
 import { buildGiftItems, createSentGift, RAND_MOD, type GiftStoreItem } from "@/lib/gifts";
-import { FLY_SEC } from "@/lib/gift-geometry";
-import { flyGoldToCounter, inplaceGold } from "@/lib/gold-fly";
 import "@/styles/gold-fly.css";
 import { playSfx, preloadSfx, prepareSfx, unlockSfx } from "@/lib/sfx";
 import { dialogImage, translate, type CilizAssets } from "@/lib/ciliz-assets";
@@ -234,19 +232,7 @@ export function TableSeats() {
       const meta = assets.gifts[row.gift_type];
       if (from < 0 || to < 0 || !meta) return;
       if (!mine) void tableRef.current?.sendGift(from, to, createSentGift(assets, meta, row.seed));
-      // ureyimsen: hediye yapışınca içinden kalp çıkar — alıcı bizsek kalp sol üst
-      // sayaca uçar (addViewerGold), başkasıysa yerinde belirip süzülür (inplaceGold).
-      // Sunucu alıcıya hediyenin fiyatı kadar kalp öder (gift_prices.hearts = price).
-      const heartItem = giftItems.find(i => i.type === row.gift_type);
-      if (heartItem && heartItem.price > 0) {
-        const id = window.setTimeout(() => {
-          timers.delete(id);
-          const pt = tableRef.current?.seatPoint(to);
-          if (!pt) return;
-          if (to === VIEWER_SEAT) flyGoldToCounter(pt); else inplaceGold(pt);
-        }, FLY_SEC * 1000);
-        timers.add(id);
-      }
+      // Kullanıcı isteği: hediye atınca alıcıya kalp verilmez (ureyimsen'den farklı olarak).
       if (!mine && to === VIEWER_SEAT && row.sender_id !== playersRef.current[VIEWER_SEAT]?.id) offerResponse(row.sender_id, row.gift_type);
       const s = profileBySeat(from), r = profileBySeat(to);
       const item = giftItems.find(i => i.type === row.gift_type);
