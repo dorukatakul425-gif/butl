@@ -15,13 +15,13 @@ import settings from "@/assets/ui_btn_settings.svg";
 import changeTable from "@/assets/ui_btn_change_table.svg";
 import roulette from '@/assets/ui_btn_roulette.svg';
 import { Button } from "@/components/ui/button";
-import { OriginalMiscMenu } from "@/components/original-misc-menu";
+import { OriginalMiscMenuReal } from "@/components/original-misc-menu-real";
 import { DecorSelection } from "@/components/decor/decor-selection";
 import { BottleSelection } from "@/components/table/bottle-selection";
 import { TableBgDialog } from "@/components/table/table-bg-dialog";
 import { headerBtnSvg, useTableBg } from "@/lib/table-bg";
 import { BankDialog } from "@/components/bank/bank-dialog";
-import { SourceTopsDialog } from "@/components/table/source-tops-dialog";
+import { OriginalTopsDialog } from "@/components/table/original-tops-dialog";
 import { SourceBoostersDialog } from "@/components/table/source-boosters-dialog";
 import { SourceAchievementNotifications } from "@/components/table/source-achievements-dialog";
 import { SourceAchievementsDialog } from "@/components/table/source-achievements-dialog";
@@ -154,11 +154,11 @@ export function OriginalTableHeader() {
       {changeOpen && <SourceChangeTable onClose={() => setChangeOpen(false)} />}
       {season && <SourceSeasonDialog feature={season} onClose={() => setSeason(null)} onSettings={() => { setSeason(null); setSettingsOpen(true); }} />}
       <SettingsDialog open={settingsOpen} onClose={closeSettings} />
-      {topsOpen && <SourceTopsDialog onClose={() => setTopsOpen(false)} />}
+      {topsOpen && <OriginalTopsDialog onClose={() => setTopsOpen(false)} />}
       <SourceAchievementNotifications />
       {boostersOpen && <SourceBoostersDialog onClose={() => setBoostersOpen(false)} />}
       {achievementsOpen && <SourceAchievementsDialog onClose={() => setAchievementsOpen(false)} />}
-      <OriginalMiscMenu open={menuOpen} triggerRef={menuTriggerRef} onClose={closeMenu} onSelect={onMenuSelect} />
+      <OriginalMiscMenuReal open={menuOpen} triggerRef={menuTriggerRef} onClose={closeMenu} onSelect={onMenuSelect} />
       <DecorSelection open={decorOpen} onClose={closeDecor} />
       <BottleSelection open={bottleOpen} onClose={closeBottle} />
       {tableBgOpen && <TableBgDialog onClose={() => setTableBgOpen(false)} />}
