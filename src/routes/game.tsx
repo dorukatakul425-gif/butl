@@ -23,6 +23,7 @@ import { tableBgUrl, useTableBg } from "@/lib/table-bg";
 import { useOriginalLayout } from "@/lib/original-layout";
 import "@/styles/table-bg.css";
 import { GameCrashShield } from "@/components/game-crash-shield";
+import { OriginalTableBackground } from "@/components/original-table-background";
 
 export const Route = createFileRoute("/game")({
   head: () => ({
@@ -92,15 +93,16 @@ function Index() {
       <GameCrashShield name="heart-bonus"><SourceHeartBonus /></GameCrashShield>
       {auth.session && <GameCrashShield name="harem"><SourceHaremNotice key={auth.session.user.id} viewerId={auth.session.user.id} /></GameCrashShield>}
       {auth.session && <GameCrashShield name="daily-bonus"><DailyBonusHost viewerId={auth.session.user.id} /></GameCrashShield>}
-      <img className="original-page-wood" src={telegram ? '/game/orj/ui_table.png?v=original-quality-1' : woodTable} alt="" />
+      {!telegram && <img className="original-page-wood" src={woodTable} alt="" />}
       <div className="original-game">
         <div className="original-game-shell" style={shift ? { transform: `translateY(${shift}px)` } : undefined}>
+          {telegram && <OriginalTableBackground layout={layout} url="/game/orj/ui_table.png" />}
           <GameCrashShield name="header"><OriginalTableHeader /></GameCrashShield>
           <div
             className={`original-table${!tableBg && room.room?.table_color != null ? ` personal-table-color-${room.room.table_color}` : ''}`}
             style={layout ? { left: layout.table.x, top: layout.table.y, width: layout.table.size, height: layout.table.size } : undefined}
           >
-            <img className="original-table-wood" src={telegram ? '/game/orj/ui_table.png?v=original-quality-1' : woodTable} alt="Taxta oyun masası" />
+            {!telegram && <img className="original-table-wood" src={woodTable} alt="Taxta oyun masası" />}
             {tableBg && <img key={tableBg} className="original-table-bg-image" src={tableBgUrl(tableBg)} alt="" />}
             <GameCrashShield name="seats"><TableSeats /></GameCrashShield>
           </div>

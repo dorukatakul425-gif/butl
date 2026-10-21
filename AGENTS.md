@@ -25,7 +25,7 @@
 - Consume transactional table-change membership directly; generation-guard reads/feeds and reset cancellable motion/media to prevent stale-room state.
 - Apply sound settings before playback; autoplay recovery must respect mute and explicit pause.
 - Website and Telegram table rendering share the dynamically loaded web-pixi-table and pure web-table-rendering math; keep Telegram authentication, viewport and native integration independent so visual upgrades do not change account or platform behavior.
-- Scope Telegram reference artwork, native-density antialiasing and elapsed-time tweens to Mini App detection; keep website rendering, purchased backgrounds and bounded particle simulation unchanged so quality changes cannot alter platform behavior or server state.
+- Scope Telegram reference artwork, native-density rendering and elapsed-time tweens to Mini App detection; draw original ui_table with preloader overscan and NONE blending in a separate browser-only background layer, preserving website rendering, purchased backgrounds and server state.
 - Shared table premium effect invalidation belongs to its owning scene and detaches on destruction, so idle dirty rendering cannot freeze effects or leak into another renderer.
 - Cache only resolved public purchase catalogues briefly on the server; keep every click's authenticated spending transaction independent and never cache user eligibility or results.
 - Keep source Tops presentation isolated from other table dialogs; rank verified account statistics across all readable profiles, and never substitute lifetime scores for unsupported periods or allow cosmetic bottle clicks to bypass paid server transactions.
