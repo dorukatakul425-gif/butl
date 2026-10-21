@@ -7,6 +7,7 @@ import { TelegramNotifications } from "@/components/admin/telegram-notifications
 import { TelegramBotSettings } from '@/components/admin/telegram-bot-settings';
 import { Input } from "@/components/ui/input";
 import { PlayerLevelPanel } from "@/components/admin/player-level-panel";
+import { RoulettePanel } from '@/components/admin/roulette-panel';
 import { useAuth } from "@/lib/auth";
 import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setKisses, setBan, listReports, resolveReport, listStatusReviews, reviewStatus, sendBroadcast, listRoomsAdmin, viewRoomAdmin } from "@/lib/admin.functions";
 
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/sako")({
   component: AdminPage,
 });
 
-type Tab = "umumi" | "masalar" | "oyuncular" | "sikayetler" | "statuslar" | "telegram";
+type Tab = "umumi" | "masalar" | "oyuncular" | "sikayetler" | "statuslar" | "telegram" | "roulette";
 
 const TABS: Array<[Tab, string]> = [
   ["umumi", "Ümumi"],
@@ -34,6 +35,7 @@ const TABS: Array<[Tab, string]> = [
   ["sikayetler", "Şikayətlər"],
   ["statuslar", "Statuslar"],
   ["telegram", "Telegram bildirişləri"],
+  ['roulette', 'Şans çarxı'],
 ];
 
 function AdminPage() {
@@ -83,6 +85,7 @@ function Dashboard() {
         {tab === "sikayetler" && <Reports />}
         {tab === "statuslar" && <StatusReviews />}
         {tab === "telegram" && <><TelegramBotSettings /><TelegramNotifications /></>}
+        {tab === 'roulette' && <RoulettePanel />}
       </div>
     </div>
   );

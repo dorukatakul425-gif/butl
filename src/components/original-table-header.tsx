@@ -13,6 +13,7 @@ import heartDown from "@/assets/ui_btn_gold_add_heart_down.svg";
 import menu from "@/assets/ui_btn_misc_menu.svg";
 import settings from "@/assets/ui_btn_settings.svg";
 import changeTable from "@/assets/ui_btn_change_table.svg";
+import roulette from '@/assets/ui_btn_roulette.svg';
 import { Button } from "@/components/ui/button";
 import { OriginalMiscMenu } from "@/components/original-misc-menu";
 import { DecorSelection } from "@/components/decor/decor-selection";
@@ -82,7 +83,7 @@ export function OriginalTableHeader() {
     const id = window.setInterval(() => { n -= 1; setChangeCount(n); if (n < 1) window.clearInterval(id); }, 1000);
     return () => window.clearInterval(id);
   }, [room.roomId]);
-  const [season, setSeason] = useState<'league' | null>(null);
+  const [season, setSeason] = useState<'league' | 'roulette' | null>(null);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -125,6 +126,7 @@ export function OriginalTableHeader() {
       <div className="original-header-middle">
         <SeasonPassButton skin={[backgroundUp, backgroundDown]} />
         <SourceLeagueButton onClick={() => setSeason('league')} />
+        <OriginalIcon asset={roulette} label="Şans çarxı" kind="default" onClick={() => setSeason('roulette')} />
         {middleIcons.map((icon) => icon.kind === "menu" ? (
           <Button key={icon.label} ref={menuTriggerRef} type="button" variant="ghost"
             className="original-header-button original-icon-menu" aria-label="Menyu" title="Menyu"

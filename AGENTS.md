@@ -37,7 +37,7 @@
 - Keep profile popup positioning absolute inside its fixed layer, using the source safe-area translation; relative offsets combined with flex centering shift the popup offscreen.
 - Leagues are scored only by database triggers on trusted kiss/gift events and finalized lazily inside get_league; tunable numbers live in league_config/league_levels so clients never compute scores, moves or rewards.
 - Composite manifest-sized original center artwork below the bottle in Pixi so layout and input remain shared.
-- Roulette uses original wheel/frame/center and host-fed prizes/winners. Screenshot labels are inert, not payouts; the 2,000-spin preview never changes wallets. Only authenticated host awards persist.
+- Roulette reuses the original wheel/frame/center; production spins and DAT chance purchases are atomic authenticated SQL RPCs with per-user idempotency and authoritative wallet/booster awards. Admin odds are exact basis-point percentages totaling 100%, replaced under a config lock with revision checks; no local fallback may simulate winnings. Reference-private pricing/odds are not inferred from visual sectors, and initial configuration stays disabled until an admin enables it.
 
 - Root prints the inspector notice once client-side; no DevTools detection or execution/input blocking, to preserve operation.
 - VPS hosting lives only in deploy/vps (subdirectories have their own AGENTS.md to read first); never change Lovable's .env/vite config for it, so both targets work.

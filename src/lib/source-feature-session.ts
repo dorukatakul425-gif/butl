@@ -17,11 +17,11 @@ export interface SourceFeatureSnapshot {
     state?: 'running' | 'finished'; roundId?: number; usersMax?: number; moveUp?: number; moveDown?: number; maxLeague?: number;
     kisses?: number; kissesLim?: number; limit?: 'kiss' | 'gift' | 'all' | null; gold?: number; gifts?: string[];
     finalPos?: number | null; rewardGold?: number | null; rewardGifts?: string[] | null };
-  roulette?: { freeSpins: number; price: number; prizes: SourceReward[]; winner?: { id: string; name: string; photo?: string; amount: number } };
+  roulette?: { freeSpins: number; price: number; prizes: SourceReward[]; enabled?: boolean; bundleChances?: number; bundleDat?: number; revision?: number; winner?: { id: string; name: string; photo?: string; amount: number } };
   pass?: { points: number; premium: boolean; endsAt: number; levels: Array<{ points: number; free: SourceReward[]; premium: SourceReward[]; claimed: boolean }> };
 }
 export interface SourceTableEntry { id: string; name?: string; photo?: string; bottle: string; men: number; women: number; blockedUntil?: number; kicker?: { id: string; name: string; photo?: string; male?: boolean }; current?: boolean }
-export type SourceFeatureAction = 'change-table' | 'invite' | 'save-profile' | 'profile-refresh' | 'save-profile-photo' | 'feedback' | 'roulette-spin' | 'pass-claim' | 'pass-buy' | 'league-join' | 'league-settings' | 'league-seen' | 'league-refresh' | 'roulette-buy-chances' | 'user-kick' | 'user-save';
+export type SourceFeatureAction = 'change-table' | 'invite' | 'save-profile' | 'profile-refresh' | 'save-profile-photo' | 'feedback' | 'roulette-spin' | 'roulette-refresh' | 'pass-claim' | 'pass-buy' | 'league-join' | 'league-settings' | 'league-seen' | 'league-refresh' | 'roulette-buy-chances' | 'user-kick' | 'user-save';
 export interface SourceFeatureResult { confirmed: boolean; rewards?: SourceReward[]; message?: string; rewardIndex?: number; inviteUrl?: string; testOnly?: boolean }
 export interface SourceFeatureAdapter {
   getSnapshot: () => SourceFeatureSnapshot;

@@ -3,6 +3,7 @@ import { attachSourceFeatureSession, type SourceFeatureSnapshot, type SourceTabl
 import { getSupabase } from './supabase';
 import { readProfileEdit, saveProfileEdit, saveProfilePhoto } from './profile-edit';
 import { leagueHeader, type LeagueInfo } from './league';
+import { refreshProfile } from './auth';
 
 let snapshot: SourceFeatureSnapshot = { viewerId: null };
 const listeners = new Set<() => void>();
@@ -10,6 +11,16 @@ const emit = () => listeners.forEach((l) => l());
 let tableRead = 0;
 let preferenceRevision = 0;
 let kickoutRead = 0;
+let rouletteRead = 0;
+async function refreshRoulette(viewerId: string) {
+  const sb = getSupabase();
+  if (!sb) return;
+  const read = ++rouletteRead;
+  const { data, error } = await sb.rpc('roulette_info' as never);
+  if (snapshot.viewerId !== viewerId || read !== rouletteRead) return;
+  if (error || !data) throw new Error('Çarx məlumatları alınmadı. Yenidən yoxlayın.');
+  snapshot = { ...snapshot, roulette: data as SourceFeatureSnapshot['roulette'] }; emit();
+}
 async function refreshKickout(viewerId: string) {
   const sb = getSupabase();
   if (!sb) return;
@@ -103,6 +114,15 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
     execute: async (action, input) => {
       const sb = getSupabase();
       if (!sb) return { confirmed: false, message: 'Server bağlantısı yoxdur.' };
+      if (action === 'roulette-refresh') { await refreshRoulette(viewerId); return { confirmed: true }; }
+      if (action === 'roulette-spin' || action === 'roulette-buy-chances') {
+        if (!snapshot.roulette || snapshot.viewerId !== viewerId || typeof input?.['requestId'] !== 'string') return { confirmed: false };
+        const { data, error } = await sb.rpc('roulette_action' as never, { p_request: input['requestId'], p_action: action === 'roulette-spin' ? 'spin' : 'buy', p_revision: snapshot.roulette.revision } as never);
+        if (error) { await refreshRoulette(viewerId).catch(() => undefined); return { confirmed: false, message: error.message }; }
+        // Payment already committed; a failed follow-up read must not discard the earned result.
+        await Promise.allSettled([refreshRoulette(viewerId), refreshProfile()]);
+        return data as import('./source-feature-session').SourceFeatureResult;
+      }
       if (action === 'profile-refresh' || action === 'save-profile' || action === 'save-profile-photo') {
         try {
           if (action === 'save-profile-photo') await saveProfilePhoto(viewerId, String(input?.['photo'] ?? ''));
@@ -153,6 +173,7 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
   void refreshTables();
   void refreshKickout(viewerId);
   void refreshPreference(viewerId);
+  void refreshRoulette(viewerId).catch(() => undefined);
   leagueInfo = null; leagueRound = undefined; void leagueChannel?.unsubscribe(); leagueChannel = null;
   void refreshLeague(viewerId);
   // Header timer, finish detection and joining once the viewer earns points.

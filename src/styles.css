@@ -30,6 +30,7 @@
 @import "./styles/ciliz-chat-action.css";
 @import "./styles/ciliz-chat-controls.css";
 @import "./styles/ciliz-roulette.css";
+@import "./styles/roulette-prize-icons.css";
 @import "./styles/profile-home.css";
 @import "./styles/mobile-preferences.css";
 
@@ -95,6 +96,9 @@
 }
 
 :root {
+  --roulette-reward-shade: oklch(0 0 0 / .65);
+  --roulette-reward-foreground: oklch(1 0 0);
+  --roulette-reward-star: oklch(.89 .16 90);
   --game-wallet-text: #ffffff;
   --game-menu-surface: #ffffff;
   --game-menu-text: #000000;

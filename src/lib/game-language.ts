@@ -6,6 +6,7 @@ export function azerbaijaniGameDictionary(source: Record<string, string>): Recor
     .replace(/Subscriptions in Google Play/g,'Google Play abunəlikləri')
     .replace(/Privacy policy/g,'Məxfilik siyasəti')
     .replace(/Terms and conditions/g,'İstifadə şərtləri')
+    .replace(/“Spin”/g,'“Fırlat”')
     .replace(/\band\b/g,'və')
     .replace(/kristal(?:lar)?/gi,'DAT')]));
 }
