@@ -21,14 +21,24 @@ const fx = {
   gl: null as WebGLRenderingContext | null,
   tex: null as WebGLTexture | null,
   frameReq: 0,
+  playback: 0,
+  finish: null as (() => void) | null,
+
+  cancelFrame() {
+    if (!this.frameReq) return;
+    if (this.video?.cancelVideoFrameCallback) this.video.cancelVideoFrameCallback(this.frameReq);
+    else cancelAnimationFrame(this.frameReq);
+    this.frameReq = 0;
+  },
 
   play(item: Item) {
     this.queue.push(item);
     while (this.queue.length > 3) this.queue.shift();
-    if (this.playing && Date.now() - this.playingSince > 25000) this.playing = false;
+    if (this.playing && Date.now() - this.playingSince > 25000) this.finish?.();
     if (!this.playing) this.run();
   },
   run() {
+    this.playing = true;
     this.playingSince = Date.now();
     Promise.resolve().then(() => this.next()).catch(() => {
       this.playing = false;
@@ -36,7 +46,10 @@ const fx = {
     });
   },
   reset() {
+    this.playback++;
+    this.cancelFrame();
     try { if (this.video) { this.video.pause(); this.video.removeAttribute("src"); this.video.load(); } } catch { /* ignore */ }
+    this.gl?.getExtension('WEBGL_lose_context')?.loseContext();
     this.el?.remove();
     this.el = null; this.canvas = null; this.video = null; this.gl = null; this.tex = null; this.lost = false;
   },
@@ -53,11 +66,14 @@ const fx = {
     el.append(canvas, video);
     const gl = canvas.getContext("webgl", { alpha: true, premultipliedAlpha: false, antialias: false, powerPreference: "low-power" });
     if (!gl) return false;
-    const sh = (type: number, src: string) => { const s = gl.createShader(type)!; gl.shaderSource(s, src); gl.compileShader(s); return s; };
-    const prog = gl.createProgram()!;
-    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
-    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+    const sh = (type: number, src: string) => { const s = gl.createShader(type); if (!s) return null; gl.shaderSource(s, src); gl.compileShader(s); return s; };
+    const prog = gl.createProgram();
+    const vert = sh(gl.VERTEX_SHADER, VERT), frag = sh(gl.FRAGMENT_SHADER, FRAG);
+    if (!prog || !vert || !frag) return false;
+    gl.attachShader(prog, vert);
+    gl.attachShader(prog, frag);
     gl.linkProgram(prog);
+    gl.deleteShader(vert); gl.deleteShader(frag);
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false;
     gl.useProgram(prog);
     const buf = gl.createBuffer();
@@ -89,7 +105,8 @@ const fx = {
     el.style.top = `${Math.round(h - height)}px`;
     el.classList.toggle("live-gift-fx--boxed", width < w - 2);
   },
-  draw() {
+  draw(version: number) {
+    if (version !== this.playback) return;
     const gl = this.gl, v = this.video, c = this.canvas;
     if (!gl || !v || !c || v.paused || v.ended) return;
     if (v.readyState >= 2) {
@@ -101,7 +118,7 @@ const fx = {
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
     const rvfc = (v as HTMLVideoElement & { requestVideoFrameCallback?: (cb: () => void) => number }).requestVideoFrameCallback;
-    this.frameReq = rvfc ? rvfc.call(v, () => this.draw()) : requestAnimationFrame(() => this.draw());
+    this.frameReq = rvfc ? rvfc.call(v, () => this.draw(version)) : requestAnimationFrame(() => this.draw(version));
   },
   async next(): Promise<void> {
     const item = this.queue.shift();
@@ -110,11 +127,16 @@ const fx = {
     this.playingSince = Date.now();
     if (this.lost) this.reset();
     if (document.hidden || !this.ensure()) { if (!document.hidden) this.fallback(item); return this.next(); }
-    const v = this.video!, el = this.el!;
+    const v = this.video, el = this.el;
+    if (!v || !el) { this.playing = false; return; }
+    const version = ++this.playback;
     let finished = false;
     const done = () => {
       if (finished) return;
       finished = true;
+      this.cancelFrame();
+      this.playback++;
+      this.finish = null;
       window.clearTimeout(guard);
       v.onended = v.onerror = null;
       v.pause(); v.removeAttribute("src"); v.load();
@@ -123,6 +145,7 @@ const fx = {
       window.setTimeout(() => this.run(), 120);
     };
     const guard = window.setTimeout(done, 20000);
+    this.finish = done;
     if (!el.parentNode) document.body.appendChild(el);
     this.fit();
     v.onended = done;
@@ -132,10 +155,11 @@ const fx = {
     el.classList.add("live-gift-fx--on");
     try { await v.play(); }
     catch {
+      if (finished || version !== this.playback) return;
       try { v.muted = true; await v.play(); }
-      catch { this.fallback(item); done(); return; }
+      catch { if (!finished && version === this.playback) { this.fallback(item); done(); } return; }
     }
-    this.draw();
+    if (!finished && version === this.playback) this.draw(version);
   },
 };
 
@@ -148,6 +172,8 @@ if (typeof document !== "undefined") {
 /** Zd.domEffect: glowing icon burst used when the video cannot play. */
 function domEffect(src: string) {
   try {
+    const previous = document.querySelectorAll('.premium-fx');
+    if (previous.length >= 3) previous[0]?.remove();
     const el = document.createElement("div");
     el.className = "premium-fx";
     el.innerHTML = '<div class="premium-fx__ring"></div><div class="premium-fx__rays"></div><div class="premium-fx__sparks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>';

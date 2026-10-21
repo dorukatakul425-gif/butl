@@ -13,6 +13,7 @@ import { showSourceToast } from "@/components/source-dialogs";
 import { emitServerHeartAward, luckyBonusAmount } from "./game-session";
 import { eventDeduper, haremTransition, revisionGuard } from './live-event-guards';
 import { gameError } from './game-language';
+import { singleFlight } from './room-work-budget';
 
 export type RoomPhase = "offer" | "spin" | "choose" | "result" | "return";
 export interface RoomRow {
@@ -413,20 +414,23 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
     });
 
   let pulse = 0;
+  const runPulse = singleFlight();
   // One 5s keepalive. Round phases advance through
   // the deadline timer in applyRoom, so this loop is only a fallback and does
   // not flood the table with writes/realtime events every 2s.
   heartbeatTimer = setInterval(() => {
     if (!current()) return;
-    pulse++;
-    void sb.rpc("heartbeat").then(async () => {
+    void runPulse(async () => {
+      const { error: heartbeatError } = await sb.rpc("heartbeat");
+      if (heartbeatError || !current()) return;
+      pulse++;
       if (!current()) return;
       await sb.rpc('kickout_refresh');
       if (current()) await sb.rpc("room_tick", { p_room: roomId });
-    });
     if (pulse % 2 === 0) { void loadPlayers(roomId, mapSeat); void refreshRoom(); }
     // Recover server-expired membership, never render a cached/fictitious seat.
-    if (pulse % 2 === 1) void sb.auth.getSession().then(async ({ data: s }) => {
+    if (pulse % 2 === 1) {
+      const { data: s } = await sb.auth.getSession();
       const uid = s.session?.user.id;
       if (!uid || !current()) return;
       const { data: mine, error: missingErr } = await sb.from("room_players").select("room_id, seat").eq("user_id", uid).maybeSingle();
@@ -434,7 +438,8 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
         if (!mine) void joinRoom().catch(() => undefined);
         else if (Number(mine.room_id) !== roomId || Number(mine.seat) !== mySeat) void switchRoom({ room_id: Number(mine.room_id), seat: Number(mine.seat) }).catch(() => undefined);
       }
-    });
+    }
+    }).catch(() => undefined);
   }, 5000);
   refreshCurrentRoom = () => (current() ? refreshRoom() : Promise.resolve());
   await Promise.all([loadPlayers(roomId, mapSeat), refreshRoom()]);

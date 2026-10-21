@@ -22,8 +22,10 @@ beforeAll(async()=>{
  CREATE FUNCTION _do_spin(bigint) RETURNS void LANGUAGE plpgsql AS $$ BEGIN END $$;
  CREATE FUNCTION _finish_choice(bigint) RETURNS void LANGUAGE plpgsql AS $$ BEGIN END $$;`);
  await db.exec(readFileSync(new URL('../../drizzle/migrations/0069_durable_table_membership.sql',import.meta.url),'utf8'));
+ await db.exec('CREATE FUNCTION is_banned(uuid) RETURNS boolean LANGUAGE sql AS $$ SELECT false $$;');
+ await db.exec(readFileSync(new URL('../../drizzle/migrations/0070_gift_spam_room_stability.sql',import.meta.url),'utf8'));
 },30000);
-beforeEach(async()=>{await db.exec(`TRUNCATE room_players,last_seats,profiles,rooms,kickout_targets CASCADE; INSERT INTO profiles VALUES('${a}',true),('${b}',false);`);await as(a);});
+beforeEach(async()=>{await db.exec(`TRUNCATE room_presence,room_players,last_seats,profiles,rooms,kickout_targets CASCADE; INSERT INTO profiles VALUES('${a}',true),('${b}',false);`);await as(a);});
 afterAll(async()=>{await db?.close();});
 it('refresh resumes exactly the same room, seat and other players',async()=>{
  await db.query('SELECT * FROM join_room()');await as(b);await db.query('SELECT * FROM join_room()');const before=await seats();await as(a);await db.query('SELECT * FROM join_room()');expect(await seats()).toEqual(before);
@@ -32,7 +34,7 @@ it('a short network interruption does not remove or rotate any seat',async()=>{
  await db.query('SELECT * FROM join_room()');const before=await seats();await db.exec("UPDATE room_players SET last_seen=now()-interval '30 seconds'");await db.query('SELECT room_tick(room_id) FROM room_players');expect(await seats()).toEqual(before);
 });
 it('expired real presence disappears but return restores original table and free seat',async()=>{
- await db.query('SELECT * FROM join_room()');const before=await seats();await db.exec("UPDATE room_players SET last_seen=now()-interval '3 minutes'");await db.query('SELECT room_tick(room_id) FROM room_players');expect(await seats()).toEqual([]);await db.exec("UPDATE last_seats SET left_at=now()-interval '1 day'");await db.query('SELECT * FROM join_room()');expect(await seats()).toEqual(before);
+ await db.query('SELECT * FROM join_room()');const before=await seats();await db.exec("UPDATE room_players SET last_seen=now()-interval '3 minutes'; UPDATE room_presence SET seen_at=now()-interval '3 minutes'");await db.query('SELECT room_tick(room_id) FROM room_players');expect(await seats()).toEqual([]);await db.exec("UPDATE last_seats SET left_at=now()-interval '1 day'");await db.query('SELECT * FROM join_room()');expect(await seats()).toEqual(before);
 });
 it('does not overwrite another player when the previous seat is taken',async()=>{
  await db.query('SELECT * FROM join_room()');const before=await seats();await db.exec(`DELETE FROM room_players; INSERT INTO profiles VALUES('00000000-0000-0000-0000-000000000003',true); INSERT INTO room_players(room_id,seat,user_id) VALUES((${Number(before[0].room_id)}),${Number(before[0].seat)},'00000000-0000-0000-0000-000000000003')`);await db.query('SELECT * FROM join_room()');const after=await seats();expect(after).toHaveLength(2);expect(after[0].room_id).toBe(before[0].room_id);expect(after[0].seat).not.toBe(before[0].seat);
@@ -44,3 +46,15 @@ it('return cannot bypass an active table kick',async()=>{
  await db.query('SELECT * FROM join_room()');const before=await seats();await db.exec(`INSERT INTO kickout_targets VALUES('${a}',${Number(before[0].room_id)},now()-interval '1 second',now()+interval '15 minutes')`);await db.query('SELECT * FROM join_room()');expect((await seats())[0].room_id).not.toBe(before[0].room_id);
 });
 it('signed-out users cannot create membership',async()=>{await as('');await expect(db.query('SELECT * FROM join_room()')).rejects.toThrow('Oyuna daxil olmalısan');expect(await seats()).toEqual([]);});
+it('independent heartbeat preserves a seat whose reward-row timestamp is stale',async()=>{
+ await db.query('SELECT * FROM join_room()'); const before=await seats();
+ await db.exec("UPDATE room_players SET last_seen=now()-interval '3 minutes'");
+ await db.query('SELECT room_tick(room_id) FROM room_players');
+ expect(await seats()).toEqual(before);
+});
+it('fresh heartbeat and stale reward rows do not scatter any player',async()=>{
+ await db.query('SELECT * FROM join_room()');await as(b);await db.query('SELECT * FROM join_room()');const before=await seats();
+ for(let i=0;i<100;i++) { await as(i%2?a:b); await db.query('SELECT heartbeat()'); }
+ await db.exec("UPDATE room_players SET last_seen=now()-interval '3 minutes'");await db.query('SELECT room_tick(room_id) FROM room_players');
+ expect(await seats()).toEqual(before);
+});
