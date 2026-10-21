@@ -1,80 +1,99 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { Button } from '@/components/ui/button';
-import { ASSET_SCALE as K, BOTS, SEATS, TABLE_SIZE as V, seatAngle } from '@/lib/table-preview';
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { joinRoom, detachRoom, leaveRoomNow, useRoom } from "@/lib/room-session";
+import { setViewerProfile } from "@/lib/viewer";
+import { setupTelegramViewport } from "@/lib/telegram-viewport";
+import woodTable from "@/assets/original-wood-table.png";
+import { OriginalTableHeader } from "@/components/original-table-header";
+import { OriginalChatPanel } from "@/components/original-chat-panel";
+import { TableSeats } from "@/components/table/table-seats";
+import { OriginalLoadingScreen } from "@/components/original-loading-screen";
 
-export const Route = createFileRoute('/game')({
-  head: () => ({ meta: [
-    { title: 'Deltagame — Oyun masası' },
-    { name: 'description', content: 'Deltagame oyun masasında şişeyi çevir, sohbet et ve yeni insanlarla tanış.' },
-    { property: 'og:title', content: 'Deltagame — Oyun masası' },
-    { property: 'og:description', content: 'Şişeyi çevir ve Deltagame oyun masasında sohbete katıl.' },
-    { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' },
-  ] }),
-  component: Masa,
+import { SourceConnectionScreen } from "@/components/table/source-connection-screen";
+import { SourceHeartBonus } from "@/components/table/source-heart-bonus";
+import { startCloudAchievements } from "@/lib/cloud-achievements";
+import { DailyBonusHost } from "@/components/table/daily-bonus-dialog";
+import { startCloudBlocks } from "@/lib/block-session";
+import { SourceHaremNotice } from '@/components/table/source-harem-notice';
+import { ProfileSetupDialog } from "@/components/profile/profile-setup-dialog";
+import { getSupabase } from "@/lib/supabase";
+import { Button } from '@/components/ui/button';
+import { tableBgUrl, useTableBg } from "@/lib/table-bg";
+import "@/styles/table-bg.css";
+import { GameCrashShield } from "@/components/game-crash-shield";
+
+export const Route = createFileRoute("/game")({
+  head: () => ({
+    meta: [
+      { title: "Deltagame — Oyun masası" },
+      { name: "description", content: "Deltagame oyun masasında şüşəni fırlat, söhbət et və yeni insanlarla tanış ol." },
+      { property: "og:title", content: "Deltagame — Oyun masası" },
+      { property: "og:description", content: "Şüşəni fırlat və Deltagame oyun masasında söhbətə qoşul." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Index,
 });
 
-function Masa() {
-  const [angle, setAngle] = useState(0);
-  const [phase, setPhase] = useState<'idle' | 'spin' | 'result'>('idle');
-  const [from, setFrom] = useState(0);
-  const [to, setTo] = useState<number | null>(null);
-  const [scale, setScale] = useState(1);
-  const tableSlot = useRef<HTMLDivElement>(null);
-
+function Index() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const room = useRoom();
+  const tableBg = useTableBg();
+  const [joined, setJoined] = useState(false);
+  // Telegram Mini App only: keep the table height stable while the chat
+  // keyboard opens (original client's expand + keyboard scroll behavior).
+  useEffect(() => setupTelegramViewport(), []);
   useEffect(() => {
-    const element = tableSlot.current;
-    if (!element) return;
-    const fit = () => setScale(Math.min(element.clientWidth, element.clientHeight) / V);
-    const observer = new ResizeObserver(fit);
-    observer.observe(element); fit();
-    return () => observer.disconnect();
-  }, []);
-
-  const spin = () => {
-    if (phase !== 'idle') return;
-    let target = Math.floor(Math.random() * BOTS.length);
-    if (target === from) target = (target + 1) % BOTS.length;
-    const delta = ((seatAngle(target) - angle % 360) % 360 + 360) % 360;
-    setTo(target); setAngle(previous => previous + 1440 + delta); setPhase('spin');
-  };
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (phase === 'idle') spin();
-      if (phase === 'spin') setPhase('result');
-      if (phase === 'result') { if (to !== null) setFrom(to); setTo(null); setPhase('idle'); }
-    }, phase === 'spin' ? 3500 : phase === 'result' ? 3200 : 2200);
-    return () => clearTimeout(timer);
-  }, [phase, from, to, angle]);
-
-  const current = BOTS[from]; const selected = to === null ? undefined : BOTS[to];
+    if (!auth.ready) return;
+    if (!auth.session || !auth.profile) { void navigate({ to: "/auth" }); return; }
+    setViewerProfile(auth.profile);
+    // Telegram first entry: gender/age setup must finish before the live room is mounted.
+    if (auth.profile.profile_setup_done === false) return;
+    let alive = true;
+    const connect = () => void joinRoom().then(() => { if (alive) setJoined(true); }).catch(() => { if (alive) setJoined(false); });
+    connect();
+    // Membership belongs to the server, not this page's component lifecycle.
+    const stopAchievements = startCloudAchievements();
+    const stopBlocks = startCloudBlocks(auth.session.user.id);
+    // Aktivlik liderləri: every minute spent at the table is counted by the server.
+    const activity = window.setInterval(() => { void getSupabase()?.rpc("activity_ping" as never); }, 60000);
+    const bye = () => leaveRoomNow();
+    const resume = () => { if (alive && document.visibilityState === 'visible') connect(); };
+    // Re-read the authoritative membership and table after suspended tabs/network recovery.
+    const back = (e: PageTransitionEvent) => { if (e.persisted) connect(); };
+    window.addEventListener("pagehide", bye);
+    window.addEventListener("pageshow", back);
+    window.addEventListener("online", resume);
+    document.addEventListener("visibilitychange", resume);
+    return () => { alive = false; window.clearInterval(activity); stopAchievements(); stopBlocks(); window.removeEventListener("pagehide", bye); window.removeEventListener("pageshow", back); window.removeEventListener("online", resume); document.removeEventListener("visibilitychange", resume); void detachRoom(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.ready, auth.session?.user.id, Boolean(auth.profile), auth.profile?.profile_setup_done]);
+  if (auth.profile && auth.profile.profile_setup_done === false) return <ProfileSetupDialog onDone={() => undefined} />;
+  if (!joined || !room.roomId) {
+    return <main className="grid min-h-dvh place-items-center bg-background p-6 text-center text-foreground">
+      <p>{room.error ?? "Masaya qoşulursan…"}</p>
+      {room.error && <Button onClick={() => void joinRoom().then(() => setJoined(true)).catch(() => undefined)}>Qayıt</Button>}
+    </main>;
+  }
   return (
-    <main className="game-preview">
-      <div className="game-shell">
-        <div ref={tableSlot} className="game-table-slot">
-          <div className="game-table-frame" style={{ width: V * scale, height: V * scale }}>
-            <div className="game-table" style={{ '--table-scale': scale } as CSSProperties}>
-              {BOTS.map((bot, index) => {
-                const seat = SEATS[index]; if (!seat) return null;
-                const active = index === from || (phase === 'result' && index === to);
-                return <div key={bot.name} className="game-seat" style={{ left: V / 2 + seat[0] - 32, top: V / 2 + seat[1] - 32 }}>
-                  <div className={`game-portrait ${active ? 'game-portrait-active' : ''}`}>
-                    <img src={`https://randomuser.me/api/portraits/${bot.g}/${bot.id}.jpg`} alt={bot.name} draggable={false} />
-                  </div>
-                  <span className="game-player-name">{bot.name}</span>
-                  {phase === 'result' && active && <img className="game-kiss" src="/game/img/kalp.svg" alt="Öpücük" />}
-                </div>;
-              })}
-              <Button variant="ghost" className={`game-bottle ${phase === 'spin' ? 'is-spinning' : ''}`} aria-label="Şişeyi çevir" onClick={spin} disabled={phase !== 'idle'} style={{ '--bottle-angle': `${angle}deg` } as CSSProperties}>
-                <span className="game-bottle-pivot">
-                  <img className="game-bottle-shadow" src="/game/orj/b_standart_v2.shadow.png" alt="" style={{ left: -30 * K + 4, top: -97.8 * K + 3, width: 60 * K, height: 170 * K }} />
-                  <img className="game-bottle-image" src="/game/orj/b_standart_v2.base.png" alt="Şişe" style={{ left: -25 * K, top: -92.8 * K, width: 50 * K, height: 160 * K }} />
-                </span>
-              </Button>
-            </div>
-          </div>
-          <span className="game-turn" aria-live="polite">{phase === 'result' ? `${current?.name} → ${selected?.name} 💋` : phase === 'spin' ? 'Şişe dönüyor…' : `Sıra: ${current?.name}`}</span>
+    <main className="original-table-page" aria-label="Deltagame oyun masası">
+      <GameCrashShield name="loading"><OriginalLoadingScreen /></GameCrashShield>
+      <GameCrashShield name="connection"><SourceConnectionScreen /></GameCrashShield>
+      <GameCrashShield name="heart-bonus"><SourceHeartBonus /></GameCrashShield>
+      {auth.session && <GameCrashShield name="harem"><SourceHaremNotice key={auth.session.user.id} viewerId={auth.session.user.id} /></GameCrashShield>}
+      {auth.session && <GameCrashShield name="daily-bonus"><DailyBonusHost viewerId={auth.session.user.id} /></GameCrashShield>}
+      <img className="original-page-wood" src={woodTable} alt="" />
+      <div className="original-game">
+        <div className={`original-table${!tableBg && room.room?.table_color != null ? ` personal-table-color-${room.room.table_color}` : ''}`}>
+          <img className="original-table-wood" src={woodTable} alt="Taxta oyun masası" />
+          {tableBg && <img key={tableBg} className="original-table-bg-image" src={tableBgUrl(tableBg)} alt="" />}
+          <GameCrashShield name="seats"><TableSeats /></GameCrashShield>
+          <GameCrashShield name="header"><OriginalTableHeader /></GameCrashShield>
         </div>
+        <GameCrashShield name="chat"><OriginalChatPanel /></GameCrashShield>
       </div>
     </main>
   );
