@@ -1,4 +1,4 @@
-import { hasSceneAnimation, tableTweenSeconds, webGiftDestination, webGiftSample, webRenderQuality, webTableLayout } from "@/lib/web-table-rendering";
+import { hasSceneAnimation, originalCenterDimensions, tableTweenSeconds, webGiftDestination, webGiftSample, webRenderQuality, webTableLayout } from "@/lib/web-table-rendering";
 import { isTelegramWebApp } from "@/lib/telegram-viewport";
 import autumnCenterUrl from "@/assets/original-table-autumn-center.png";
 const autumnCenter = { url: autumnCenterUrl };
@@ -555,12 +555,12 @@ export async function createPixiTable(host: HTMLElement, assets: CilizAssets, op
   type Tick = (elapsed: number) => boolean;
   const ticks = new Set<Tick>();
   let destroyed = false;
-  if (!telegram) void loadImage(autumnCenter.url).then(image => {
+  void loadImage(autumnCenter.url).then(image => {
     if (destroyed) return;
     centerDecor.texture = Texture.from(image);
-    const frame = assets.images['td_table_autumn_c']?.size;
-    centerDecor.width = (frame?.[2] ?? 287.4) * ASSETS_K;
-    centerDecor.height = (frame?.[3] ?? 287.5) * ASSETS_K;
+    const dimensions = originalCenterDimensions(assets.images['td_table_autumn_c']?.size, ASSETS_K);
+    centerDecor.width = dimensions.width;
+    centerDecor.height = dimensions.height;
     markDirty();
   }).catch(error => console.error('Original table ornament could not be loaded', error));
   // Oturan hediyelerdeki ve çerçevelerdeki spine animasyonları kendi ticker'ıyla
