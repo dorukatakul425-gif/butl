@@ -115,7 +115,7 @@ export function MusicView({ song, muted, volume, onDj, onPlayer }: { song: Playi
         <div className={`${cls("player", [media, size, position])} ${upCls("")}`}>
           {hasVideo
             ? <>
-                <div className={upCls("thumbnail", [ready ? "hidden" : undefined])} style={ready ? undefined : { backgroundImage: `url('https://img.youtube.com/vi/${song.musicItem.song_id}/0.jpg')` }} />
+                <div className={upCls("thumbnail", [ready ? "hidden" : undefined])} style={ready ? undefined : { backgroundImage: `url('/api/public/yt/${song.musicItem.song_id}.jpg')` }} />
                 <YouTubeFrame key={song.key} videoId={song.musicItem.song_id} startPosition={startPosition} muted={muted} volume={volume}
                   onReady={() => setReady(true)} onProgress={setProgress} onComplete={done} />
               </>
