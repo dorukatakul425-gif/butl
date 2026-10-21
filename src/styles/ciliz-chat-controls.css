@@ -2,10 +2,10 @@
 .original-chat-input .original-chat-round { flex: 0 0 26px; min-width: 26px; width: 26px; height: 26px; padding: 0; }
 .original-chat-input .original-chat-gift { margin-right: 6px; }
 .original-chat-input .original-chat-control-image { display: block; width: 26px; height: 26px; max-width: none; object-fit: contain; pointer-events: none; }
-.source-harem { display: flex; }
+.source-harem { display: flex; min-width: 0; }
 .source-harem-user { display: flex; flex-direction: column; flex-shrink: 0; }
 .source-harem-photo { width: 68px; height: 68px; padding: 0; border-radius: 10px; overflow: hidden; }
 .source-harem-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .source-harem-name { font-size: 10px; overflow: hidden; margin-top: 3px; max-width: 68px; text-align: center; text-overflow: ellipsis; line-height: 11px; }
-.source-harem-description { font-size: 14px; line-height: 20px; margin-left: 10px; overflow-wrap: anywhere; }
-.source-harem-price { background-size: 18px 14px; background-repeat: no-repeat; background-position: left; font-weight: bold; padding-left: 22px; margin-left: 4px; }
+.source-harem-description { min-width: 0; font-size: 14px; line-height: 20px; margin-left: 10px; overflow-wrap: anywhere; }
+.source-harem-price { background-size: 18px 14px; background-repeat: no-repeat; background-position: left; font-weight: bold; padding-left: 22px; margin-left: 4px; white-space: nowrap; }

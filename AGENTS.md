@@ -31,7 +31,7 @@
 - Scope bottle drawer presentation to its own selectors and measure the existing game/chat bounds; this preserves source drawer sizing and close controls without changing other dialogs or purchase rules.
 - Achievement levels come from trusted event/wallet counters and source thresholds through an authenticated bridge; source-only conditions and unspecified rewards remain unavailable to prevent fabricated completion or currency.
 - Keep achievement/booster presentation browser-safe behind optional session adapters; original booster inventory remains unknown until a verified seasonal-pass/league service exists.
-- Use authenticated subscriptions for connection, heart awards and harem inbox; deduplicate events, acknowledge confirmed notices, and never infer rewards or prices.
+- Attraction inbox uses structured recipient-scoped profile_notifications written atomically by harem_purchase; read/recover under user RLS and acknowledge only through the owner-checked RPC, so first admiration, transfers and releases open source dialogs without inferred rewards or duplicate banners.
 - Feature dialogs require verified session state for mutations; kick/save uses atomic authenticated database RPCs, source-derived deadlines and a membership trigger for all room-entry paths. Kick pricing/free cooldown remain unconfigured until verified host values are supplied, never guessed. Participation metadata grants no privilege.
 - Scope profile layout resets to the profile layer, restoring original content-box sizing and non-repeating fixed-size SVG icons without changing other source dialogs.
 - Keep profile popup positioning absolute inside its fixed layer, using the source safe-area translation; relative offsets combined with flex centering shift the popup offscreen.

@@ -339,7 +339,9 @@ export function startSocial(me: string) {
     // Admiration alerts: someone else admired the same person, or the person rejected you.
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "profile_notifications", filter: `user_id=eq.${me}` }, payload => {
       if (!live()) return;
-      const n = payload.new as { id: number; actor_id: string | null; body: string };
+      const n = payload.new as { id: number; actor_id: string | null; body: string; payload?: { type?: string } };
+      // The original table inbox owns durable attraction notices, not the expiring social banner.
+      if (n.payload?.type === 'harem_purchase') return;
       void (n.actor_id ? profileOf(n.actor_id) : Promise.resolve(undefined)).then(p => {
         if (live()) notify({ id: `h-${n.id}`, kind: "harem", from: n.actor_id ?? me, title: "Hayranlık", body: n.body, photo: p?.photo_url ?? null });
       });

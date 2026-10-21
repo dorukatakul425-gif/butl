@@ -76,7 +76,7 @@ function Index() {
       <OriginalLoadingScreen />
       <SourceConnectionScreen />
       <SourceHeartBonus />
-      <SourceHaremNotice />
+      {auth.session && <SourceHaremNotice key={auth.session.user.id} viewerId={auth.session.user.id} />}
       {auth.session && <DailyBonusHost viewerId={auth.session.user.id} />}
       <img className="original-page-wood" src={woodTable} alt="" />
       <div className="original-game">
