@@ -1,4 +1,6 @@
 import { KickoutSeatFx } from "@/components/table/kickout-seat-fx";
+import { PlayerCreatorOverlay } from '@/components/table/player-creator-overlay';
+import { usePlayerAppearances } from '@/lib/use-player-appearance';
 import { telegramZodiac } from "@/lib/telegram-profile";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCilizAssets } from "@/components/decor/decor-selection";
@@ -79,6 +81,7 @@ export function TableSeats() {
 
   const progress = useViewerProgress();
   const room = useRoom();
+  const appearances = usePlayerAppearances(room.players.flatMap(p => p ? [p.id] : []));
   const blocked = useBlockedUsers();
   const ownKisses = room.players[VIEWER_SEAT]?.kisses;
   useEffect(() => { if (ownKisses !== undefined) setViewerKisses(ownKisses); }, [ownKisses]);
@@ -428,6 +431,7 @@ export function TableSeats() {
         {activeTable && assets && <BottlePlay key={room.roomId} table={activeTable} assets={assets} />}
       </div>
       {activeTable && assets && <KickoutSeatFx assets={assets} seatPoint={seat => activeTable.seatPoint(seat)} />}
+      {activeTable && <PlayerCreatorOverlay players={room.players} appearances={appearances} seatPoint={seat => activeTable.seatPoint(seat)} />}
       <TokensBankHost />
       {assets && (
         <GestureDialog

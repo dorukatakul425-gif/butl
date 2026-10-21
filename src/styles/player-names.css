@@ -1,0 +1,41 @@
+:root {
+  --name-ruby: #e73862;
+  --name-emerald: #0ca46a;
+  --name-sapphire: #3489e7;
+  --name-gold: #bd8a16;
+  --name-rose: #db48a6;
+  --name-rainbow: linear-gradient(100deg, #ffcf58, #ef426f, #a159ed, #39b6ef, #38d9a3, #ffcf58);
+  --name-level-bg: color-mix(in srgb, var(--name-gold) 12%, transparent);
+  --name-level-border: color-mix(in srgb, var(--name-gold) 40%, transparent);
+  --name-creator-shadow: 0 1px 3px color-mix(in srgb, var(--foreground) 40%, transparent);
+  --name-card-shimmer: linear-gradient(110deg, transparent 20%, color-mix(in srgb, var(--background) 50%, transparent) 48%, transparent 75%);
+}
+.player-name-card { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; vertical-align: middle; line-height: 1.4; border: 1px solid transparent; border-radius: 5px; }
+.player-name-card[class*="--t"] { background: var(--name-level-bg); border-color: var(--name-level-border); padding: 0 4px 0 1px; }
+.player-name-card--t3, .player-name-card--t11, .player-name-card--t13 { --name-level-bg: color-mix(in srgb, var(--name-emerald) 12%, transparent); --name-level-border: color-mix(in srgb, var(--name-emerald) 45%, transparent); }
+.player-name-card--t4, .player-name-card--t8, .player-name-card--t10, .player-name-card--t15 { --name-level-bg: color-mix(in srgb, var(--name-sapphire) 12%, transparent); --name-level-border: color-mix(in srgb, var(--name-sapphire) 45%, transparent); }
+.player-name-card--t5, .player-name-card--t7, .player-name-card--t17, .player-name-card--t18 { --name-level-bg: color-mix(in srgb, var(--name-rose) 12%, transparent); --name-level-border: color-mix(in srgb, var(--name-rose) 45%, transparent); }
+.player-name-card--t6, .player-name-card--t12, .player-name-card--t16 { --name-level-bg: color-mix(in srgb, var(--name-ruby) 12%, transparent); --name-level-border: color-mix(in srgb, var(--name-ruby) 45%, transparent); }
+.player-name-card[class*="--t"] { background-image: var(--name-card-shimmer); background-size: 250% 100%; animation: player-name-flow 6s linear infinite; }
+.player-level-badge { display: inline-block; flex: none; height: 18px; width: auto; max-width: 52px; object-fit: contain; }
+.player-name-text { min-width: 0; overflow-wrap: anywhere; }
+.player-name-text--ruby { color: var(--name-ruby); }
+.player-name-text--emerald { color: var(--name-emerald); }
+.player-name-text--sapphire { color: var(--name-sapphire); }
+.player-name-text--gold { color: var(--name-gold); }
+.player-name-text--rose { color: var(--name-rose); }
+.player-name-text--rainbow, .player-creator { background: var(--name-rainbow); background-size: 250% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; animation: player-name-flow 4s linear infinite; }
+.player-creator { font-weight: 900; font-size: 10px; line-height: 16px; white-space: nowrap; filter: drop-shadow(var(--name-creator-shadow)); }
+.table-creator-label { position: fixed; z-index: 7; pointer-events: none; transform-origin: center bottom; }
+.table-creator-label .player-creator { font-size: 11px; }
+.name-swatch { display: block; width: 18px; height: 18px; border-radius: 50%; background: var(--foreground); }
+.name-swatch--ruby { background: var(--name-ruby); }
+.name-swatch--emerald { background: var(--name-emerald); }
+.name-swatch--sapphire { background: var(--name-sapphire); }
+.name-swatch--gold { background: var(--name-gold); }
+.name-swatch--rose { background: var(--name-rose); }
+.name-swatch--rainbow { background: var(--name-rainbow); }
+.site-refresh-dialog { width: min(420px, calc(100% - 24px)); z-index: 2147483647; }
+.site-refresh-dialog ~ [data-radix-focus-guard] { z-index: 2147483647; }
+@keyframes player-name-flow { to { background-position: 250% 0; } }
+@media (prefers-reduced-motion: reduce) { .player-name-text--rainbow, .player-creator, .player-name-card[class*="--t"] { animation: none; } }

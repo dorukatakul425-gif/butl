@@ -4,6 +4,8 @@ import { z } from "zod";
 import { telegramNoticeSchema, telegramPayload } from "./telegram-notifications";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { rouletteConfigSchema } from './roulette-config';
+import { appearanceInput, validNameStyle } from './player-appearance';
+import { levelFromPoints } from './top-level-activity';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function assertAdmin(context: { supabase: unknown; userId: string }) {
@@ -416,4 +418,36 @@ export const saveRouletteAdmin = createServerFn({ method: 'POST' })
     const { data: revision, error } = await (context.supabase as any).rpc('admin_roulette_save', { p_config: data });
     if (error) throw new Error(error.message);
     return { revision: Number(revision) };
+  });
+
+export const getPlayerNameStyle = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ context, data }) => {
+    const admin = await assertAdmin(context);
+    const [style, points] = await Promise.all([
+      admin.from('player_name_styles').select('name_style,creator').eq('user_id', data.userId).maybeSingle(),
+      admin.rpc('gift_points_of', { p_user: data.userId }),
+    ]);
+    if (style.error || points.error) throw new Error('Ad üslubu yüklənmədi.');
+    return { nameStyle: validNameStyle(style.data?.name_style), creator: style.data?.creator === true, level: levelFromPoints(Number(points.data)) };
+  });
+
+export const savePlayerNameStyle = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => appearanceInput.parse(input))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const { error } = await (context.supabase as any).rpc('admin_set_name_style', { p_user: data.userId, p_style: data.nameStyle, p_creator: data.creator });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const requestSiteRefresh = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { data, error } = await (context.supabase as any).rpc('admin_request_site_refresh');
+    if (error) throw new Error(error.message);
+    return { id: String(data) };
   });

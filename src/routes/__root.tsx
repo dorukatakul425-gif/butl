@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { PreferencesProvider } from "@/lib/app-preferences";
 import { BanGuard } from "@/components/ban-guard";
+import { SiteRefreshHost } from '@/components/site-refresh-host';
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { showInspectorNotice } from "../lib/inspector-notice";
@@ -150,7 +151,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <PreferencesProvider><Outlet /></PreferencesProvider> breaks all child routes. */}
-      <PreferencesProvider><BanGuard><Outlet /></BanGuard></PreferencesProvider>
+      <PreferencesProvider><BanGuard><Outlet /><SiteRefreshHost /></BanGuard></PreferencesProvider>
     </QueryClientProvider>
   );
 }

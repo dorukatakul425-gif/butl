@@ -8,6 +8,7 @@ import { TelegramBotSettings } from '@/components/admin/telegram-bot-settings';
 import { Input } from "@/components/ui/input";
 import { PlayerLevelPanel } from "@/components/admin/player-level-panel";
 import { RoulettePanel } from '@/components/admin/roulette-panel';
+import { PlayerNamePanel, SiteRefreshPanel } from '@/components/admin/player-name-panel';
 import { useAuth } from "@/lib/auth";
 import { checkAdmin, getAdminStats, listPlayers, adjustBalance, setKisses, setBan, listReports, resolveReport, listStatusReviews, reviewStatus, sendBroadcast, listRoomsAdmin, viewRoomAdmin } from "@/lib/admin.functions";
 
@@ -79,7 +80,7 @@ function Dashboard() {
             </Button>
           ))}
         </div>
-        {tab === "umumi" && <><Stats /><Broadcast /></>}
+        {tab === "umumi" && <><Stats /><SiteRefreshPanel /><Broadcast /></>}
         {tab === "masalar" && <Rooms />}
         {tab === "oyuncular" && <Players />}
         {tab === "sikayetler" && <Reports />}
@@ -243,6 +244,7 @@ function PlayerRow({ p }: { p: Player }) {
   const [open, setOpen] = useState(false);
   const [kissOpen, setKissOpen] = useState(false);
   const [levelOpen, setLevelOpen] = useState(false);
+  const [nameOpen, setNameOpen] = useState(false);
   const [kissValue, setKissValue] = useState("");
   const [field, setField] = useState<"gold" | "tokens" | "dat">("gold");
   const [amount, setAmount] = useState("");
@@ -281,6 +283,7 @@ function PlayerRow({ p }: { p: Player }) {
         <Button size="sm" variant="outline" onClick={() => setOpen(!open)}>Balans</Button>
         <Button size="sm" variant="outline" onClick={() => setKissOpen(!kissOpen)}>Öpüş</Button>
         <Button size="sm" variant="outline" onClick={() => setLevelOpen(!levelOpen)}>Səviyyə / Ramka</Button>
+        <Button size="sm" variant="outline" onClick={() => setNameOpen(!nameOpen)}>Ad / Creator</Button>
         <Button size="sm" variant={p.banned ? "secondary" : "destructive"} disabled={banM.isPending}
           onClick={() => { if (p.banned) { if (confirm("Qadağa ləğv edilsin?")) banM.mutate(); } else setBanOpen(!banOpen); }}>
           {p.banned ? "Qadağanı ləğv et" : "Qadağan et"}
@@ -324,6 +327,7 @@ function PlayerRow({ p }: { p: Player }) {
         </div>
       )}
       {levelOpen && <PlayerLevelPanel userId={p.id} />}
+      {nameOpen && <PlayerNamePanel userId={p.id} name={p.name} />}
       {msg && <p className="mt-2 text-xs text-muted-foreground">{msg}</p>}
     </div>
   );

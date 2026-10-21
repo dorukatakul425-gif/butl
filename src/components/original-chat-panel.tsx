@@ -33,6 +33,8 @@ import { applyTranslation, chatTranslator, needsTranslation, toggleTranslation, 
 import { roomProfileResolver } from '@/lib/room-profile-resolver';
 import { playChatAlert, preloadChatAlert } from '@/lib/chat-alert';
 import { batchChatHistory } from '@/lib/music-session';
+import { usePlayerAppearances } from '@/lib/use-player-appearance';
+import { PlayerName } from '@/components/player-name';
 
 const VIEWER_LOCALE = "tr";
 
@@ -45,6 +47,8 @@ export function OriginalChatPanel() {
   useEffect(() => { preloadChatAlert(); }, []);
   const assets = useCilizAssets();
   const session = useMusicSession();
+  const nameIds = session.lines.flatMap(line => 'sender' in line && line.sender?.id ? [line.sender.id] : []);
+  const appearances = usePlayerAppearances(nameIds);
   const blocked = useBlockedUsers();
   const translations = useChatTranslations();
   const decor = useDecorState();
@@ -328,7 +332,7 @@ export function OriginalChatPanel() {
                   return <><div className="chat__stone" style={{ display: "inline-block" }}><img className="chat__stone-img" src={img.src} width={img.width} height={img.height} alt="" crossOrigin="anonymous" /></div>{" "}</>;
                 })()}
                 <span className={`chat__sender-name ${chatNameClass(line.sender)}${(line.sender.isViewer ? decor.stone : line.sender.stone) && assets?.stones[(line.sender.isViewer ? decor.stone : line.sender.stone) ?? ""] ? " chat__sender-name--stone" : ""}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}
-                  onClick={e => { e.stopPropagation(); setReceiver(line.sender); inputRef.current?.focus(); }}>{line.sender.name}</span>
+                  onClick={e => { e.stopPropagation(); setReceiver(line.sender); inputRef.current?.focus(); }}><PlayerName name={line.sender.name} appearance={appearances[line.sender.id]} nameClass={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`} /></span>
                 <span className={`${chatNameClass(line.sender)}${line.sender.isPremium ? " chat__premium-sender-name" : ""}`}>: </span>
                 {line.private && <span className="chat__private-label">(şəxsi) </span>}
                 {line.receiver && <><span className="chat__sender-name">{line.receiver.name}</span><span>, </span></>}

@@ -19,6 +19,8 @@ import { SourceProfileSettings } from "@/components/profile/source-own-profile";
 import { SourceDialogLayer, SourceInfoDialog, SourceButtons, showSourceToast, OPEN_BANK_EVENT } from "@/components/source-dialogs";
 import { profileRibbon, formatHarem, formatStats, splitStatusEmoji, type ServerUserProfile } from "@/lib/user-profile";
 import { reportPlayer } from "@/lib/game-reports";
+import { usePlayerAppearances } from '@/lib/use-player-appearance';
+import { PlayerName, CreatorLabel } from '@/components/player-name';
 
 const Div = (p: React.HTMLAttributes<HTMLDivElement>) => <div role={p.onClick ? "button" : undefined} {...p} />;
 
@@ -62,6 +64,8 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
   profile?: ServerUserProfile | null;
 }) {
   const t = (key: string, ...a: string[]) => translate(assets, key, ...a);
+  const appearances = usePlayerAppearances(player.id ? [player.id] : []);
+  const appearance = player.id ? appearances[player.id] : undefined;
   const viewerVip = useViewerProgress().vip;
   const [vipNow, setVipNow] = useState(() => Date.now());
   useEffect(() => {
@@ -284,9 +288,10 @@ export function ProfileDialog({ player, self, assets, onClose, onGift, onDecor, 
           <div className="user-profile__title">
             {stone ? <div className="user-profile__decored-name">
               <img className="user-profile__stone" src={stone.src} width={stone.width} height={stone.height} alt="" />
-              <div className="user-profile__name">{player.name}{player.age ? `, ${player.age}` : ""}</div>
+              <div className="user-profile__name"><PlayerName name={player.name} appearance={appearance} showCreator={false} />{player.age ? `, ${player.age}` : ""}</div>
               <img className="user-profile__stone" src={stone.src} width={stone.width} height={stone.height} alt="" />
-            </div> : <div className="user-profile__name">{player.name}{player.age ? `, ${player.age}` : ""}</div>}
+            </div> : <div className="user-profile__name"><PlayerName name={player.name} appearance={appearance} showCreator={false} />{player.age ? `, ${player.age}` : ""}</div>}
+            {appearance?.creator && <CreatorLabel />}
             {player.city && <div className="user-profile__city">{player.city}</div>}
           </div>
           {player.zodiac !== undefined && <Div className={`user-profile__zodiac user-profile__zodiac--${player.zodiac}`} onClick={() => showTooltip(t(`hint:zodiac:${player.zodiac}`))} />}

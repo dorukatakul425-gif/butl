@@ -6,6 +6,7 @@ import { OriginalChatPanel } from "@/components/original-chat-panel";
 import { VIEWER } from "@/lib/viewer";
 
 vi.mock("@/components/decor/decor-selection", () => ({ useCilizAssets: () => null }));
+vi.mock('@/lib/use-player-appearance', () => ({ usePlayerAppearances: () => ({}) }));
 vi.mock('@/assets/original-chat-emoji.svg', () => ({ default: '/emoji.svg' }));
 vi.mock('@/assets/original-chat-send.svg', () => ({ default: '/send.svg' }));
 vi.mock("@/components/music/music-view", () => ({ MusicView: () => null }));
@@ -37,13 +38,13 @@ describe("original User.color rules", () => {
 describe("text chat rendering", () => {
   it("renders original composer images independently of button backgrounds", () => {
     render(<OriginalChatPanel />);
-    for (const name of ['Emoji', 'Hediye', 'Gönder']) {
+    for (const name of ['Emoji', 'Hədiyyə', 'Göndər']) {
       const image = screen.getByRole('button', { name }).querySelector('img');
       expect(image).toHaveClass('original-chat-control-image');
       expect(image).toHaveAttribute('width', '26');
       expect(image?.getAttribute('src')).toBeTruthy();
     }
-    expect(screen.getByRole('button', { name: 'Hediye' })).toHaveClass('original-chat-gift');
+    expect(screen.getByRole('button', { name: 'Hədiyyə' })).toHaveClass('original-chat-gift');
   });
   it("ignores blank messages", () => {
     expect(pushTextLine({ id: "a", name: "A", photoUrl: "" }, "   ")).toBe(false);
@@ -52,7 +53,7 @@ describe("text chat rendering", () => {
     render(<OriginalChatPanel />);
     const input = screen.getByRole("textbox", { name: "Mesaj yaz" });
     fireEvent.change(input, { target: { value: "Merhaba masadakiler" } });
-    fireEvent.click(screen.getByRole("button", { name: "Gönder" }));
+    fireEvent.click(screen.getByRole("button", { name: "Göndər" }));
     expect(screen.queryByText("Merhaba masadakiler")).not.toBeInTheDocument();
     expect(input).toHaveValue("");
   });
@@ -71,7 +72,7 @@ describe("text chat rendering", () => {
     pushTextLine({ id: "r2", name: "Elvin", photoUrl: "" }, "herkese merhaba");
     pushTextLine({ id: "r3", name: "Aysel", photoUrl: "" }, "baskasina yazdim", { id: "someone-else", name: "Başkası", photoUrl: "" });
     render(<OriginalChatPanel />);
-    const arrows = screen.getAllByRole("button", { name: "Yanıtla" });
+    const arrows = screen.getAllByRole("button", { name: "Cavab yaz" });
     expect(arrows).toHaveLength(1);
     fireEvent.click(arrows[0]);
     expect(screen.getByRole("textbox", { name: "Mesaj yaz" })).toHaveValue("Aysel, ");

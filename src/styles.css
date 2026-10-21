@@ -33,6 +33,7 @@
 @import "./styles/roulette-prize-icons.css";
 @import "./styles/profile-home.css";
 @import "./styles/mobile-preferences.css";
+@import "./styles/player-names.css";
 
 @source "../src";
 
