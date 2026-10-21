@@ -10,6 +10,12 @@ docker compose -f /opt/butl-supabase/docker-compose.yml restart rest >/dev/null
 bash deploy/vps/voice-turn.sh
 bash deploy/vps/build.sh
 systemctl restart butl
+# WebSocket hub (env file /etc/butl-ws.env holds DATABASE_URL + JWT_SECRET).
+(cd ws-hub && npm install --omit=dev --no-audit --no-fund >/dev/null)
+install -m 644 deploy/vps/butl-ws.service /etc/systemd/system/butl-ws.service
+systemctl daemon-reload
+systemctl enable butl-ws >/dev/null 2>&1 || true
+systemctl restart butl-ws
 # Oyun servisi de butl.env'i okusun (TELEGRAM_BOT_TOKEN vb. sunucu fonksiyonlarına ulaşsın).
 mkdir -p /etc/systemd/system/butl.service.d
 printf '[Service]\nEnvironmentFile=/etc/butl/butl.env\n' > /etc/systemd/system/butl.service.d/telegram.conf

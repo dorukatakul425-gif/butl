@@ -2,6 +2,7 @@
 // room-session.ts — Lovable Cloud RPC + realtime versiyası
 // ============================================================
 import { useSyncExternalStore } from "react";
+import { ensureSocket, joinSocketRoom, onSocket, socketClockOffset, socketReady, socketSend } from "./game-socket";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getSupabase, type Profile } from "./supabase";
 import { applyRoomMusic, resetRoomMusic, type RoomMusic } from "./music-session";
@@ -193,6 +194,8 @@ export const onRoomGift = (fn: (row: GiftRow) => void) => {
 
 let serverOffsetMs = 0;
 let channel: RealtimeChannel | null = null;
+let feedMode: "pending" | "socket" | "realtime" = "pending";
+let stopSocketFeed: (() => void) | null = null;
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 let seatMap = new Map<number, string>(); // server seat -> user id
 let viewerUserId: string | null = null; // auth id of the viewer (spectators have no seat row in the map)
@@ -286,6 +289,10 @@ async function teardown() {
   heartbeatTimer = null;
   if (phaseTimer) clearTimeout(phaseTimer);
   phaseTimer = null;
+  stopSocketFeed?.();
+  stopSocketFeed = null;
+  feedMode = "pending";
+  joinSocketRoom(null);
   if (channel && sb) await sb.removeChannel(channel);
   channel = null;
 }
@@ -322,9 +329,13 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
   });
   stopTokenUpdates = () => tokenSubscription.subscription.unsubscribe();
 
-  const t0 = Date.now();
-  const { data: nowData } = await sb.rpc("server_now");
-  if (nowData) serverOffsetMs = new Date(nowData as string).getTime() - (t0 + Date.now()) / 2;
+  const socketOffset = socketClockOffset();
+  if (socketOffset !== null) serverOffsetMs = socketOffset;
+  else {
+    const t0 = Date.now();
+    const { data: nowData } = await sb.rpc("server_now");
+    if (nowData) serverOffsetMs = new Date(nowData as string).getTime() - (t0 + Date.now()) / 2;
+  }
 
   const result = membership ? { data: [membership], error: null } : await sb.rpc("join_room");
   const { data, error } = result;
@@ -363,58 +374,110 @@ async function joinRoomNow(membership?: { room_id: number; seat: number }) {
   const roomRevision = revisionGuard();
   const acceptKickout = eventDeduper();
 
-  channel = sb
-    .channel(`room-${roomId}`)
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
-      (p) => { if (current()) { roomRevision.next(); applyRoom(p.new as RoomRow); } })
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` },
-      () => { if (current()) { void loadPlayers(roomId, mapSeat); nudgeRoom(); } })
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` },
-      (p) => { const old = p.old as { seat?: number; room_id?: number }; const next = p.new as { seat?: number; room_id?: number }; if (current() && (old.seat !== next.seat || old.room_id !== next.room_id || (p.old as { kisses?: number }).kisses !== (p.new as { kisses?: number }).kisses)) void loadPlayers(roomId, mapSeat); })
-    .on("postgres_changes", { event: "DELETE", schema: "public", table: "room_players" },
-      () => {
-        // DELETE cannot be filtered reliably under RLS; old fields can be redacted.
-        if (current()) { void loadPlayers(roomId, mapSeat); void refreshRoom(); }
-      })
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `room_id=eq.${roomId}` },
-      (p) => { if (current()) chatListeners.forEach((fn) => fn(p.new as ChatRow)); })
-    .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages" },
-      (p) => { const id = Number((p.old as { id?: number }).id); if (current() && id) chatDeleteListeners.forEach((fn) => fn(id)); })
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "kickout_events", filter: `room_id=eq.${roomId}` },
-      (p) => { const row = p.new as KickoutEventRow; if (current() && acceptKickout(row.id)) kickoutListeners.forEach((fn) => fn(row)); })
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "gift_events", filter: `room_id=eq.${roomId}` },
-      (p) => { if (current()) emitGift(p.new as GiftRow); })
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "premium_gift_events" },
-      (p) => { if (current()) emitPremium(p.new as PremiumGiftRow); })
-    .on("broadcast", { event: "gift" }, (m) => {
-      if (!current()) return;
-      const rows = (m["payload"] as { rows?: GiftRow[] } | undefined)?.rows;
-      if (Array.isArray(rows)) rows.forEach((r) => { if (r && typeof r.sender_id === "string" && typeof r.gift_type === "string") emitGift(r); });
-    })
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "gesture_events", filter: `room_id=eq.${roomId}` },
-      (p) => { if (current()) gestureListeners.forEach((fn) => fn(p.new as GestureRow)); })
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" },
-      (p) => {
+  type Row = Record<string, unknown>;
+  const onRoomUpdate = (n: Row) => { if (current()) { roomRevision.next(); applyRoom(n as unknown as RoomRow); } };
+  const onPlayerInsert = () => { if (current()) { void loadPlayers(roomId, mapSeat); nudgeRoom(); } };
+  const onPlayerUpdate = (old: Row, next: Row) => {
+    if (current() && (old["seat"] !== next["seat"] || old["room_id"] !== next["room_id"] || old["kisses"] !== next["kisses"])) void loadPlayers(roomId, mapSeat);
+  };
+  const onPlayerDelete = () => { if (current()) { void loadPlayers(roomId, mapSeat); void refreshRoom(); } };
+  const onChat = (row: Row) => { if (current()) chatListeners.forEach((fn) => fn(row as unknown as ChatRow)); };
+  const onChatDelete = (old: Row) => { const id = Number(old["id"]); if (current() && id) chatDeleteListeners.forEach((fn) => fn(id)); };
+  const onKickout = (r: Row) => { const row = r as unknown as KickoutEventRow; if (current() && acceptKickout(row.id)) kickoutListeners.forEach((fn) => fn(row)); };
+  const onGiftRow = (r: Row) => { if (current()) emitGift(r as unknown as GiftRow); };
+  const onPremiumRow = (r: Row) => { if (current()) emitPremium(r as unknown as PremiumGiftRow); };
+  const onGiftBroadcast = (payload: unknown) => {
+    if (!current()) return;
+    const rows = (payload as { rows?: GiftRow[] } | undefined)?.rows;
+    if (Array.isArray(rows)) rows.slice(0, 12).forEach((r) => { if (r && typeof r.sender_id === "string" && typeof r.gift_type === "string") emitGift(r); });
+  };
+  const onGesture = (r: Row) => { if (current()) gestureListeners.forEach((fn) => fn(r as unknown as GestureRow)); };
+  const onProfile = (r: Row) => {
+    if (!current()) return;
+    const prof = r as unknown as Profile;
+    const i = state.players.findIndex((x) => x?.id === prof.id);
+    if (i >= 0) {
+      playerRead++;
+      const before = state.players[i] as (Profile & { harem_owner?: string | null }) | null;
+      const after = prof as Profile & { harem_owner?: string | null; harem_value?: number };
+      const event = before ? haremTransition(prof.id, before.harem_owner, after.harem_owner, Number(after.harem_value ?? 0)) : null;
+      if (event) haremListeners.forEach(fn => fn(event));
+      const players = [...state.players];
+      players[i] = { ...prof, table_kisses: before?.table_kisses ?? 0 };
+      set({ players });
+    }
+  };
+  const onConnected = () => {
+    set({ connected: true, error: null });
+    void loadPlayers(roomId, mapSeat); void refreshRoom(); nudgeRoom();
+  };
+
+  const subscribeRealtime = () => {
+    feedMode = "realtime";
+    channel = sb
+      .channel(`room-${roomId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` }, (p) => onRoomUpdate(p.new as Row))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` }, onPlayerInsert)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "room_players", filter: `room_id=eq.${roomId}` }, (p) => onPlayerUpdate(p.old as Row, p.new as Row))
+      // DELETE cannot be filtered reliably under RLS; old fields can be redacted.
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "room_players" }, onPlayerDelete)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `room_id=eq.${roomId}` }, (p) => onChat(p.new as Row))
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages" }, (p) => onChatDelete(p.old as Row))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "kickout_events", filter: `room_id=eq.${roomId}` }, (p) => onKickout(p.new as Row))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "gift_events", filter: `room_id=eq.${roomId}` }, (p) => onGiftRow(p.new as Row))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "premium_gift_events" }, (p) => onPremiumRow(p.new as Row))
+      .on("broadcast", { event: "gift" }, (m) => onGiftBroadcast(m["payload"]))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "gesture_events", filter: `room_id=eq.${roomId}` }, (p) => onGesture(p.new as Row))
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, (p) => onProfile(p.new as Row))
+      .subscribe((status) => {
         if (!current()) return;
-        const prof = p.new as Profile;
-        const i = state.players.findIndex((x) => x?.id === prof.id);
-        if (i >= 0) {
-          playerRead++;
-          const before = state.players[i] as (Profile & { harem_owner?: string | null }) | null;
-          const after = prof as Profile & { harem_owner?: string | null; harem_value?: number };
-          const event = before ? haremTransition(prof.id, before.harem_owner, after.harem_owner, Number(after.harem_value ?? 0)) : null;
-          if (event) haremListeners.forEach(fn => fn(event));
-          const players = [...state.players];
-          players[i] = { ...prof, table_kisses: before?.table_kisses ?? 0 };
-          set({ players });
-        }
-      })
-    .subscribe((status) => {
-      if (!current()) return;
-      if (status === "SUBSCRIBED") { set({ connected: true, error: null }); void loadPlayers(roomId, mapSeat); void refreshRoom(); nudgeRoom(); }
-      else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT")
-        set({ connected: false, error: "Bağlantı kəsildi, yenidən qoşulunur..." });
-    });
+        if (status === "SUBSCRIBED") onConnected();
+        else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT")
+          set({ connected: false, error: "Bağlantı kəsildi, yenidən qoşulunur..." });
+      });
+  };
+
+  // Primary feed: the butl WebSocket hub (room-scoped, no global fan-out).
+  feedMode = "pending";
+  ensureSocket();
+  let decide: ((ok: boolean) => void) | null = null;
+  const decided = new Promise<boolean>((resolve) => { decide = resolve; });
+  const room = String(roomId);
+  stopSocketFeed = onSocket((m) => {
+    if (!current()) return;
+    if (m.type === "joined" && m["room"] === room) {
+      if (feedMode === "realtime") return;
+      const off = socketClockOffset();
+      if (off !== null) serverOffsetMs = off;
+      feedMode = "socket"; decide?.(true); onConnected(); return;
+    }
+    if (m.type === "join_denied" && m["room"] === room) { decide?.(false); return; }
+    if (feedMode !== "socket") return;
+    if (m.type === "closed") { set({ connected: false, error: "Bağlantı kəsildi, yenidən qoşulunur..." }); return; }
+    if (m.type === "resync") { void loadPlayers(roomId, mapSeat); void refreshRoom(); return; }
+    if (m.type === "bc" && m["event"] === "gift") { onGiftBroadcast(m["payload"]); return; }
+    if (m.type !== "pg") return;
+    const n = (m["new"] ?? {}) as Row, o = (m["old"] ?? {}) as Row;
+    switch (`${String(m["t"])}:${String(m["op"])}`) {
+      case "rooms:UPDATE": onRoomUpdate(n); break;
+      case "room_players:INSERT": onPlayerInsert(); break;
+      case "room_players:UPDATE": onPlayerUpdate(o, n); break;
+      case "room_players:DELETE": onPlayerDelete(); break;
+      case "chat_messages:INSERT": onChat(n); break;
+      case "chat_messages:DELETE": onChatDelete(o); break;
+      case "kickout_events:INSERT": onKickout(n); break;
+      case "gift_events:INSERT": onGiftRow(n); break;
+      case "premium_gift_events:INSERT": onPremiumRow(n); break;
+      case "gesture_events:INSERT": onGesture(n); break;
+      case "profiles:UPDATE": onProfile(n); break;
+    }
+  });
+  joinSocketRoom(roomId);
+  const fallbackTimer = setTimeout(() => decide?.(false), socketReady() ? 1500 : 2500);
+  void decided.then((ok) => {
+    clearTimeout(fallbackTimer);
+    if (!ok && current() && feedMode === "pending") subscribeRealtime();
+  });
 
   let pulse = 0;
   const runPulse = singleFlight();
@@ -526,10 +589,11 @@ export async function sendGift(
   if (error) return { ok: false, reason: error.message };
   const { data: auth } = await sb.auth.getSession();
   const me = auth.session?.user.id;
-  if (me && channel) {
+  if (me && (feedMode === "socket" || channel)) {
     const rows: GiftRow[] = receiverIds.map((rid) => ({ id: 0, sender_id: me, receiver_id: rid, gift_type: giftType, seed }));
     rows.forEach((r) => { acceptGift(r); });
-    void channel.send({ type: "broadcast", event: "gift", payload: { rows } });
+    if (feedMode === "socket") socketSend({ type: "bc", event: "gift", payload: { rows } });
+    else void channel?.send({ type: "broadcast", event: "gift", payload: { rows } });
   }
   return { ok: true, gold: Number(data ?? 0) };
 }

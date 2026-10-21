@@ -1,5 +1,6 @@
 // Lovable Cloud adapter for the source feature dialogs (currently: change table).
 import { attachSourceFeatureSession, type SourceFeatureSnapshot, type SourceTableEntry } from './source-feature-session';
+import { ensureSocket, onSocket, watchTables } from './game-socket';
 import { getSupabase } from './supabase';
 import { readProfileEdit, saveProfileEdit, saveProfilePhoto } from './profile-edit';
 import { leagueHeader, type LeagueInfo } from './league';
@@ -188,19 +189,15 @@ export function installCloudFeatureSession(viewerId: string, rejoin: (membership
   }, 10000);
   clearInterval(kickoutTimer);
   kickoutTimer = setInterval(() => { if (snapshot.viewerId === viewerId) void refreshKickout(viewerId); }, 2000);
-  // Live men/women counts: any seat change anywhere refreshes the list.
-  const sb = getSupabase();
-  if (sb && !liveChannel) {
+  // Live men/women counts: the WebSocket hub sends one coalesced "tables" ping per seat change wave.
+  if (!liveChannel) {
     let t: ReturnType<typeof setTimeout> | undefined;
-    liveChannel = sb.channel('tables-live').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_players' }, () => {
-      clearTimeout(t); t = setTimeout(() => void refreshTables(), 300);
-    }).on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'room_players' }, () => {
-      clearTimeout(t); t = setTimeout(() => void refreshTables(), 300);
-    }).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms' }, (p) => {
-      const n = p.new as { id?: number; bottle?: string };
-      if (snapshot.tables?.history.some((h) => h.id === String(n.id) && h.bottle !== n.bottle)) { clearTimeout(t); t = setTimeout(() => void refreshTables(), 300); }
-    }).subscribe();
+    ensureSocket();
+    watchTables(true);
+    liveChannel = { unsubscribe: onSocket((m) => {
+      if (m.type === 'tables' || m.type === 'open') { clearTimeout(t); t = setTimeout(() => void refreshTables(), 150); }
+    }) };
   }
 }
-let liveChannel: ReturnType<NonNullable<ReturnType<typeof getSupabase>>['channel']> | null = null;
+let liveChannel: { unsubscribe: () => void } | null = null;
 let kickoutTimer: ReturnType<typeof setInterval> | undefined;
