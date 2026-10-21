@@ -1,4 +1,8 @@
 /** Rendering-only mathematics adapted from the authorized preloader_new.js. */
+export function originalCenterDimensions(size: number[] | undefined, assetScale: number) {
+  return { width: (size?.[2] ?? 287.4) * assetScale, height: (size?.[3] ?? 287.5) * assetScale };
+}
+
 export function webTableLayout(width: number, height: number, header: number) {
   const available = Math.max(1, height - header);
   const side = Math.min(Math.max(1, width), available);
