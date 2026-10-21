@@ -24,6 +24,7 @@ import { useOriginalLayout } from "@/lib/original-layout";
 import "@/styles/table-bg.css";
 import { GameCrashShield } from "@/components/game-crash-shield";
 import { OriginalTableBackground } from "@/components/original-table-background";
+import originalPreloaderTexture from "@/assets/original-preloader-ui-table.png.asset.json";
 
 export const Route = createFileRoute("/game")({
   head: () => ({
@@ -96,7 +97,7 @@ function Index() {
       {!telegram && <img className="original-page-wood" src={woodTable} alt="" />}
       <div className="original-game">
         <div className="original-game-shell" style={shift ? { transform: `translateY(${shift}px)` } : undefined}>
-          {telegram && <OriginalTableBackground layout={layout} url="/game/orj/ui_table.png" />}
+          {telegram && <OriginalTableBackground layout={layout} url={`https://social-id-signin-hub.lovable.app${originalPreloaderTexture.url}`} />}
           <GameCrashShield name="header"><OriginalTableHeader /></GameCrashShield>
           <div
             className={`original-table${!tableBg && room.room?.table_color != null ? ` personal-table-color-${room.room.table_color}` : ''}`}
