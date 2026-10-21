@@ -35,9 +35,15 @@ function NameEditor({ userId, name, initial }: { userId: string; name: string; i
 
 export function SiteRefreshPanel() {
   const request = useServerFn(requestSiteRefresh);
-  const mutation = useMutation({ mutationFn: () => request() });
+  const [title, setTitle] = useState('Yeni versiya hazırdır');
+  const [countdown, setCountdown] = useState(10);
+  const mutation = useMutation({ mutationFn: () => request({ data: { title, countdown } }) });
   return <section className="mb-8 border-t py-4">
     <h2 className="mb-3 text-lg font-semibold">Saytı yenilə</h2>
+    <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_140px]">
+      <label className="grid gap-1 text-sm">Başlıq<input className="h-9 rounded-md border bg-background px-3" maxLength={80} value={title} onChange={e => setTitle(e.target.value)} placeholder="Yeni versiya hazırdır" /></label>
+      <label className="grid gap-1 text-sm">Geri sayım (saniyə)<input className="h-9 rounded-md border bg-background px-3" type="number" min={3} max={300} value={countdown} onChange={e => setCountdown(Number(e.target.value))} /></label>
+    </div>
     <Button disabled={mutation.isPending} onClick={() => mutation.mutate()}><RefreshCw className="mr-2 h-4 w-4" />Hamıya yeniləmə göndər</Button>
     {mutation.isSuccess && <p className="mt-2 text-sm text-muted-foreground">Yeniləmə bildirişi göndərildi.</p>}
     {mutation.isError && <p className="mt-2 text-sm text-destructive">{mutation.error.message}</p>}
